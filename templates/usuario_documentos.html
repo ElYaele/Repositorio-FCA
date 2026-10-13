@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de {{ usuario_consultado.username }} - Repositorio FCA</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #006633;
+            --primary-dark: #004d26;
+            --secondary-color: #dd971a;
+            --sidebar-width: 72px;
+        }
+        body {
+            background-color: #f4f6f8;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* BARRA SUPERIOR FIJA */
+        .sima-topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 1000;
+        }
+        .sima-topbar .inst-title {
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+        .sima-topbar .inst-sub {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        /* BARRA LATERAL INSTITUCIONAL */
+        .sima-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+            z-index: 1010;
+            box-shadow: 2px 0 6px rgba(0,0,0,0.12);
+        }
+        .sima-sidebar .menu-tag {
+            color: #a3e9c0;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+        .sima-nav-item {
+            width: calc(100% - 16px);
+            height: 52px;
+            margin: 4px 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.25s ease-in-out;
+        }
+        .sima-nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--secondary-color) !important;
+            transform: translateX(4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .sima-nav-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid var(--secondary-color);
+            color: #ffffff;
+        }
+
+        /* CONTENEDOR PRINCIPAL FLUIDO */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            padding: 86px 36px 48px 36px;
+            max-width: 1750px;
+        }
+
+        /* PERFIL DE USUARIO CONSULTADO */
+        .profile-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px 24px;
+            border: 1px solid #edf2f7;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 102, 51, 0.1);
+            border-color: #a5d6a7;
+        }
+
+        /* PESTAÑAS */
+        .nav-tabs .nav-link {
+            color: #555;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: 700;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background-color: transparent;
+        }
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        .tab-content > .active {
+            display: block;
+            animation: fadeInTab 0.2s ease-in-out;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* TABLA CON FILAS BURBUJA SEPARADAS */
+        .table-cards-container {
+            max-height: 580px;
+            overflow-y: auto;
+            overflow-x: hidden !important;
+            padding: 8px 16px 16px 16px;
+        }
+        .table-cards-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-cards-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .table-custom-cards {
+            border-collapse: separate !important;
+            border-spacing: 0 10px !important;
+            width: 100% !important;
+            margin-top: -6px;
+            margin-bottom: 0 !important;
+        }
+        .table-custom-cards thead th {
+            border: none !important;
+            background: transparent !important;
+            color: #6c757d;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 14px 2px 14px;
+        }
+        .table-custom-cards tbody tr {
+            background-color: #ffffff !important;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.22s ease, box-shadow 0.22s ease !important;
+            position: relative;
+        }
+        .table-custom-cards tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0, 102, 51, 0.14) !important;
+        }
+        .table-custom-cards tbody td {
+            background-color: #ffffff !important;
+            padding: 14px 16px;
+            border-top: 1px solid #edf2f7 !important;
+            border-bottom: 1px solid #edf2f7 !important;
+            border-left: none !important;
+            border-right: none !important;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .table-custom-cards tbody td:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            border-left: 5px solid #6c757d !important;
+        }
+        .table-custom-cards tbody td:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            border-right: 1px solid #edf2f7 !important;
+            padding-right: 18px !important;
+        }
+
+        /* BORDES LATERALES SEGÚN ESTADO */
+        .table-custom-cards tbody tr[data-estado="aprobado"] td:first-child {
+            border-left: 5px solid #198754 !important;
+        }
+        .table-custom-cards tbody tr[data-estado="pendiente"] td:first-child {
+            border-left: 5px solid #ffc107 !important;
+        }
+        .table-custom-cards tbody tr[data-estado="rechazado"] td:first-child {
+            border-left: 5px solid #dc3545 !important;
+        }
+
+        /* BOTONES DE ACCIÓN CIRCULARES (SIN DESBORDE) */
+        .btn-action-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            margin: 0 3px;
+            flex-shrink: 0;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-action-circle:hover {
+            transform: scale(1.12);
+        }
+
+        /* TARJETAS BURBUJA (CUADRÍCULA) */
+        .doc-card-bubble {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-left: 5px solid #6c757d;
+            border-radius: 12px;
+            padding: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .doc-card-item[data-estado="aprobado"] .doc-card-bubble { border-left: 5px solid #198754; }
+        .doc-card-item[data-estado="pendiente"] .doc-card-bubble { border-left: 5px solid #ffc107; }
+        .doc-card-item[data-estado="rechazado"] .doc-card-bubble { border-left: 5px solid #dc3545; }
+        .doc-card-bubble:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 102, 51, 0.15);
+            border-color: #a5d6a7;
+        }
+        .bubble-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .bubble-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .bubble-title {
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: #212529;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* MODAL 3 PESTAÑAS Y PREVIEWS */
+        .doc-card-grid {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .doc-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #212529;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .doc-snippet {
+            font-size: 0.78rem;
+            color: #6c757d;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .pdf-preview-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            height: 165px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+        .pdf-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        .modal-pdf-preview {
+            background: #fdfdfd;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            height: 520px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .modal-pdf-canvas {
+            max-width: 92%;
+            max-height: 92%;
+            object-fit: contain;
+            display: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+        .modal-info-scroll {
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .modal-info-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-info-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <!-- BARRA LATERAL INSTITUCIONAL -->
+    <aside class="sima-sidebar">
+        <div class="menu-tag">MENÚ</div>
+        <a href="/" class="sima-nav-item" title="Inicio / Catálogo"><i class="fas fa-home"></i></a>
+        <a href="{% url 'mi_panel' %}" class="sima-nav-item" title="Mi Panel / Mi Semblanza"><i class="fas fa-user-circle"></i></a>
+        <a href="{% url 'directorio_profesores' %}" class="sima-nav-item" title="Directorio de Profesores FCA"><i class="fas fa-chalkboard-teacher"></i></a>
+        <a href="{% url 'universidades_colaboradoras' %}" class="sima-nav-item" title="Red de Universidades Colaboradoras"><i class="fas fa-globe-americas"></i></a>
+        <a href="{% url 'upload_document' %}" class="sima-nav-item" title="Subir Publicación"><i class="fas fa-cloud-upload-alt"></i></a>
+        <a href="{% url 'panel_usuarios' %}" class="sima-nav-item active" title="Moderación y Gestión de Usuarios"><i class="fas fa-tasks"></i></a>
+
+        <div class="mt-auto mb-3 w-100">
+            <a href="{% url 'logout' %}" class="sima-nav-item text-danger" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+        </div>
+    </aside>
+
+    <!-- BARRA SUPERIOR FIJA -->
+    <header class="sima-topbar">
+        <div>
+            <div class="inst-title">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</div>
+            <div class="inst-sub">Historial de Obras y Contribuciones Académicas</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'panel_usuarios' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Panel
+            </a>
+            <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fas fa-home me-1"></i>Inicio
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR FLUIDO -->
+    <main class="main-wrapper">
+        <!-- FICHA RESUMEN DEL USUARIO -->
+        <div class="profile-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 70px; height: 70px; font-size: 2rem; flex-shrink: 0;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center mb-1 flex-wrap gap-2">
+                            <h4 class="mb-0 fw-bold text-dark">{{ usuario_consultado.username }}</h4>
+                            {% if usuario_consultado.autor and usuario_consultado.autor.es_externo %}
+                                <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                            {% elif usuario_consultado.autor and usuario_consultado.autor.es_profesor %}
+                                <span class="badge bg-success rounded-pill px-3"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
+                            {% elif usuario_consultado.is_superuser %}
+                                <span class="badge bg-primary rounded-pill px-3"><i class="fas fa-shield-alt me-1"></i>Superusuario</span>
+                            {% else %}
+                                <span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-user-tie me-1"></i>Administrativo</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-0">
+                            <strong class="text-dark">Nombre:</strong> {{ usuario_consultado.autor.nombre|default:usuario_consultado.get_full_name|default:"No especificado" }} &bull;
+                            <strong class="text-dark">Correo:</strong> {{ usuario_consultado.email }} &bull;
+                            <strong class="text-dark">Adscripción:</strong> {{ usuario_consultado.autor.institucion_origen|default:"UABC" }} &bull;
+                            <strong class="text-dark">Registro:</strong> {{ usuario_consultado.date_joined|date:"d/m/Y" }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <div class="stat-box text-center shadow-sm">
+                        <span class="fs-4 fw-bold text-primary">{{ total_cargados }}</span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.75rem;">Cargados al Sistema</div>
+                    </div>
+                    <div class="stat-box text-center shadow-sm">
+                        <span class="fs-4 fw-bold text-success">{{ total_autor }}</span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.75rem;">Autor / Coautor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑAS DE NAVEGACIÓN -->
+        <ul class="nav nav-tabs mb-4 border-bottom-0" id="historialTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold px-4 py-2 rounded-top bg-white border border-bottom-0 me-2 shadow-sm" id="cargados-tab" data-bs-toggle="tab" data-bs-target="#cargados" type="button" role="tab">
+                    <i class="fas fa-upload me-2 text-primary"></i>Cargados por esta cuenta
+                    <span class="badge bg-primary ms-1">{{ total_cargados }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-4 py-2 rounded-top bg-white border border-bottom-0 shadow-sm" id="autor-tab" data-bs-toggle="tab" data-bs-target="#autor" type="button" role="tab">
+                    <i class="fas fa-feather-alt me-2 text-success"></i>Obras como Autor / Coautor
+                    <span class="badge bg-success ms-1">{{ total_autor }}</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="historialTabsContent">
+
+            <!-- PESTAÑA 1: CARGADOS POR ESTA CUENTA -->
+            <div class="tab-pane fade show active" id="cargados" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <div class="row align-items-center g-2">
+                            <div class="col-lg-5 col-md-5">
+                                <h6 class="mb-0 fw-bold text-primary">
+                                    <i class="fas fa-file-upload me-2"></i>Documentos cargados físicamente desde esta cuenta
+                                </h6>
+                            </div>
+                            <div class="col-lg-7 col-md-7 text-lg-end">
+                                <div class="input-group input-group-sm d-inline-flex w-auto me-2 align-middle">
+                                    <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" id="searchCargados" class="form-control" placeholder="Buscar título o área..." style="max-width: 190px;">
+                                </div>
+                                <div class="btn-group btn-group-sm filter-cargados-group me-2" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-estado="all">Todos</button>
+                                    <button type="button" class="btn btn-outline-success" data-estado="aprobado">Aprobados</button>
+                                    <button type="button" class="btn btn-outline-warning text-dark" data-estado="pendiente">En Espera</button>
+                                    <button type="button" class="btn btn-outline-danger" data-estado="rechazado">Rechazados</button>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" id="btn-view-table-cargados" class="btn btn-outline-secondary active" title="Vista en Lista / Burbujas">
+                                        <i class="fas fa-bars"></i>
+                                    </button>
+                                    <button type="button" id="btn-view-grid-cargados" class="btn btn-outline-secondary" title="Vista en Tarjetas">
+                                        <i class="fas fa-th-large"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if cargados_por_cuenta %}
+                        <div class="table-cards-container" id="view-table-cargados-container">
+                            <table class="table-custom-cards">
+                                <colgroup>
+                                    <col style="width: auto;">
+                                    <col style="width: 260px;">
+                                    <col style="width: 190px;">
+                                    <col style="width: 100px;">
+                                    <col style="width: 130px;">
+                                    <col style="width: 200px;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th class="ps-3">Título de la Obra</th>
+                                        <th>Autores Acreditados</th>
+                                        <th>Tipo / Área</th>
+                                        <th>Año</th>
+                                        <th class="text-center">Estado</th>
+                                        <th class="text-center pe-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in cargados_por_cuenta %}
+                                    <tr class="doc-row-cargados" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
+                                        <td class="ps-3">
+                                            <strong class="text-dark fs-6">{{ doc.titulo }}</strong><br>
+                                            <small class="text-muted"><i class="far fa-clock me-1"></i>Carga: {{ doc.created_at|date:"d/m/Y H:i" }}</small>
+                                            {% if doc.pdf %}
+                                                <br><a href="{{ doc.pdf.url }}" target="_blank" class="small text-danger text-decoration-none fw-bold mt-1 d-inline-block">
+                                                    <i class="fas fa-file-pdf me-1"></i>Ver Archivo PDF
+                                                </a>
+                                            {% endif %}
+                                            {% if doc.estado == 'rechazado' and doc.motivo_rechazo %}
+                                                <div class="alert alert-danger py-2 px-3 mt-2 mb-0 small rounded-3" style="max-height: 110px; overflow-y: auto; word-break: break-word;">
+                                                    <strong>Observaciones:</strong> {{ doc.motivo_rechazo|linebreaksbr }}
+                                                    {% if doc.moderado_por %}
+                                                        <br><span class="text-muted fst-italic">Rechazado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong></span>
+                                                    {% endif %}
+                                                </div>
+                                            {% elif doc.estado == 'aprobado' and doc.moderado_por %}
+                                                <br><small class="text-success fst-italic">Aprobado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong></small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for a in doc.autor.all %}
+                                                    <span class="badge bg-light text-dark border px-2 py-1">{{ a.nombre }}</span>
+                                                {% empty %}
+                                                    <span class="text-muted small">Sin autor asignado</span>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-secondary">{{ doc.tipo_contenido.nombre }}</span><br>
+                                            <small class="text-muted">{{ doc.area.nombre }}</small>
+                                        </td>
+                                        <td class="text-muted fw-bold">{{ doc.año_produccion }}</td>
+                                        <td class="text-center">
+                                            {% if doc.estado == 'aprobado' %}
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Aprobado</span>
+                                            {% elif doc.estado == 'rechazado' %}
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Rechazado</span>
+                                            {% else %}
+                                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-3 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Espera</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center pe-3 text-nowrap">
+                                            <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
+                                                    data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                    data-titulo="{{ doc.titulo }}"
+                                                    data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                    data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                    data-area="{{ doc.area.nombre }}"
+                                                    data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                    data-anio="{{ doc.año_produccion }}"
+                                                    data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                    data-revista="{{ doc.revista|default:'N/A' }}"
+                                                    data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                    data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                    data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                    data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                    data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                    data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                    data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                    data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                    data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
+                                                    data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}"
+                                                    title="Previsualizar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{% url 'editar_documento' doc.id %}" class="btn btn-outline-primary btn-action-circle me-1" title="Editar Metadatos">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-action-circle"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEliminarDoc"
+                                                    data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}"
+                                                    title="Eliminar Obra">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- VISTA CUADRÍCULA -->
+                        <div class="p-3" id="view-grid-cargados-container" style="display: none; max-height: 580px; overflow-y: auto;">
+                            <div class="row g-3">
+                                {% for doc in cargados_por_cuenta %}
+                                <div class="col-xxl-3 col-xl-4 col-md-6 doc-card-cargados" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
+                                    <div class="doc-card-bubble">
+                                        <div>
+                                            <div class="bubble-header">
+                                                <div class="bubble-icon">
+                                                    <i class="fas fa-book-reader"></i>
+                                                </div>
+                                                <div>
+                                                    {% if doc.estado == 'aprobado' %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">Aprobado</span>
+                                                    {% elif doc.estado == 'rechazado' %}
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill">Rechazado</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 rounded-pill">En Espera</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="bubble-title" title="{{ doc.titulo }}">{{ doc.titulo }}</div>
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="fas fa-tag me-1 text-success"></i>{{ doc.tipo_contenido.nombre }} ({{ doc.año_produccion }})
+                                            </small>
+                                            <small class="text-muted d-block mb-2 text-truncate">
+                                                <i class="fas fa-user-edit me-1"></i>{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autor{% endfor %}
+                                            </small>
+                                        </div>
+                                        <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">{{ doc.created_at|date:"d/m/y" }}</small>
+                                            <div class="d-flex align-items-center">
+                                                <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                        data-titulo="{{ doc.titulo }}"
+                                                        data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                        data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                        data-area="{{ doc.area.nombre }}"
+                                                        data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                        data-anio="{{ doc.año_produccion }}"
+                                                        data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                        data-revista="{{ doc.revista|default:'N/A' }}"
+                                                        data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                        data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                        data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                        data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                        data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                        data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                        data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                        data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
+                                                        data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Vista Previa">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a href="{% url 'editar_documento' doc.id %}" class="btn btn-outline-primary btn-action-circle me-1" title="Editar">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-action-circle" data-bs-toggle="modal" data-bs-target="#modalEliminarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Eliminar">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div id="no-cargados-results" class="text-center py-5 text-muted" style="display: none;">
+                            <i class="fas fa-search fa-2x mb-2 text-secondary"></i>
+                            <p class="mb-0">No se encontraron obras cargadas con ese criterio.</p>
+                        </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-secondary opacity-50"></i>
+                                <p class="mb-0">Este usuario no ha cargado directamente ningún documento desde su sesión.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 2: OBRAS COMO AUTOR / COAUTOR (CON FILTRO DE PROCEDENCIA Y BUSCADOR) -->
+            <div class="tab-pane fade" id="autor" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <div class="row align-items-center g-2">
+                            <div class="col-lg-4 col-md-5">
+                                <h6 class="mb-0 fw-bold text-success">
+                                    <i class="fas fa-user-graduate me-2"></i>Obras donde figura acreditado como Autor o Coautor
+                                </h6>
+                            </div>
+                            <div class="col-lg-8 col-md-7 text-lg-end">
+                                <!-- BOTONES DE FILTRO DE PROCEDENCIA -->
+                                <div class="btn-group btn-group-sm filter-coautor-group me-2 mb-1 mb-md-0" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-origen="all">
+                                        Todas (<span id="count-coautor-all">0</span>)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" data-origen="otro">
+                                        <i class="fas fa-users me-1"></i>Subidas por otros (<span id="count-coautor-otros">0</span>)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" data-origen="propia">
+                                        <i class="fas fa-user-check me-1"></i>Subidas por él (<span id="count-coautor-propias">0</span>)
+                                    </button>
+                                </div>
+
+                                <div class="input-group input-group-sm d-inline-flex w-auto me-2 align-middle">
+                                    <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" id="searchCoautor" class="form-control" placeholder="Buscar título o tipo..." style="max-width: 175px;">
+                                </div>
+
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" id="btn-view-table-coautor" class="btn btn-outline-secondary active" title="Vista en Lista / Burbujas">
+                                        <i class="fas fa-bars"></i>
+                                    </button>
+                                    <button type="button" id="btn-view-grid-coautor" class="btn btn-outline-secondary" title="Vista en Tarjetas">
+                                        <i class="fas fa-th-large"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if asociados_como_autor %}
+                        <div class="table-cards-container" id="view-table-coautor-container">
+                            <table class="table-custom-cards">
+                                <colgroup>
+                                    <col style="width: auto;">
+                                    <col style="width: 260px;">
+                                    <col style="width: 190px;">
+                                    <col style="width: 100px;">
+                                    <col style="width: 130px;">
+                                    <col style="width: 200px;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th class="ps-3">Título de la Obra</th>
+                                        <th>Cargado al Sistema por</th>
+                                        <th>Tipo / Área</th>
+                                        <th>Año</th>
+                                        <th class="text-center">Estado</th>
+                                        <th class="text-center pe-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in asociados_como_autor %}
+                                    <tr class="doc-row-coautor"
+                                        data-estado="{{ doc.estado }}"
+                                        data-origen="{% if doc.subido_por == usuario_consultado %}propia{% else %}otro{% endif %}"
+                                        data-search="{{ doc.titulo|lower }} {{ doc.subido_por.username|default:''|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
+                                        <td class="ps-3">
+                                            <strong class="text-dark fs-6">{{ doc.titulo }}</strong><br>
+                                            <small class="text-muted"><i class="far fa-clock me-1"></i>Carga: {{ doc.created_at|date:"d/m/Y H:i" }}</small>
+                                            {% if doc.pdf %}
+                                                <br><a href="{{ doc.pdf.url }}" target="_blank" class="small text-danger text-decoration-none fw-bold mt-1 d-inline-block">
+                                                    <i class="fas fa-file-pdf me-1"></i>Abrir Archivo PDF
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if doc.subido_por == usuario_consultado %}
+                                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1 rounded-pill mb-1">
+                                                    <i class="fas fa-user-check me-1"></i>Subida por él mismo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill mb-1">
+                                                    <i class="fas fa-users me-1"></i>Coautor / Otro usuario
+                                                </span>
+                                            {% endif %}
+                                            <br>
+                                            <strong class="text-dark">{{ doc.subido_por.autor.nombre|default:doc.subido_por.get_full_name|default:doc.subido_por.username|default:"Admin / Inicial" }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-secondary">{{ doc.tipo_contenido.nombre }}</span><br>
+                                            <small class="text-muted">{{ doc.area.nombre }}</small>
+                                        </td>
+                                        <td class="text-muted fw-bold">{{ doc.año_produccion }}</td>
+                                        <td class="text-center">
+                                            {% if doc.estado == 'aprobado' %}
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Aprobado</span>
+                                            {% elif doc.estado == 'rechazado' %}
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Rechazado</span>
+                                            {% else %}
+                                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-3 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Espera</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center pe-3 text-nowrap">
+                                            <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
+                                                    data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                    data-titulo="{{ doc.titulo }}"
+                                                    data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                    data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                    data-area="{{ doc.area.nombre }}"
+                                                    data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                    data-anio="{{ doc.año_produccion }}"
+                                                    data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                    data-revista="{{ doc.revista|default:'N/A' }}"
+                                                    data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                    data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                    data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                    data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                    data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                    data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                    data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                    data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                    data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
+                                                    data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Previsualizar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{% url 'editar_documento' doc.id %}" class="btn btn-outline-primary btn-action-circle me-1" title="Editar Metadatos">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-action-circle"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEliminarDoc"
+                                                    data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}"
+                                                    title="Eliminar Obra">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- VISTA CUADRÍCULA COAUTORÍAS -->
+                        <div class="p-3" id="view-grid-coautor-container" style="display: none; max-height: 580px; overflow-y: auto;">
+                            <div class="row g-3">
+                                {% for doc in asociados_como_autor %}
+                                <div class="col-xxl-3 col-xl-4 col-md-6 doc-card-coautor"
+                                     data-estado="{{ doc.estado }}"
+                                     data-origen="{% if doc.subido_por == usuario_consultado %}propia{% else %}otro{% endif %}"
+                                     data-search="{{ doc.titulo|lower }} {{ doc.subido_por.username|default:''|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
+                                    <div class="doc-card-bubble">
+                                        <div>
+                                            <div class="bubble-header">
+                                                <div class="bubble-icon">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <div>
+                                                    {% if doc.subido_por == usuario_consultado %}
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1 rounded-pill">Subida por él</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">Coautor / Otro</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="bubble-title" title="{{ doc.titulo }}">{{ doc.titulo }}</div>
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="fas fa-tag me-1 text-success"></i>{{ doc.tipo_contenido.nombre }} ({{ doc.año_produccion }})
+                                            </small>
+                                            <small class="text-muted d-block mb-2 text-truncate">
+                                                <i class="fas fa-user-shield me-1"></i>Cargado por: {{ doc.subido_por.autor.nombre|default:doc.subido_por.get_full_name|default:doc.subido_por.username|default:"Admin" }}
+                                            </small>
+                                        </div>
+                                        <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Año: {{ doc.año_produccion }}</small>
+                                            <div class="d-flex align-items-center">
+                                                <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                        data-titulo="{{ doc.titulo }}"
+                                                        data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                        data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                        data-area="{{ doc.area.nombre }}"
+                                                        data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                        data-anio="{{ doc.año_produccion }}"
+                                                        data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                        data-revista="{{ doc.revista|default:'N/A' }}"
+                                                        data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                        data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                        data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                        data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                        data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                        data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                        data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                        data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
+                                                        data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Vista Previa">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a href="{% url 'editar_documento' doc.id %}" class="btn btn-outline-primary btn-action-circle me-1" title="Editar">
+                                                    <i class="fas fa-pencil-alt"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-action-circle" data-bs-toggle="modal" data-bs-target="#modalEliminarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Eliminar">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div id="no-coautor-results" class="text-center py-5 text-muted" style="display: none;">
+                            <i class="fas fa-search fa-2x mb-2 text-secondary"></i>
+                            <p class="mb-0">No se encontraron obras acreditadas con ese criterio de filtro.</p>
+                        </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-user-edit fa-3x mb-3 text-secondary opacity-50"></i>
+                                <p class="mb-0">Este usuario no figura asignado como autor o coautor en ninguna publicación.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ================= MODAL ELIMINAR DOCUMENTO ELEGANTE ================= -->
+    <div class="modal fade" id="modalEliminarDoc" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-danger text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> Eliminar Publicación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3 text-danger">
+                        <i class="fas fa-trash-alt fa-3x"></i>
+                    </div>
+                    <p class="text-muted mb-2">¿Estás seguro de eliminar permanentemente la obra:</p>
+                    <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="eliminarTituloModal">Nombre de la Obra</h6>
+                    <p class="small text-danger mb-0">Esta acción no se puede deshacer y removerá el acceso al archivo PDF asociado.</p>
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="#" id="btnConfirmarEliminarDoc" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL VISTA PREVIA CON LAS 3 PESTAÑAS (DINÁMICO PARA LOS 6 TIPOS) ================= -->
+    <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-success text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-book-open me-2"></i>Previsualización de Publicación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <!-- NAVEGACIÓN DE 3 PESTAÑAS -->
+                    <ul class="nav nav-pills justify-content-center mb-4 bg-white p-2 rounded border shadow-sm" id="pills-tab-doc" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold small me-2" id="pills-ficha-tab" data-bs-toggle="pill" data-bs-target="#pills-ficha" type="button" role="tab">
+                                <i class="fas fa-book-open me-1"></i> Ficha Académica Detallada
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold small me-2" id="pills-credencial-tab" data-bs-toggle="pill" data-bs-target="#pills-credencial" type="button" role="tab">
+                                <i class="fas fa-id-badge me-1"></i> Credencial Pública
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold small" id="pills-publico-tab" data-bs-toggle="pill" data-bs-target="#pills-publico" type="button" role="tab">
+                                <i class="fas fa-globe me-1"></i> Ficha Académica Pública
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent-doc">
+                        <!-- PESTAÑA 1 -->
+                        <div class="tab-pane fade show active" id="pills-ficha" role="tabpanel">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll">
+                                <h4 class="fw-bold text-dark mb-3" id="detTitulo"></h4>
+                                <div class="mb-3">
+                                    <span class="badge bg-success me-1" id="detTipo"></span>
+                                    <span class="badge bg-primary me-1" id="detArea"></span>
+                                    <span class="badge bg-secondary me-1" id="detEntidad"></span>
+                                    <span class="badge bg-dark" id="detAnio"></span>
+                                </div>
+                                <div class="card bg-light border-0 p-3 mb-3 small rounded-3">
+                                    <div class="mb-2"><strong>Autores:</strong> <span id="detAutores"></span></div>
+                                    <div class="mb-2"><strong>Idioma:</strong> <span id="detIdioma"></span></div>
+                                    <!-- CONTENEDOR DINÁMICO DE DATOS ESPECÍFICOS -->
+                                    <div id="detCamposEspecificos"></div>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-2">Resumen / Descripción:</h6>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <p class="text-muted mb-0" id="detDescripcion" style="white-space: pre-line; line-height: 1.6;"></p>
+                                </div>
+                                <div id="detPdfContainer" class="mt-3 text-center" style="display: none;">
+                                    <a href="#" id="detPdfLink" target="_blank" class="btn btn-outline-danger rounded-pill px-4">
+                                        <i class="fas fa-file-pdf me-2"></i>Abrir Documento PDF Completo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 2 -->
+                        <div class="tab-pane fade" id="pills-credencial" role="tabpanel">
+                            <div class="doc-card-grid mx-auto my-3 rounded-4 shadow-sm" style="max-width: 450px; cursor: default;">
+                                <div>
+                                    <div class="row g-2 align-items-center mb-2">
+                                        <div class="col-5">
+                                            <div class="pdf-preview-box shadow-sm" id="modalCardPdfBox">
+                                                <canvas class="pdf-canvas" id="modalCardCanvas"></canvas>
+                                                <div class="pdf-loading text-danger text-center p-1" id="modalCardLoading">
+                                                    <i class="fas fa-file-pdf fa-2x"></i>
+                                                    <span class="d-block" style="font-size: 0.65rem;">Cargando...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-1 py-0 rounded-pill" style="font-size: 0.6rem;" id="credCardTipo">Tipo</span>
+                                                <span class="text-muted small" style="font-size: 0.65rem;"><i class="far fa-calendar-alt me-1"></i><span id="credCardAnio">2026</span></span>
+                                            </div>
+                                            <h6 class="doc-title" id="credCardTitulo">Título de la obra</h6>
+                                        </div>
+                                    </div>
+                                    <p class="doc-snippet" id="credCardSnippet">Descripción...</p>
+                                </div>
+                                <div>
+                                    <div class="text-muted small mb-2 border-top pt-2 text-truncate" style="font-size: 0.72rem;" id="credCardAutores">
+                                        <i class="fas fa-user-edit me-1 text-success"></i> Autores...
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center gap-1">
+                                        <span class="btn btn-outline-success btn-sm fw-bold py-0 px-2 rounded-pill" style="font-size: 0.72rem;" data-bs-toggle="pill" data-bs-target="#pills-publico" role="button">Ver más</span>
+                                        <a href="#" id="credCardPdfBtn" target="_blank" class="btn btn-success btn-sm fw-bold py-0 px-2 rounded-pill" style="font-size: 0.72rem; display: none;">
+                                            PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 3: FICHA ACADÉMICA PÚBLICA (CON RESUMEN DESTACADO Y ALTURA AMPLIADA) -->
+                        <div class="tab-pane fade" id="pills-publico" role="tabpanel">
+                            <div class="row g-4 align-items-start">
+                                <div class="col-lg-5 d-flex flex-column">
+                                    <div class="modal-pdf-preview mb-3">
+                                        <canvas class="modal-pdf-canvas" id="modalPublicoPdfCanvas"></canvas>
+                                        <div class="modal-pdf-loading text-danger text-center p-3" id="modalPublicoPdfLoading">
+                                            <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                            <span class="d-block small">Cargando vista previa...</span>
+                                        </div>
+                                    </div>
+                                    <div id="modalPublicoPdfWrapper" class="mt-2" style="display: none;">
+                                        <a href="#" id="modalPublicoPdfLink" target="_blank" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill">
+                                            <i class="fas fa-file-pdf me-2"></i>Abrir Documento PDF Completo
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll">
+                                        <h4 class="fw-bold text-dark mb-3 pt-1" id="modalPublicoTituloObra" style="line-height: 1.35;"></h4>
+                                        <div class="mb-3 d-flex flex-wrap gap-1">
+                                            <span class="badge bg-success" id="modalPublicoTipoObra"></span>
+                                            <span class="badge bg-primary" id="modalPublicoAreaObra"></span>
+                                            <span class="badge bg-secondary" id="modalPublicoEntidadObra"></span>
+                                            <span class="badge bg-dark" id="modalPublicoAnioObra"></span>
+                                        </div>
+                                        <div class="card bg-light border-0 p-3 mb-3 small rounded-3">
+                                            <div class="mb-2"><strong><i class="fas fa-users me-1 text-success"></i>Autores Acreditados:</strong> <span id="modalPublicoAutoresObra"></span></div>
+                                            <div class="mb-2"><strong><i class="fas fa-language me-1 text-success"></i>Idioma:</strong> <span id="modalPublicoIdiomaObra"></span></div>
+                                            <!-- CONTENEDOR DINÁMICO PÚBLICO -->
+                                            <div id="modalPublicoCamposEspecificos"></div>
+                                        </div>
+                                        <h6 class="fw-bold text-success mb-2"><i class="fas fa-align-left me-1"></i>Resumen / Descripción Detallada:</h6>
+                                        <div class="p-3 bg-light rounded-3 border">
+                                            <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6;" id="modalPublicoDescripcionObra"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0 py-3">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS Y LIBRERÍA PDF.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. FILTRADO Y BÚSQUEDA PARA "CARGADOS POR ESTA CUENTA"
+            const searchInputCargados = document.getElementById('searchCargados');
+            const filterCargadosBtns = document.querySelectorAll('.filter-cargados-group button');
+            const docRowsCargados = document.querySelectorAll('.doc-row-cargados');
+            const docCardsCargados = document.querySelectorAll('.doc-card-cargados');
+            const noCargadosResults = document.getElementById('no-cargados-results');
+            let estadoCargadosActual = 'all';
+
+            function aplicarFiltrosCargados() {
+                const query = searchInputCargados ? searchInputCargados.value.toLowerCase().trim() : '';
+                let visibles = 0;
+
+                docRowsCargados.forEach(row => {
+                    const rowEstado = row.getAttribute('data-estado');
+                    const rowSearch = (row.getAttribute('data-search') || '').toLowerCase();
+                    const coincideEstado = (estadoCargadosActual === 'all' || rowEstado === estadoCargadosActual);
+                    const coincideTexto = !query || rowSearch.includes(query);
+
+                    if (coincideEstado && coincideTexto) {
+                        row.style.display = '';
+                        visibles++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                docCardsCargados.forEach(card => {
+                    const cardEstado = card.getAttribute('data-estado');
+                    const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
+                    const coincideEstado = (estadoCargadosActual === 'all' || cardEstado === estadoCargadosActual);
+                    const coincideTexto = !query || cardSearch.includes(query);
+                    card.style.display = (coincideEstado && coincideTexto) ? '' : 'none';
+                });
+
+                if (noCargadosResults) {
+                    noCargadosResults.style.display = visibles === 0 ? 'block' : 'none';
+                }
+            }
+
+            if (searchInputCargados) {
+                searchInputCargados.addEventListener('input', aplicarFiltrosCargados);
+                searchInputCargados.addEventListener('keyup', aplicarFiltrosCargados);
+            }
+
+            filterCargadosBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterCargadosBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    estadoCargadosActual = this.getAttribute('data-estado');
+                    aplicarFiltrosCargados();
+                });
+            });
+
+            // VISTAS TABLA / TARJETAS: CARGADOS
+            const btnViewTableCargados = document.getElementById('btn-view-table-cargados');
+            const btnViewGridCargados = document.getElementById('btn-view-grid-cargados');
+            const viewTableCargadosContainer = document.getElementById('view-table-cargados-container');
+            const viewGridCargadosContainer = document.getElementById('view-grid-cargados-container');
+
+            if (btnViewTableCargados && btnViewGridCargados && viewTableCargadosContainer && viewGridCargadosContainer) {
+                btnViewTableCargados.addEventListener('click', function() {
+                    this.classList.add('active');
+                    btnViewGridCargados.classList.remove('active');
+                    viewTableCargadosContainer.style.display = '';
+                    viewGridCargadosContainer.style.display = 'none';
+                });
+
+                btnViewGridCargados.addEventListener('click', function() {
+                    this.classList.add('active');
+                    btnViewTableCargados.classList.remove('active');
+                    viewTableCargadosContainer.style.display = 'none';
+                    viewGridCargadosContainer.style.display = '';
+                });
+            }
+
+            // 2. FILTRADO, BÚSQUEDA Y CONTADORES DINÁMICOS PARA "COAUTORÍAS"
+            const searchInputCoautor = document.getElementById('searchCoautor');
+            const filterCoautorBtns = document.querySelectorAll('.filter-coautor-group button');
+            const docRowsCoautor = document.querySelectorAll('.doc-row-coautor');
+            const docCardsCoautor = document.querySelectorAll('.doc-card-coautor');
+            const noCoautorResults = document.getElementById('no-coautor-results');
+            let origenCoautorActual = 'all';
+
+            // Contar procedencia inicial de obras asociadas
+            let cOtros = 0, cPropias = 0;
+            docRowsCoautor.forEach(r => {
+                if (r.getAttribute('data-origen') === 'otro') cOtros++;
+                else if (r.getAttribute('data-origen') === 'propia') cPropias++;
+            });
+            if (document.getElementById('count-coautor-all')) document.getElementById('count-coautor-all').textContent = docRowsCoautor.length;
+            if (document.getElementById('count-coautor-otros')) document.getElementById('count-coautor-otros').textContent = cOtros;
+            if (document.getElementById('count-coautor-propias')) document.getElementById('count-coautor-propias').textContent = cPropias;
+
+            function aplicarFiltroCoautorias() {
+                const query = searchInputCoautor ? searchInputCoautor.value.toLowerCase().trim() : '';
+                let visibles = 0;
+
+                docRowsCoautor.forEach(row => {
+                    const txt = (row.getAttribute('data-search') || '').toLowerCase();
+                    const origen = row.getAttribute('data-origen');
+                    const coincideOrigen = (origenCoautorActual === 'all' || origen === origenCoautorActual);
+                    const coincideQuery = !query || txt.includes(query);
+
+                    if (coincideOrigen && coincideQuery) {
+                        row.style.display = '';
+                        visibles++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                docCardsCoautor.forEach(card => {
+                    const txt = (card.getAttribute('data-search') || '').toLowerCase();
+                    const origen = card.getAttribute('data-origen');
+                    const coincideOrigen = (origenCoautorActual === 'all' || origen === origenCoautorActual);
+                    const coincideQuery = !query || txt.includes(query);
+
+                    if (coincideOrigen && coincideQuery) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (noCoautorResults) {
+                    noCoautorResults.style.display = visibles === 0 ? 'block' : 'none';
+                }
+            }
+
+            filterCoautorBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterCoautorBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    origenCoautorActual = this.getAttribute('data-origen');
+                    aplicarFiltroCoautorias();
+                });
+            });
+
+            if (searchInputCoautor) {
+                searchInputCoautor.addEventListener('input', aplicarFiltroCoautorias);
+                searchInputCoautor.addEventListener('keyup', aplicarFiltroCoautorias);
+            }
+
+            const btnViewTableCoautor = document.getElementById('btn-view-table-coautor');
+            const btnViewGridCoautor = document.getElementById('btn-view-grid-coautor');
+            const viewTableCoautorContainer = document.getElementById('view-table-coautor-container');
+            const viewGridCoautorContainer = document.getElementById('view-grid-coautor-container');
+
+            if (btnViewTableCoautor && btnViewGridCoautor && viewTableCoautorContainer && viewGridCoautorContainer) {
+                btnViewTableCoautor.addEventListener('click', function() {
+                    this.classList.add('active');
+                    btnViewGridCoautor.classList.remove('active');
+                    viewTableCoautorContainer.style.display = '';
+                    viewGridCoautorContainer.style.display = 'none';
+                });
+
+                btnViewGridCoautor.addEventListener('click', function() {
+                    this.classList.add('active');
+                    btnViewTableCoautor.classList.remove('active');
+                    viewTableCoautorContainer.style.display = 'none';
+                    viewGridCoautorContainer.style.display = '';
+                });
+            }
+
+            // 3. MODAL ELIMINAR DOCUMENTO ELEGANTE
+            const modalEliminarDoc = document.getElementById('modalEliminarDoc');
+            if (modalEliminarDoc) {
+                modalEliminarDoc.addEventListener('show.bs.modal', function(event) {
+                    const btn = event.relatedTarget;
+                    if (!btn) return;
+                    const docId = btn.getAttribute('data-docid');
+                    const titulo = btn.getAttribute('data-doctitulo');
+                    document.getElementById('eliminarTituloModal').textContent = `"${titulo}"`;
+                    document.getElementById('btnConfirmarEliminarDoc').href = `/gestion-documentos/eliminar/${docId}/`;
+                });
+            }
+
+            // 4. MODAL DETALLE DE OBRA CON 3 PESTAÑAS (DINÁMICO SEGÚN TIPO DE RECURSO)
+            const modalDetalle = document.getElementById('modalDetalleObra');
+            if (modalDetalle) {
+                modalDetalle.addEventListener('show.bs.modal', function(event) {
+                    const btn = event.relatedTarget;
+                    if (!btn) return;
+
+                    const titulo = btn.getAttribute('data-titulo') || '';
+                    const autores = btn.getAttribute('data-autores') || 'Sin autores';
+                    const tipo = btn.getAttribute('data-tipo') || '';
+                    const area = btn.getAttribute('data-area') || '';
+                    const entidad = btn.getAttribute('data-entidad') || '';
+                    const anio = btn.getAttribute('data-anio') || '';
+                    const idioma = btn.getAttribute('data-idioma') || 'Español';
+                    const revista = btn.getAttribute('data-revista') || 'N/A';
+                    const isbn = btn.getAttribute('data-isbn') || 'N/A';
+                    const volumen = btn.getAttribute('data-volumen') || 'N/A';
+                    const paginas = btn.getAttribute('data-paginas') || 'N/A';
+                    const doi = btn.getAttribute('data-doi') || 'N/A';
+                    const grado = btn.getAttribute('data-grado') || 'N/A';
+
+                    let rawDirector = btn.getAttribute('data-director') || 'N/A';
+                    let director = 'N/A';
+                    if (rawDirector && rawDirector !== 'N/A') {
+                        director = rawDirector.replace(/\s*\([^)]*\)/g, '').trim();
+                        if (!director) director = 'N/A';
+                    }
+
+                    const programa = btn.getAttribute('data-programa') || 'N/A';
+                    const editorial = btn.getAttribute('data-editorial') || 'N/A';
+                    const descripcion = btn.getAttribute('data-descripcion') || 'Sin resumen disponible.';
+                    const pdfUrl = btn.getAttribute('data-pdf');
+
+                    let htmlEspecificos = '';
+                    const tipoL = tipo.toLowerCase();
+
+                    if (tipoL.includes('tesis')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-graduation-cap me-1 text-success"></i>Grado Académico:</strong> ${grado}</div>
+                            <div class="mb-2"><strong><i class="fas fa-user-tie me-1 text-success"></i>Director / Asesor:</strong> ${director}</div>
+                            <div><strong><i class="fas fa-university me-1 text-success"></i>Programa Educativo:</strong> ${programa}</div>
+                        `;
+                    } else if (tipoL.includes('capítulo') || tipoL.includes('capitulo')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-book me-1 text-success"></i>Obra Colectiva / Libro:</strong> ${revista}</div>
+                            <div class="mb-2"><strong><i class="fas fa-building me-1 text-success"></i>Casa Editorial:</strong> ${editorial}</div>
+                            <div class="mb-2"><strong><i class="fas fa-barcode me-1 text-success"></i>Número ISBN:</strong> ${isbn}</div>
+                            <div class="mb-2"><strong><i class="fas fa-file-alt me-1 text-success"></i>Páginas del Capítulo:</strong> ${paginas}</div>
+                            <div><strong><i class="fas fa-link me-1 text-success"></i>DOI / Enlace:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
+                        `;
+                    } else if (tipoL.includes('libro')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-building me-1 text-success"></i>Editorial:</strong> ${editorial}</div>
+                            <div class="mb-2"><strong><i class="fas fa-barcode me-1 text-success"></i>Número ISBN:</strong> ${isbn}</div>
+                            <div><strong><i class="fas fa-file-alt me-1 text-success"></i>Total de Páginas:</strong> ${paginas}</div>
+                        `;
+                    } else if (tipoL.includes('ponencia') || tipoL.includes('reporte') || tipoL.includes('proyecto')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-microphone-alt me-1 text-success"></i>Congreso / Foro / Institución:</strong> ${revista}</div>
+                            <div><strong><i class="fas fa-link me-1 text-success"></i>Enlace / DOI:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
+                        `;
+                    } else {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-bookmark me-1 text-success"></i>Revista Académica:</strong> ${revista}</div>
+                            <div class="mb-2"><strong><i class="fas fa-barcode me-1 text-success"></i>ISBN / ISSN:</strong> ${isbn}</div>
+                            <div class="mb-2"><strong><i class="fas fa-layer-group me-1 text-success"></i>Volumen / Número:</strong> ${volumen}</div>
+                            <div class="mb-2"><strong><i class="fas fa-file-alt me-1 text-success"></i>Páginas:</strong> ${paginas}</div>
+                            <div><strong><i class="fas fa-link me-1 text-success"></i>DOI / Enlace:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
+                        `;
+                    }
+
+                    document.getElementById('detCamposEspecificos').innerHTML = htmlEspecificos;
+                    document.getElementById('modalPublicoCamposEspecificos').innerHTML = htmlEspecificos;
+
+                    // Pestaña 1: Ficha Académica Detallada
+                    document.getElementById('detTitulo').textContent = titulo;
+                    document.getElementById('detTipo').textContent = tipo;
+                    document.getElementById('detArea').textContent = area;
+                    document.getElementById('detEntidad').textContent = entidad;
+                    document.getElementById('detAnio').textContent = anio;
+                    document.getElementById('detAutores').textContent = autores;
+                    document.getElementById('detIdioma').textContent = idioma;
+                    document.getElementById('detDescripcion').textContent = descripcion;
+
+                    const detPdfContainer = document.getElementById('detPdfContainer');
+                    const detPdfLink = document.getElementById('detPdfLink');
+                    if (pdfUrl && pdfUrl.trim() !== '') {
+                        detPdfContainer.style.display = 'block';
+                        detPdfLink.href = pdfUrl;
+                    } else {
+                        detPdfContainer.style.display = 'none';
+                    }
+
+                    // Pestaña 2: Credencial Pública
+                    document.getElementById('credCardTipo').textContent = tipo;
+                    document.getElementById('credCardAnio').textContent = anio;
+                    document.getElementById('credCardTitulo').textContent = titulo;
+                    document.getElementById('credCardSnippet').textContent = descripcion;
+                    document.getElementById('credCardAutores').innerHTML = `<i class="fas fa-user-edit me-1 text-success"></i> ${autores}`;
+
+                    const cardCanvas = document.getElementById('modalCardCanvas');
+                    const cardLoading = document.getElementById('modalCardLoading');
+                    const cardPdfBtn = document.getElementById('credCardPdfBtn');
+
+                    if (pdfUrl && pdfUrl.trim() !== '') {
+                        cardPdfBtn.style.display = 'inline-block';
+                        cardPdfBtn.href = pdfUrl;
+                        cardLoading.style.display = 'block';
+                        cardCanvas.style.display = 'none';
+
+                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
+                            return pdfDoc.getPage(1);
+                        }).then(function(page) {
+                            const context = cardCanvas.getContext('2d');
+                            const viewport = page.getViewport({ scale: 0.45 });
+                            cardCanvas.height = viewport.height;
+                            cardCanvas.width = viewport.width;
+
+                            page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
+                                cardLoading.style.display = 'none';
+                                cardCanvas.style.display = 'block';
+                            });
+                        }).catch(function() {
+                            cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
+                        });
+                    } else {
+                        cardLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-2x"></i><span class="d-block small text-muted mt-1">Sin PDF</span>';
+                        cardPdfBtn.style.display = 'none';
+                    }
+
+                    // Pestaña 3: Ficha Académica Pública
+                    document.getElementById('modalPublicoTituloObra').textContent = titulo;
+                    document.getElementById('modalPublicoTipoObra').textContent = tipo;
+                    document.getElementById('modalPublicoAreaObra').textContent = area;
+                    document.getElementById('modalPublicoEntidadObra').textContent = entidad;
+                    document.getElementById('modalPublicoAnioObra').textContent = anio;
+                    document.getElementById('modalPublicoAutoresObra').textContent = autores;
+                    document.getElementById('modalPublicoIdiomaObra').textContent = idioma;
+                    document.getElementById('modalPublicoDescripcionObra').textContent = descripcion;
+
+                    const pubPdfWrapper = document.getElementById('modalPublicoPdfWrapper');
+                    const pubPdfLink = document.getElementById('modalPublicoPdfLink');
+                    const pubCanvas = document.getElementById('modalPublicoPdfCanvas');
+                    const pubLoading = document.getElementById('modalPublicoPdfLoading');
+
+                    if (pdfUrl && pdfUrl.trim() !== '') {
+                        pubPdfWrapper.style.display = 'block';
+                        pubPdfLink.href = pdfUrl;
+                        pubLoading.style.display = 'block';
+                        pubCanvas.style.display = 'none';
+
+                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
+                            return pdfDoc.getPage(1);
+                        }).then(function(page) {
+                            const context = pubCanvas.getContext('2d');
+                            const viewport = page.getViewport({ scale: 1.5 });
+                            pubCanvas.height = viewport.height;
+                            pubCanvas.width = viewport.width;
+
+                            page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
+                                pubLoading.style.display = 'none';
+                                pubCanvas.style.display = 'block';
+                            });
+                        }).catch(function() {
+                            pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo cargar la vista previa</span>';
+                        });
+                    } else {
+                        pubPdfWrapper.style.display = 'none';
+                        pubLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin archivo PDF adjunto</span>';
+                        pubLoading.style.display = 'block';
+                        pubCanvas.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

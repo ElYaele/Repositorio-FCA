@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claustro Docente e Investigadores - Repositorio FCA UABC</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- LIBRERÍA PDF.JS PARA RENDERIZADO SIN TRAP DE SCROLL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-gold: #dd971a;
+            --cupcake-pink: #ff4081;
+            --cupcake-pink-dark: #d81b60;
+            --cupcake-cream: #ffe8f2;
+            --liner-cream: #fffdf9;
+            --liner-stripe: #f3dfcb;
+        }
+        body {
+            background-color: #f4f6f8;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border-bottom: 3px solid var(--uabc-green);
+        }
+
+        /* BANNER INSTITUCIONAL */
+        .header-title-box {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            border-radius: 16px;
+            padding: 38px 28px;
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 102, 51, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .header-title-box::after {
+            content: "\f51c";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 25px;
+            bottom: -20px;
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.06);
+            pointer-events: none;
+        }
+
+        /* TARJETA REGULAR */
+        .prof-card {
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid var(--uabc-green);
+            border-radius: 14px;
+            background: #ffffff;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            position: relative;
+            padding: 24px;
+        }
+        .prof-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 26px rgba(0, 102, 51, 0.12);
+            border-color: #a5d6a7;
+            border-top-color: var(--uabc-gold);
+        }
+        .prof-avatar {
+            width: 105px;
+            height: 105px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: top center;
+            border: 3px solid #28a745;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .prof-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 102, 51, 0.25);
+        }
+        .prof-avatar-placeholder {
+            width: 105px;
+            height: 105px;
+            border-radius: 50%;
+            background: #e8f5e9;
+            color: var(--uabc-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            margin: 0 auto;
+            border: 3px solid #c8e6c9;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .prof-avatar-placeholder:hover {
+            transform: scale(1.05);
+        }
+
+        /* =====================================================================
+           TARJETA CON FORMA LITERAL DE CUPCAKE (ESCULTURA CSS PURA)
+           ===================================================================== */
+        .card-birthday-cupcake-wrapper {
+            position: relative;
+            padding-top: 38px;
+            height: 100%;
+        }
+
+        /* 1. LA VELA ENCENDIDA (TOP CENTER) */
+        .cupcake-candle {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 13px;
+            height: 32px;
+            background: repeating-linear-gradient(45deg, #ffd54f, #ffd54f 6px, #ffb300 6px, #ffb300 12px);
+            border-radius: 4px 4px 0 0;
+            z-index: 15;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+        .cupcake-candle::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 6px;
+            background: #212121;
+        }
+        .cupcake-candle::after {
+            content: '';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 18px;
+            background: radial-gradient(ellipse at bottom, #fffde7 0%, #ffeb3b 35%, #ff9800 70%, transparent 100%);
+            border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+            filter: drop-shadow(0 0 10px #ffb300);
+            animation: candleFlameFlicker 1.4s infinite alternate ease-in-out;
+        }
+        @keyframes candleFlameFlicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-2deg); opacity: 0.95; }
+            50% { transform: translateX(-50%) scale(1.12) rotate(2deg); opacity: 1; filter: drop-shadow(0 0 14px #ff9800); }
+            100% { transform: translateX(-50%) scale(0.96) rotate(-1deg); opacity: 0.9; }
+        }
+
+        /* 2. ESTRUCTURA COMPLETA DEL CUPCAKE */
+        .card-birthday-cupcake {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: 0 14px 30px rgba(255, 64, 129, 0.22) !important;
+            border-radius: 65px 65px 22px 22px;
+            overflow: visible !important;
+            transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        }
+        .card-birthday-cupcake:hover {
+            transform: translateY(-8px) scale(1.015) !important;
+            box-shadow: 0 20px 38px rgba(255, 64, 129, 0.32) !important;
+        }
+
+        /* 3. MITAD SUPERIOR: DOMO DE BETÚN ESPONJOSO CON CHISPITAS */
+        .cupcake-frosting-section {
+            background:
+                radial-gradient(circle, #ffeb3b 2.2px, transparent 2.5px) 15px 30px / 65px 65px,
+                radial-gradient(circle, #00e676 2.2px, transparent 2.5px) 45px 50px / 75px 75px,
+                radial-gradient(circle, #00b0ff 2.2px, transparent 2.5px) 25px 85px / 85px 85px,
+                radial-gradient(circle, #ff1744 2.5px, transparent 3px) 65px 20px / 70px 70px,
+                radial-gradient(circle, #d500f9 2px, transparent 2.5px) 80px 70px / 80px 80px,
+                linear-gradient(180deg, #ffc4e1 0%, #ffe3f0 60%, #fff2f8 100%);
+            border: 3px solid #ff80ab;
+            border-bottom: none;
+            border-radius: 65px 65px 0 0;
+            padding: 24px 20px 14px 20px;
+            position: relative;
+            box-shadow: inset 0 4px 10px rgba(255, 255, 255, 0.85);
+        }
+
+        /* ONDULACIÓN DE BETÚN */
+        .cupcake-drip-divider {
+            height: 18px;
+            background: #fff2f8;
+            border-left: 3px solid #ff80ab;
+            border-right: 3px solid #ff80ab;
+            position: relative;
+            z-index: 2;
+            background-image: radial-gradient(circle at 12px 0px, #fff2f8 11px, #ff80ab 12px, transparent 13px);
+            background-size: 24px 24px;
+            background-repeat: repeat-x;
+        }
+
+        /* 4. MITAD INFERIOR: CAPACILLO PLISADO */
+        .cupcake-liner-section {
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 251, 245, 0.96) 100%),
+                repeating-linear-gradient(90deg, var(--liner-cream) 0px, var(--liner-cream) 14px, var(--liner-stripe) 14px, var(--liner-stripe) 18px);
+            border: 3px solid #e0c5aa;
+            border-top: none;
+            border-radius: 0 0 24px 24px;
+            padding: 16px 20px 20px 20px;
+            clip-path: polygon(0% 0%, 100% 0%, 97% 100%, 3% 100%);
+            box-shadow: inset 0 -3px 8px rgba(224, 197, 170, 0.4);
+        }
+
+        .avatar-cupcake {
+            border: 4px solid var(--cupcake-pink) !important;
+            box-shadow: 0 0 16px rgba(255, 64, 129, 0.45), inset 0 0 8px rgba(255, 255, 255, 0.9);
+        }
+
+        .cupcake-badge {
+            background: linear-gradient(135deg, #d81b60, #ff4081);
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(216, 27, 96, 0.35);
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .birthday-btn {
+            background: linear-gradient(135deg, #e91e63, #ff4081);
+            color: #ffffff;
+            border: none;
+            font-weight: 800;
+            border-radius: 50px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .birthday-btn:hover {
+            background: linear-gradient(135deg, #c2185b, #e91e63);
+            color: #ffffff;
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        .filter-tab-btn.active {
+            background-color: var(--uabc-green);
+            color: #fff;
+            border-color: var(--uabc-green);
+        }
+
+        .search-prof-box {
+            background: #ffffff;
+            border-radius: 50px;
+            border: 1px solid #ced4da;
+            padding: 6px 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .search-prof-box:focus-within {
+            border-color: var(--uabc-green);
+            box-shadow: 0 4px 15px rgba(0, 102, 51, 0.15);
+        }
+
+        /* FORMATO ENRIQUECIDO DE SEMBLANZA (ESTILO WORD / QUILL) */
+        .semblanza-html-box h1,
+        .semblanza-html-box h2,
+        .semblanza-html-box h3 {
+            color: var(--uabc-green-dark);
+            font-weight: 700;
+            margin-top: 1.1rem;
+            margin-bottom: 0.55rem;
+        }
+        .semblanza-html-box ul,
+        .semblanza-html-box ol {
+            padding-left: 1.6rem;
+            margin-bottom: 1rem;
+        }
+        .semblanza-html-box p {
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+        .semblanza-html-box p:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid px-lg-5 px-3">
+            <a class="navbar-brand text-success fw-bold d-flex align-items-center" href="/">
+                <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" style="max-height: 44px;" class="me-2">
+                <span>Repositorio FCA</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'universidades_colaboradoras' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="fas fa-globe-americas me-1"></i>Red de Universidades
+                </a>
+                <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-lg-5 px-3 pb-5">
+        <!-- BANNER DE ENCABEZADO -->
+        <div class="header-title-box mb-4">
+            <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold text-uppercase me-2" style="font-size: 0.72rem;">
+                    <i class="fas fa-graduation-cap me-1"></i>Cuerpo Académico
+                </span>
+                <span class="text-white-50 small">&bull; Facultad de Contaduría y Administración</span>
+            </div>
+            <h2 class="fw-bold mb-2">Claustro Docente e Investigadores</h2>
+            <p class="mb-0 text-white-50" style="max-width: 820px; line-height: 1.5;">
+                Conoce a los profesores e investigadores que integran la FCA UABC, sus líneas de investigación, semblanzas detalladas, enlaces profesionales y producción académica publicada.
+            </p>
+        </div>
+
+        {% if messages %}
+            {% for m in messages %}
+                <div class="alert alert-{{ m.tags }} alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                    {{ m }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- PESTAÑAS DE FILTRO Y BUSCADOR RÁPIDO -->
+        <div class="card border-0 shadow-sm p-3 rounded-4 mb-4 bg-white">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="btn-group shadow-sm" role="group">
+                        <button type="button" class="btn btn-outline-success filter-tab-btn active px-4 py-2 fw-bold" id="tabUabc" onclick="filtrarInstitucion('uabc')">
+                            <i class="fas fa-university me-2"></i>Docentes UABC ({{ profesores_uabc|length }})
+                        </button>
+                        <button type="button" class="btn btn-outline-success filter-tab-btn px-4 py-2 fw-bold" id="tabExternos" onclick="filtrarInstitucion('externos')">
+                            <i class="fas fa-globe-americas me-2"></i>Otras Universidades ({{ profesores_externos|length }})
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="search-prof-box d-flex align-items-center">
+                        <i class="fas fa-search text-muted me-2"></i>
+                        <input type="text" id="inputBuscarProfesor" class="form-control border-0 shadow-none p-0" placeholder="Buscar profesor por nombre, cargo o institución...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR PROFESORES UABC (CON SILUETA LITERAL DE CUPCAKE CUANDO ES CUMPLEAÑOS) -->
+        <div id="seccionUabc" class="row g-4 institution-section">
+            {% for prof in profesores_uabc %}
+            <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 prof-item-col" data-search="{{ prof.nombre|lower }} {{ prof.institucion_origen|lower }} {{ prof.get_rol_facultad_display|lower }}">
+                {% if prof.es_cumpleanos_hoy %}
+                    <!-- ENVOLTORIO CON VELA ENCENDIDA Y SILUETA CUPCAKE -->
+                    <div class="card-birthday-cupcake-wrapper">
+                        <div class="cupcake-candle"></div>
+                        <div class="prof-card card-birthday-cupcake">
+                            <!-- DOMO DE BETÚN CON CHISPITAS -->
+                            <div class="cupcake-frosting-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-white text-dark border shadow-sm small">
+                                        <i class="fas fa-university me-1 text-success"></i>{{ prof.institucion_origen|default:"UABC" }}
+                                    </span>
+                                    <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                </div>
+
+                                <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
+                                    {% if prof.foto_perfil %}
+                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake">
+                                    {% else %}
+                                        <div class="prof-avatar-placeholder avatar-cupcake"><i class="fas fa-user"></i></div>
+                                    {% endif %}
+                                    <h5 class="fw-bold text-dark mt-3 mb-1">{{ prof.nombre }}</h5>
+
+                                    <div class="mb-1 d-flex flex-wrap justify-content-center gap-1">
+                                        {% for nom in prof.nombramientos.all %}
+                                            <span class="badge bg-success bg-opacity-75 text-white px-2 py-1 small">
+                                                {{ nom.get_rol_display_text }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="badge bg-success text-white px-2 py-1 small">
+                                                {{ prof.get_rol_facultad_display|default:"Docente / Investigador" }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ONDA DE MERENGUE QUE CAE AL CAPACILLO -->
+                            <div class="cupcake-drip-divider"></div>
+
+                            <!-- CAPACILLO PLISADO CON LECTURA Y BOTONES -->
+                            <div class="cupcake-liner-section">
+                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 55px;">
+                                    {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
+                                </p>
+
+                                <div class="border-top pt-2 d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-book me-1 text-success"></i><strong>{{ prof.documentos.count }}</strong> obras
+                                    </small>
+                                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}">
+                                        <i class="fas fa-id-badge me-1"></i>Ver Semblanza
+                                    </button>
+                                </div>
+
+                                {% if user.is_authenticated %}
+                                    {% if user.autor == prof %}
+                                        <div class="d-grid mt-2">
+                                            <button type="button" class="btn birthday-btn btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBandejaCumple{{ prof.id }}">
+                                                <i class="fas fa-gift me-1"></i>Ver Mis Felicitaciones ({{ prof.mensajes_recibidos.count }})
+                                            </button>
+                                        </div>
+                                    {% elif user.autor.es_profesor and prof.id not in ids_felicitados_hoy %}
+                                        <div class="d-grid mt-2">
+                                            <button type="button" class="btn birthday-btn btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalFelicitar{{ prof.id }}">
+                                                <i class="fas fa-gift me-1"></i>Felicitar Colega 🧁
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- TARJETA REGULAR (NO CUMPLEAÑERO) -->
+                    <div class="prof-card">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-light text-dark border small">
+                                    <i class="fas fa-university me-1 text-success"></i>{{ prof.institucion_origen|default:"UABC" }}
+                                </span>
+                            </div>
+
+                            <div class="text-center mb-3" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
+                                {% if prof.foto_perfil %}
+                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar">
+                                {% else %}
+                                    <div class="prof-avatar-placeholder"><i class="fas fa-user"></i></div>
+                                {% endif %}
+                                <h5 class="fw-bold text-dark mt-3 mb-1">{{ prof.nombre }}</h5>
+
+                                <div class="mb-2 d-flex flex-wrap justify-content-center gap-1">
+                                    {% for nom in prof.nombramientos.all %}
+                                        <span class="badge bg-success bg-opacity-75 text-white px-2 py-1 small">
+                                            {{ nom.get_rol_display_text }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="badge bg-success text-white px-2 py-1 small">
+                                            {{ prof.get_rol_facultad_display|default:"Docente / Investigador" }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <p class="text-muted small" style="line-height: 1.5; min-height: 55px;">
+                                {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
+                            </p>
+                        </div>
+
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-book me-1 text-success"></i><strong>{{ prof.documentos.count }}</strong> publicaciones
+                                </small>
+                                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}">
+                                    <i class="fas fa-id-badge me-1"></i>Ver Semblanza
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- MODAL VISTA DETALLADA COMPLETA (UABC) -->
+            <div class="modal fade" id="modalDetalle{{ prof.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header bg-success text-white py-3">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-user-tie me-2"></i>Ficha Académica de Investigador</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-light">
+                            <!-- PERFIL DEL DOCENTE -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-auto text-center mb-3 mb-md-0">
+                                        {% if prof.foto_perfil %}
+                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #006633;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto;"><i class="fas fa-user"></i></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                            <h3 class="fw-bold text-dark mb-0">{{ prof.nombre }}</h3>
+                                            {% if prof.es_cumpleanos_hoy %}
+                                                <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-2 d-flex flex-wrap gap-1">
+                                            {% for nom in prof.nombramientos.all %}
+                                                <span class="badge bg-success text-white px-2 py-1 small">
+                                                    {{ nom.get_rol_display_text }}
+                                                </span>
+                                            {% empty %}
+                                                <span class="badge bg-success text-white px-2 py-1 small">
+                                                    {{ prof.get_rol_facultad_display }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+
+                                        <p class="text-muted small mb-1"><i class="fas fa-university me-1 text-success"></i><strong>Institución:</strong> {{ prof.institucion_origen }}</p>
+                                        {% if prof.correo %}<p class="text-muted small mb-1"><i class="fas fa-envelope me-1 text-primary"></i><strong>Correo:</strong> {{ prof.correo }}</p>{% endif %}
+                                        {% if prof.orcid %}<p class="text-muted small mb-0"><i class="fab fa-orcid me-1 text-success"></i><strong>ORCID:</strong> <a href="{{ prof.orcid }}" target="_blank">{{ prof.orcid }}</a></p>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BANDEJA DE MENSAJES RECIBIDOS EN SU SEMBLANZA (SOLO EL FESTEJADO) -->
+                            {% if prof.es_cumpleanos_hoy and user.is_authenticated and user.autor == prof and prof.mensajes_recibidos.exists %}
+                                <div class="p-4 rounded-4 shadow-sm border mb-4" style="background: var(--cupcake-cream); border-left: 5px solid var(--cupcake-pink) !important;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="fw-bold mb-0" style="color: #c2185b;">
+                                            <i class="fas fa-gift me-2"></i>Felicitaciones de tus Colegas Hoy ({{ prof.mensajes_recibidos.count }})
+                                        </h5>
+                                        <span class="badge rounded-pill bg-danger">🎂 Notas de Afecto</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        {% for nota in prof.mensajes_recibidos.all %}
+                                            <div class="col-md-6">
+                                                <div class="p-3 bg-white rounded-3 border shadow-sm h-100">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <strong class="text-success small">
+                                                            <i class="fas fa-user-circle me-1"></i>{{ nota.de_usuario.autor.nombre|default:nota.de_usuario.get_full_name|default:nota.de_usuario.username }}
+                                                        </strong>
+                                                        <small class="text-muted" style="font-size: 0.72rem;">{{ nota.fecha_envio|date:"H:i" }}</small>
+                                                    </div>
+                                                    <p class="mb-0 text-dark small fst-italic">"{{ nota.mensaje }}"</p>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- 1. SEMBLANZA ACADÉMICA DETALLADA (RENDERIZA EL HTML DE QUILL MEDIANTE |SAFE) -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                <h5 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="fas fa-id-card me-2"></i>Semblanza Académica Detallada</h5>
+                                <div class="text-dark small mb-0 semblanza-html-box">
+                                    {% if prof.biografia_extendida %}
+                                        {{ prof.biografia_extendida|safe }}
+                                    {% elif prof.biografia %}
+                                        <p class="mb-0" style="white-space: pre-line;">{{ prof.biografia }}</p>
+                                    {% else %}
+                                        <p class="text-muted fst-italic mb-0">Sin semblanza detallada registrada actualmente.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- 2. ENLACES PROFESIONALES Y REDES (COLOCADOS ANTES DEL PDF) -->
+                            {% if prof.enlaces_profesionales.all %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <h5 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="fas fa-link me-2"></i>Enlaces Profesionales y Redes</h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for enlace in prof.enlaces_profesionales.all %}
+                                            <a href="{{ enlace.url }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center shadow-sm">
+                                                <span class="me-2 fs-6">{{ enlace.emoji|default:"🔗" }}</span>
+                                                <strong class="text-primary me-2">{{ enlace.plataforma }}:</strong>
+                                                <span class="text-muted small text-truncate" style="max-width: 250px;">{{ enlace.url }}</span>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- 3. DOCUMENTO DE RECONOCIMIENTOS / CV CON VISOR NO INVASIVO (PDF.JS POR CLIC) -->
+                            {% if prof.reconocimiento_pdf %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pb-2">
+                                        <div>
+                                            <h5 class="fw-bold text-danger mb-0 d-flex align-items-center">
+                                                <i class="fas fa-file-pdf me-2 fa-lg"></i>Documento de Reconocimientos / CV Académico
+                                            </h5>
+                                            <small class="text-muted">Consulta el expediente profesional y certificaciones</small>
+                                        </div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <a href="{{ prof.reconocimiento_pdf.url }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm fw-bold">
+                                                <i class="fas fa-external-link-alt me-1"></i>Abrir / Descargar PDF
+                                            </a>
+                                            <button class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm fw-bold btn-toggle-pdf" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePdf{{ prof.id }}" aria-expanded="false" data-prof-id="{{ prof.id }}" data-pdf-url="{{ prof.reconocimiento_pdf.url }}">
+                                                <i class="fas fa-eye me-1"></i><span class="btn-text">Ver Documento Aquí</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- VISOR EMBEBIDO DESPLEGABLE CON PAGINACIÓN POR CLIC -->
+                                    <div class="collapse mt-3 border-top pt-3" id="collapsePdf{{ prof.id }}">
+                                        <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border mb-3 flex-wrap gap-2">
+                                            <div class="small fw-bold text-secondary">
+                                                <i class="fas fa-mouse-pointer me-1 text-primary"></i>Navegación por clic (la rueda del ratón sigue moviendo la ventana)
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-pdf-prev" data-prof-id="{{ prof.id }}">
+                                                    <i class="fas fa-chevron-left me-1"></i>Anterior
+                                                </button>
+                                                <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm small fw-bold pdf-page-num" data-prof-id="{{ prof.id }}">
+                                                    Pág. 1 / 1
+                                                </span>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-pdf-next" data-prof-id="{{ prof.id }}">
+                                                    Siguiente<i class="fas fa-chevron-right ms-1"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center bg-dark bg-opacity-10 p-3 rounded-3 border">
+                                            <canvas id="pdfCanvas{{ prof.id }}" class="shadow-sm rounded bg-white" style="max-width: 100%; height: auto; display: none;"></canvas>
+                                            <div id="pdfLoading{{ prof.id }}" class="py-5 text-muted">
+                                                <i class="fas fa-spinner fa-spin fa-2x text-danger mb-2"></i>
+                                                <div class="small fw-bold">Cargando página...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- 4. PUBLICACIONES RECIENTES EN EL REPOSITORIO -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border">
+                                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fas fa-book-open me-2 text-success"></i>Publicaciones Registradas en el Repositorio (Últimas Recientes)</h5>
+                                <div class="list-group list-group-flush border rounded-3 mb-2">
+                                    {% for obra in prof.documentos.all|dictsortreversed:"año_produccion" %}
+                                        {% if obra.estado == 'aprobado' and forloop.counter <= 5 %}
+                                            <a href="/busqueda/?q={{ obra.titulo|urlencode }}" class="list-group-item list-group-item-action small py-2 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong class="text-dark">{{ obra.titulo }}</strong>
+                                                    <span class="text-muted ms-2">({{ obra.tipo_contenido.nombre }})</span>
+                                                </div>
+                                                <span class="badge bg-light text-dark border">{{ obra.año_produccion }}</span>
+                                            </a>
+                                        {% endif %}
+                                    {% empty %}
+                                        <div class="p-3 text-muted small text-center">No hay obras aprobadas asociadas actualmente.</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="text-end">
+                                    <a href="/busqueda/?q={{ prof.nombre|urlencode }}" class="small text-success fw-bold text-decoration-none">
+                                        <i class="fas fa-search me-1"></i>Ver historial completo de publicaciones &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-white border-top-0 py-3">
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL DE ENVÍO DE FELICITACIÓN (COLEGA DOCENTE - 1 INTENTO) -->
+            {% if prof.es_cumpleanos_hoy and user.is_authenticated and user.autor and user.autor.es_profesor and user.autor != prof and prof.id not in ids_felicitados_hoy %}
+            <div class="modal fade" id="modalFelicitar{{ prof.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #d81b60, #ff4081);">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-birthday-cake me-2"></i>Felicitando a {{ prof.nombre }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="post" action="{% url 'enviar_felicitacion_cumpleanos' prof.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body p-4">
+                                <p class="small text-muted mb-3">Envía un mensaje institucional de cumpleaños a tu colega. Podrás enviar una única felicitación hoy.</p>
+                                <div class="form-group mb-2">
+                                    <label class="form-label small fw-bold">Escribe tu felicitación:</label>
+                                    <textarea name="mensaje" class="form-control" rows="3" maxlength="300" placeholder="¡Muchas felicidades, estimado(a) colega! Que pase un excelente día..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn birthday-btn px-4 rounded-pill shadow-sm">
+                                    <i class="fas fa-paper-plane me-1"></i>Enviar Nota
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- MODAL BANDEJA DE MENSAJES (SOLO CUMPLEAÑERO) -->
+            {% if prof.es_cumpleanos_hoy and user.is_authenticated and user.autor == prof %}
+            <div class="modal fade" id="modalBandejaCumple{{ prof.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #d81b60, #ff4081);">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-birthday-cake me-2"></i>Tus Felicitaciones de Cumpleaños</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-light">
+                            <p class="small text-muted mb-3">Mensajes privados recibidos de tus colegas de la facultad:</p>
+                            <div class="border rounded-3 p-3 bg-white shadow-sm" style="max-height: 320px; overflow-y: auto;">
+                                {% for nota in prof.mensajes_recibidos.all %}
+                                    <div class="mb-3 pb-2 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong class="small text-success">
+                                                <i class="fas fa-user-circle me-1"></i>{{ nota.de_usuario.autor.nombre|default:nota.de_usuario.get_full_name|default:nota.de_usuario.username }}
+                                            </strong>
+                                            <small class="text-muted" style="font-size: 0.72rem;">{{ nota.fecha_envio|date:"d M, H:i" }}</small>
+                                        </div>
+                                        <p class="mb-0 small text-dark mt-1 fst-italic">"{{ nota.mensaje }}"</p>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted small text-center my-3">Aún no has recibido mensajes de felicitación hoy.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-white border-0 py-3">
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% empty %}
+                <div class="col-12 text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4">
+                    <i class="fas fa-users-slash fa-3x mb-3 text-secondary opacity-50"></i>
+                    <p class="mb-0">Aún no hay docentes UABC dados de alta en el directorio.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- CONTENEDOR PROFESORES EXTERNOS -->
+        <div id="seccionExternos" class="row g-4 institution-section" style="display: none;">
+            {% for prof in profesores_externos %}
+            <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 prof-item-col" data-search="{{ prof.nombre|lower }} {{ prof.institucion_origen|lower }} {{ prof.get_rol_facultad_display|lower }}">
+                {% if prof.es_cumpleanos_hoy %}
+                    <!-- ENVOLTORIO EXTERNO CON VELA Y CUPCAKE -->
+                    <div class="card-birthday-cupcake-wrapper">
+                        <div class="cupcake-candle"></div>
+                        <div class="prof-card card-birthday-cupcake">
+                            <div class="cupcake-frosting-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-white text-dark border shadow-sm small">
+                                        <i class="fas fa-globe-americas me-1"></i>{{ prof.institucion_origen }}
+                                    </span>
+                                    <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                </div>
+
+                                <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
+                                    {% if prof.foto_perfil %}
+                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake">
+                                    {% else %}
+                                        <div class="prof-avatar-placeholder avatar-cupcake"><i class="fas fa-user"></i></div>
+                                    {% endif %}
+                                    <h5 class="fw-bold text-dark mt-3 mb-1">{{ prof.nombre }}</h5>
+
+                                    <div class="mb-1 d-flex flex-wrap justify-content-center gap-1">
+                                        {% for nom in prof.nombramientos.all %}
+                                            <span class="badge bg-primary bg-opacity-75 text-white px-2 py-1 small">
+                                                {{ nom.get_rol_display_text }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="badge bg-primary text-white px-2 py-1 small">
+                                                {{ prof.get_rol_facultad_display|default:"Colaborador Externo" }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cupcake-drip-divider"></div>
+
+                            <div class="cupcake-liner-section">
+                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 55px;">
+                                    {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
+                                </p>
+
+                                <div class="border-top pt-2 d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-book me-1 text-success"></i><strong>{{ prof.documentos.count }}</strong> obras
+                                    </small>
+                                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}">
+                                        <i class="fas fa-id-badge me-1"></i>Ver Semblanza
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="prof-card">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-info text-dark border small">
+                                    <i class="fas fa-globe-americas me-1"></i>{{ prof.institucion_origen }}
+                                </span>
+                            </div>
+
+                            <div class="text-center mb-3" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
+                                {% if prof.foto_perfil %}
+                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar">
+                                {% else %}
+                                    <div class="prof-avatar-placeholder"><i class="fas fa-user"></i></div>
+                                {% endif %}
+                                <h5 class="fw-bold text-dark mt-3 mb-1">{{ prof.nombre }}</h5>
+
+                                <div class="mb-2 d-flex flex-wrap justify-content-center gap-1">
+                                    {% for nom in prof.nombramientos.all %}
+                                        <span class="badge bg-primary bg-opacity-75 text-white px-2 py-1 small">
+                                            {{ nom.get_rol_display_text }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="badge bg-primary text-white px-2 py-1 small">
+                                            {{ prof.get_rol_facultad_display|default:"Colaborador Externo" }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <p class="text-muted small" style="line-height: 1.5; min-height: 55px;">
+                                {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
+                            </p>
+                        </div>
+
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-book me-1 text-success"></i><strong>{{ prof.documentos.count }}</strong> publicaciones
+                                </small>
+                                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}">
+                                    <i class="fas fa-id-badge me-1"></i>Ver Semblanza
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- MODAL VISTA DETALLADA COMPLETA (EXTERNOS) -->
+            <div class="modal fade" id="modalDetalleExt{{ prof.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header bg-success text-white py-3">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-user-tie me-2"></i>Ficha de Investigador Colaborador</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-light">
+                            <!-- PERFIL DEL DOCENTE EXTERNO -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-auto text-center mb-3 mb-md-0">
+                                        {% if prof.foto_perfil %}
+                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #006633;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto;"><i class="fas fa-user"></i></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                            <h3 class="fw-bold text-dark mb-0">{{ prof.nombre }}</h3>
+                                            {% if prof.es_cumpleanos_hoy %}
+                                                <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-2 d-flex flex-wrap gap-1">
+                                            {% for nom in prof.nombramientos.all %}
+                                                <span class="badge bg-primary text-white px-2 py-1 small">
+                                                    {{ nom.get_rol_display_text }}
+                                                </span>
+                                            {% empty %}
+                                                <span class="badge bg-primary text-white px-2 py-1 small">
+                                                    {{ prof.get_rol_facultad_display }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+
+                                        <p class="text-muted small mb-1"><i class="fas fa-university me-1 text-success"></i><strong>Institución:</strong> {{ prof.institucion_origen }}</p>
+                                        {% if prof.correo %}<p class="text-muted small mb-1"><i class="fas fa-envelope me-1 text-primary"></i><strong>Correo:</strong> {{ prof.correo }}</p>{% endif %}
+                                        {% if prof.orcid %}<p class="text-muted small mb-0"><i class="fab fa-orcid me-1 text-success"></i><strong>ORCID:</strong> <a href="{{ prof.orcid }}" target="_blank">{{ prof.orcid }}</a></p>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 1. SEMBLANZA ACADÉMICA DETALLADA (RENDERIZA EL HTML DE QUILL MEDIANTE |SAFE) -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                <h5 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="fas fa-id-card me-2"></i>Semblanza Académica Detallada</h5>
+                                <div class="text-dark small mb-0 semblanza-html-box">
+                                    {% if prof.biografia_extendida %}
+                                        {{ prof.biografia_extendida|safe }}
+                                    {% elif prof.biografia %}
+                                        <p class="mb-0" style="white-space: pre-line;">{{ prof.biografia }}</p>
+                                    {% else %}
+                                        <p class="text-muted fst-italic mb-0">Sin semblanza detallada registrada actualmente.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- 2. ENLACES EXTERNOS -->
+                            {% if prof.enlaces_profesionales.all %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <h5 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="fas fa-link me-2"></i>Enlaces Profesionales y Redes</h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for enlace in prof.enlaces_profesionales.all %}
+                                            <a href="{{ enlace.url }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 d-inline-flex align-items-center shadow-sm">
+                                                <span class="me-2 fs-6">{{ enlace.emoji|default:"🔗" }}</span>
+                                                <strong class="text-primary me-2">{{ enlace.plataforma }}:</strong>
+                                                <span class="text-muted small text-truncate" style="max-width: 250px;">{{ enlace.url }}</span>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- 3. DOCUMENTO DE RECONOCIMIENTOS / CV CON VISOR NO INVASIVO (EXTERNOS) -->
+                            {% if prof.reconocimiento_pdf %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pb-2">
+                                        <div>
+                                            <h5 class="fw-bold text-danger mb-0 d-flex align-items-center">
+                                                <i class="fas fa-file-pdf me-2 fa-lg"></i>Documento de Reconocimientos / CV Académico
+                                            </h5>
+                                            <small class="text-muted">Consulta el expediente profesional y certificaciones</small>
+                                        </div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <a href="{{ prof.reconocimiento_pdf.url }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm fw-bold">
+                                                <i class="fas fa-external-link-alt me-1"></i>Abrir / Descargar PDF
+                                            </a>
+                                            <button class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm fw-bold btn-toggle-pdf" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePdfExt{{ prof.id }}" aria-expanded="false" data-prof-id="{{ prof.id }}" data-pdf-url="{{ prof.reconocimiento_pdf.url }}" data-is-ext="true">
+                                                <i class="fas fa-eye me-1"></i><span class="btn-text">Ver Documento Aquí</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="collapse mt-3 border-top pt-3" id="collapsePdfExt{{ prof.id }}">
+                                        <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border mb-3 flex-wrap gap-2">
+                                            <div class="small fw-bold text-secondary">
+                                                <i class="fas fa-mouse-pointer me-1 text-primary"></i>Navegación por clic (la rueda del ratón sigue moviendo la ventana)
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-pdf-prev" data-prof-id="{{ prof.id }}">
+                                                    <i class="fas fa-chevron-left me-1"></i>Anterior
+                                                </button>
+                                                <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm small fw-bold pdf-page-num" data-prof-id="{{ prof.id }}">
+                                                    Pág. 1 / 1
+                                                </span>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-pdf-next" data-prof-id="{{ prof.id }}">
+                                                    Siguiente<i class="fas fa-chevron-right ms-1"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center bg-dark bg-opacity-10 p-3 rounded-3 border">
+                                            <canvas id="pdfCanvasExt{{ prof.id }}" class="shadow-sm rounded bg-white" style="max-width: 100%; height: auto; display: none;"></canvas>
+                                            <div id="pdfLoadingExt{{ prof.id }}" class="py-5 text-muted">
+                                                <i class="fas fa-spinner fa-spin fa-2x text-danger mb-2"></i>
+                                                <div class="small fw-bold">Cargando página...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- 4. PUBLICACIONES RECIENTES EN EL REPOSITORIO -->
+                            <div class="bg-white p-4 rounded-4 shadow-sm border">
+                                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fas fa-book-open me-2 text-success"></i>Publicaciones Registradas en el Repositorio (Últimas Recientes)</h5>
+                                <div class="list-group list-group-flush border rounded-3 mb-2">
+                                    {% for obra in prof.documentos.all|dictsortreversed:"año_produccion" %}
+                                        {% if obra.estado == 'aprobado' and forloop.counter <= 5 %}
+                                            <a href="/busqueda/?q={{ obra.titulo|urlencode }}" class="list-group-item list-group-item-action small py-2 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong class="text-dark">{{ obra.titulo }}</strong>
+                                                    <span class="text-muted ms-2">({{ obra.tipo_contenido.nombre }})</span>
+                                                </div>
+                                                <span class="badge bg-light text-dark border">{{ obra.año_produccion }}</span>
+                                            </a>
+                                        {% endif %}
+                                    {% empty %}
+                                        <div class="p-3 text-muted small text-center">No hay obras aprobadas asociadas actualmente.</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="text-end">
+                                    <a href="/busqueda/?q={{ prof.nombre|urlencode }}" class="small text-success fw-bold text-decoration-none">
+                                        <i class="fas fa-search me-1"></i>Ver historial completo de publicaciones &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-white border-top-0 py-3">
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% empty %}
+                <div class="col-12 text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4">
+                    <i class="fas fa-globe-americas fa-3x mb-3 text-secondary opacity-50"></i>
+                    <p class="mb-0">Aún no hay investigadores de otras universidades dados de alta.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div id="noResultadosProf" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4 mt-3" style="display: none;">
+            <i class="fas fa-search fa-2x mb-2 text-secondary"></i>
+            <p class="mb-0">No se encontraron profesores que coincidan con la búsqueda.</p>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        function filtrarInstitucion(tipo) {
+            const secUabc = document.getElementById('seccionUabc');
+            const secExt = document.getElementById('seccionExternos');
+            const tabUabc = document.getElementById('tabUabc');
+            const tabExternos = document.getElementById('tabExternos');
+
+            if (tipo === 'uabc') {
+                secUabc.style.display = 'flex';
+                secExt.style.display = 'none';
+                tabUabc.classList.add('active');
+                tabExternos.classList.remove('active');
+            } else {
+                secUabc.style.display = 'none';
+                secExt.style.display = 'flex';
+                tabUabc.classList.remove('active');
+                tabExternos.classList.add('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Buscador instantáneo de profesores
+            const inputBusqueda = document.getElementById('inputBuscarProfesor');
+            const profCards = document.querySelectorAll('.prof-item-col');
+            const noResultados = document.getElementById('noResultadosProf');
+
+            if (inputBusqueda) {
+                inputBusqueda.addEventListener('input', function() {
+                    const q = this.value.toLowerCase().trim();
+                    let visibles = 0;
+
+                    profCards.forEach(card => {
+                        const searchTxt = (card.getAttribute('data-search') || '').toLowerCase();
+                        if (!q || searchTxt.includes(q)) {
+                            card.style.display = '';
+                            visibles++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    if (noResultados) {
+                        noResultados.style.display = (visibles === 0) ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // Confetti de cumpleaños automático si hay docentes celebrando hoy
+            const cumpleaneros = document.querySelectorAll('.card-birthday-cupcake');
+            if (cumpleaneros.length > 0 && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 95,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // ========================================================
+            // CONTROLADOR DEL VISOR PDF SIN TRAMPA DE SCROLL (PAGINACIÓN POR CLIC)
+            // ========================================================
+            const pdfInstances = {};
+
+            async function renderProfPdfPage(profId, pageNumber) {
+                const state = pdfInstances[profId];
+                if (!state) return;
+                state.rendering = true;
+
+                const canvasId = state.isExt ? `pdfCanvasExt${profId}` : `pdfCanvas${profId}`;
+                const loadingId = state.isExt ? `pdfLoadingExt${profId}` : `pdfLoading${profId}`;
+
+                const canvas = document.getElementById(canvasId);
+                const loading = document.getElementById(loadingId);
+                const pageIndicators = document.querySelectorAll(`.pdf-page-num[data-prof-id="${profId}"]`);
+
+                if (loading) loading.style.display = 'block';
+                if (canvas) canvas.style.display = 'none';
+
+                try {
+                    const page = await state.pdfDoc.getPage(pageNumber);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const context = canvas.getContext('2d');
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    if (loading) loading.style.display = 'none';
+                    if (canvas) canvas.style.display = 'inline-block';
+
+                    pageIndicators.forEach(ind => {
+                        ind.textContent = `Pág. ${pageNumber} / ${state.pdfDoc.numPages}`;
+                    });
+
+                    state.currentPage = pageNumber;
+                } catch (err) {
+                    console.error("Error al renderizar página del PDF:", err);
+                    if (loading) loading.innerHTML = '<span class="text-danger small fw-bold">No se pudo renderizar la página.</span>';
+                } finally {
+                    state.rendering = false;
+                }
+            }
+
+            // Inicialización al desplegar el visor
+            document.querySelectorAll('.btn-toggle-pdf').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const profId = this.getAttribute('data-prof-id');
+                    const pdfUrl = this.getAttribute('data-pdf-url');
+                    const isExt = this.getAttribute('data-is-ext') === 'true';
+                    const targetCollapseId = isExt ? `collapsePdfExt${profId}` : `collapsePdf${profId}`;
+                    const collapseEl = document.getElementById(targetCollapseId);
+                    const btnText = this.querySelector('.btn-text');
+
+                    if (!pdfInstances[profId]) {
+                        pdfInstances[profId] = {
+                            pdfDoc: null,
+                            currentPage: 1,
+                            rendering: false,
+                            isExt: isExt
+                        };
+
+                        pdfjsLib.getDocument(pdfUrl).promise.then(pdfDoc => {
+                            pdfInstances[profId].pdfDoc = pdfDoc;
+                            renderProfPdfPage(profId, 1);
+                        }).catch(err => {
+                            console.error("Error al cargar documento:", err);
+                            const loadingId = isExt ? `pdfLoadingExt${profId}` : `pdfLoading${profId}`;
+                            const loading = document.getElementById(loadingId);
+                            if (loading) {
+                                loading.innerHTML = '<span class="text-danger small fw-bold">No se pudo cargar el documento PDF. Utiliza el botón superior para abrirlo.</span>';
+                            }
+                        });
+                    }
+
+                    if (collapseEl) {
+                        collapseEl.addEventListener('shown.bs.collapse', function () {
+                            if (btnText) btnText.textContent = 'Ocultar Visor';
+                        }, { once: true });
+
+                        collapseEl.addEventListener('hidden.bs.collapse', function () {
+                            if (btnText) btnText.textContent = 'Ver Documento Aquí';
+                        }, { once: true });
+                    }
+                });
+            });
+
+            // Navegación: Página Anterior / Siguiente
+            document.addEventListener('click', function(e) {
+                const prevBtn = e.target.closest('.btn-pdf-prev');
+                if (prevBtn) {
+                    const profId = prevBtn.getAttribute('data-prof-id');
+                    const state = pdfInstances[profId];
+                    if (state && state.currentPage > 1 && !state.rendering) {
+                        renderProfPdfPage(profId, state.currentPage - 1);
+                    }
+                    return;
+                }
+
+                const nextBtn = e.target.closest('.btn-pdf-next');
+                if (nextBtn) {
+                    const profId = nextBtn.getAttribute('data-prof-id');
+                    const state = pdfInstances[profId];
+                    if (state && state.pdfDoc && state.currentPage < state.pdfDoc.numPages && !state.rendering) {
+                        renderProfPdfPage(profId, state.currentPage + 1);
+                    }
+                    return;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

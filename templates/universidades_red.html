@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red de Universidades Aliadas - Repositorio FCA UABC</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-gold: #dd971a;
+        }
+        body {
+            background-color: #f4f6f8;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border-bottom: 3px solid var(--uabc-green);
+        }
+
+        /* HEADER PRINCIPAL */
+        .header-title-box {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            border-radius: 16px;
+            padding: 38px 28px;
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 102, 51, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .header-title-box::after {
+            content: "\f57d";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 25px;
+            bottom: -20px;
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.06);
+            pointer-events: none;
+        }
+
+        /* TARJETAS DE ESTADÍSTICAS GLOBALES */
+        .stat-card-top {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+        .stat-card-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 22px rgba(0, 102, 51, 0.12);
+        }
+
+        /* TARJETA DE UNIVERSIDAD ALIADA */
+        .univ-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 5px solid var(--uabc-green);
+            border-radius: 14px;
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+        }
+        .univ-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0, 102, 51, 0.14);
+            border-color: #81c784;
+            border-top-color: var(--uabc-gold);
+        }
+
+        /* ESCUDO / MONOGRAMA HERÁLDICO DE LA UNIVERSIDAD (CENTRADAS SIN TEXTO SOBRANTE) */
+        .univ-seal {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #006633 0%, #0d6efd 100%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 102, 51, 0.25);
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .univ-seal-siglas {
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        /* LISTA DE PUBLICACIONES RECIENTES */
+        .work-item-bubble {
+            background: #f8fbf8;
+            border: 1px solid #e2ece2;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .work-item-bubble:hover {
+            background-color: #ffffff;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-color: #a5d6a7;
+        }
+
+        /* BUSCADOR */
+        .search-univ-box {
+            background: #ffffff;
+            border-radius: 50px;
+            border: 1px solid #ced4da;
+            padding: 5px 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .search-univ-box:focus-within {
+            border-color: var(--uabc-green);
+            box-shadow: 0 4px 15px rgba(0, 102, 51, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid px-lg-5 px-3">
+            <a class="navbar-brand text-success fw-bold d-flex align-items-center" href="/">
+                <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" style="max-height: 44px;" class="me-2">
+                <span>Repositorio FCA</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'directorio_profesores' %}" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="fas fa-chalkboard-teacher me-1"></i>Claustro Docente
+                </a>
+                <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-lg-5 px-3 pb-5">
+        <!-- BANNER DE ENCABEZADO -->
+        <div class="header-title-box mb-4">
+            <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold text-uppercase me-2" style="font-size: 0.72rem;">
+                    <i class="fas fa-handshake me-1"></i>Vinculación Académica
+                </span>
+                <span class="text-white-50 small">&bull; Coautoría y Producción Externa</span>
+            </div>
+            <h2 class="fw-bold mb-2">Red de Universidades Colaboradoras</h2>
+            <p class="mb-0 text-white-50" style="max-width: 820px; line-height: 1.5;">
+                Instituciones académicas nacionales e internacionales con las que el cuerpo docente y de investigación de la FCA UABC genera conocimiento científico, libros y proyectos conjuntos.
+            </p>
+        </div>
+
+        <!-- 3 TARJETAS DE IMPACTO GLOBAL -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card-top border-start border-success border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase">Instituciones Aliadas</div>
+                            <h3 class="fw-bold text-success mb-0">{{ total_instituciones|default:"0" }}</h3>
+                        </div>
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success p-3">
+                            <i class="fas fa-university fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card-top border-start border-primary border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase">Coautores Externos</div>
+                            <h3 class="fw-bold text-primary mb-0">{{ total_investigadores_global|default:"0" }}</h3>
+                        </div>
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3">
+                            <i class="fas fa-user-friends fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card-top border-start border-warning border-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase">Obras en Coautoría</div>
+                            <h3 class="fw-bold text-warning mb-0">{{ total_obras_global|default:"0" }}</h3>
+                        </div>
+                        <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3">
+                            <i class="fas fa-book-open fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA DE BÚSQUEDA RÁPIDA DE UNIVERSIDADES -->
+        <div class="card border-0 shadow-sm p-3 rounded-4 mb-4 bg-white">
+            <div class="row align-items-center g-2">
+                <div class="col-md-6">
+                    <div class="search-univ-box d-flex align-items-center">
+                        <i class="fas fa-search text-muted me-2"></i>
+                        <input type="text" id="inputBuscarUniversidad" class="form-control border-0 shadow-none p-0" placeholder="Buscar institución por nombre o siglas (ej. UANL, Madrid, Harvard, UBA)...">
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end text-muted small">
+                    <span id="conteoVisibles" class="fw-bold text-success">{{ red_colaboracion|length }}</span> instituciones registradas con producción activa
+                </div>
+            </div>
+        </div>
+
+        <!-- CUADRÍCULA DE UNIVERSIDADES ALIADAS -->
+        <div class="row g-4" id="contenedorTarjetasUniv">
+            {% for item in red_colaboracion %}
+            <div class="col-xl-6 col-lg-12 univ-item-col" data-search="{{ item.nombre|lower }} {{ item.siglas|lower }}">
+                <div class="univ-card">
+                    <div>
+                        <!-- CABECERA CON MONOGRAMA DINÁMICO LIMPIO -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="univ-seal me-3">
+                                <i class="fas fa-university mb-1" style="font-size: 0.8rem; opacity: 0.85;"></i>
+                                <div class="univ-seal-siglas">{{ item.siglas }}</div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold text-dark mb-1 fs-5" style="line-height: 1.35;">{{ item.nombre }}</h5>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1">
+                                        <i class="fas fa-user-friends me-1"></i>{{ item.total_investigadores }} Colaborador{{ item.total_investigadores|pluralize:"es" }}
+                                    </span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3 py-1">
+                                        <i class="fas fa-book me-1"></i>{{ item.total_obras }} Obra{{ item.total_obras|pluralize:"s" }} Conjunta{{ item.total_obras|pluralize:"s" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INVESTIGADORES ASOCIADOS DE ESTA UNIVERSIDAD -->
+                        <div class="mb-3 p-2 bg-light rounded-3 border">
+                            <small class="text-muted d-block font-weight-bold mb-1" style="font-size: 0.74rem;">
+                                <i class="fas fa-chalkboard-teacher me-1 text-success"></i>Investigadores vinculados:
+                            </small>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for inv in item.investigadores %}
+                                    <span class="badge bg-white text-dark border px-2 py-1 shadow-sm" style="font-size: 0.75rem;">
+                                        <i class="fas fa-user me-1 text-muted"></i>{{ inv.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-muted small">Sin investigadores detallados</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- ÚLTIMAS PUBLICACIONES EN COAUTORÍA -->
+                        <h6 class="fw-bold text-dark small mb-2 d-flex align-items-center">
+                            <i class="fas fa-bookmark me-1 text-success"></i>Publicaciones Destacadas en Coautoría:
+                        </h6>
+                        <div class="mb-2">
+                            {% for obra in item.ultimas_obras %}
+                                <div class="work-item-bubble">
+                                    <a href="{% url 'resultado_busqueda' %}?q={{ obra.titulo|urlencode }}" class="text-dark fw-bold text-decoration-none small d-block mb-1 text-truncate" title="{{ obra.titulo }}">
+                                        {{ obra.titulo }}
+                                    </a>
+                                    <div class="d-flex justify-content-between align-items-center" style="font-size: 0.74rem;">
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-0 rounded-pill">
+                                            {{ obra.tipo_contenido.nombre }}
+                                        </span>
+                                        <span class="text-muted"><i class="far fa-calendar-alt me-1"></i>{{ obra.año_produccion }}</span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-muted small p-2 text-center">Aún no hay obras públicas revisadas con esta universidad.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- FOOTER DE LA TARJETA -->
+                    <div class="pt-3 mt-3 border-top text-end">
+                        <a href="{% url 'resultado_busqueda' %}?q={{ item.nombre|urlencode }}" class="btn btn-outline-success btn-sm fw-bold rounded-pill px-4 shadow-sm">
+                            <i class="fas fa-search me-1"></i>Ver Todas las Obras de {{ item.siglas }} &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="col-12 text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4">
+                    <i class="fas fa-university fa-3x mb-3 text-secondary opacity-50"></i>
+                    <h4 class="text-dark fw-bold fs-5">Aún no hay universidades aliadas con publicaciones aprobadas</h4>
+                    <p class="text-muted small" style="max-width: 500px; margin: 0 auto;">
+                        Las instituciones aparecerán de forma automática en cuanto se registren coautores externos cuyas obras conjuntas hayan sido aprobadas en el repositorio.
+                    </p>
+                    <a href="/" class="btn btn-success btn-sm mt-3 rounded-pill px-4">Volver al inicio</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div id="noResultadosUniv" class="text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4 mt-3" style="display: none;">
+            <i class="fas fa-search fa-2x mb-2 text-secondary"></i>
+            <p class="mb-0">No se encontraron universidades aliadas que coincidan con la búsqueda.</p>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputBusqueda = document.getElementById('inputBuscarUniversidad');
+            const tarjetas = document.querySelectorAll('.univ-item-col');
+            const conteoVisibles = document.getElementById('conteoVisibles');
+            const noResultados = document.getElementById('noResultadosUniv');
+
+            if (inputBusqueda) {
+                inputBusqueda.addEventListener('input', function() {
+                    const q = this.value.toLowerCase().trim();
+                    let visibles = 0;
+
+                    tarjetas.forEach(tarjeta => {
+                        const searchData = (tarjeta.getAttribute('data-search') || '').toLowerCase();
+                        if (!q || searchData.includes(q)) {
+                            tarjeta.style.display = '';
+                            visibles++;
+                        } else {
+                            tarjeta.style.display = 'none';
+                        }
+                    });
+
+                    if (conteoVisibles) conteoVisibles.textContent = visibles;
+                    if (noResultados) noResultados.style.display = (visibles === 0) ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Registro - Repositorio FCA</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #006633;
+            --primary-dark: #004d26;
+            --secondary-color: #dd971a;
+        }
+        body {
+            background-color: #f4f6f9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .register-card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 580px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        .register-header {
+            background-color: var(--primary-color);
+            color: #fff;
+            text-align: center;
+            padding: 2rem 1.5rem;
+        }
+        .btn-uabc {
+            background-color: var(--primary-color);
+            color: #fff;
+            border-radius: 25px;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+        .btn-uabc:hover {
+            background-color: var(--primary-dark);
+            color: #fff;
+        }
+        .role-selector {
+            background-color: #f8fbf8;
+            border: 2px solid #c8e6c9;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .bloque-externo {
+            background-color: #fbfcfe;
+            border: 2px dashed #90caf9;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="register-header">
+            <i class="fas fa-university fa-3x mb-2"></i>
+            <h4 class="mb-0">Solicitud de Cuenta</h4>
+            <small>Personal Académico, Docente y de Apoyo FCA</small>
+        </div>
+        <div class="card-body p-4">
+            {% if messages %}
+                {% for m in messages %}
+                    <div class="alert alert-{{ m.tags }} py-2">{{ m }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" id="formRegistro">
+                {% csrf_token %}
+
+                <!-- Selección de Perfil / Rol -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-briefcase me-2 text-muted"></i>Tipo de Perfil / Procedencia *</label>
+                    <div class="role-selector">
+                        <!-- 1. Docente UABC -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolDocente" value="docente" checked>
+                            <label class="form-check-label fw-bold text-success" for="rolDocente">
+                                <i class="fas fa-chalkboard-teacher me-1"></i>Docente / Investigador UABC
+                            </label>
+                            <div class="text-muted small">Adscrito a la Universidad Autónoma de Baja California. Se creará tu perfil como autor UABC.</div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- 2. Colaborador Externo -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolExterno" value="externo">
+                            <label class="form-check-label fw-bold text-info" for="rolExterno" style="color: #0dcaf0 !important;">
+                                <i class="fas fa-globe-americas me-1"></i>Investigador / Colaborador Externo
+                            </label>
+                            <div class="text-muted small">Docente o coautor de otra institución académica colaborando en obras de la FCA.</div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- 3. Personal Administrativo -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolAdmin" value="administrativo">
+                            <label class="form-check-label fw-bold text-primary" for="rolAdmin">
+                                <i class="fas fa-user-tie me-1"></i>Personal Administrativo / Cómputo FCA
+                            </label>
+                            <div class="text-muted small">Gestión y digitalización institucional (no genera perfil de autor).</div>
+                        </div>
+                    </div>
+
+                    <!-- MÓDULO CONDICIONAL: UNIVERSIDAD DE PROCEDENCIA EXTERNA -->
+                    <div id="contenedor-datos-externo" class="bloque-externo">
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="fas fa-school me-1"></i>Institución de Procedencia
+                        </h6>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-muted mb-1">Seleccionar institución registrada:</label>
+                            <select name="institucion_existente" id="select_institucion_existente" class="form-select form-select-sm">
+                                <option value="nueva">+ Registrar nueva universidad / institución</option>
+                                {% for uni in universidades %}
+                                    <option value="{{ uni.nombre }} ({{ uni.siglas }})">{{ uni.nombre }} ({{ uni.siglas }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- CAMPOS SEPARADOS: NOMBRE Y SIGLAS -->
+                        <div id="subgrupo_nueva_institucion">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-muted mb-1">Nombre Oficial de la Universidad *</label>
+                                <input type="text" name="institucion_nombre" id="input_institucion_nombre" class="form-control form-control-sm" placeholder="Ej. Universidad Autónoma de Nuevo León">
+                            </div>
+                            <div class="mb-1">
+                                <label class="form-label small fw-bold text-muted mb-1">Siglas Oficiales *</label>
+                                <input type="text" name="institucion_siglas" id="input_institucion_siglas" class="form-control form-control-sm text-uppercase" placeholder="Ej. UANL" maxlength="15">
+                                <small class="text-muted" style="font-size: 0.76rem;">Se usará el formato estándar institucional: <em>Nombre (SIGLAS)</em>.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-id-card me-2 text-muted"></i>Nombre Completo *</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej. Dr. Carlos Soto Medina" required>
+                </div>
+
+                <!-- FECHA DE NACIMIENTO CON RESTRICCIÓN DINÁMICA DE FECHA MÁXIMA (HOY) -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="fas fa-calendar-alt me-2 text-muted"></i>Fecha de Nacimiento *</label>
+                        <input type="date" name="fecha_nacimiento" id="inputFechaNacimiento" class="form-control" required>
+                        <small class="text-muted" style="font-size: 0.75rem;">Para notificaciones de aniversario institucional.</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="fas fa-venus-mars me-2 text-muted"></i>Género *</label>
+                        <select name="genero" class="form-select" id="selectGeneroReg" required>
+                            <option value="F">Femenino</option>
+                            <option value="M">Masculino</option>
+                            <option value="NB">No binario</option>
+                            <option value="O">Otro / Prefiero describirme</option>
+                            <option value="NE" selected>Prefiero no especificar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3" id="divGeneroOtroReg" style="display: none;">
+                    <label class="form-label small fw-bold text-muted mb-1">Especificar género:</label>
+                    <input type="text" name="genero_otro" class="form-control form-control-sm" placeholder="Describe tu género">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-user me-2 text-muted"></i>Nombre de Usuario *</label>
+                    <input type="text" name="username" class="form-control" placeholder="Ej. csoto" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional *</label>
+                    <input type="email" name="correo" id="correoInput" class="form-control" placeholder="usuario@uabc.edu.mx" required>
+                </div>
+
+                <div class="mb-3" id="grupo_numero_empleado">
+                    <label class="form-label fw-bold"><i class="fas fa-hashtag me-2 text-muted"></i>Número de Empleado (Opcional)</label>
+                    <input type="text" name="numero_empleado" class="form-control" placeholder="Ej. 012345">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-lock me-2 text-muted"></i>Contraseña *</label>
+                    <input type="password" name="password" class="form-control" placeholder="Cree una contraseña segura" required>
+                </div>
+
+                <button type="submit" class="btn btn-uabc w-100 py-2 mt-2">Enviar Solicitud de Registro</button>
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary w-100 mt-2" style="border-radius: 25px;">Volver a Iniciar Sesión</a>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const hoy = new Date().toISOString().split('T')[0];
+            $('#inputFechaNacimiento').attr('max', hoy);
+
+            function actualizarVistaSegunRol() {
+                const rol = $('input[name="tipo_personal"]:checked').val();
+
+                if (rol === 'externo') {
+                    $('#contenedor-datos-externo').slideDown(250);
+                    $('#correoInput').attr('placeholder', 'ejemplo@universidad.edu.mx');
+                    $('#grupo_numero_empleado').slideUp(200);
+                } else {
+                    $('#contenedor-datos-externo').slideUp(250);
+                    $('#correoInput').attr('placeholder', 'usuario@uabc.edu.mx');
+                    $('#grupo_numero_empleado').slideDown(200);
+                }
+            }
+
+            $('input[name="tipo_personal"]').on('change', actualizarVistaSegunRol);
+
+            $('#selectGeneroReg').on('change', function() {
+                if ($(this).val() === 'O') {
+                    $('#divGeneroOtroReg').slideDown(200);
+                } else {
+                    $('#divGeneroOtroReg').slideUp(200);
+                }
+            });
+
+            $('#select_institucion_existente').on('change', function() {
+                if ($(this).val() === 'nueva') {
+                    $('#subgrupo_nueva_institucion').slideDown(200);
+                    $('#input_institucion_nombre').prop('required', true);
+                    $('#input_institucion_siglas').prop('required', true);
+                } else {
+                    $('#subgrupo_nueva_institucion').slideUp(200);
+                    $('#input_institucion_nombre').prop('required', false);
+                    $('#input_institucion_siglas').prop('required', false);
+                }
+            });
+
+            $('#input_institucion_siglas').on('input', function() {
+                $(this).val($(this).val().toUpperCase());
+            });
+
+            $('#formRegistro').on('submit', function(e) {
+                const rol = $('input[name="tipo_personal"]:checked').val();
+                if (rol === 'externo') {
+                    const sel = $('#select_institucion_existente').val();
+                    if (sel === 'nueva') {
+                        const nombreInst = $('#input_institucion_nombre').val().trim();
+                        const siglasInst = $('#input_institucion_siglas').val().trim();
+                        if (!nombreInst || !siglasInst) {
+                            e.preventDefault();
+                            alert('Por favor especifica el nombre oficial y las siglas de tu universidad de procedencia.');
+                        }
+                    }
+                }
+            });
+
+            actualizarVistaSegunRol();
+        });
+    </script>
+</body>
+</html>

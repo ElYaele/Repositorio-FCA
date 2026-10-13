@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repositorio Institucional de la FCA</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'images/LOGO FCA1.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #2c5234;
+            --secondary-color: #f0ad4e;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #ffffff;
+            padding: 1rem 0;
+        }
+
+        .navbar-brand img {
+            height: 110px;
+        }
+
+        /* ANIMACIÓN DINÁMICA PARA LOS BOTONES DE LA NAVBAR */
+        .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            padding: 0.5rem 0.9rem !important;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .nav-link:hover {
+            color: var(--secondary-color) !important;
+            transform: translateY(-2px);
+            background-color: rgba(44, 82, 52, 0.05);
+        }
+
+        .navbar-nav .text-success, .navbar-nav .dropdown-toggle {
+            transition: all 0.25s ease-in-out;
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem !important;
+        }
+
+        .navbar-nav .text-success:hover, .navbar-nav .dropdown-toggle:hover {
+            transform: translateY(-2px);
+            background-color: rgba(44, 82, 52, 0.08);
+        }
+
+        .hero-section {
+            background-image: linear-gradient(rgba(44, 82, 52, 0.85), rgba(44, 82, 52, 0.85)), url("{% static 'images/escuela.png' %}");
+            background-size: cover;
+            background-position: center;
+            color: #ffffff;
+            padding: 120px 0 80px 0;
+            margin-bottom: 25px;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-section p.lead {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+        }
+
+        /* ANIMACIONES INTERACTIVAS SUAVES (HOVER LIFT) */
+        .search-form, .resource-badge, .stat-card-link, .hover-lift, .category-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        }
+
+        .search-form:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+        }
+
+        .resource-badge:hover {
+            transform: scale(1.04);
+        }
+
+        .search-form {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-form input, .search-form select {
+            border: none;
+            font-size: 1.1rem;
+            padding: 0 20px;
+            height: 55px; /* Altura unificada para todos los elementos del input-group */
+        }
+
+        .search-form input {
+            border-radius: 6px 0 0 6px;
+        }
+
+        .search-form select {
+            border-left: 1px solid #e0e0e0;
+            max-width: 180px;
+            cursor: pointer;
+        }
+
+        .search-form button {
+            border-radius: 0 6px 6px 0;
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            font-size: 1.1rem;
+            height: 55px;
+        }
+
+        /* FRANJA SUPERIOR CON LOS 4 ACCESOS PRINCIPALES Y BORDE DORADO */
+        .stats-banner {
+            background: #ffffff;
+            border-top: 4px solid var(--secondary-color);
+            border-bottom: 2px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+            padding: 20px 0;
+            margin-bottom: 40px;
+        }
+        .stat-card-link {
+            text-decoration: none !important;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .stat-card-link:hover {
+            transform: translateY(-4px);
+            background-color: #f8f9fa;
+        }
+        .stat-item h3 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+        .stat-item p {
+            color: #666;
+            font-size: 0.78rem;
+            margin-bottom: 0;
+        }
+
+        .categories-section {
+            background-color: #ffffff;
+            padding: 40px 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        .category-card {
+            background-color: var(--light-bg);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 30px;
+            height: 410px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(44, 82, 52, 0.15);
+        }
+
+        .category-card h2 {
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.9rem;
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-card h2 i.fa-university, .category-card h2 i.far, .category-card h2 i.fas {
+            margin-right: 6px;
+        }
+
+        /* ESTILO PROFESIONAL PARA EL BOTÓN DE INFORMACIÓN */
+        .btn-card-info {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #e8f0fe;
+            color: #1967d2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            border: 1px solid #c2e7ff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 5;
+            text-decoration: none !important;
+        }
+        .btn-card-info:hover {
+            background-color: #1967d2;
+            color: #ffffff;
+            transform: scale(1.15);
+        }
+
+        .category-content {
+            height: calc(100% - 60px);
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .category-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .category-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .category-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .category-card ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .category-card ul li {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            transition: transform 0.2s ease;
+        }
+
+        .category-card ul li:last-child {
+            border-bottom: none;
+        }
+
+        .category-card ul li:hover {
+            transform: translateX(5px);
+        }
+
+        .category-card ul li a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            font-weight: 500;
+        }
+
+        .category-card ul li a:hover {
+            color: var(--accent-color);
+        }
+
+        .quick-links-section {
+            background-color: #f8f9fa;
+            border-top: 4px solid var(--primary-color);
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        .hover-lift {
+            height: 100%;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(44, 82, 52, 0.15) !important;
+        }
+
+        .icon-wrapper {
+            width: 65px;
+            height: 65px;
+            background-color: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .icon-wrapper i {
+            color: var(--primary-color);
+            font-size: 26px;
+            transition: color 0.3s ease;
+        }
+
+        .icon-wrapper svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--primary-color);
+            transition: stroke 0.3s ease;
+        }
+
+        .hover-lift:hover .icon-wrapper {
+            background-color: var(--primary-color) !important;
+        }
+
+        .hover-lift:hover .icon-wrapper svg {
+            stroke: #ffffff !important;
+        }
+
+        .hover-lift:hover .icon-wrapper i {
+            color: #ffffff !important;
+        }
+
+        .hover-lift:hover .link-label {
+            color: var(--secondary-color) !important;
+        }
+
+        .event-card {
+            background: white;
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event-card-link:hover .event-card {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .event-image-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-image-wrapper img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .event-card-link:hover .event-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .event-date {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .event-date .day {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .event-date .month {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .event-card .card-body {
+            padding: 1.25rem;
+        }
+
+        .event-card .card-title {
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .event-card .card-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            background-color: #2b2b2b;
+            color: #ffffff;
+            padding: 40px 0 20px 0;
+        }
+
+        .footer h3 {
+            color: var(--secondary-color);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .footer ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .footer ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer a {
+            color: #d1d1d1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--secondary-color);
+        }
+
+        .social-icons a {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'Home' %}">
+                    <img src="{% static 'images/FCA2.png' %}" alt="Logo FCA">
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto align-items-center">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://fca.tij.uabc.mx/posgrados" target="_blank">Acerca de</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://fca.tij.uabc.mx/contactus" target="_blank">Contacto</a>
+                        </li>
+
+                        {% if user.is_authenticated and upload_url %}
+                            <li class="nav-item ml-lg-2">
+                                <a href="{{ upload_url }}" class="btn btn-success font-weight-bold px-3 py-2 shadow-sm">
+                                    <i class="fas fa-upload mr-1"></i> Subir Documento
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown ml-lg-3">
+                                <a class="nav-link dropdown-toggle text-dark font-weight-bold" href="#" id="userNavbarDrop" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-user-circle fa-lg text-success mr-1"></i> {{ user.username }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right shadow border-0" aria-labelledby="userNavbarDrop">
+                                    <a class="dropdown-item" href="{% url 'mi_panel' %}">
+                                        <i class="fas fa-id-badge text-success mr-2"></i>Mi Panel Académico
+                                    </a>
+
+                                    {% if user.is_superuser %}
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="{% url 'panel_usuarios' %}">
+                                            <i class="fas fa-tasks text-primary mr-2"></i>Panel de Control y Moderación
+                                        </a>
+                                        <a class="dropdown-item" href="/admin/" target="_blank">
+                                            <i class="fas fa-tools text-secondary mr-2"></i>Django Admin
+                                        </a>
+                                    {% endif %}
+
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                                    </a>
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="nav-item ml-lg-3">
+                                <a class="nav-link text-success p-2" href="{% url 'login' %}" title="Acceso al Personal Docente / Administrativo">
+                                    <i class="fas fa-user fa-lg"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="hero-section text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <h1>Repositorio Institucional de FCA</h1>
+                    <p class="lead">
+                        Integra, publica y consulta los contenidos académicos, científicos y de investigación que genera y resguarda la Facultad.
+                    </p>
+
+                    <!-- MEJORA 4: BUSCADOR AVANZADO (Filtro por Atributo) -->
+                    <form class="search-form shadow-lg" action="{% url 'resultado_busqueda' %}" method="GET">
+                        <div class="input-group input-group-lg">
+                            <input type="search" class="form-control" style="width: 50%;"
+                                   placeholder="Artículos, tesis, libros, proyectos..."
+                                   aria-label="Buscar" name="q" value="{{ request.GET.q }}">
+
+                            <select name="filtro_atributo" class="custom-select text-muted font-weight-bold" style="max-width: 170px;">
+                                <option value="todo" {% if filtro_atributo_actual == 'todo' %}selected{% endif %}>Todo</option>
+                                <option value="titulos" {% if filtro_atributo_actual == 'titulos' %}selected{% endif %}>Solo Títulos</option>
+                                <option value="autores" {% if filtro_atributo_actual == 'autores' %}selected{% endif %}>Solo Autores</option>
+                                <option value="areas" {% if filtro_atributo_actual == 'areas' %}selected{% endif %}>Solo Áreas</option>
+                            </select>
+
+                            <div class="input-group-append">
+                                <button class="btn btn-warning font-weight-bold px-4 text-dark" type="submit">
+                                    <i class="fas fa-search mr-1"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- MEJORA 3: MÉTRICAS GLOBALES DE IMPACTO -->
+                    <div class="mt-4 row justify-content-center">
+                        <div class="col-md-auto mb-2">
+                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
+                                <i class="fas fa-layer-group text-success mr-1"></i>
+                                <strong>{{ total_obras|default:"0" }}</strong> Obras Totales
+                            </span>
+                        </div>
+                        <div class="col-md-auto mb-2">
+                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
+                                <i class="fas fa-chalkboard-teacher text-primary mr-1"></i>
+                                <strong>{{ investigadores_claustro|default:"0" }}</strong> Investigadores
+                            </span>
+                        </div>
+                        <div class="col-md-auto mb-2">
+                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
+                                <i class="fas fa-university text-warning mr-1"></i>
+                                <strong>{{ universidades_aliadas|default:"0" }}</strong> Universidades Aliadas
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <a href="{% url 'resultado_busqueda' %}" class="text-white text-decoration-none small" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+                            <i class="fas fa-sliders-h mr-1"></i> Búsqueda avanzada y filtros
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRANJA SUPERIOR CON LOS 4 ACCESOS PRINCIPALES Y BORDE DORADO -->
+    <div class="stats-banner">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 col-sm-6 border-right mb-2 mb-md-0">
+                    <a href="{% url 'universidades_colaboradoras' %}" class="stat-card-link">
+                        <div class="stat-item">
+                            <h3><i class="fas fa-university text-warning mr-1"></i> UABC & Aliadas</h3>
+                            <p>Red de Colaboración Académica</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6 border-right mb-2 mb-md-0">
+                    <a href="{% url 'directorio_profesores' %}" class="stat-card-link">
+                        <div class="stat-item">
+                            <h3><i class="fas fa-chalkboard-teacher text-primary mr-1"></i> Claustro FCA</h3>
+                            <p>Directorio de Investigadores</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6 border-right mb-2 mb-md-0">
+                    <a href="{% url 'resultado_busqueda' %}" class="stat-card-link">
+                        <div class="stat-item">
+                            <h3><i class="fas fa-book-reader text-success mr-1"></i> Investigación</h3>
+                            <p>Catálogo científico y gestiones</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{% url 'resultado_busqueda' %}?q=tesis" class="stat-card-link">
+                        <div class="stat-item">
+                            <h3><i class="fas fa-graduation-cap text-danger mr-1"></i> Tesis y Trabajos</h3>
+                            <p>Repositorio recepcional en PDF</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: 8 ÍNDICES DE CONTENIDO AMPLIADOS, FUNCIONALES Y CON BOTONES DE INFORMACIÓN -->
+    <div class="categories-section" id="categorias">
+        <div class="container">
+            <h2 class="text-center mb-5 font-weight-bold" style="color: var(--primary-color);">Índices de Contenido (Catálogo General)</h2>
+            <div class="row">
+
+                <!-- 1. ENTIDAD APORTANTE -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoEntidad" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-university"></i>Entidad Aportante</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroEntidades" class="form-control form-control-sm" placeholder="🔍 Buscar entidad..." onkeyup="filtrarLista('filtroEntidades', 'listaEntidades', 'item-entidad')">
+                            </div>
+                            <ul id="listaEntidades" class="mb-0">
+                                {% for entidad in entidades %}
+                                    <li class="item-entidad">
+                                        <a href="{% url 'resultado_busqueda' %}?entidad={{ entidad.id }}">{{ entidad.nombre }}</a>
+                                        <span class="text-muted small">- {{ entidad.total }} recurso{% if entidad.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay entidades registradas.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. AÑO DE PRODUCCIÓN -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoAnio" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="far fa-calendar-alt"></i>Año de Producción</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroAnios" class="form-control form-control-sm" placeholder="🔍 Buscar año..." onkeyup="filtrarLista('filtroAnios', 'listaAnios', 'item-anio')">
+                            </div>
+                            <ul id="listaAnios" class="mb-0">
+                                {% for anio in anos_produccion %}
+                                    <li class="item-anio">
+                                        <a href="{% url 'resultado_busqueda' %}?anio={{ anio.año_produccion }}">{{ anio.año_produccion }}</a>
+                                        <span class="text-muted small">- {{ anio.total }} recurso{% if anio.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay registros por año.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. TIPO DE CONTENIDO -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoTipo" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-file-alt"></i>Tipo de Contenido</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroTipos" class="form-control form-control-sm" placeholder="🔍 Buscar tipo..." onkeyup="filtrarLista('filtroTipos', 'listaTipos', 'item-tipo')">
+                            </div>
+                            <ul id="listaTipos" class="mb-0">
+                                {% for tipo_contenido in tipos_contenido %}
+                                    <li class="item-tipo">
+                                        <a href="{% url 'resultado_busqueda' %}?tipo={{ tipo_contenido.id }}">{{ tipo_contenido.nombre }}</a>
+                                        <span class="text-muted small">- {{ tipo_contenido.total }} recurso{% if tipo_contenido.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay tipos registrados.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ÁREA / MATERIA -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoArea" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-tags"></i>Área / Materia</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroAreas" class="form-control form-control-sm" placeholder="🔍 Buscar área..." onkeyup="filtrarLista('filtroAreas', 'listaAreas', 'item-area')">
+                            </div>
+                            <ul id="listaAreas" class="mb-0">
+                                {% for area in areas %}
+                                    <li class="item-area">
+                                        <a href="{% url 'resultado_busqueda' %}?area={{ area.nombre|urlencode }}">{{ area.nombre }}</a>
+                                        <span class="text-muted small">- {{ area.total }} recurso{% if area.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay áreas registradas.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. AUTOR / INVESTIGADOR -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoAutor" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-users"></i>Autor / Investigador</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroAutores" class="form-control form-control-sm" placeholder="🔍 Buscar autor..." onkeyup="filtrarLista('filtroAutores', 'listaAutores', 'item-autor')">
+                            </div>
+                            <ul id="listaAutores" class="mb-0">
+                                {% for autor in autores %}
+                                    <li class="item-autor">
+                                        <a href="{% url 'resultado_busqueda' %}?q={{ autor.nombre }}">{{ autor.nombre }}</a>
+                                        <span class="text-muted small">({{ autor.institucion_origen|default:"UABC" }})</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay autores registrados.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. IDIOMA -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoIdioma" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-language"></i>Idioma</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroIdiomas" class="form-control form-control-sm" placeholder="🔍 Buscar idioma..." onkeyup="filtrarLista('filtroIdiomas', 'listaIdiomas', 'item-idioma')">
+                            </div>
+                            <ul id="listaIdiomas" class="mb-0">
+                                {% for item in idiomas_existentes %}
+                                    <li class="item-idioma">
+                                        <a href="{% url 'resultado_busqueda' %}?q={{ item.idioma }}">{{ item.idioma }}</a>
+                                        <span class="text-muted small">- {{ item.total }} recurso{% if item.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay idiomas registrados.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. REVISTA / EDITORIAL -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoRevista" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-book-open"></i>Revista / Editorial</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2">
+                                <input type="text" id="filtroRevistas" class="form-control form-control-sm" placeholder="🔍 Buscar revista..." onkeyup="filtrarLista('filtroRevistas', 'listaRevistas', 'item-revista')">
+                            </div>
+                            <ul id="listaRevistas" class="mb-0">
+                                {% for item in revistas_existentes %}
+                                    <li class="item-revista">
+                                        <a href="{% url 'resultado_busqueda' %}?q={{ item.revista }}">{{ item.revista }}</a>
+                                        <span class="text-muted small">- {{ item.total }} recurso{% if item.total != 1 %}s{% endif %}</span>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted small text-center mt-3">No hay revistas registradas.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. EXPLORACIÓN RÁPIDA -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="category-card">
+                        <span class="btn-card-info" data-toggle="modal" data-target="#modalInfoExploracion" title="¿Qué es este índice?">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        <h2>
+                            <span><i class="fas fa-compass"></i>Exploración Rápida</span>
+                        </h2>
+                        <div class="category-content p-2">
+                            <div class="mb-2 text-muted small px-1">Tipos de recursos y accesos:</div>
+                            <ul class="mb-0">
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Artículo"><i class="fas fa-chevron-right text-success mr-1"></i> Artículo Científico / Revista</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Tesis"><i class="fas fa-chevron-right text-success mr-1"></i> Tesis / Titulación</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Libro"><i class="fas fa-chevron-right text-success mr-1"></i> Libro Completo</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Capítulo"><i class="fas fa-chevron-right text-success mr-1"></i> Capítulo de Libro</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Ponencia"><i class="fas fa-chevron-right text-success mr-1"></i> Ponencia / Congreso</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Proyecto"><i class="fas fa-chevron-right text-success mr-1"></i> Proyecto / Reporte Técnico</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'universidades_colaboradoras' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Ver Universidades Aliadas</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'directorio_profesores' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Consultar Claustro Docente</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES DE INFORMACIÓN PARA CADA ÍNDICE -->
+    <div class="modal fade" id="modalInfoEntidad" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-university mr-2"></i>Entidad Aportante</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Este índice agrupa los documentos según la facultad, instituto o dependencia universitaria que respalda, financia o aporta la obra al repositorio institucional.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoAnio" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="far fa-calendar-alt mr-2"></i>Año de Producción</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Permite filtrar y consultar cronológicamente todas las investigaciones y publicaciones científicas clasificadas por el año específico en que fueron emitidas o publicadas.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoTipo" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-file-alt mr-2"></i>Tipo de Contenido</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Clasifica los recursos de acuerdo con su formato académico o naturaleza editorial (artículos científicos, tesis de grado, libros completos, ponencias, etc.).</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoArea" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-tags mr-2"></i>Área / Materia</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Agrupa las obras según la disciplina, campo de estudio o rama del conocimiento científico al que están orientadas dentro de las ciencias económico-administrativas y afines.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoAutor" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-users mr-2"></i>Autor / Investigador</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Muestra el directorio de académicos y coautores que participan activamente en el acervo bibliográfico, indicando además su institución de origen.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoIdioma" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-language mr-2"></i>Idioma</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Filtra los documentos y trabajos según la lengua principal en la que se encuentran redactados en su totalidad (español, inglés, etc.).</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoRevista" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-book-open mr-2"></i>Revista / Editorial</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Facilita la consulta de publicaciones periódicas, revistas científicas indexadas o casas editoriales responsables de la difusión de los artículos.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalInfoExploracion" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-compass mr-2"></i>Exploración Rápida</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Menú de accesos directos temáticos y secciones institucionales clave para una navegación fluida dentro del repositorio y red colaborativa.</p>
+                </div>
+                <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: ENLACES RÁPIDOS -->
+    <div class="quick-links-section py-5">
+        <div class="container">
+            <h2 class="text-center mb-5 font-weight-bold" style="color: var(--primary-color); font-size: 2.2rem;">Enlaces Rápidos e Indexadores</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="https://gaceta.uabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                                <path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path>
+                            </svg>
+                        </div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">GACETA</div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="https://sorteosuabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">SORTEOS</div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="https://fundacionuabc.org/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">FUNDACIÓN</div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="https://bibliotecas.uabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">BIBLIOTECA</div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{% url 'directorio_profesores' %}" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">PROFESORES</div>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <a href="{% url 'universidades_colaboradoras' %}" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
+                        <div class="icon-wrapper mb-3 mx-auto"><i class="fas fa-university"></i></div>
+                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">RED ALIADA</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: PRÓXIMOS EVENTOS FCA -->
+    <div class="events-calendar py-5" style="background: linear-gradient(rgba(44, 82, 52, 0.9), rgba(44, 82, 52, 0.9)), url('{% static 'images/Próximos Eventos FCA.png' %}'); background-size: cover; background-position: center;">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="text-white display-4 font-weight-bold">Próximos Eventos FCA</h2>
+                <div class="underline mx-auto" style="width: 100px; height: 4px; background-color: var(--secondary-color);"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
+                        <div class="card event-card h-100">
+                            <div class="event-image-wrapper">
+                                <img src="{% static 'images/festejo.jpg' %}" alt="Festejo" class="card-img-top">
+                                <div class="event-date">
+                                    <span class="day">23</span>
+                                    <span class="month">SEP</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Aniversario de la FCA Tijuana</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-clock mr-2"></i>10:00 AM<br>
+                                    <i class="fas fa-map-marker-alt mr-2"></i>FCA
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
+                        <div class="card event-card h-100">
+                            <div class="event-image-wrapper">
+                                <img src="{% static 'images/show.jpg' %}" alt="Show de Talentos" class="card-img-top">
+                                <div class="event-date">
+                                    <span class="day">25</span>
+                                    <span class="month">SEP</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Show De Talentos</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-clock mr-2"></i>2:00 PM<br>
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Explanada FCA
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
+                        <div class="card event-card h-100">
+                            <div class="event-image-wrapper">
+                                <img src="{% static 'images/conferencia.jpg' %}" alt="Conferencia" class="card-img-top">
+                                <div class="event-date">
+                                    <span class="day">19</span>
+                                    <span class="month">SEP</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Conferencias Académicas</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-clock mr-2"></i>8:00 AM<br>
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Sala Audiovisual FCA
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h3>Acerca de FCA</h3>
+                    <p>La Facultad de Contaduría y Administración se dedica a formar profesionales de excelencia en las áreas de negocios y gestión.</p>
+                </div>
+                <div class="col-md-4">
+                    <h3>Enlaces rápidos y Redes</h3>
+                    <ul>
+                        <li><a href="{% url 'Home' %}">Inicio</a></li>
+                        <li><a href="{% url 'directorio_profesores' %}">Claustro de Profesores</a></li>
+                        <li><a href="{% url 'universidades_colaboradoras' %}">Red de Universidades Aliadas</a></li>
+                        <li><a href="https://www.remeri.org.mx/" target="_blank"><i class="fas fa-external-link-alt mr-1"></i> REMERI (Red Mexicana)</a></li>
+                        <li><a href="https://scholar.google.com" target="_blank"><i class="fas fa-graduation-cap mr-1"></i> Google Académico</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h3>Contacto</h3>
+                    <p>Teléfono: +52 (664) 6833174</p>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/fcatijuana" target="_blank"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/fca.tij.uabc/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr style="border-color: #555;">
+            <div class="row">
+                <div class="col-md-12 text-center text-muted">
+                    <p>&copy; 2026 Facultad de Contaduría y Administración. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function filtrarLista(inputId, listaId, claseItem) {
+            let input = document.getElementById(inputId).value.toLowerCase();
+            let lista = document.getElementById(listaId);
+            let items = lista.getElementsByClassName(claseItem);
+
+            for (let i = 0; i < items.length; i++) {
+                let texto = items[i].textContent || items[i].innerText;
+                if (texto.toLowerCase().indexOf(input) > -1) {
+                    items[i].style.display = "";
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
