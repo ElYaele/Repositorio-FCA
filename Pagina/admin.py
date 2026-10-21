@@ -23,12 +23,43 @@ class UniversidadAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'siglas')
     search_fields = ('nombre', 'siglas')
 
+from .views import es_superusuario_principal
+
+# RESTRICCIÓN DE SEGURIDAD EXCLUSIVA: Solo el Superadministrador Principal puede acceder a /admin/
+original_admin_has_permission = admin.site.has_permission
+
+def admin_site_exclusivo_superadmin_principal(request):
+    user = getattr(request, 'user', None)
+    if not user or not user.is_authenticated or not user.is_active or not user.is_superuser:
+        return False
+    return es_superusuario_principal(user)
+
+admin.site.has_permission = admin_site_exclusivo_superadmin_principal
+
+
 @admin.register(RegistroAuditoria)
 class RegistroAuditoriaAdmin(admin.ModelAdmin):
     list_display = ('accion', 'admin_usuario', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('accion', 'detalle')
     ordering = ('-created_at',)
+    actions = None  # Deshabilita acciones en masa (ej. "Eliminar registros seleccionados")
+
+    def has_add_permission(self, request):
+        # Nadie puede crear auditorías manuales desde el admin; solo el sistema las genera
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        # Bitácora inmutable: nadie puede alterar el contenido de una auditoría
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Inmutable contra borrados: nadie puede eliminar registros de auditoría
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        # Todos los campos son estrictamente de solo lectura
+        return [f.name for f in self.model._meta.fields]
 
 @admin.register(MensajeCumpleanos)
 class MensajeCumpleanosAdmin(admin.ModelAdmin):

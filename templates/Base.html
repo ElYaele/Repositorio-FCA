@@ -97,36 +97,180 @@
             transform: scale(1.04);
         }
 
-        .search-form {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+        /* BUSCADOR HERO DE ALTA DEFINICIÓN (CÁPSULA GLASSMORPHISM) */
+        .hero-search-wrapper {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.25);
+            max-width: 960px;
+            margin: 0 auto;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .search-form input, .search-form select {
-            border: none;
-            font-size: 1.1rem;
-            padding: 0 20px;
-            height: 55px; /* Altura unificada para todos los elementos del input-group */
+        .hero-search-wrapper:focus-within {
+            background: rgba(255, 255, 255, 0.28);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.38), 0 0 0 2px rgba(240, 173, 78, 0.85);
+            transform: translateY(-2px);
         }
-
-        .search-form input {
-            border-radius: 6px 0 0 6px;
+        .hero-search-inner {
+            background: #ffffff;
+            border-radius: 42px;
+            display: flex;
+            align-items: center;
+            padding: 4px 6px 4px 18px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+            position: relative;
         }
-
-        .search-form select {
-            border-left: 1px solid #e0e0e0;
-            max-width: 180px;
+        .hero-search-input {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #1e293b;
+            background: transparent;
+            flex: 1 1 auto;
+            padding: 10px 8px;
+            min-width: 140px;
+        }
+        .hero-search-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+            font-size: 0.98rem;
+        }
+        .hero-search-divider {
+            height: 30px;
+            width: 1px;
+            background: #e2e8f0;
+            margin: 0 8px;
+            flex-shrink: 0;
+        }
+        .hero-search-select {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background: #f8fafc url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 12px center/10px 10px !important;
+            border-radius: 30px !important;
+            padding: 8px 34px 8px 14px !important;
+            font-size: 0.92rem !important;
+            font-weight: 600 !important;
+            color: #334155 !important;
             cursor: pointer;
+            min-width: 190px;
+            max-width: 225px;
+            height: 44px;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .hero-search-select:hover {
+            background-color: #f1f5f9;
+        }
+        .hero-search-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.2px;
+            border-radius: 35px;
+            padding: 11px 26px;
+            margin-left: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .hero-search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45);
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #ffffff;
+        }
+        .hero-search-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
         }
 
-        .search-form button {
-            border-radius: 0 6px 6px 0;
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-            font-size: 1.1rem;
-            height: 55px;
+        .quick-search-chip {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none !important;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+        }
+        .quick-search-chip:hover {
+            background: rgba(255, 255, 255, 0.35);
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+        }
+
+        .hero-metric-pill {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e293b;
+            padding: 6px 16px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .hero-metric-pill:hover {
+            background: #ffffff;
+            color: #0f172a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .hero-metric-pill strong {
+            font-weight: 700;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-search-wrapper {
+                border-radius: 24px;
+                padding: 6px;
+            }
+            .hero-search-inner {
+                flex-direction: column;
+                border-radius: 20px;
+                padding: 10px 14px;
+                gap: 8px;
+            }
+            .hero-search-divider {
+                display: none;
+            }
+            .hero-search-input {
+                width: 100%;
+                min-width: 100%;
+                padding: 6px 0;
+            }
+            .hero-search-select {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+            }
+            .hero-search-btn {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 4px;
+                padding: 10px;
+            }
         }
 
         /* FRANJA SUPERIOR CON LOS 4 ACCESOS PRINCIPALES Y BORDE DORADO */
@@ -437,6 +581,22 @@
     </style>
 </head>
 <body>
+    {% if request.session.impersonator_original_user_id %}
+    <!-- BARRA FLOTANTE DE MODO SOPORTE ACTIVO (IDEA 9) -->
+    <div class="bg-warning text-dark py-2 px-3 shadow d-flex justify-content-between align-items-center sticky-top" style="z-index: 9999; border-bottom: 2px solid #d39e00; font-size: 0.95rem;">
+        <div class="d-flex align-items-center">
+            <span class="badge badge-dark text-warning px-2 py-1 mr-2 font-weight-bold"><i class="fas fa-user-shield"></i> MODO SOPORTE</span>
+            <span>Estás explorando el repositorio con la vista y perfil de <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>.</span>
+        </div>
+        <div>
+            <a href="{% url 'dejar_impersonacion' %}" class="btn btn-dark btn-sm rounded-pill px-3 font-weight-bold shadow-sm">
+                <i class="fas fa-sign-out-alt mr-1"></i> Salir de Modo Soporte
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% include 'sidebar_institucional.html' %}
 
     <header>
         <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
@@ -482,9 +642,11 @@
                                         <a class="dropdown-item" href="{% url 'panel_usuarios' %}">
                                             <i class="fas fa-tasks text-primary mr-2"></i>Panel de Control y Moderación
                                         </a>
+                                        {% if es_superadmin_principal %}
                                         <a class="dropdown-item" href="/admin/" target="_blank">
                                             <i class="fas fa-tools text-secondary mr-2"></i>Django Admin
                                         </a>
+                                        {% endif %}
                                     {% endif %}
 
                                     <div class="dropdown-divider"></div>
@@ -515,53 +677,76 @@
                         Integra, publica y consulta los contenidos académicos, científicos y de investigación que genera y resguarda la Facultad.
                     </p>
 
-                    <!-- MEJORA 4: BUSCADOR AVANZADO (Filtro por Atributo) -->
-                    <form class="search-form shadow-lg" action="{% url 'resultado_busqueda' %}" method="GET">
-                        <div class="input-group input-group-lg">
-                            <input type="search" class="form-control" style="width: 50%;"
-                                   placeholder="Artículos, tesis, libros, proyectos..."
-                                   aria-label="Buscar" name="q" value="{{ request.GET.q }}">
+                    <!-- BUSCADOR PRINCIPAL HERO (CÁPSULA GLASSMORPHISM MODERNA) -->
+                    <div class="hero-search-wrapper mb-3">
+                        <form action="{% url 'resultado_busqueda' %}" method="GET" class="m-0">
+                            <div class="hero-search-inner">
+                                <i class="fas fa-search text-success mr-2" style="font-size: 1.15rem; opacity: 0.85;"></i>
+                                <input type="search" class="hero-search-input"
+                                       placeholder="Buscar por título, autor, tesis, palabra clave..."
+                                       aria-label="Buscar" name="q" value="{{ request.GET.q }}">
 
-                            <select name="filtro_atributo" class="custom-select text-muted font-weight-bold" style="max-width: 170px;">
-                                <option value="todo" {% if filtro_atributo_actual == 'todo' %}selected{% endif %}>Todo</option>
-                                <option value="titulos" {% if filtro_atributo_actual == 'titulos' %}selected{% endif %}>Solo Títulos</option>
-                                <option value="autores" {% if filtro_atributo_actual == 'autores' %}selected{% endif %}>Solo Autores</option>
-                                <option value="areas" {% if filtro_atributo_actual == 'areas' %}selected{% endif %}>Solo Áreas</option>
-                            </select>
+                                <div class="hero-search-divider"></div>
 
-                            <div class="input-group-append">
-                                <button class="btn btn-warning font-weight-bold px-4 text-dark" type="submit">
+                                <select name="filtro_atributo" class="hero-search-select" title="Filtrar por atributo">
+                                    <option value="todo" {% if filtro_atributo_actual == 'todo' %}selected{% endif %}>Todo el catálogo</option>
+                                    <option value="titulos" {% if filtro_atributo_actual == 'titulos' %}selected{% endif %}>Solo Títulos</option>
+                                    <option value="autores" {% if filtro_atributo_actual == 'autores' %}selected{% endif %}>Autores y Asesores</option>
+                                    <option value="palabras_clave" {% if filtro_atributo_actual == 'palabras_clave' %}selected{% endif %}>Palabras Clave</option>
+                                    <option value="tipos" {% if filtro_atributo_actual == 'tipos' %}selected{% endif %}>Tipo de Recurso</option>
+                                    <option value="areas" {% if filtro_atributo_actual == 'areas' %}selected{% endif %}>Áreas Académicas</option>
+                                </select>
+
+                                <button class="hero-search-btn" type="submit">
                                     <i class="fas fa-search mr-1"></i> Buscar
                                 </button>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
 
-                    <!-- MEJORA 3: MÉTRICAS GLOBALES DE IMPACTO -->
-                    <div class="mt-4 row justify-content-center">
-                        <div class="col-md-auto mb-2">
-                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
-                                <i class="fas fa-layer-group text-success mr-1"></i>
-                                <strong>{{ total_obras|default:"0" }}</strong> Obras Totales
-                            </span>
+                    <!-- CHIPS DE BÚSQUEDA RÁPIDA DINÁMICA -->
+                    <div class="d-flex flex-wrap justify-content-center align-items-center mb-3" style="gap: 6px;">
+                        <span class="text-white-50 small mr-1 font-weight-bold" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+                            <i class="fas fa-bolt text-warning mr-1"></i>Tendencias:
+                        </span>
+                        {% for tema in tendencias_top %}
+                            <a href="{% url 'resultado_busqueda' %}?q={{ tema|urlencode }}" class="quick-search-chip">{{ tema }}</a>
+                        {% empty %}
+                            <a href="{% url 'resultado_busqueda' %}?q=Tesis" class="quick-search-chip">Tesis</a>
+                            <a href="{% url 'resultado_busqueda' %}?q=Inteligencia" class="quick-search-chip">Inteligencia de Negocios</a>
+                            <a href="{% url 'resultado_busqueda' %}?q=Auditor%C3%ADa" class="quick-search-chip">Auditoría</a>
+                            <a href="{% url 'resultado_busqueda' %}?q=Resiliencia" class="quick-search-chip">Resiliencia</a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- MÉTRICAS GLOBALES DE IMPACTO EN PÍLDORAS ELEGANTES -->
+                    <div class="mt-2 row justify-content-center">
+                        <div class="col-auto mb-2">
+                            <a href="{% url 'resultado_busqueda' %}" class="hero-metric-pill text-decoration-none">
+                                <i class="fas fa-layer-group text-success mr-2"></i>
+                                <strong>{{ total_obras|default:"0" }}</strong>
+                                <span class="text-secondary small">Obras Totales</span>
+                            </a>
                         </div>
-                        <div class="col-md-auto mb-2">
-                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
-                                <i class="fas fa-chalkboard-teacher text-primary mr-1"></i>
-                                <strong>{{ investigadores_claustro|default:"0" }}</strong> Investigadores
-                            </span>
+                        <div class="col-auto mb-2">
+                            <a href="{% url 'directorio_profesores' %}" class="hero-metric-pill text-decoration-none">
+                                <i class="fas fa-chalkboard-teacher text-primary mr-2"></i>
+                                <strong>{{ investigadores_claustro|default:"0" }}</strong>
+                                <span class="text-secondary small">Investigadores</span>
+                            </a>
                         </div>
-                        <div class="col-md-auto mb-2">
-                            <span class="badge badge-light px-3 py-2 text-dark font-weight-normal shadow-sm resource-badge d-block" style="font-size: 1.05rem; opacity: 0.95;">
-                                <i class="fas fa-university text-warning mr-1"></i>
-                                <strong>{{ universidades_aliadas|default:"0" }}</strong> Universidades Aliadas
-                            </span>
+                        <div class="col-auto mb-2">
+                            <a href="{% url 'universidades_colaboradoras' %}" class="hero-metric-pill text-decoration-none">
+                                <i class="fas fa-university text-warning mr-2"></i>
+                                <strong>{{ universidades_aliadas|default:"0" }}</strong>
+                                <span class="text-secondary small">Universidades Aliadas</span>
+                            </a>
                         </div>
                     </div>
 
                     <div class="mt-2">
-                        <a href="{% url 'resultado_busqueda' %}" class="text-white text-decoration-none small" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
-                            <i class="fas fa-sliders-h mr-1"></i> Búsqueda avanzada y filtros
+                        <a href="{% url 'resultado_busqueda' %}" class="text-white text-decoration-none small" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8); opacity: 0.9;">
+                            <i class="fas fa-sliders-h mr-1"></i> Búsqueda avanzada y filtros del catálogo
                         </a>
                     </div>
 

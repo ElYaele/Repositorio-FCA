@@ -7,35 +7,111 @@
     <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Flatpickr Datepicker con tema institucional -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --primary-color: #006633;
             --primary-dark: #004d26;
             --secondary-color: #dd971a;
         }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background-color: #f4f6f9;
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f9;
+        }
+
+        /* FRANJA SUPERIOR BLANCA CON LÍNEA DORADA INSTITUCIONAL */
+        .auth-top-bar {
+            background-color: #ffffff;
+            border-bottom: 3.5px solid var(--secondary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 10px 0;
+            z-index: 10;
+        }
+        .auth-bar-logo {
+            height: 42px;
+            width: auto;
+            transition: opacity 0.2s;
+        }
+        .auth-bar-logo:hover {
+            opacity: 0.9;
+        }
+        .auth-back-link {
+            color: #495057;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .auth-back-link:hover {
+            color: var(--primary-color);
+            background-color: #eaf5eb;
+            border-color: #c8e6c9;
+            transform: translateX(-2px);
+        }
+
+        /* ÁREA CENTRAL CON FONDO FOTOGRÁFICO DE CAMPUS FCA */
+        .auth-main-content {
+            flex: 1 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2.5rem 0;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            padding: 2.5rem 1rem;
+            background: linear-gradient(135deg, rgba(0, 77, 38, 0.88) 0%, rgba(0, 102, 51, 0.82) 50%, rgba(10, 35, 18, 0.92) 100%),
+                        url('/static/images/campus_fca.jpg') no-repeat center center fixed;
+            background-size: cover;
         }
+
         .register-card {
             border: none;
-            border-radius: 14px;
-            box-shadow: 0 6px 22px rgba(0,0,0,0.12);
-            width: 100%;
-            max-width: 580px;
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35), 0 8px 18px rgba(0, 0, 0, 0.2);
+            width: 95%;
+            max-width: 680px;
+            margin: auto;
             overflow: hidden;
             background-color: #fff;
+            animation: fadeInCard 0.4s ease-out;
+        }
+
+        /* FRANJA INFERIOR BLANCA CON LÍNEA DORADA INSTITUCIONAL */
+        .auth-bottom-bar {
+            background-color: #ffffff;
+            border-top: 3.5px solid var(--secondary-color);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04);
+            padding: 12px 0;
+            z-index: 10;
+        }
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .register-header {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: #fff;
             text-align: center;
-            padding: 2rem 1.5rem;
+            padding: 2.2rem 1.5rem 1.8rem;
         }
         .btn-uabc {
             background-color: var(--primary-color);
@@ -62,14 +138,284 @@
             margin-top: 15px;
             display: none;
         }
+
+        /* ==========================================================
+           TEMA INSTITUCIONAL UABC PARA FLATPICKR (VERDE INSTITUCIONAL)
+           ========================================================== */
+        .flatpickr-calendar {
+            font-family: inherit;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+            border: 1px solid #c8e6c9;
+            overflow: visible;
+            background: #ffffff;
+            width: 320px;
+        }
+        .flatpickr-months {
+            background-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            padding: 8px 6px 6px;
+            border-top-left-radius: 13px;
+            border-top-right-radius: 13px;
+            align-items: center;
+            position: relative;
+        }
+        .flatpickr-month {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            height: 40px;
+        }
+        .flatpickr-current-month {
+            font-size: 100%;
+            font-weight: 600;
+            color: #ffffff !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px 0 0;
+            left: 0;
+            width: 100%;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.2s;
+            height: 32px;
+            line-height: 1.2;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months option {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            font-weight: 500;
+        }
+
+        /* ==========================================================
+           SELECTOR DE AÑOS EDITABLE POR TECLADO + LISTA DESPLEGABLE CON SCROLL
+           ========================================================== */
+        .flatpickr-calendar,
+        .flatpickr-months,
+        .flatpickr-month,
+        .flatpickr-current-month {
+            overflow: visible !important;
+        }
+
+        .flatpickr-year-custom-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 6px;
+            height: 32px;
+            transition: background-color 0.2s, border-color 0.2s;
+            box-sizing: border-box;
+            cursor: pointer;
+            user-select: none;
+        }
+        .flatpickr-year-custom-wrapper:hover {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+            border-color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .flatpickr-year-custom-wrapper:focus-within {
+            background-color: rgba(255, 255, 255, 0.35) !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+        .flatpickr-year-input-custom {
+            width: 54px;
+            height: 100%;
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0 0 0 6px;
+            outline: none !important;
+            box-shadow: none !important;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .flatpickr-year-input-custom:focus {
+            cursor: text;
+        }
+        .flatpickr-year-arrow-btn {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            height: 100%;
+            padding: 0 8px 0 2px;
+            cursor: pointer;
+            outline: none !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        .flatpickr-year-arrow-btn i {
+            transition: transform 0.2s ease;
+        }
+        .flatpickr-year-custom-wrapper.open .flatpickr-year-arrow-btn i {
+            transform: rotate(180deg);
+        }
+
+        /* PANEL DESPLEGABLE DE AÑOS FLOTANTE DENTRO DEL CALENDARIO (12 AÑOS VISIBLES CON SCROLL) */
+        .flatpickr-year-scroll-panel {
+            position: absolute;
+            top: 48px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            width: 140px;
+            max-height: 312px; /* Exactamente 12 años visibles (26px * 12 = 312px) */
+            overflow-y: auto;
+            z-index: 999999 !important;
+            display: none;
+            padding: 4px 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar {
+            width: 7px;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar-track {
+            background: #f4f9f5;
+            border-radius: 4px;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+        .year-scroll-item {
+            height: 26px;
+            line-height: 26px;
+            text-align: center;
+            font-size: 0.92rem;
+            color: #212529;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .year-scroll-item:hover {
+            background-color: #e8f5e9;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        .year-scroll-item.active {
+            background-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            padding: 6px;
+            border-radius: 50%;
+            height: 32px;
+            width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            top: 10px;
+        }
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            fill: #ffffff !important;
+            width: 14px;
+            height: 14px;
+        }
+        .flatpickr-weekdays {
+            background-color: var(--primary-dark) !important;
+            padding: 4px 0;
+            height: 28px;
+        }
+        span.flatpickr-weekday {
+            color: #e0f2e9 !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .flatpickr-day {
+            border-radius: 8px;
+            color: #212529;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            height: 36px;
+            line-height: 36px;
+            margin: 1px 0;
+        }
+        .flatpickr-day:hover {
+            background-color: #e8f5e9 !important;
+            color: var(--primary-color) !important;
+            border-color: #c8e6c9 !important;
+        }
+        .flatpickr-day.today {
+            border-color: var(--secondary-color) !important;
+            border-width: 2px;
+        }
+        .flatpickr-day.today:hover {
+            background-color: #fff9e6 !important;
+            color: #212529 !important;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.selected:focus {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .flatpickr-day.disabled,
+        .flatpickr-day.disabled:hover {
+            color: #bbbbbb !important;
+        }
     </style>
 </head>
 <body>
-    <div class="register-card">
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+    <!-- FRANJA SUPERIOR BLANCA CON LÍNEA DORADA -->
+    <header class="auth-top-bar">
+        <div class="container-fluid px-3 px-md-4 d-flex justify-content-between align-items-center">
+            <a href="/" class="d-flex align-items-center text-decoration-none">
+                <img src="/static/images/FCA2.png" alt="Facultad de Contaduría y Administración" class="auth-bar-logo">
+            </a>
+            <a href="{% url 'login' %}" class="auth-back-link">
+                <i class="fas fa-sign-in-alt me-1 text-success"></i> Iniciar Sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- ÁREA CENTRAL CON FONDO FOTOGRÁFICO DE CAMPUS FCA -->
+    <main class="auth-main-content">
+        <div class="register-card">
         <div class="register-header">
             <i class="fas fa-university fa-3x mb-2"></i>
             <h4 class="mb-0">Solicitud de Cuenta</h4>
-            <small>Personal Académico, Docente y de Apoyo FCA</small>
+            <small>Personal Académico, Docente, Investigadores y de Apoyo FCA</small>
         </div>
         <div class="card-body p-4">
             {% if messages %}
@@ -78,7 +424,7 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post" id="formRegistro">
+            <form method="post" id="formRegistro" autocomplete="off" autocorrect="off">
                 {% csrf_token %}
 
                 <!-- Selección de Perfil / Rol -->
@@ -96,73 +442,158 @@
 
                         <hr class="my-2">
 
-                        <!-- 2. Colaborador Externo -->
+                        <!-- 2. Colaborador Externo (CELESTE ORIGINAL) -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="tipo_personal" id="rolExterno" value="externo">
                             <label class="form-check-label fw-bold text-info" for="rolExterno" style="color: #0dcaf0 !important;">
                                 <i class="fas fa-globe-americas me-1"></i>Investigador / Colaborador Externo
                             </label>
-                            <div class="text-muted small">Docente o coautor de otra institución académica colaborando en obras de la FCA.</div>
+                            <div class="text-muted small">Docente o coautor adscrito formalmente a otra institución colaborando en obras de la FCA.</div>
                         </div>
 
                         <hr class="my-2">
 
-                        <!-- 3. Personal Administrativo -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolAdmin" value="administrativo">
-                            <label class="form-check-label fw-bold text-primary" for="rolAdmin">
-                                <i class="fas fa-user-tie me-1"></i>Personal Administrativo / Cómputo FCA
+                        <!-- 3. Investigador Independiente (PÚRPURA) -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolIndependiente" value="independiente">
+                            <label class="form-check-label fw-bold" for="rolIndependiente" style="color: #6f42c1 !important;">
+                                <i class="fas fa-user-graduate me-1"></i>Investigador Independiente
                             </label>
-                            <div class="text-muted small">Gestión y digitalización institucional (no genera perfil de autor).</div>
+                            <div class="text-muted small">Investigador o consultor autónomo sin adscripción fija. Podrás ingresar tu universidad de procedencia o referencia académica.</div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- 4. Auxiliar de Investigación FCA (AZUL REY) -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolAuxiliar" value="auxiliar">
+                            <label class="form-check-label fw-bold" for="rolAuxiliar" style="color: #0d6efd !important;">
+                                <i class="fas fa-hands-helping me-1"></i>Auxiliar de Investigación FCA
+                            </label>
+                            <div class="text-muted small">Estudiante o prestador de Servicio Social Profesional / Prácticas que asiste formalmente a un profesor o investigador titular de la FCA.</div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- 5. Operador Técnico / Depurador de Contenidos (TEAL) -->
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolOperadorTecnico" value="operador_tecnico">
+                            <label class="form-check-label fw-bold" for="rolOperadorTecnico" style="color: #0891b2 !important;">
+                                <i class="fas fa-tools me-1"></i>Operador Técnico / Depurador de Contenidos
+                            </label>
+                            <div class="text-muted small">Personal técnico o de apoyo independiente para la digitalización de acervos, carga de documentos y depuración de contenidos de la facultad.</div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- 6. Soporte Técnico / Administración (VÍA SUPERADMIN - GRIS/DORADO) -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo_personal" id="rolSoporte" value="soporte">
+                            <label class="form-check-label fw-bold" for="rolSoporte" style="color: #1e293b !important;">
+                                <i class="fas fa-headset me-1 text-warning"></i>Soporte Técnico / Administración
+                            </label>
+                            <div class="text-muted small">Vía oficial de registro para administradores y soporte de la plataforma. La cuenta entra en modo lector hasta ser promovida a Super Administrador.</div>
                         </div>
                     </div>
 
-                    <!-- MÓDULO CONDICIONAL: UNIVERSIDAD DE PROCEDENCIA EXTERNA -->
-                    <div id="contenedor-datos-externo" class="bloque-externo">
+                    <!-- MÓDULO CONDICIONAL: VINCULACIÓN CON PROFESOR TITULAR PARA AUXILIAR DE INVESTIGACIÓN FCA -->
+                    <div id="contenedor-datos-auxiliar" class="p-3 mt-3 rounded-3" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe;">
                         <h6 class="fw-bold text-primary mb-2">
-                            <i class="fas fa-school me-1"></i>Institución de Procedencia
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Profesor(a) Titular / Investigador(a) a quien Asistirás *
+                        </h6>
+                        <p class="small text-muted mb-3">
+                            Como Auxiliar de Investigación, asistirás al docente seleccionado en la carga de obras y semblanza. Tu cuenta requerirá <strong>Visto Bueno del Profesor</strong> y posterior activación por Administración.
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">Profesor(a) Titular Responsable *</label>
+                            <select name="profesor_tutor_id" id="profesorTutorSelect" class="form-select form-select-sm">
+                                <option value="">-- Selecciona al Profesor Titular a quien asistirás --</option>
+                                {% for prof in profesores_uabc %}
+                                    <option value="{{ prof.id }}">{{ prof.nombre }} {% if prof.codigo_institucional %}({{ prof.codigo_institucional }}){% endif %}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted" style="font-size: 0.74rem;">El docente recibirá una notificación en su panel para validar y autorizar tu vinculación.</small>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Matrícula Estudiantil / Folio SSP *</label>
+                                <input type="text" name="matricula_auxiliar" id="inputMatriculaAuxiliar" class="form-control form-control-sm" placeholder="Ej. 1284567 o Folio de SSP">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Modalidad de Apoyo *</label>
+                                <select name="modalidad_auxiliar" class="form-select form-select-sm">
+                                    <option value="Servicio Social Profesional (SSP)">Servicio Social Profesional (SSP)</option>
+                                    <option value="Prácticas Profesionales">Prácticas Profesionales</option>
+                                    <option value="Asistente de Investigación">Asistente de Investigación</option>
+                                    <option value="Tesista / Auxiliar de Proyecto">Tesista / Auxiliar de Proyecto</option>
+                                    <option value="Apoyo Técnico Académico">Apoyo Técnico Académico</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 p-2 bg-white rounded border border-primary border-opacity-25 small text-primary d-flex align-items-center">
+                            <i class="fas fa-shield-alt me-2 text-primary fs-5"></i>
+                            <div><strong>Doble Aprobación Obligatoria:</strong> 1° Visto Bueno del Profesor Responsable <i class="fas fa-arrow-right mx-1 text-secondary"></i> 2° Activación por el Super Administrador.</div>
+                        </div>
+                    </div>
+
+                    <!-- MÓDULO CONDICIONAL: UNIVERSIDAD DE PROCEDENCIA (EXTERNO E INDEPENDIENTE) -->
+                    <div id="contenedor-datos-externo" class="bloque-externo">
+                        <h6 class="fw-bold text-primary mb-2" id="titulo-bloque-institucion">
+                            <i class="fas fa-university me-1"></i>Universidad o Institución de Procedencia
                         </h6>
 
                         <div class="mb-2">
-                            <label class="form-label small fw-bold text-muted mb-1">Seleccionar institución registrada:</label>
-                            <select name="institucion_existente" id="select_institucion_existente" class="form-select form-select-sm">
-                                <option value="nueva">+ Registrar nueva universidad / institución</option>
+                            <label class="form-label small fw-bold text-muted mb-1" id="label-institucion-nombre">Nombre Oficial de la Institución *</label>
+                            <input type="text" name="institucion_nombre" id="input_institucion_nombre" class="form-control form-control-sm" list="lista-universidades-catalogo" placeholder="Buscar o escribir nombre de la universidad..." autocomplete="off">
+                            <datalist id="lista-universidades-catalogo">
                                 {% for uni in universidades %}
-                                    <option value="{{ uni.nombre }} ({{ uni.siglas }})">{{ uni.nombre }} ({{ uni.siglas }})</option>
+                                    <option value="{{ uni.nombre }}" data-siglas="{{ uni.siglas }}">{{ uni.nombre }} ({{ uni.siglas }})</option>
                                 {% endfor %}
-                            </select>
+                            </datalist>
+                            <small class="text-muted" id="subtexto-institucion" style="font-size: 0.74rem;">Escribe para buscar una institución registrada o registrar una nueva.</small>
                         </div>
 
-                        <!-- CAMPOS SEPARADOS: NOMBRE Y SIGLAS -->
-                        <div id="subgrupo_nueva_institucion">
-                            <div class="mb-2">
-                                <label class="form-label small fw-bold text-muted mb-1">Nombre Oficial de la Universidad *</label>
-                                <input type="text" name="institucion_nombre" id="input_institucion_nombre" class="form-control form-control-sm" placeholder="Ej. Universidad Autónoma de Nuevo León">
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label small fw-bold text-muted mb-1">Siglas Oficiales *</label>
-                                <input type="text" name="institucion_siglas" id="input_institucion_siglas" class="form-control form-control-sm text-uppercase" placeholder="Ej. UANL" maxlength="15">
-                                <small class="text-muted" style="font-size: 0.76rem;">Se usará el formato estándar institucional: <em>Nombre (SIGLAS)</em>.</small>
-                            </div>
+                        <div class="mb-1">
+                            <label class="form-label small fw-bold text-muted mb-1">Siglas Oficiales *</label>
+                            <input type="text" name="institucion_siglas" id="input_institucion_siglas" class="form-control form-control-sm text-uppercase" placeholder="Ej. UANL, UNAM, IPN" maxlength="15" autocomplete="off">
+                            <small class="text-muted" style="font-size: 0.74rem;">Si seleccionas una registrada, las siglas se completarán solas.</small>
                         </div>
                     </div>
                 </div>
 
+                <!-- NORMALIZACIÓN DE NOMBRE EN 3 CAMPOS CON ANCHO EQUITATIVO (col-md-4 cada uno) -->
                 <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="fas fa-id-card me-2 text-muted"></i>Nombre Completo *</label>
-                    <input type="text" name="nombre" class="form-control" placeholder="Ej. Dr. Carlos Soto Medina" required>
+                    <label class="form-label fw-bold mb-1"><i class="fas fa-id-card me-2 text-muted"></i>Nombre Completo del Solicitante *</label>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" name="nombres" id="inputNombres" class="form-control" placeholder="Nombre(s) *" autocomplete="given-name" required>
+                            <small class="text-muted" style="font-size: 0.74rem;">Nombre(s)</small>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="apellido_paterno" id="inputApellidoP" class="form-control" placeholder="Apellido Paterno *" autocomplete="family-name" required>
+                            <small class="text-muted" style="font-size: 0.74rem;">Primer apellido</small>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="apellido_materno" id="inputApellidoM" class="form-control" placeholder="Apellido Materno" autocomplete="additional-name">
+                            <small class="text-muted" style="font-size: 0.74rem;">Segundo apellido (opc.)</small>
+                        </div>
+                    </div>
+                    <input type="hidden" name="nombre_completo" id="inputNombreCompleto" autocomplete="off">
                 </div>
 
-                <!-- FECHA DE NACIMIENTO CON RESTRICCIÓN DINÁMICA DE FECHA MÁXIMA (HOY) -->
+                <!-- FECHA DE NACIMIENTO CON CALENDARIO INSTITUCIONAL Y SELECTOR DESPLEGABLE DE AÑOS -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold"><i class="fas fa-calendar-alt me-2 text-muted"></i>Fecha de Nacimiento *</label>
-                        <input type="date" name="fecha_nacimiento" id="inputFechaNacimiento" class="form-control" required>
+                        <label class="form-label fw-bold" for="inputFechaNacimiento"><i class="fas fa-calendar-alt me-2 text-muted"></i>Fecha de Nacimiento *</label>
+                        <input type="text" name="fecha_nacimiento" id="inputFechaNacimiento" class="form-control" placeholder="Seleccionar fecha" autocomplete="bday" required>
                         <small class="text-muted" style="font-size: 0.75rem;">Para notificaciones de aniversario institucional.</small>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold"><i class="fas fa-venus-mars me-2 text-muted"></i>Género *</label>
-                        <select name="genero" class="form-select" id="selectGeneroReg" required>
+                        <select name="genero" class="form-select" id="selectGeneroReg" autocomplete="off" required>
                             <option value="F">Femenino</option>
                             <option value="M">Masculino</option>
                             <option value="NB">No binario</option>
@@ -174,27 +605,28 @@
 
                 <div class="mb-3" id="divGeneroOtroReg" style="display: none;">
                     <label class="form-label small fw-bold text-muted mb-1">Especificar género:</label>
-                    <input type="text" name="genero_otro" class="form-control form-control-sm" placeholder="Describe tu género">
+                    <input type="text" name="genero_otro" class="form-control form-control-sm" placeholder="Describe tu género" autocomplete="off">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold"><i class="fas fa-user me-2 text-muted"></i>Nombre de Usuario *</label>
-                    <input type="text" name="username" class="form-control" placeholder="Ej. csoto" required>
+                    <input type="text" name="username" class="form-control" placeholder="Ej. csoto" autocomplete="username" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional *</label>
-                    <input type="email" name="correo" id="correoInput" class="form-control" placeholder="usuario@uabc.edu.mx" required>
+                    <label class="form-label fw-bold" id="labelCorreo"><i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional *</label>
+                    <input type="email" name="correo" id="correoInput" class="form-control" placeholder="usuario@uabc.edu.mx" autocomplete="email" required>
                 </div>
 
-                <div class="mb-3" id="grupo_numero_empleado">
-                    <label class="form-label fw-bold"><i class="fas fa-hashtag me-2 text-muted"></i>Número de Empleado (Opcional)</label>
-                    <input type="text" name="numero_empleado" class="form-control" placeholder="Ej. 012345">
+                <!-- CLAVE O MATRÍCULA DE EMPLEADO (EVITA PALABRAS CLAVE BANCARIAS/NÚMERO) -->
+                <div class="mb-3" id="grupo_empleado_fca">
+                    <label class="form-label fw-bold" for="inputClaveEmpleado"><i class="fas fa-id-badge me-2 text-muted"></i>Matrícula o Clave de Empleado (Opcional)</label>
+                    <input type="text" name="clave_empleado" id="inputClaveEmpleado" class="form-control" placeholder="Ej. EMP-012345" autocomplete="off" autocorrect="off">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold"><i class="fas fa-lock me-2 text-muted"></i>Contraseña *</label>
-                    <input type="password" name="password" class="form-control" placeholder="Cree una contraseña segura" required>
+                    <input type="password" name="password" class="form-control" placeholder="Cree una contraseña segura" autocomplete="new-password" required>
                 </div>
 
                 <button type="submit" class="btn btn-uabc w-100 py-2 mt-2">Enviar Solicitud de Registro</button>
@@ -202,24 +634,391 @@
             </form>
         </div>
     </div>
+    </main>
+
+    <!-- FRANJA INFERIOR BLANCA CON LÍNEA DORADA -->
+    <footer class="auth-bottom-bar">
+        <div class="container-fluid px-3 px-md-4 text-center">
+            <small class="text-muted" style="font-size: 0.82rem;">
+                Universidad Autónoma de Baja California &middot; Facultad de Contaduría y Administración &middot; Repositorio Institucional
+            </small>
+        </div>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script>
         $(document).ready(function() {
-            const hoy = new Date().toISOString().split('T')[0];
-            $('#inputFechaNacimiento').attr('max', hoy);
+            // Inicialización de Flatpickr con tema institucional UABC y selector desplegable de 12 años con scroll
+            const fpInstance = flatpickr('#inputFechaNacimiento', {
+                locale: 'es',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                maxDate: 'today',
+                allowInput: true,
+                monthSelectorType: 'dropdown',
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Configuración del input visible para evitar que Chromium active alertas de pago
+                    if (instance.altInput) {
+                        instance.altInput.setAttribute('autocomplete', 'bday');
+                        instance.altInput.setAttribute('name', 'nacimiento_fecha_docente');
+                        instance.altInput.setAttribute('id', 'nacimiento_fecha_docente');
+                        instance.altInput.setAttribute('placeholder', 'Seleccionar fecha (o escribir)');
+
+                        // Sincronización al escribir manualmente con teclado
+                        function sincronizarFechaEscrita() {
+                            const val = instance.altInput.value.trim();
+                            if (!val) return;
+                            const partes = val.split(/[\/\-\.]/);
+                            if (partes.length === 3) {
+                                let d, m, y;
+                                if (partes[0].length === 4) {
+                                    y = parseInt(partes[0], 10);
+                                    m = parseInt(partes[1], 10);
+                                    d = parseInt(partes[2], 10);
+                                } else {
+                                    d = parseInt(partes[0], 10);
+                                    m = parseInt(partes[1], 10);
+                                    y = parseInt(partes[2], 10);
+                                }
+                                if (y < 100) y += (y > 30 ? 1900 : 2000);
+                                if (!isNaN(d) && !isNaN(m) && !isNaN(y) && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+                                    const hoy = new Date();
+                                    const fechaIngresada = new Date(y, m - 1, d);
+                                    if (fechaIngresada <= hoy && y >= 1920) {
+                                        const ymd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                        instance.setDate(ymd, true);
+                                    }
+                                }
+                            }
+                        }
+
+                        instance.altInput.addEventListener('blur', sincronizarFechaEscrita);
+                        instance.altInput.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                sincronizarFechaEscrita();
+                            }
+                        });
+                    }
+
+                    // Reemplazo del selector por un combo editable (input) + botón de despliegue de 12 años con scroll
+                    const yearWrapper = instance.calendarContainer ? instance.calendarContainer.querySelector('.numInputWrapper') : null;
+                    if (yearWrapper && yearWrapper.parentNode) {
+                        yearWrapper.style.display = 'none';
+
+                        // 1. Contenedor en la cabecera
+                        const customYearWrapper = document.createElement('div');
+                        customYearWrapper.className = 'flatpickr-year-custom-wrapper';
+                        customYearWrapper.setAttribute('title', 'Escribe el año o haz clic para ver la lista');
+
+                        // 2. Input editable para escribir el año directamente con teclado
+                        const yearInput = document.createElement('input');
+                        yearInput.type = 'text';
+                        yearInput.maxLength = 4;
+                        yearInput.className = 'flatpickr-year-input-custom';
+                        yearInput.value = instance.currentYear;
+                        yearInput.setAttribute('aria-label', 'Año de nacimiento');
+
+                        // 3. Botón flecha para desplegar lista
+                        const arrowBtn = document.createElement('button');
+                        arrowBtn.type = 'button';
+                        arrowBtn.className = 'flatpickr-year-arrow-btn';
+                        arrowBtn.setAttribute('aria-label', 'Ver lista de años');
+                        arrowBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+
+                        customYearWrapper.appendChild(yearInput);
+                        customYearWrapper.appendChild(arrowBtn);
+                        yearWrapper.parentNode.insertBefore(customYearWrapper, yearWrapper.nextSibling);
+
+                        // 4. Panel flotante de años (12 años visibles con scroll)
+                        const yearPanel = document.createElement('div');
+                        yearPanel.className = 'flatpickr-year-scroll-panel';
+
+                        const anioActual = new Date().getFullYear();
+                        const anioMinimo = 1920;
+
+                        for (let y = anioActual; y >= anioMinimo; y--) {
+                            const item = document.createElement('div');
+                            item.className = 'year-scroll-item' + (y === instance.currentYear ? ' active' : '');
+                            item.setAttribute('data-year', y);
+                            item.textContent = y;
+
+                            item.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                seleccionarAnio(y);
+                            });
+
+                            yearPanel.appendChild(item);
+                        }
+
+                        instance.calendarContainer.appendChild(yearPanel);
+
+                        // Funciones de control del panel
+                        function openYearPanel() {
+                            yearPanel.style.display = 'block';
+                            customYearWrapper.classList.add('open');
+                            const activeEl = yearPanel.querySelector('.year-scroll-item.active');
+                            if (activeEl) {
+                                yearPanel.scrollTop = activeEl.offsetTop - (yearPanel.clientHeight / 2) + 13;
+                            }
+                        }
+
+                        function closeYearPanel() {
+                            yearPanel.style.display = 'none';
+                            customYearWrapper.classList.remove('open');
+                        }
+
+                        function toggleYearPanel(e) {
+                            if (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
+                            if (yearPanel.style.display === 'block') {
+                                closeYearPanel();
+                            } else {
+                                openYearPanel();
+                                yearInput.select();
+                            }
+                        }
+
+                        function seleccionarAnio(y) {
+                            y = parseInt(y, 10);
+                            if (!isNaN(y) && y >= anioMinimo && y <= anioActual) {
+                                instance.changeYear(y);
+                                syncYearActive(y);
+                            }
+                            closeYearPanel();
+                        }
+
+                        function syncYearActive(y) {
+                            yearInput.value = y;
+                            yearPanel.querySelectorAll('.year-scroll-item').forEach(el => {
+                                if (parseInt(el.getAttribute('data-year'), 10) === y) {
+                                    el.classList.add('active');
+                                } else {
+                                    el.classList.remove('active');
+                                }
+                            });
+                        }
+
+                        // Clic en la flecha o en el contenedor abre/cierra la lista
+                        arrowBtn.addEventListener('click', toggleYearPanel);
+                        arrowBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+
+                        customYearWrapper.addEventListener('click', function(e) {
+                            if (e.target !== yearInput) {
+                                toggleYearPanel(e);
+                            }
+                        });
+
+                        // Clic o focus en el input del año: selecciona el texto para escribir de inmediato y abre la lista
+                        yearInput.addEventListener('focus', function() {
+                            this.select();
+                            openYearPanel();
+                        });
+
+                        yearInput.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            this.select();
+                            openYearPanel();
+                        });
+
+                        yearInput.addEventListener('mousedown', function(e) {
+                            e.stopPropagation();
+                        });
+
+                        // Evitar que Flatpickr intercepte eventos de teclado en el input de año
+                        yearInput.addEventListener('keydown', function(e) {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = parseInt(this.value, 10);
+                                if (!isNaN(val) && val >= anioMinimo && val <= anioActual) {
+                                    seleccionarAnio(val);
+                                } else {
+                                    this.value = instance.currentYear;
+                                    closeYearPanel();
+                                }
+                                this.blur();
+                            } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                this.value = instance.currentYear;
+                                closeYearPanel();
+                                this.blur();
+                            } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                const nuevo = instance.currentYear - 1;
+                                if (nuevo >= anioMinimo) {
+                                    seleccionarAnio(nuevo);
+                                    openYearPanel();
+                                    this.select();
+                                }
+                            } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                const nuevo = instance.currentYear + 1;
+                                if (nuevo <= anioActual) {
+                                    seleccionarAnio(nuevo);
+                                    openYearPanel();
+                                    this.select();
+                                }
+                            }
+                        });
+
+                        yearInput.addEventListener('keypress', function(e) {
+                            e.stopPropagation();
+                        });
+
+                        yearInput.addEventListener('keyup', function(e) {
+                            e.stopPropagation();
+                        });
+
+                        // Escritura directa del año por teclado reactiva
+                        yearInput.addEventListener('input', function() {
+                            const val = this.value.replace(/\D/g, '').slice(0, 4);
+                            this.value = val;
+
+                            if (val.length > 0) {
+                                const matchEl = Array.from(yearPanel.querySelectorAll('.year-scroll-item'))
+                                    .find(el => el.getAttribute('data-year').startsWith(val));
+                                if (matchEl) {
+                                    yearPanel.scrollTop = matchEl.offsetTop - (yearPanel.clientHeight / 2) + 13;
+                                }
+                            }
+
+                            if (val.length === 4) {
+                                const num = parseInt(val, 10);
+                                if (num >= anioMinimo && num <= anioActual) {
+                                    instance.changeYear(num);
+                                    syncYearActive(num);
+                                }
+                            }
+                        });
+
+                        yearInput.addEventListener('blur', function() {
+                            const val = parseInt(this.value, 10);
+                            if (!isNaN(val) && val >= anioMinimo && val <= anioActual) {
+                                instance.changeYear(val);
+                                syncYearActive(val);
+                            } else {
+                                this.value = instance.currentYear;
+                            }
+                        });
+
+                        yearPanel.addEventListener('click', function(e) { e.stopPropagation(); });
+                        yearPanel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+                        yearPanel.addEventListener('wheel', function(e) { e.stopPropagation(); });
+
+                        // Cerrar al hacer clic fuera
+                        document.addEventListener('click', function(e) {
+                            if (!customYearWrapper.contains(e.target) && !yearPanel.contains(e.target)) {
+                                closeYearPanel();
+                            }
+                        });
+
+                        instance.config.onClose.push(function() {
+                            closeYearPanel();
+                        });
+
+                        instance.config.onYearChange.push(function() {
+                            syncYearActive(instance.currentYear);
+                        });
+                        instance.config.onMonthChange.push(function() {
+                            syncYearActive(instance.currentYear);
+                        });
+                    }
+                }
+            });
+
+            // Sincronización automática de nombres
+            function syncNombre() {
+                const n = $('#inputNombres').val().trim();
+                const p = $('#inputApellidoP').val().trim();
+                const m = $('#inputApellidoM').val().trim();
+                let full = n;
+                if (p) full += ' ' + p;
+                if (m) full += ' ' + m;
+                $('#inputNombreCompleto').val(full);
+            }
+            $('#inputNombres, #inputApellidoP, #inputApellidoM').on('input blur', syncNombre);
+
+            window.mostrarToast = function(mensaje, tipo = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) return;
+                const toastId = 'toast_' + Date.now();
+                let bgClass = 'bg-primary text-white';
+                let icon = 'fas fa-info-circle';
+                if (tipo === 'success') { bgClass = 'bg-success text-white'; icon = 'fas fa-check-circle'; }
+                else if (tipo === 'warning') { bgClass = 'bg-warning text-dark'; icon = 'fas fa-exclamation-triangle'; }
+                else if (tipo === 'danger' || tipo === 'error') { bgClass = 'bg-danger text-white'; icon = 'fas fa-times-circle'; }
+                
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast align-items-center ${bgClass} border-0 shadow-lg mb-2`;
+                toastEl.id = toastId;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center">
+                            <i class="${icon} me-2 fs-5"></i>
+                            <div>${mensaje}</div>
+                        </div>
+                        <button type="button" class="btn-close ${tipo === 'warning' ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+                toastContainer.appendChild(toastEl);
+                const toast = new bootstrap.Toast(toastEl, { delay: 4500 });
+                toast.show();
+                toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+            };
 
             function actualizarVistaSegunRol() {
                 const rol = $('input[name="tipo_personal"]:checked').val();
 
                 if (rol === 'externo') {
                     $('#contenedor-datos-externo').slideDown(250);
+                    $('#contenedor-datos-auxiliar').slideUp(200);
+                    $('#titulo-bloque-institucion').html('<i class="fas fa-university me-1"></i>Universidad o Institución de Procedencia');
+                    $('#label-institucion-nombre').text('Nombre Oficial de la Institución *');
+                    $('#subtexto-institucion').text('Escribe para buscar tu institución adscrita o registrar una nueva.');
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional *');
                     $('#correoInput').attr('placeholder', 'ejemplo@universidad.edu.mx');
-                    $('#grupo_numero_empleado').slideUp(200);
+                    $('#grupo_empleado_fca').slideUp(200);
+                } else if (rol === 'independiente') {
+                    $('#contenedor-datos-externo').slideDown(250);
+                    $('#contenedor-datos-auxiliar').slideUp(200);
+                    $('#titulo-bloque-institucion').html('<i class="fas fa-graduation-cap me-1"></i>Universidad o Institución de Referencia / Formación');
+                    $('#label-institucion-nombre').text('Universidad o Institución de Procedencia / Egreso *');
+                    $('#subtexto-institucion').text('Indica tu universidad de formación académica o de referencia (no implica relación laboral o adscripción exclusiva).');
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Electrónico de Contacto *');
+                    $('#correoInput').attr('placeholder', 'tu_correo@ejemplo.com o correo académico');
+                    $('#grupo_empleado_fca').slideUp(200);
+                } else if (rol === 'auxiliar') {
+                    $('#contenedor-datos-externo').slideUp(200);
+                    $('#contenedor-datos-auxiliar').slideDown(250);
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional UABC del Auxiliar *');
+                    $('#correoInput').attr('placeholder', 'estudiante@uabc.edu.mx');
+                    $('#grupo_empleado_fca').slideUp(200);
+                } else if (rol === 'operador_tecnico') {
+                    $('#contenedor-datos-externo').slideUp(200);
+                    $('#contenedor-datos-auxiliar').slideUp(200);
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional UABC del Operador *');
+                    $('#correoInput').attr('placeholder', 'operador.tecnico@uabc.edu.mx');
+                    $('#grupo_empleado_fca').slideDown(200);
+                } else if (rol === 'soporte') {
+                    $('#contenedor-datos-externo').slideUp(200);
+                    $('#contenedor-datos-auxiliar').slideUp(200);
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional UABC del Administrador / Soporte *');
+                    $('#correoInput').attr('placeholder', 'soporte.fca@uabc.edu.mx');
+                    $('#grupo_empleado_fca').slideDown(200);
                 } else {
-                    $('#contenedor-datos-externo').slideUp(250);
-                    $('#correoInput').attr('placeholder', 'usuario@uabc.edu.mx');
-                    $('#grupo_numero_empleado').slideDown(200);
+                    $('#contenedor-datos-externo').slideUp(200);
+                    $('#contenedor-datos-auxiliar').slideUp(200);
+                    $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional UABC *');
+                    $('#correoInput').attr('placeholder', 'docente@uabc.edu.mx');
+                    $('#grupo_empleado_fca').slideDown(200);
                 }
             }
 
@@ -233,16 +1032,18 @@
                 }
             });
 
-            $('#select_institucion_existente').on('change', function() {
-                if ($(this).val() === 'nueva') {
-                    $('#subgrupo_nueva_institucion').slideDown(200);
-                    $('#input_institucion_nombre').prop('required', true);
-                    $('#input_institucion_siglas').prop('required', true);
-                } else {
-                    $('#subgrupo_nueva_institucion').slideUp(200);
-                    $('#input_institucion_nombre').prop('required', false);
-                    $('#input_institucion_siglas').prop('required', false);
-                }
+            // Autocompletado reactivo de siglas al seleccionar del datalist
+            $('#input_institucion_nombre').on('input change', function() {
+                const valEscrito = $(this).val().trim().toLowerCase();
+                $('#lista-universidades-catalogo option').each(function() {
+                    if ($(this).val().toLowerCase() === valEscrito) {
+                        const sigla = $(this).data('siglas');
+                        if (sigla) {
+                            $('#input_institucion_siglas').val(sigla);
+                        }
+                        return false;
+                    }
+                });
             });
 
             $('#input_institucion_siglas').on('input', function() {
@@ -250,16 +1051,31 @@
             });
 
             $('#formRegistro').on('submit', function(e) {
+                syncNombre();
                 const rol = $('input[name="tipo_personal"]:checked').val();
-                if (rol === 'externo') {
-                    const sel = $('#select_institucion_existente').val();
-                    if (sel === 'nueva') {
-                        const nombreInst = $('#input_institucion_nombre').val().trim();
-                        const siglasInst = $('#input_institucion_siglas').val().trim();
-                        if (!nombreInst || !siglasInst) {
-                            e.preventDefault();
-                            alert('Por favor especifica el nombre oficial y las siglas de tu universidad de procedencia.');
-                        }
+                if (rol === 'externo' || rol === 'independiente') {
+                    const nombreInst = $('#input_institucion_nombre').val().trim();
+                    const siglasInst = $('#input_institucion_siglas').val().trim();
+                    if (!nombreInst || !siglasInst) {
+                        e.preventDefault();
+                        mostrarToast('Por favor especifica el nombre oficial y las siglas de la universidad o institución.', 'warning');
+                        $('#input_institucion_nombre').focus();
+                        return false;
+                    }
+                } else if (rol === 'auxiliar') {
+                    const tutorId = $('#profesorTutorSelect').val();
+                    const matricula = $('#inputMatriculaAuxiliar').val().trim();
+                    if (!tutorId) {
+                        e.preventDefault();
+                        mostrarToast('Por favor selecciona al Profesor Titular de la FCA al que asistirás.', 'warning');
+                        $('#profesorTutorSelect').focus();
+                        return false;
+                    }
+                    if (!matricula) {
+                        e.preventDefault();
+                        mostrarToast('Por favor ingresa tu matrícula estudiantil o folio de SSP.', 'warning');
+                        $('#inputMatriculaAuxiliar').focus();
+                        return false;
                     }
                 }
             });
@@ -268,4 +1084,4 @@
         });
     </script>
 </body>
-</html>
+</html>

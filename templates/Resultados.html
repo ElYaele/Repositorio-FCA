@@ -159,31 +159,35 @@
             display: none;
         }
 
-        /* VISOR PDF EN MODAL ALTA DEFINICIÓN (520PX) */
+        /* VISOR PDF EN MODAL ALTA DEFINICIÓN */
         .modal-pdf-preview {
             background: #fdfdfd;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            height: 520px;
+            border-radius: 12px;
+            min-height: 460px;
+            height: 480px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
         .modal-pdf-canvas {
-            max-width: 94%;
-            max-height: 94%;
+            max-width: 95%;
+            max-height: 95%;
             object-fit: contain;
             display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
             border-radius: 4px;
         }
         .modal-info-scroll {
-            max-height: 520px;
+            height: 100%;
+            min-height: 560px;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
-            padding-right: 8px;
+            padding-right: 6px;
         }
         .modal-info-scroll::-webkit-scrollbar {
             width: 6px;
@@ -192,9 +196,15 @@
             background-color: #cbd5e1;
             border-radius: 10px;
         }
+        .btn-card-citar:hover {
+            background-color: #e8f5e9;
+            color: var(--uabc-green);
+            border-color: var(--uabc-green);
+        }
     </style>
 </head>
 <body>
+    {% include 'sidebar_institucional.html' %}
 
     <!-- CABECERA SUPERIOR FIJA CON BUSCADOR -->
     <header class="top-header">
@@ -209,17 +219,20 @@
                 <div class="col-md-9">
                     <form method="get" action="">
                         <div class="search-box-card d-flex align-items-center">
+                            <i class="fas fa-search text-success ms-2 me-1 opacity-75"></i>
                             <input type="text" name="q" value="{{ query_actual }}" class="form-control border-0 shadow-none bg-transparent ps-2" placeholder="Buscar por título, autor, área o palabras clave...">
 
-                            <!-- MEJORA 4: Selector de atributo preservado -->
-                            <select name="filtro_atributo" class="form-select border-0 text-muted fw-bold" style="max-width: 160px; border-left: 1px solid #dee2e6 !important;">
-                                <option value="todo" {% if filtro_atributo_actual == 'todo' %}selected{% endif %}>Todo</option>
+                            <!-- Selector de atributo enriquecido sin cortes de texto -->
+                            <select name="filtro_atributo" class="form-select border-0 text-muted fw-bold ps-3 pe-4" style="min-width: 185px; max-width: 220px; border-left: 1px solid #dee2e6 !important; font-size: 0.9rem; cursor: pointer;">
+                                <option value="todo" {% if filtro_atributo_actual == 'todo' %}selected{% endif %}>Todo el catálogo</option>
                                 <option value="titulos" {% if filtro_atributo_actual == 'titulos' %}selected{% endif %}>Solo Títulos</option>
-                                <option value="autores" {% if filtro_atributo_actual == 'autores' %}selected{% endif %}>Solo Autores</option>
-                                <option value="areas" {% if filtro_atributo_actual == 'areas' %}selected{% endif %}>Solo Áreas</option>
+                                <option value="autores" {% if filtro_atributo_actual == 'autores' %}selected{% endif %}>Autores y Asesores</option>
+                                <option value="palabras_clave" {% if filtro_atributo_actual == 'palabras_clave' %}selected{% endif %}>Palabras Clave</option>
+                                <option value="tipos" {% if filtro_atributo_actual == 'tipos' %}selected{% endif %}>Tipo de Recurso</option>
+                                <option value="areas" {% if filtro_atributo_actual == 'areas' %}selected{% endif %}>Áreas Académicas</option>
                             </select>
 
-                            <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow-sm" style="background-color: var(--uabc-gold); border: none;">
+                            <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow-sm ms-2" style="background-color: var(--uabc-gold); border: none;">
                                 <i class="fas fa-search me-1"></i>Buscar
                             </button>
                         </div>
@@ -255,24 +268,39 @@
                         <div class="filter-scroll-box">
                             <ul class="list-unstyled mb-0">
                                 <li class="mb-1">
-                                    <a href="{% url 'resultado_busqueda' %}" class="filter-link fw-bold text-success {% if not tipo_actual %}active-filter{% endif %}">
+                                    <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link fw-bold text-success {% if not tipo_actual %}active-filter{% endif %}">
                                         <i class="fas fa-th-list me-1"></i>Ver todos los recursos
                                     </a>
                                 </li>
                                 {% for tipo in tipos_contenido %}
                                     <li class="mb-1">
-                                        <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo.id }}&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center {% if tipo_actual == tipo.id|stringformat:'s' %}active-filter{% endif %}">
-                                            <span>
-                                                {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-muted"></i>
-                                                {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-muted"></i>
-                                                {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-muted"></i>
-                                                {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-muted"></i>
-                                                {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-muted"></i>
-                                                {% else %}<i class="fas fa-file-alt me-1 text-muted"></i>{% endif %}
-                                                {{ tipo.nombre }}
-                                            </span>
-                                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ tipo.total }})</span>
-                                        </a>
+                                        {% if tipo_actual == tipo.id|stringformat:'s' %}
+                                            <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
+                                                <span>
+                                                    {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-success"></i>
+                                                    {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-success"></i>
+                                                    {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-success"></i>
+                                                    {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-success"></i>
+                                                    {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-success"></i>
+                                                    {% else %}<i class="fas fa-file-alt me-1 text-success"></i>{% endif %}
+                                                    {{ tipo.nombre }}
+                                                </span>
+                                                <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ tipo.total }} <i class="fas fa-times ms-1 small"></i></span>
+                                            </a>
+                                        {% else %}
+                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo.id }}&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center {% if tipo.total == 0 %}text-muted opacity-75{% endif %}">
+                                                <span>
+                                                    {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-muted"></i>
+                                                    {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-muted"></i>
+                                                    {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-muted"></i>
+                                                    {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-muted"></i>
+                                                    {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-muted"></i>
+                                                    {% else %}<i class="fas fa-file-alt me-1 text-muted"></i>{% endif %}
+                                                    {{ tipo.nombre }}
+                                                </span>
+                                                <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ tipo.total }})</span>
+                                            </a>
+                                        {% endif %}
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -288,13 +316,20 @@
                             <ul class="list-unstyled mb-0">
                                 {% for ar in areas_disponibles %}
                                     <li class="mb-1">
-                                        <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ ar.nombre|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center {% if area_actual == ar.nombre %}active-filter{% endif %}">
-                                            <span class="text-truncate" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
-                                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ ar.total }})</span>
-                                        </a>
+                                        {% if area_actual == ar.nombre %}
+                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area=&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
+                                                <span class="text-truncate" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
+                                                <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ ar.total }} <i class="fas fa-times ms-1 small"></i></span>
+                                            </a>
+                                        {% else %}
+                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ ar.nombre|urlencode }}&anio={{ anio_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center">
+                                                <span class="text-truncate" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
+                                                <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ ar.total }})</span>
+                                            </a>
+                                        {% endif %}
                                     </li>
                                 {% empty %}
-                                    <li class="text-muted small">No hay áreas registradas</li>
+                                    <li class="text-muted small">No hay áreas para este filtro</li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -345,6 +380,7 @@
                                  data-doi="{{ art.doi_enlace|default:'N/A' }}"
                                  data-grado="{{ art.grado_academico|default:'N/A' }}"
                                  data-director="{% if art.asesor %}{{ art.asesor.nombre }}{% else %}N/A{% endif %}"
+                                 data-codirector="{% if art.coasesor %}{{ art.coasesor.nombre }}{% else %}N/A{% endif %}"
                                  data-programa="{{ art.carrera_o_posgrado|default:'N/A' }}"
                                  data-editorial="{{ art.editorial|default:'N/A' }}"
                                  data-descripcion="{{ art.descripcion|default:'Sin resumen disponible.' }}"
@@ -384,14 +420,29 @@
                                 <div>
                                     <div class="text-muted small mb-2 border-top pt-2 text-truncate" style="font-size: 0.74rem;" title="{% for a in art.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}">
                                         <i class="fas fa-user-edit me-1 text-success"></i>
-                                        {% for a in art.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autor{% endfor %}
+                                        {% for a in art.autor.all %}
+                                            {% if forloop.first %}
+                                                <strong class="text-dark">{{ a.nombre }}</strong> <span class="badge bg-warning text-dark border px-1 py-0 me-1" style="font-size: 0.62rem;" title="Autor Principal">★ Principal</span>
+                                            {% else %}
+                                                <span>{{ a.nombre }}</span>{% if not forloop.last %}, {% endif %}
+                                            {% endif %}
+                                        {% empty %}Sin autor{% endfor %}
                                     </div>
-                                    <div class="d-flex justify-content-between align-items-center gap-1">
-                                        <span class="btn btn-outline-success btn-sm fw-bold py-1 px-3 rounded-pill" style="font-size: 0.75rem;">Ver más</span>
+                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm fw-bold rounded-pill px-3 py-1 btn-card-citar shadow-sm"
+                                                style="font-size: 0.76rem;"
+                                                onclick="event.stopPropagation(); abrirModalCitar('{{ art.titulo|escapejs }}', '{% for a in art.autor.all %}{{ a.nombre|escapejs }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autor{% endfor %}', '{{ art.año_produccion|default:'' }}', '{{ art.tipo_contenido.nombre|escapejs }}');"
+                                                title="Citar esta publicación">
+                                            <i class="fas fa-quote-right me-1 text-success"></i>Citar
+                                        </button>
                                         {% if art.pdf %}
-                                            <a href="{{ art.pdf.url }}" target="_blank" onclick="event.stopPropagation();" class="btn btn-success btn-sm fw-bold py-1 px-3 rounded-pill" style="font-size: 0.75rem;">
-                                                <i class="fas fa-file-pdf me-1"></i>PDF
+                                            <a href="{{ art.pdf.url }}" download onclick="event.stopPropagation();" class="btn btn-success btn-sm fw-bold rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.76rem;" title="Descargar archivo PDF directamente">
+                                                <i class="fas fa-download me-1"></i>Descargar
                                             </a>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted border rounded-pill px-2 py-1 small" style="font-size: 0.72rem;">
+                                                <i class="fas fa-file-alt me-1"></i>Sin PDF
+                                            </span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -455,35 +506,45 @@
         </div>
     </div>
 
-    <!-- MODAL DETALLE DE PUBLICACIÓN (DINÁMICO PARA LAS 6 CATEGORÍAS) -->
+    <!-- MODAL DETALLE DE PUBLICACIÓN (INFORMACIÓN ALARGADA SIN SCROLL FORZADO) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-success text-white py-3">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-book-open me-2"></i>Ficha Académica de la Publicación</h5>
+                    <h5 class="modal-title fw-bold fs-6"><i class="fas fa-book-open me-2"></i>Ficha Académica de la Publicación</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 bg-light">
-                    <div class="row g-4 align-items-start">
-                        <!-- COLUMNA IZQUIERDA: PORTADA VERTICAL Y BOTÓN PDF -->
+                    <div class="row g-4 align-items-stretch">
+                        <!-- COLUMNA IZQUIERDA: PORTADA VERTICAL Y BOTONES PDF -->
                         <div class="col-lg-5 d-flex flex-column">
-                            <div class="modal-pdf-preview mb-3">
+                            <div class="modal-pdf-preview mb-3 flex-grow-1 shadow-sm">
                                 <canvas class="modal-pdf-canvas" id="modalPdfCanvas"></canvas>
                                 <div class="modal-pdf-loading text-danger text-center p-3" id="modalPdfLoading">
                                     <i class="fas fa-file-pdf fa-3x mb-2"></i>
                                     <span class="d-block small">Cargando vista previa...</span>
                                 </div>
                             </div>
-                            <div id="modalPdfWrapper" class="mt-2" style="display: none;">
-                                <a href="#" id="modalPdfLink" target="_blank" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill">
-                                    <i class="fas fa-file-pdf me-2"></i>Abrir Documento PDF Completo
-                                </a>
+                            <div id="modalPdfWrapper" class="mt-auto" style="display: none;">
+                                <div class="d-flex flex-column gap-2">
+                                    <button type="button" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill" id="btnVerDocAquiModal" onclick="abrirVisorPdfModal()">
+                                        <i class="fas fa-eye me-2"></i>Ver Documento Aquí
+                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <a href="#" id="modalPdfNuevaPestanaLink" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Abrir archivo PDF en una pestaña nueva del navegador">
+                                            <i class="fas fa-external-link-alt me-1"></i>En otra pestaña
+                                        </a>
+                                        <a href="#" id="modalPdfDownloadLink" download class="btn btn-outline-danger flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Descargar archivo PDF directamente">
+                                            <i class="fas fa-download me-1"></i>Descargar
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- COLUMNA DERECHA: METADATOS Y RESUMEN RESALTADO -->
-                        <div class="col-lg-7">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll">
+                        <!-- COLUMNA DERECHA: METADATOS Y RESUMEN ALARGADO -->
+                        <div class="col-lg-7 d-flex flex-column">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll flex-grow-1 d-flex flex-column">
                                 <h4 class="fw-bold text-dark mb-3 pt-1" id="modalTituloObra" style="line-height: 1.35;"></h4>
                                 <div class="mb-3 d-flex flex-wrap gap-1">
                                     <span class="badge bg-success" id="modalTipoObra"></span>
@@ -500,7 +561,7 @@
                                 </div>
 
                                 <h6 class="fw-bold text-success mb-2"><i class="fas fa-align-left me-1"></i>Resumen / Descripción Detallada:</h6>
-                                <div class="p-3 bg-light rounded-3 border">
+                                <div class="p-3 bg-light rounded-3 border flex-grow-1 overflow-auto">
                                     <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6;" id="modalDescripcionObra"></p>
                                 </div>
                             </div>
@@ -508,23 +569,113 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-white border-top-0 py-3 d-flex justify-content-between">
-
-                    <!-- MEJORA 1: GENERADOR DE CITAS MULTIFORMATO -->
-                    <div class="dropdown me-auto">
-                        <button class="btn btn-outline-success rounded-pill shadow-sm dropdown-toggle fw-bold px-4" type="button" id="btnCitarObra" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-quote-right me-2"></i>Citar Obra
-                        </button>
-                        <ul class="dropdown-menu shadow border-0" aria-labelledby="btnCitarObra">
-                            <li><h6 class="dropdown-header text-success fw-bold">Copiar formato:</h6></li>
-                            <li><a class="dropdown-item py-2" href="#" onclick="generarCita(event, 'APA')">APA 7ma Edición</a></li>
-                            <li><a class="dropdown-item py-2" href="#" onclick="generarCita(event, 'CHICAGO')">Chicago</a></li>
-                            <li><a class="dropdown-item py-2" href="#" onclick="generarCita(event, 'MLA')">MLA</a></li>
-                            <li><a class="dropdown-item py-2" href="#" onclick="generarCita(event, 'HARVARD')">Harvard</a></li>
-                            <li><a class="dropdown-item py-2" href="#" onclick="generarCita(event, 'VANCOUVER')">Vancouver</a></li>
-                        </ul>
-                    </div>
+                    <!-- BOTÓN CITAR OBRA (ABRE EL MISMO MODAL INTERACTIVO Y ARRASTRABLE QUE EN LAS CREDENCIALES) -->
+                    <button type="button" class="btn btn-outline-success rounded-pill shadow-sm fw-bold px-4" id="btnCitarObraFicha" onclick="abrirModalCitarDesdeFicha()">
+                        <i class="fas fa-quote-right me-2"></i>Citar Obra
+                    </button>
 
                     <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR PDF CON NAVEGACIÓN Y PAGINACIÓN POR CLIC (IGUAL A SEMBLANZAS) -->
+    <div class="modal fade" id="modalVisorPdf" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white py-3">
+                    <div class="d-flex align-items-center text-truncate me-3">
+                        <i class="fas fa-file-pdf text-danger me-2 fa-lg"></i>
+                        <span class="fw-bold text-truncate" id="visorPdfTitulo">Visor de Documento</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <a href="#" id="visorPdfNuevaPestanaLink" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" title="Abrir PDF en una pestaña nueva del navegador">
+                            <i class="fas fa-external-link-alt me-1"></i><span class="d-none d-sm-inline">Abrir en otra pestaña</span><span class="d-inline d-sm-none">Pestaña</span>
+                        </a>
+                        <a href="#" id="visorPdfDescargarLink" download class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" title="Descargar archivo PDF">
+                            <i class="fas fa-download me-1"></i>Descargar
+                        </a>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                </div>
+                <div class="bg-light p-2 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="small fw-bold text-secondary">
+                        <i class="fas fa-mouse-pointer me-1 text-primary"></i>Navegación por páginas
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnVisorPdfPrev" onclick="cambiarPaginaVisor(-1)">
+                            <i class="fas fa-chevron-left me-1"></i>Anterior
+                        </button>
+                        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm small fw-bold" id="visorPdfPaginaBadge">
+                            Pág. 1 / 1
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnVisorPdfNext" onclick="cambiarPaginaVisor(1)">
+                            Siguiente<i class="fas fa-chevron-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body p-3 bg-secondary bg-opacity-10 text-center" style="min-height: 580px; max-height: 75vh; overflow-y: auto;">
+                    <div id="visorPdfLoading" class="text-center py-5">
+                        <div class="spinner-border text-danger mb-2" role="status"></div>
+                        <div class="small text-muted fw-bold">Cargando documento PDF...</div>
+                    </div>
+                    <canvas id="visorPdfCanvas" style="display: none; max-width: 100%; box-shadow: 0 4px 18px rgba(0,0,0,0.15); border-radius: 6px; background: #fff; margin: 0 auto;"></canvas>
+                </div>
+                <div class="modal-footer bg-white border-top py-2 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" onclick="volverADetalleModal()">
+                        <i class="fas fa-arrow-left me-1"></i>Volver a la Ficha
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm px-4 rounded-pill" data-bs-dismiss="modal">Cerrar Visor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CITAR DIRECTO DESDE LAS CREDENCIALES O LA FICHA (ARRASTRABLE Y MULTIFORMATO) -->
+    <div class="modal fade" id="modalCitarObraDirecto" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+        <div class="modal-dialog modal-dialog-centered" id="dialogCitarObra">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-success text-white py-3 d-flex align-items-center justify-content-between" id="citaDirectoHeader" style="cursor: grab; user-select: none;">
+                    <div class="d-flex align-items-center text-truncate me-2">
+                        <i class="fas fa-grip-vertical me-2 opacity-75" title="Haz clic y mantén presionado para mover libremente"></i>
+                        <h5 class="modal-title fw-bold fs-6 mb-0 text-truncate"><i class="fas fa-quote-right me-2"></i>Citar Publicación</h5>
+                        <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-2 py-0 ms-2 small fw-normal d-none d-sm-inline" style="font-size: 0.68rem;" title="Haz clic y arrastra para mover">
+                            <i class="fas fa-arrows-alt me-1"></i>Arrastrable
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                        <button type="button" class="btn btn-sm btn-link text-white text-decoration-none p-1" onclick="reCentrarModalCitasGlobal()" title="Restablecer posición al centro (doble clic en el encabezado)">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1" id="citaDirectoTitulo"></h6>
+                        <small class="text-muted d-block mb-3" id="citaDirectoAutores"></small>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-success active rounded-pill px-3 tab-cita-btn" id="btnTabApa" onclick="cambiarEstiloCita('APA')">APA 7ma</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn" id="btnTabMla" onclick="cambiarEstiloCita('MLA')">MLA 9</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn" id="btnTabChicago" onclick="cambiarEstiloCita('CHICAGO')">Chicago</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn" id="btnTabHarvard" onclick="cambiarEstiloCita('HARVARD')">Harvard</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn" id="btnTabIeee" onclick="cambiarEstiloCita('IEEE')">IEEE</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn" id="btnTabVancouver" onclick="cambiarEstiloCita('VANCOUVER')">Vancouver</button>
+                    </div>
+                    <div class="p-3 bg-white rounded-3 border shadow-sm">
+                        <p id="citaDirectoTexto" class="small text-dark mb-0 font-monospace" style="line-height: 1.55; user-select: all;"></p>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-arrows-alt me-1"></i>Puedes arrastrar este cuadro por el encabezado para ver el documento o ficha de fondo.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0 py-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm" id="btnCopiarCitaDirecto" onclick="copiarCitaTextoDirecto()">
+                        <i class="fas fa-copy me-1"></i>Copiar Cita
+                    </button>
                 </div>
             </div>
         </div>
@@ -538,7 +689,19 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        // Lógica de Renderizado de PDF y Mapeo de Modal
+        let currentPdfUrl = '';
+        let currentPdfTitulo = '';
+        let currentPdfDoc = null;
+        let currentPdfPage = 1;
+        let isRenderingPdf = false;
+
+        let citaActualData = {
+            titulo: '',
+            autores: '',
+            anio: '',
+            tipo: ''
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             // Renderizar miniaturas en las tarjetas de resultados
             document.querySelectorAll('.pdf-preview-box[data-pdf-url]').forEach(function(box) {
@@ -567,7 +730,7 @@
                 });
             });
 
-            // Lógica del modal con estructura dinámica de 6 categorías
+            // Lógica de mapeo del modal de detalle de publicación
             const modalDetalle = document.getElementById('modalDetalleObra');
             if (modalDetalle) {
                 modalDetalle.addEventListener('show.bs.modal', function(event) {
@@ -595,10 +758,20 @@
                         if (!director) director = 'N/A';
                     }
 
+                    let rawCoDirector = btn.getAttribute('data-codirector') || 'N/A';
+                    let codirector = 'N/A';
+                    if (rawCoDirector && rawCoDirector !== 'N/A') {
+                        codirector = rawCoDirector.replace(/\s*\([^)]*\)/g, '').trim();
+                        if (!codirector) codirector = 'N/A';
+                    }
+
                     const programa = btn.getAttribute('data-programa') || 'N/A';
                     const editorial = btn.getAttribute('data-editorial') || 'N/A';
                     const descripcion = btn.getAttribute('data-descripcion') || 'Sin resumen disponible.';
-                    const pdfUrl = btn.getAttribute('data-pdf');
+                    const pdfUrl = btn.getAttribute('data-pdf') || '';
+
+                    currentPdfUrl = pdfUrl;
+                    currentPdfTitulo = titulo;
 
                     let htmlEspecificos = '';
                     const tipoL = tipo.toLowerCase();
@@ -607,6 +780,7 @@
                         htmlEspecificos = `
                             <div class="mb-2"><strong><i class="fas fa-graduation-cap me-1 text-success"></i>Grado Académico:</strong> ${grado}</div>
                             <div class="mb-2"><strong><i class="fas fa-user-tie me-1 text-success"></i>Director / Asesor:</strong> ${director}</div>
+                            ${codirector && codirector !== 'N/A' ? `<div class="mb-2"><strong><i class="fas fa-user-friends me-1 text-success"></i>Co-director / Co-asesor:</strong> ${codirector}</div>` : ''}
                             <div><strong><i class="fas fa-university me-1 text-success"></i>Programa Educativo:</strong> ${programa}</div>
                         `;
                     } else if (tipoL.includes('capítulo') || tipoL.includes('capitulo')) {
@@ -648,14 +822,17 @@
                     document.getElementById('modalCamposEspecificos').innerHTML = htmlEspecificos;
                     document.getElementById('modalDescripcionObra').textContent = descripcion;
 
+                    // Columna izquierda PDF con vista previa y acciones
                     const pdfWrapper = document.getElementById('modalPdfWrapper');
-                    const pdfLink = document.getElementById('modalPdfLink');
+                    const pdfDownloadLink = document.getElementById('modalPdfDownloadLink');
+                    const pdfNuevaPestanaLink = document.getElementById('modalPdfNuevaPestanaLink');
                     const modalCanvas = document.getElementById('modalPdfCanvas');
                     const modalLoading = document.getElementById('modalPdfLoading');
 
                     if (pdfUrl && pdfUrl.trim() !== '') {
                         pdfWrapper.style.display = 'block';
-                        pdfLink.href = pdfUrl;
+                        if (pdfDownloadLink) pdfDownloadLink.href = pdfUrl;
+                        if (pdfNuevaPestanaLink) pdfNuevaPestanaLink.href = pdfUrl;
                         modalLoading.style.display = 'block';
                         modalCanvas.style.display = 'none';
 
@@ -682,59 +859,276 @@
                     }
                 });
             }
+
+            // Al cerrar el visor PDF, asegurarse de que no quede bloqueado el scroll del body
+            const visorModalEl = document.getElementById('modalVisorPdf');
+            if (visorModalEl) {
+                visorModalEl.addEventListener('hidden.bs.modal', function() {
+                    const detalleModalEl = document.getElementById('modalDetalleObra');
+                    if (detalleModalEl && detalleModalEl.classList.contains('show')) {
+                        document.body.classList.add('modal-open');
+                    }
+                });
+            }
         });
 
-        // MEJORA 1: FUNCIÓN JAVASCRIPT GENERADORA DE CITAS
-        function generarCita(event, formato) {
-            event.preventDefault();
+        // ========================================================
+        // VISOR PDF DEDICADO CON PAGINACIÓN POR CLIC
+        // ========================================================
+        function abrirVisorPdfModal() {
+            if (!currentPdfUrl) return;
 
-            // Extraer datos directamente de la ficha en el DOM
-            const tituloRaw = document.getElementById('modalTituloObra').textContent.trim();
-            const autoresRaw = document.getElementById('modalAutoresObra').textContent.trim();
-            const anioRaw = document.getElementById('modalAnioObra').textContent.trim();
+            const visorModalEl = document.getElementById('modalVisorPdf');
+            const visorTitulo = document.getElementById('visorPdfTitulo');
+            const visorDescargar = document.getElementById('visorPdfDescargarLink');
+            const visorNuevaPestana = document.getElementById('visorPdfNuevaPestanaLink');
+            const canvas = document.getElementById('visorPdfCanvas');
+            const loading = document.getElementById('visorPdfLoading');
 
-            const titulo = tituloRaw || 'Título Desconocido';
-            const anio = (anioRaw && anioRaw !== 'None') ? anioRaw : 's.f.';
-            const autores = (autoresRaw === 'Sin autores' || !autoresRaw) ? 'Autor Desconocido' : autoresRaw;
-
-            let cita = '';
-
-            switch(formato) {
-                case 'APA':
-                    cita = `${autores}. (${anio}). ${titulo}. Repositorio Institucional FCA.`;
-                    break;
-                case 'CHICAGO':
-                    cita = `${autores}. "${titulo}." Repositorio Institucional FCA, ${anio}.`;
-                    break;
-                case 'MLA':
-                    cita = `${autores}. "${titulo}." Repositorio Institucional FCA, ${anio}.`;
-                    break;
-                case 'HARVARD':
-                    cita = `${autores}, ${anio}. ${titulo}. Repositorio Institucional FCA.`;
-                    break;
-                case 'VANCOUVER':
-                    cita = `${autores}. ${titulo}. Repositorio Institucional FCA; ${anio}.`;
-                    break;
+            visorTitulo.textContent = currentPdfTitulo || 'Documento PDF';
+            visorDescargar.href = currentPdfUrl;
+            if (visorNuevaPestana) {
+                visorNuevaPestana.href = currentPdfUrl;
             }
+            loading.style.display = 'block';
+            canvas.style.display = 'none';
 
-            // Copiar al portapapeles y notificar visualmente
-            navigator.clipboard.writeText(cita).then(() => {
-                const btnCitar = document.getElementById('btnCitarObra');
-                const htmlOriginal = btnCitar.innerHTML;
+            const visorModal = new bootstrap.Modal(visorModalEl);
+            visorModal.show();
 
-                // Cambio visual temporal para confirmar el copiado
-                btnCitar.innerHTML = '<i class="fas fa-check me-2"></i>¡Copiado!';
-                btnCitar.classList.replace('btn-outline-success', 'btn-success');
+            currentPdfDoc = null;
+            currentPdfPage = 1;
 
-                setTimeout(() => {
-                    btnCitar.innerHTML = htmlOriginal;
-                    btnCitar.classList.replace('btn-success', 'btn-outline-success');
-                }, 2000);
-            }).catch(err => {
-                console.error('Error al intentar copiar al portapapeles: ', err);
-                alert('No se pudo copiar la cita al portapapeles.');
+            pdfjsLib.getDocument(currentPdfUrl).promise.then(function(doc) {
+                currentPdfDoc = doc;
+                renderizarPaginaVisor(1);
+            }).catch(function(err) {
+                console.error("Error al cargar PDF:", err);
+                loading.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>No se pudo cargar el documento en el visor. Utiliza el botón superior para descargarlo.</span>';
             });
         }
+
+        function renderizarPaginaVisor(pageNum) {
+            if (!currentPdfDoc || isRenderingPdf) return;
+            isRenderingPdf = true;
+
+            const canvas = document.getElementById('visorPdfCanvas');
+            const loading = document.getElementById('visorPdfLoading');
+            const badge = document.getElementById('visorPdfPaginaBadge');
+            const btnPrev = document.getElementById('btnVisorPdfPrev');
+            const btnNext = document.getElementById('btnVisorPdfNext');
+
+            loading.style.display = 'block';
+            canvas.style.display = 'none';
+
+            currentPdfDoc.getPage(pageNum).then(function(page) {
+                const viewport = page.getViewport({ scale: 1.5 });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                const context = canvas.getContext('2d');
+
+                page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
+                    loading.style.display = 'none';
+                    canvas.style.display = 'block';
+                    currentPdfPage = pageNum;
+                    badge.textContent = `Pág. ${pageNum} / ${currentPdfDoc.numPages}`;
+                    if (btnPrev) btnPrev.disabled = (pageNum <= 1);
+                    if (btnNext) btnNext.disabled = (pageNum >= currentPdfDoc.numPages);
+                    isRenderingPdf = false;
+                });
+            }).catch(function(err) {
+                console.error("Error renderizando página:", err);
+                isRenderingPdf = false;
+            });
+        }
+
+        function cambiarPaginaVisor(delta) {
+            if (!currentPdfDoc) return;
+            const target = currentPdfPage + delta;
+            if (target >= 1 && target <= currentPdfDoc.numPages) {
+                renderizarPaginaVisor(target);
+            }
+        }
+
+        function volverADetalleModal() {
+            const visorModalEl = document.getElementById('modalVisorPdf');
+            const visorModal = bootstrap.Modal.getInstance(visorModalEl);
+            if (visorModal) visorModal.hide();
+        }
+
+        // ========================================================
+        // MODAL DE CITACIÓN INTERACTIVO Y ARRASTRABLE (CREDENCIALES Y FICHA)
+        // ========================================================
+        function abrirModalCitarDesdeFicha() {
+            const titulo = document.getElementById('modalTituloObra').textContent.trim();
+            const autores = document.getElementById('modalAutoresObra').textContent.trim();
+            const anio = document.getElementById('modalAnioObra').textContent.trim();
+            const tipo = document.getElementById('modalTipoObra').textContent.trim();
+
+            abrirModalCitar(titulo, autores, anio, tipo);
+        }
+
+        function abrirModalCitar(titulo, autores, anio, tipo) {
+            citaActualData = {
+                titulo: titulo || 'Título Desconocido',
+                autores: (autores && autores !== 'Sin autor' && autores !== 'Sin autores') ? autores : 'Autor Desconocido',
+                anio: (anio && anio !== 'None') ? anio : 's.f.',
+                tipo: tipo || ''
+            };
+
+            document.getElementById('citaDirectoTitulo').textContent = citaActualData.titulo;
+            document.getElementById('citaDirectoAutores').textContent = citaActualData.autores;
+
+            cambiarEstiloCita('APA');
+
+            const modalEl = document.getElementById('modalCitarObraDirecto');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        function formatearCita(estilo, datos) {
+            switch(estilo) {
+                case 'APA':
+                    return `${datos.autores}. (${datos.anio}). ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+                case 'MLA':
+                    return `${datos.autores}. "${datos.titulo}." Repositorio Institucional FCA UABC, ${datos.anio}.`;
+                case 'CHICAGO':
+                    return `${datos.autores}. "${datos.titulo}." Repositorio Institucional FCA UABC (${datos.anio}).`;
+                case 'HARVARD':
+                    return `${datos.autores}, ${datos.anio}. ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+                case 'IEEE':
+                    return `${datos.autores}, "${datos.titulo}," Repositorio Institucional FCA UABC, ${datos.anio}.`;
+                case 'VANCOUVER':
+                    return `${datos.autores}. ${datos.titulo}. Repositorio Institucional FCA UABC; ${datos.anio}.`;
+                default:
+                    return `${datos.autores}. (${datos.anio}). ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+            }
+        }
+
+        function cambiarEstiloCita(estilo) {
+            document.querySelectorAll('.tab-cita-btn').forEach(btn => {
+                btn.classList.remove('btn-success', 'active');
+                btn.classList.add('btn-outline-secondary');
+            });
+            const key = estilo.charAt(0) + estilo.slice(1).toLowerCase();
+            const activeBtn = document.getElementById('btnTab' + key);
+            if (activeBtn) {
+                activeBtn.classList.remove('btn-outline-secondary');
+                activeBtn.classList.add('btn-success', 'active');
+            }
+            document.getElementById('citaDirectoTexto').textContent = formatearCita(estilo, citaActualData);
+        }
+
+        function copiarCitaTextoDirecto() {
+            const texto = document.getElementById('citaDirectoTexto').textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = document.getElementById('btnCopiarCitaDirecto');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check me-1"></i>¡Copiado!';
+                btn.classList.replace('btn-success', 'btn-dark');
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.replace('btn-dark', 'btn-success');
+                }, 2000);
+            });
+        }
+
+        // ========================================================
+        // CONTROL DE ARRASTRE LIBRE (DRAGGABLE) PARA EL MODAL DE CITAS
+        // ========================================================
+        let reCentrarModalCitasGlobal = function() {};
+
+        (function initDraggableCitationModal() {
+            const modalEl = document.getElementById('modalCitarObraDirecto');
+            if (!modalEl) return;
+
+            const dialog = modalEl.querySelector('.modal-dialog');
+            const header = modalEl.querySelector('#citaDirectoHeader');
+            if (!dialog || !header) return;
+
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let currentX = 0;
+            let currentY = 0;
+
+            reCentrarModalCitasGlobal = function() {
+                currentX = 0;
+                currentY = 0;
+                dialog.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                dialog.style.transform = '';
+                setTimeout(() => { dialog.style.transition = ''; }, 250);
+            };
+
+            header.addEventListener('mousedown', function(e) {
+                if (e.target.closest('button') || e.target.closest('a')) return;
+
+                isDragging = true;
+                startX = e.clientX - currentX;
+                startY = e.clientY - currentY;
+                header.style.cursor = 'grabbing';
+                dialog.style.transition = 'none';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                currentX = e.clientX - startX;
+                currentY = e.clientY - startY;
+
+                dialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    header.style.cursor = 'grab';
+                    document.body.style.userSelect = '';
+                }
+            });
+
+            // Compatibilidad táctil para pantallas táctiles
+            header.addEventListener('touchstart', function(e) {
+                if (e.target.closest('button') || e.target.closest('a')) return;
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX - currentX;
+                startY = touch.clientY - currentY;
+                dialog.style.transition = 'none';
+            }, { passive: true });
+
+            document.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                currentX = touch.clientX - startX;
+                currentY = touch.clientY - startY;
+                dialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            }, { passive: false });
+
+            document.addEventListener('touchend', function() {
+                if (isDragging) {
+                    isDragging = false;
+                }
+            });
+
+            header.addEventListener('dblclick', function(e) {
+                if (e.target.closest('button')) return;
+                reCentrarModalCitasGlobal();
+            });
+
+            modalEl.addEventListener('show.bs.modal', function() {
+                reCentrarModalCitasGlobal();
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                const detalleModalEl = document.getElementById('modalDetalleObra');
+                if (detalleModalEl && detalleModalEl.classList.contains('show')) {
+                    document.body.classList.add('modal-open');
+                }
+            });
+        })();
     </script>
 </body>
 </html>

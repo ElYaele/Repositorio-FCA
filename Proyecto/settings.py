@@ -11,8 +11,19 @@ https://django.readthedocs.io/en/4.2/ref/settings/
 """
 from pathlib import Path
 import os
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carga automática de variables de entorno desde .env si existe
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    with open(env_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 
 # Quick-start development settings - unsuitable for production
@@ -63,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Pagina.context_processors.notificaciones_institucionales',
             ],
         },
     },
@@ -74,12 +86,31 @@ WSGI_APPLICATION = 'Proyecto.wsgi.application'
 # Database
 # https://django.readthedocs.io/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL)
     }
-}
+elif os.environ.get('RENDER') or os.environ.get('USE_SQLITE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    # Entorno local por defecto (MySQL de desarrollo)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='mysql://root:ElYaelexD22@localhost:3306/uabc'
+        )
+    }
+
+if DATABASES['default'].get('ENGINE') == 'django.db.backends.mysql':
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS']['charset'] = 'utf8mb4'
+    DATABASES['default']['OPTIONS']['init_command'] = "SET sql_mode='STRICT_TRANS_TABLES', names 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'"
+
 
 
 # Password validation
@@ -127,4 +158,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://django.readthedocs.io/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login/'
+
+# Backend de autenticación dual (Username o Email)
+AUTHENTICATION_BACKENDS = [
+    'Pagina.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# ==============================================================================
+# CONFIGURACIÓN DE CORREO ELECTRÓNICO INSTITUCIONAL (EMAIL NOTIFICATIONS)
+# ==============================================================================
+EMAIL_BACKEND = os.getenv('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', f'Repositorio FCA UABC <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL

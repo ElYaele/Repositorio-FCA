@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Coautorías e Invitaciones - Repositorio FCA UABC</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-gold: #dd971a;
+            --uabc-gold-light: #fef8ec;
+        }
+        body {
+            background-color: #f4f6f8;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border-bottom: 3px solid var(--uabc-green);
+        }
+        .header-title-box {
+            background: linear-gradient(135deg, var(--uabc-green) 0%, var(--uabc-green-dark) 100%) !important;
+            border-radius: 16px;
+            padding: 34px 28px;
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px rgba(0, 102, 51, 0.22) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .header-title-box::after {
+            content: "\f500";
+            font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif;
+            font-weight: 900;
+            position: absolute;
+            right: 25px;
+            bottom: -20px;
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.08);
+            pointer-events: none;
+        }
+        .stat-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .stat-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+        .nav-pills-custom .nav-link {
+            color: #495057;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 30px;
+            padding: 10px 22px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-pills-custom .nav-link:hover {
+            background-color: #f8f9fa;
+            border-color: #ced4da;
+            color: var(--uabc-green);
+        }
+        .nav-pills-custom .nav-link.active {
+            background-color: var(--uabc-green) !important;
+            border-color: var(--uabc-green) !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 8px rgba(0, 102, 51, 0.25);
+        }
+        .coautoria-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            overflow: hidden;
+        }
+        .coautoria-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-color: #d1d5db;
+        }
+        .coautoria-card.card-pending {
+            border-left: 5px solid #f59e0b;
+        }
+        .coautoria-card.card-accepted {
+            border-left: 5px solid #10b981;
+        }
+        .coautoria-card.card-rejected {
+            border-left: 5px solid #6b7280;
+            opacity: 0.92;
+        }
+        .avatar-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            color: #0369a1;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .note-quote {
+            background-color: #f8fafc;
+            border-left: 3px solid var(--uabc-gold);
+            border-radius: 0 8px 8px 0;
+            padding: 10px 14px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+    </style>
+</head>
+<body class="has-sima-sidebar">
+    <!-- Navbar Superior -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" height="38" class="d-inline-block align-text-top me-2">
+                <span class="fw-bold" style="color: var(--uabc-green); letter-spacing: -0.5px;">REPOSITORIO FCA</span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'mi_panel' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Volver a Mi Panel
+                </a>
+                <a href="{% url 'mensajeria' %}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                    <i class="fas fa-comments me-1"></i>Mensajería
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    {% include 'sidebar_institucional.html' %}
+
+    <div class="container-fluid px-4 py-4">
+        <!-- MENSAJES DJANGO -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show rounded-3 shadow-sm border-0" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- BANNER INSTITUCIONAL -->
+        {% if es_auxiliar_delegado and mi_tutor %}
+        <div class="alert alert-primary border-primary shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-white text-primary p-3 me-3 shadow-xs">
+                    <i class="fas fa-hands-helping fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1 text-primary">Modo Delegado: Gestión de Coautorías del Dr. {{ mi_tutor.nombre }}</h6>
+                    <p class="mb-0 text-muted small">Como Auxiliar de Investigación FCA, puedes confirmar o declinar invitaciones de coautoría a su nombre.</p>
+                </div>
+            </div>
+            <span class="badge bg-primary px-3 py-2 rounded-pill font-weight-bold">
+                <i class="fas fa-user-check me-1"></i>Tutor: {{ mi_tutor.nombre }}
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="header-title-box mb-4">
+            <div class="row align-items-center position-relative" style="z-index: 2;">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">
+                        <i class="fas fa-users-cog me-1"></i>Colaboración Académica Institucional
+                    </span>
+                    <h2 class="fw-bold mb-2 text-white">Centro de Gestión de Coautorías</h2>
+                    <p class="mb-0 text-white-50" style="font-size: 1.05rem;">
+                        Gestiona tus confirmaciones de coautoría en artículos, ponencias y libros. Acepta solicitudes pendientes, revisa tus colaboraciones activas o reconsidera obras archivadas.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="{% url 'mensajeria' %}" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm">
+                        <i class="fas fa-comment-dots me-2"></i>Ir a Mensajes Académicos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap bg-warning bg-opacity-10 text-warning">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">{{ total_pendientes }}</div>
+                        <div class="text-muted small fw-semibold">Por Confirmar</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap bg-success bg-opacity-10 text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">{{ total_aceptadas }}</div>
+                        <div class="text-muted small fw-semibold">Confirmadas</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap bg-secondary bg-opacity-10 text-secondary">
+                        <i class="fas fa-archive"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">{{ total_rechazadas }}</div>
+                        <div class="text-muted small fw-semibold">Archivadas</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrap bg-primary bg-opacity-10 text-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">{{ total_enviadas }}</div>
+                        <div class="text-muted small fw-semibold">Enviadas a Colegas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTRO DE BÚSQUEDA RÁPIDA -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-3">
+                <div class="row align-items-center g-2">
+                    <div class="col-md-6 col-lg-8">
+                        <ul class="nav nav-pills nav-pills-custom mb-0" id="coautoriasTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-pendientes" data-bs-toggle="pill" data-bs-target="#content-pendientes" type="button" role="tab">
+                                    <i class="fas fa-bell me-1 text-warning"></i>Pendientes
+                                    {% if total_pendientes > 0 %}
+                                        <span class="badge bg-warning text-dark rounded-pill ms-2">{{ total_pendientes }}</span>
+                                    {% endif %}
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-aceptadas" data-bs-toggle="pill" data-bs-target="#content-aceptadas" type="button" role="tab">
+                                    <i class="fas fa-check-circle me-1 text-success"></i>Confirmadas
+                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_aceptadas }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-rechazadas" data-bs-toggle="pill" data-bs-target="#content-rechazadas" type="button" role="tab">
+                                    <i class="fas fa-archive me-1 text-secondary"></i>Archivadas / Rechazadas
+                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_rechazadas }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-enviadas" data-bs-toggle="pill" data-bs-target="#content-enviadas" type="button" role="tab">
+                                    <i class="fas fa-paper-plane me-1 text-primary"></i>Enviadas a Colegas
+                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_enviadas }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="filtroCoautorias" class="form-control bg-light border-start-0" placeholder="Filtrar por obra o autor...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO DE LAS PESTAÑAS -->
+        <div class="tab-content" id="coautoriasTabsContent">
+
+            <!-- ============================================================= -->
+            <!-- 1. SOLICITUDES PENDIENTES -->
+            <!-- ============================================================= -->
+            <div class="tab-pane fade show active" id="content-pendientes" role="tabpanel">
+                {% if pendientes %}
+                    <div class="row g-3" id="gridPendientes">
+                        {% for inv in pendientes %}
+                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                            <div class="coautoria-card card-pending h-100 p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <!-- Cabecera de la tarjeta -->
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            {% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}
+                                                <span class="badge bg-primary text-white fw-bold">
+                                                    <i class="fas fa-graduation-cap me-1"></i>Tutor: {{ mi_tutor.nombre }}
+                                                </span>
+                                            {% endif %}
+                                            <span class="badge bg-warning text-dark fw-bold">
+                                                <i class="fas fa-hourglass-half me-1"></i>Pendiente
+                                            </span>
+                                            <span class="badge bg-light text-secondary border">
+                                                {{ inv.articulo.tipo_contenido.nombre|default:"Publicación" }} &bull; {{ inv.articulo.año_produccion }}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>{{ inv.fecha_creacion|date:"d/m/Y" }}</small>
+                                    </div>
+
+                                    <!-- Título de la obra -->
+                                    <h5 class="fw-bold text-dark mb-2" style="line-height: 1.35;">
+                                        {{ inv.articulo.titulo }}
+                                    </h5>
+
+                                    <!-- Colega que invitó -->
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 my-3">
+                                        <div class="avatar-circle">
+                                            {{ inv.invitado_por.autor.nombre|slice:":1"|default:inv.invitado_por.username|slice:":1"|upper }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="small text-muted fw-bold">Invitación enviada por:</div>
+                                            <div class="fw-bold text-dark">
+                                                {{ inv.invitado_por.autor.nombre_con_titulo|default:inv.invitado_por.get_full_name|default:inv.invitado_por.username }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ inv.invitado_por.autor.institucion_origen|default:"FCA UABC" }}
+                                                {% if inv.invitado_por.autor.codigo_institucional %}
+                                                    &bull; <span class="badge bg-secondary py-0 px-1">{{ inv.invitado_por.autor.codigo_institucional }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mensaje personal si existe -->
+                                    {% if inv.mensaje %}
+                                    <div class="note-quote mb-3">
+                                        <i class="fas fa-quote-left text-warning me-1"></i>
+                                        {{ inv.mensaje }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Botones de acción -->
+                                <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="d-flex gap-2">
+                                        <!-- Botón Aceptar -->
+                                        <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="aceptar">
+                                            <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
+                                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                                <i class="fas fa-check me-1"></i>{% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}Aceptar por mi Tutor{% else %}Aceptar Coautoría{% endif %}
+                                            </button>
+                                        </form>
+
+                                        <!-- Botón Rechazar / Archivar -->
+                                        <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="rechazar">
+                                            <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
+                                            <button type="submit" class="btn btn-outline-danger rounded-pill px-3" title="Archivar solicitud">
+                                                <i class="fas fa-times me-1"></i>{% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}Declinar por mi Tutor{% else %}Rechazar{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Enviar Mensaje Directo al Colega -->
+                                    {% if inv.invitado_por.autor %}
+                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
+                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje al Colega
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3 opacity-50"></i>
+                        <h4 class="fw-bold text-dark">¡Estás al día!</h4>
+                        <p class="mb-0">No tienes solicitudes pendientes de confirmación de coautoría.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ============================================================= -->
+            <!-- 2. COAUTORÍAS CONFIRMADAS / ACEPTADAS -->
+            <!-- ============================================================= -->
+            <div class="tab-pane fade" id="content-aceptadas" role="tabpanel">
+                {% if aceptadas %}
+                    <div class="row g-3" id="gridAceptadas">
+                        {% for inv in aceptadas %}
+                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                            <div class="coautoria-card card-accepted h-100 p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-success text-white fw-bold">
+                                            <i class="fas fa-check-double me-1"></i>Coautoría Confirmada
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="far fa-check-circle me-1 text-success"></i>Aceptada el {{ inv.fecha_respuesta|date:"d/m/Y" }}
+                                        </small>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-2" style="line-height: 1.35;">
+                                        {{ inv.articulo.titulo }}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 my-3">
+                                        <div class="avatar-circle">
+                                            {{ inv.invitado_por.autor.nombre|slice:":1"|default:inv.invitado_por.username|slice:":1"|upper }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="small text-muted fw-bold">Registrada por:</div>
+                                            <div class="fw-bold text-dark">
+                                                {{ inv.invitado_por.autor.nombre_con_titulo|default:inv.invitado_por.get_full_name|default:inv.invitado_por.username }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ inv.articulo.tipo_contenido.nombre|default:"Publicación" }} &bull; Año: {{ inv.articulo.año_produccion }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <span class="badge bg-light text-success border border-success px-3 py-2 rounded-pill">
+                                        <i class="fas fa-shield-alt me-1"></i>Acreditado en tu perfil
+                                    </span>
+                                    {% if inv.invitado_por.autor %}
+                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
+                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje al Colega
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
+                        <i class="fas fa-folder-open fa-4x text-secondary mb-3 opacity-50"></i>
+                        <h4 class="fw-bold text-dark">Sin coautorías confirmadas aún</h4>
+                        <p class="mb-0">Cuando aceptes solicitudes de colaboración aparecerán archivadas aquí como obras confirmadas.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ============================================================= -->
+            <!-- 3. ARCHIVADAS / RECHAZADAS (CON OPCIÓN DE RECONSIDERAR) -->
+            <!-- ============================================================= -->
+            <div class="tab-pane fade" id="content-rechazadas" role="tabpanel">
+                {% if rechazadas %}
+                    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+                        <i class="fas fa-lightbulb fa-2x me-3 text-info"></i>
+                        <div>
+                            <strong>Bandeja de Reconsideración</strong>
+                            <div class="small">Si cambiaste de parecer o declinaste por error, puedes pulsar en <strong>"Reconsiderar y Aceptar"</strong> para incorporarte nuevamente como coautor formal en la obra.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3" id="gridRechazadas">
+                        {% for inv in rechazadas %}
+                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                            <div class="coautoria-card card-rejected h-100 p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-secondary text-white fw-bold">
+                                            <i class="fas fa-archive me-1"></i>Archivada / Declinada
+                                        </span>
+                                        <small class="text-muted">Declinada el {{ inv.fecha_respuesta|date:"d/m/Y" }}</small>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-2" style="line-height: 1.35;">
+                                        {{ inv.articulo.titulo }}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 my-3">
+                                        <div class="avatar-circle" style="background: #e2e8f0; color: #475569;">
+                                            {{ inv.invitado_por.autor.nombre|slice:":1"|default:inv.invitado_por.username|slice:":1"|upper }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="small text-muted fw-bold">Invitado por:</div>
+                                            <div class="fw-bold text-dark">
+                                                {{ inv.invitado_por.autor.nombre_con_titulo|default:inv.invitado_por.get_full_name|default:inv.invitado_por.username }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ inv.articulo.tipo_contenido.nombre|default:"Publicación" }} &bull; Año: {{ inv.articulo.año_produccion }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botón para reconsiderar -->
+                                <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="aceptar">
+                                        <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
+                                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                            <i class="fas fa-undo-alt me-1"></i>Reconsiderar y Aceptar Coautoría
+                                        </button>
+                                    </form>
+
+                                    {% if inv.invitado_por.autor %}
+                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-secondary rounded-pill px-3 btn-sm">
+                                        <i class="fas fa-comments me-1"></i>Mensaje al Colega
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
+                        <i class="fas fa-archive fa-4x text-secondary mb-3 opacity-50"></i>
+                        <h4 class="fw-bold text-dark">No tienes solicitudes archivadas</h4>
+                        <p class="mb-0">Las invitaciones que decidas rechazar se guardarán aquí para que puedas reconsiderarlas en el futuro.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ============================================================= -->
+            <!-- 4. SOLICITUDES ENVIADAS POR EL USUARIO A OTROS COLEGAS -->
+            <!-- ============================================================= -->
+            <div class="tab-pane fade" id="content-enviadas" role="tabpanel">
+                {% if enviadas %}
+                    <div class="row g-3" id="gridEnviadas">
+                        {% for inv in enviadas %}
+                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.autor_invitado.nombre }}">
+                            <div class="coautoria-card h-100 p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        {% if inv.estado == 'aceptada' %}
+                                            <span class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i>Colega Aceptó</span>
+                                        {% elif inv.estado == 'rechazada' %}
+                                            <span class="badge bg-danger text-white"><i class="fas fa-times-circle me-1"></i>Colega Declinó</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>Esperando Confirmación</span>
+                                        {% endif %}
+                                        <small class="text-muted">{{ inv.fecha_creacion|date:"d/m/Y" }}</small>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-2" style="line-height: 1.35;">
+                                        {{ inv.articulo.titulo }}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 my-3">
+                                        <div class="avatar-circle" style="background: #fef3c7; color: #b45309;">
+                                            {{ inv.autor_invitado.nombre|slice:":1"|upper }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="small text-muted fw-bold">Colega Invitado:</div>
+                                            <div class="fw-bold text-dark">{{ inv.autor_invitado.nombre_con_titulo }}</div>
+                                            <div class="small text-muted">{{ inv.autor_invitado.institucion_origen|default:"FCA UABC" }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border-top pt-3 mt-2 d-flex justify-content-end">
+                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.autor_invitado.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
+                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje de Seguimiento
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
+                        <i class="fas fa-paper-plane fa-4x text-secondary mb-3 opacity-50"></i>
+                        <h4 class="fw-bold text-dark">No has enviado invitaciones aún</h4>
+                        <p class="mb-0">Al registrar un trabajo en el repositorio y agregar a colegas del claustro, sus invitaciones de coautoría se mostrarán aquí.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts Bootstrap 5 y filtro reactivo -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Buscador reactivo en vivo para las tarjetas
+        const filtroInput = document.getElementById('filtroCoautorias');
+        if (filtroInput) {
+            filtroInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                document.querySelectorAll('.item-coautoria').forEach(el => {
+                    const searchData = (el.getAttribute('data-search') || '').toLowerCase();
+                    if (!query || searchData.includes(query)) {
+                        el.style.display = '';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

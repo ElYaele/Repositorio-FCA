@@ -1,0 +1,754 @@
+<!-- ========================================================================= -->
+<!-- MODAL INTERACTIVO: PERSONALIZACIÓN DE COLOR / SABOR DE CUPCAKE DE CUMPLEAÑOS -->
+<!-- ========================================================================= -->
+<div class="modal fade" id="modalPersonalizarCumpleanos" tabindex="-1" aria-labelledby="modalPersonalizarCumpleanosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <!-- CABECERA DEL MODAL -->
+            <div class="modal-header border-bottom py-3 px-4" style="background: linear-gradient(135deg, #fff5f8, #fdf4ff);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px; font-size: 1.4rem; background: #ffffff; border: 2px solid #ff80ab;">
+                        🧁
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="modalPersonalizarCumpleanosLabel">Personalizar Mi Cupcake de Cumpleaños</h5>
+                        <small class="text-muted">Elige el color y sabor para tu credencial conmemorativa en el Claustro Docente</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="row g-4 align-items-center">
+                    <!-- COLUMNA IZQUIERDA: PREVISUALIZADOR EN VIVO -->
+                    <div class="col-lg-5 col-md-5 text-center">
+                        <div class="p-3 bg-light rounded-4 border shadow-sm" style="overflow: hidden;">
+                            <span class="badge bg-white text-dark border shadow-sm px-3 py-1 mb-2 fw-bold" style="font-size: 0.75rem;">
+                                <i class="fas fa-eye me-1 text-primary"></i>Vista Previa en Vivo
+                            </span>
+
+                            <!-- MINI CUPCAKE CARD -->
+                            <div class="cupcake-preview-scale-wrapper mx-auto" style="max-width: 250px;">
+                                <div class="card-birthday-cupcake-wrapper theme-{{ user.autor.color_cumpleanos|default:'rosa' }}" id="previewCupcakeWrapper">
+                                    <div class="cupcake-candle"></div>
+                                    <div class="card-birthday-cupcake theme-{{ user.autor.color_cumpleanos|default:'rosa' }}" id="previewCupcakeCard">
+                                        <!-- BETÚN -->
+                                        <div class="cupcake-frosting-section">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="badge bg-white text-dark border shadow-sm" style="font-size: 0.65rem;">
+                                                    <i class="fas fa-university me-1 text-success"></i>{{ user.autor.institucion_origen|default:"UABC" }}
+                                                </span>
+                                                <span class="cupcake-badge">¡Cumpleaños! 🧁</span>
+                                            </div>
+
+                                            <div class="text-center my-1">
+                                                <div class="cupcake-preview-avatar avatar-cupcake">
+                                                    {% if user.autor.foto_claustro_url %}
+                                                        <img src="{{ user.autor.foto_claustro_url }}" alt="{{ user.autor.nombre }}" class="cupcake-preview-img">
+                                                    {% else %}
+                                                        <div class="cupcake-preview-initials">{{ user.autor.inicial_limpia|default:"P" }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <h6 class="fw-bold mt-2 mb-1 cupcake-title-name text-truncate" style="font-size: 0.86rem;">
+                                                    {{ user.autor.nombre_con_titulo|default:user.autor.nombre|default:user.get_full_name|default:user.username }}
+                                                </h6>
+                                                <span class="badge bg-dark bg-opacity-10 text-dark border font-monospace" style="font-size: 0.62rem;">
+                                                    {{ user.autor.codigo_institucional|default:"FCA-ID" }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- ONDA DRIP -->
+                                        <div class="cupcake-drip-divider"></div>
+
+                                        <!-- CAPACILLO -->
+                                        <div class="cupcake-liner-section">
+                                            <p class="text-muted mb-2 text-truncate" style="font-size: 0.72rem;">
+                                                Docente / Investigador FCA UABC
+                                            </p>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn birthday-btn btn-sm rounded-pill shadow-sm py-1" style="font-size: 0.74rem;" disabled>
+                                                    <i class="fas fa-gift me-1"></i>Felicitar Colega 🧁
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <small class="text-muted d-block mt-3" style="font-size: 0.73rem;">
+                                <i class="fas fa-check-circle text-success me-1"></i>Diseño optimizado para máxima legibilidad.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: SELECTOR DE SABORES / COLORES -->
+                    <div class="col-lg-7 col-md-7">
+                        <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                            <span>Elige tu Sabor Favorito</span>
+                            <span class="badge bg-secondary rounded-pill font-monospace" id="labelSaborSeleccionado" style="font-size: 0.72rem;">
+                                {{ user.autor.get_color_cumpleanos_display|default:"Fresa Glaseada (Rosa)" }}
+                            </span>
+                        </h6>
+                        <p class="text-muted small mb-3">
+                            Selecciona una paleta pastel curada. Tu credencial conmemorativa en el Claustro adoptará este estilo en tu fecha especial:
+                        </p>
+
+                        <form id="formCambiarColorCupcake" method="POST" action="{% url 'cambiar_color_cumpleanos' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="color" id="inputColorSeleccionado" value="{{ user.autor.color_cumpleanos|default:'rosa' }}">
+
+                            <div class="row g-2" id="gridSaboresCupcake">
+                                <!-- 1. FRESA (ROSA) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'rosa' or not user.autor.color_cumpleanos %}active{% endif %}" data-color="rosa" data-nombre="Fresa Glaseada (Rosa)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #ffc4e1, #ff80ab); border: 2px solid #ff4081;">
+                                            🍓
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Fresa Glaseada</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Rosa Pastel Clásico</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 2. CHOCOLATE (CAFÉ) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'cafe' %}active{% endif %}" data-color="cafe" data-nombre="Chocolate & Moka (Café)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #d7ccc8, #8d6e63); border: 2px solid #5d4037;">
+                                            🍫
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Chocolate & Moka</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Café & Avellana Cálido</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 3. ARÁNDANO (AZUL) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'azul' %}active{% endif %}" data-color="azul" data-nombre="Arándano Silvestre (Azul)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #bae6fd, #38bdf8); border: 2px solid #0284c7;">
+                                            🫐
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Arándano Silvestre</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Azul Glaciar & Nieve</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 4. MENTA (VERDE) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'verde' %}active{% endif %}" data-color="verde" data-nombre="Menta & Pistache (Verde)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #bbf7d0, #4ade80); border: 2px solid #16a34a;">
+                                            🍃
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Menta & Pistache</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Verde Menta Fresco</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 5. VAINILLA (DORADO / ORO) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'dorado' %}active{% endif %}" data-color="dorado" data-nombre="Vainilla & Caramelo (Dorado)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #fde68a, #f59e0b); border: 2px solid #d97706;">
+                                            🍯
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Vainilla & Caramelo</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Oro Cálido Institucional</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 6. MORA (MORADO) -->
+                                <div class="col-sm-6 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'morado' %}active{% endif %}" data-color="morado" data-nombre="Mora & Lavanda (Morado)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #ddd6fe, #a78bfa); border: 2px solid #7c3aed;">
+                                            🍇
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Mora & Lavanda</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Violeta & Uva Suave</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 7. RED VELVET (ROJO) -->
+                                <div class="col-sm-12 col-12">
+                                    <div class="sabor-cupcake-card p-2 rounded-3 border d-flex align-items-center gap-2 {% if user.autor.color_cumpleanos == 'rojo' %}active{% endif %}" data-color="rojo" data-nombre="Red Velvet (Rojo Cereza)">
+                                        <div class="swatch-color-round" style="background: linear-gradient(135deg, #fecdd3, #fb7185); border: 2px solid #e11d48;">
+                                            🍒
+                                        </div>
+                                        <div class="flex-grow-1 text-truncate">
+                                            <div class="fw-bold small text-dark mb-0">Red Velvet & Cereza</div>
+                                            <small class="text-muted" style="font-size: 0.72rem;">Cereza Dulce Aterciopelada</small>
+                                        </div>
+                                        <i class="fas fa-check-circle text-success check-active-sabor"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-2 border-top">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-3 btn-sm" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+                                <button type="submit" id="btnGuardarColorCupcake" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold">
+                                    <i class="fas fa-save me-1"></i>Guardar Sabor
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* =========================================================================
+       ESTILOS AUTÓNOMOS PARA PREVISUALIZACIÓN DE CUPCAKE DENTRO DEL MODAL
+       (Garantiza que funcione idéntico en mi_panel.html y claustro)
+       ========================================================================= */
+    #modalPersonalizarCumpleanos .cupcake-preview-scale-wrapper {
+        position: relative;
+    }
+
+    #modalPersonalizarCumpleanos .card-birthday-cupcake-wrapper {
+        position: relative;
+        padding-top: 36px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    /* VELA CON LLAMA ANIMADA */
+    #modalPersonalizarCumpleanos .cupcake-candle {
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 28px;
+        background: repeating-linear-gradient(45deg, #ffd54f, #ffd54f 6px, #ffb300 6px, #ffb300 12px);
+        border-radius: 4px 4px 0 0;
+        z-index: 15;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    #modalPersonalizarCumpleanos .cupcake-candle::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 6px;
+        background: #212121;
+    }
+    #modalPersonalizarCumpleanos .cupcake-candle::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 14px;
+        height: 18px;
+        background: radial-gradient(ellipse at bottom, #fffde7 0%, #ffeb3b 35%, #ff9800 70%, transparent 100%);
+        border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+        filter: drop-shadow(0 0 10px #ffb300);
+        animation: modalFlameFlicker 1.4s infinite alternate ease-in-out;
+    }
+    @keyframes modalFlameFlicker {
+        0% { transform: translateX(-50%) scale(1) rotate(-2deg); opacity: 0.95; }
+        50% { transform: translateX(-50%) scale(1.12) rotate(2deg); opacity: 1; filter: drop-shadow(0 0 14px #ff9800); }
+        100% { transform: translateX(-50%) scale(0.96) rotate(-1deg); opacity: 0.9; }
+    }
+
+    /* ESTRUCTURA GENERAL DE LA TARJETA CUPCAKE */
+    #modalPersonalizarCumpleanos .card-birthday-cupcake {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
+        border-radius: 52px 52px 20px 20px;
+        overflow: visible !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+    }
+
+    /* MITAD SUPERIOR: DOMO DE BETÚN CON CHISPITAS */
+    #modalPersonalizarCumpleanos .cupcake-frosting-section {
+        border: 3px solid #ff80ab;
+        border-bottom: none;
+        border-radius: 52px 52px 0 0;
+        padding: 16px 14px 10px 14px;
+        position: relative;
+        box-shadow: inset 0 4px 10px rgba(255, 255, 255, 0.85);
+        background: #fff0f5;
+    }
+
+    /* ONDA SCALLOP / DRIP DIVIDER */
+    #modalPersonalizarCumpleanos .cupcake-drip-divider {
+        height: 16px;
+        background: #fff2f8;
+        border-left: 3px solid #ff80ab;
+        border-right: 3px solid #ff80ab;
+        position: relative;
+        z-index: 2;
+        background-image: radial-gradient(circle at 10px 0px, #fff2f8 9px, #ff80ab 10px, transparent 11px);
+        background-size: 20px 20px;
+        background-repeat: repeat-x;
+    }
+
+    /* MITAD INFERIOR: CAPACILLO PLISADO */
+    #modalPersonalizarCumpleanos .cupcake-liner-section {
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 251, 245, 0.96) 100%),
+            repeating-linear-gradient(90deg, #fffdf9 0px, #fffdf9 12px, #f3dfcb 12px, #f3dfcb 16px);
+        border: 3px solid #e0c5aa;
+        border-top: none;
+        border-radius: 0 0 20px 20px;
+        padding: 12px 14px 16px 14px;
+        clip-path: polygon(0% 0%, 100% 0%, 97% 100%, 3% 100%);
+        box-shadow: inset 0 -3px 8px rgba(224, 197, 170, 0.4);
+    }
+
+    /* AVATAR ESTRICTAMENTE ACOTADO (EVITA OVERFLOW DE FOTO GIGANTE) */
+    #modalPersonalizarCumpleanos .cupcake-preview-avatar {
+        width: 64px !important;
+        height: 64px !important;
+        min-width: 64px !important;
+        min-height: 64px !important;
+        max-width: 64px !important;
+        max-height: 64px !important;
+        border-radius: 50% !important;
+        overflow: hidden !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        background: #ffffff;
+        box-sizing: border-box !important;
+    }
+
+    #modalPersonalizarCumpleanos .cupcake-preview-img {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: cover !important;
+        object-position: top center !important;
+        display: block !important;
+        border-radius: 50% !important;
+    }
+
+    #modalPersonalizarCumpleanos .cupcake-preview-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #006633;
+        background: #e8f5e9;
+    }
+
+    #modalPersonalizarCumpleanos .cupcake-badge {
+        color: #ffffff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    #modalPersonalizarCumpleanos .birthday-btn {
+        color: #ffffff;
+        border: none;
+        font-weight: 800;
+        border-radius: 50px;
+    }
+
+    /* -------------------------------------------------------------------------
+       7 PALETAS DE COLOR / SABOR DISPONIBLES
+       ------------------------------------------------------------------------- */
+    /* 1. FRESA (ROSA) */
+    #modalPersonalizarCumpleanos .theme-rosa .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #ffeb3b 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #00e676 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #00b0ff 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #ff1744 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #d500f9 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #ffc4e1 0%, #ffe3f0 60%, #fff2f8 100%);
+        border-color: #ff80ab;
+    }
+    #modalPersonalizarCumpleanos .theme-rosa .cupcake-drip-divider {
+        background: #fff2f8;
+        border-left-color: #ff80ab;
+        border-right-color: #ff80ab;
+        background-image: radial-gradient(circle at 10px 0px, #fff2f8 9px, #ff80ab 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-rosa .avatar-cupcake {
+        border: 3px solid #ff4081 !important;
+        box-shadow: 0 0 12px rgba(255, 64, 129, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-rosa .cupcake-badge {
+        background: linear-gradient(135deg, #d81b60, #ff4081);
+    }
+    #modalPersonalizarCumpleanos .theme-rosa .birthday-btn {
+        background: linear-gradient(135deg, #e91e63, #ff4081);
+    }
+    #modalPersonalizarCumpleanos .theme-rosa .cupcake-title-name {
+        color: #1e293b;
+    }
+
+    /* 2. CHOCOLATE & MOKA (CAFÉ) */
+    #modalPersonalizarCumpleanos .theme-cafe .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #ffd54f 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #ffecb3 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #d7ccc8 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #ff8a65 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #ffe082 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #d7ccc8 0%, #ede0d4 60%, #f7f1eb 100%);
+        border-color: #8d6e63;
+    }
+    #modalPersonalizarCumpleanos .theme-cafe .cupcake-drip-divider {
+        background: #f7f1eb;
+        border-left-color: #8d6e63;
+        border-right-color: #8d6e63;
+        background-image: radial-gradient(circle at 10px 0px, #f7f1eb 9px, #8d6e63 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-cafe .avatar-cupcake {
+        border: 3px solid #6d4c41 !important;
+        box-shadow: 0 0 12px rgba(109, 76, 65, 0.5), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-cafe .cupcake-badge {
+        background: linear-gradient(135deg, #4e342e, #6d4c41);
+    }
+    #modalPersonalizarCumpleanos .theme-cafe .birthday-btn {
+        background: linear-gradient(135deg, #5d4037, #795548);
+    }
+    #modalPersonalizarCumpleanos .theme-cafe .cupcake-title-name {
+        color: #2b1d14;
+    }
+
+    /* 3. ARÁNDANO & CIELO (AZUL) */
+    #modalPersonalizarCumpleanos .theme-azul .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #fde047 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #38bdf8 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #818cf8 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #f43f5e 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #ffffff 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #bae6fd 0%, #e0f2fe 60%, #f0f9ff 100%);
+        border-color: #38bdf8;
+    }
+    #modalPersonalizarCumpleanos .theme-azul .cupcake-drip-divider {
+        background: #f0f9ff;
+        border-left-color: #38bdf8;
+        border-right-color: #38bdf8;
+        background-image: radial-gradient(circle at 10px 0px, #f0f9ff 9px, #38bdf8 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-azul .avatar-cupcake {
+        border: 3px solid #0284c7 !important;
+        box-shadow: 0 0 12px rgba(2, 132, 199, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-azul .cupcake-badge {
+        background: linear-gradient(135deg, #0369a1, #0284c7);
+    }
+    #modalPersonalizarCumpleanos .theme-azul .birthday-btn {
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    }
+    #modalPersonalizarCumpleanos .theme-azul .cupcake-title-name {
+        color: #0c4a6e;
+    }
+
+    /* 4. MENTA & PISTACHE (VERDE) */
+    #modalPersonalizarCumpleanos .theme-verde .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #fde047 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #22c55e 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #06b6d4 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #f43f5e 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #ffffff 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #bbf7d0 0%, #dcfce7 60%, #f0fdf4 100%);
+        border-color: #4ade80;
+    }
+    #modalPersonalizarCumpleanos .theme-verde .cupcake-drip-divider {
+        background: #f0fdf4;
+        border-left-color: #4ade80;
+        border-right-color: #4ade80;
+        background-image: radial-gradient(circle at 10px 0px, #f0fdf4 9px, #4ade80 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-verde .avatar-cupcake {
+        border: 3px solid #16a34a !important;
+        box-shadow: 0 0 12px rgba(22, 163, 74, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-verde .cupcake-badge {
+        background: linear-gradient(135deg, #15803d, #16a34a);
+    }
+    #modalPersonalizarCumpleanos .theme-verde .birthday-btn {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+    #modalPersonalizarCumpleanos .theme-verde .cupcake-title-name {
+        color: #064e3b;
+    }
+
+    /* 5. VAINILLA & CARAMELO (DORADO / ORO) */
+    #modalPersonalizarCumpleanos .theme-dorado .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #ef4444 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #f59e0b 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #10b981 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #3b82f6 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #ffffff 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #fde68a 0%, #fef3c7 60%, #fffbeb 100%);
+        border-color: #f59e0b;
+    }
+    #modalPersonalizarCumpleanos .theme-dorado .cupcake-drip-divider {
+        background: #fffbeb;
+        border-left-color: #f59e0b;
+        border-right-color: #f59e0b;
+        background-image: radial-gradient(circle at 10px 0px, #fffbeb 9px, #f59e0b 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-dorado .avatar-cupcake {
+        border: 3px solid #d97706 !important;
+        box-shadow: 0 0 12px rgba(217, 119, 6, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-dorado .cupcake-badge {
+        background: linear-gradient(135deg, #b45309, #d97706);
+    }
+    #modalPersonalizarCumpleanos .theme-dorado .birthday-btn {
+        background: linear-gradient(135deg, #d97706, #f59e0b);
+    }
+    #modalPersonalizarCumpleanos .theme-dorado .cupcake-title-name {
+        color: #451a03;
+    }
+
+    /* 6. MORA & LAVANDA (MORADO) */
+    #modalPersonalizarCumpleanos .theme-morado .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #ffeb3b 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #ec4899 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #06b6d4 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #a855f7 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #ffffff 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #ddd6fe 0%, #ede9fe 60%, #f5f3ff 100%);
+        border-color: #a78bfa;
+    }
+    #modalPersonalizarCumpleanos .theme-morado .cupcake-drip-divider {
+        background: #f5f3ff;
+        border-left-color: #a78bfa;
+        border-right-color: #a78bfa;
+        background-image: radial-gradient(circle at 10px 0px, #f5f3ff 9px, #a78bfa 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-morado .avatar-cupcake {
+        border: 3px solid #7c3aed !important;
+        box-shadow: 0 0 12px rgba(124, 58, 237, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-morado .cupcake-badge {
+        background: linear-gradient(135deg, #6d28d9, #7c3aed);
+    }
+    #modalPersonalizarCumpleanos .theme-morado .birthday-btn {
+        background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    }
+    #modalPersonalizarCumpleanos .theme-morado .cupcake-title-name {
+        color: #2e1065;
+    }
+
+    /* 7. RED VELVET & CEREZA (ROJO) */
+    #modalPersonalizarCumpleanos .theme-rojo .cupcake-frosting-section {
+        background:
+            radial-gradient(circle, #ffeb3b 2px, transparent 2.3px) 15px 30px / 65px 65px,
+            radial-gradient(circle, #ffffff 2px, transparent 2.3px) 45px 50px / 75px 75px,
+            radial-gradient(circle, #fbbf24 2px, transparent 2.3px) 25px 85px / 85px 85px,
+            radial-gradient(circle, #38bdf8 2.2px, transparent 2.5px) 65px 20px / 70px 70px,
+            radial-gradient(circle, #f43f5e 2px, transparent 2.3px) 80px 70px / 80px 80px,
+            linear-gradient(180deg, #fecdd3 0%, #ffe4e6 60%, #fff1f2 100%);
+        border-color: #fb7185;
+    }
+    #modalPersonalizarCumpleanos .theme-rojo .cupcake-drip-divider {
+        background: #fff1f2;
+        border-left-color: #fb7185;
+        border-right-color: #fb7185;
+        background-image: radial-gradient(circle at 10px 0px, #fff1f2 9px, #fb7185 10px, transparent 11px);
+    }
+    #modalPersonalizarCumpleanos .theme-rojo .avatar-cupcake {
+        border: 3px solid #e11d48 !important;
+        box-shadow: 0 0 12px rgba(225, 29, 72, 0.45), inset 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    #modalPersonalizarCumpleanos .theme-rojo .cupcake-badge {
+        background: linear-gradient(135deg, #be123c, #e11d48);
+    }
+    #modalPersonalizarCumpleanos .theme-rojo .birthday-btn {
+        background: linear-gradient(135deg, #e11d48, #f43f5e);
+    }
+    #modalPersonalizarCumpleanos .theme-rojo .cupcake-title-name {
+        color: #4c0519;
+    }
+
+    /* ESTILOS DE LAS TARJETAS SELECTORAS DE SABOR */
+    .sabor-cupcake-card {
+        cursor: pointer;
+        background: #ffffff;
+        transition: all 0.18s ease;
+        position: relative;
+    }
+    .sabor-cupcake-card:hover {
+        background: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    .sabor-cupcake-card.active {
+        border-color: #10b981 !important;
+        background: #f0fdf4 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+    .swatch-color-round {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        box-shadow: inset 0 2px 4px rgba(255,255,255,0.7);
+    }
+    .check-active-sabor {
+        display: none;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .sabor-cupcake-card.active .check-active-sabor {
+        display: block;
+    }
+</style>
+
+<script>
+    (function() {
+        const grid = document.getElementById('gridSaboresCupcake');
+        const inputColor = document.getElementById('inputColorSeleccionado');
+        const labelSabor = document.getElementById('labelSaborSeleccionado');
+        const previewWrapper = document.getElementById('previewCupcakeWrapper');
+        const previewCard = document.getElementById('previewCupcakeCard');
+        const form = document.getElementById('formCambiarColorCupcake');
+        const btnSubmit = document.getElementById('btnGuardarColorCupcake');
+
+        const themesList = ['theme-rosa', 'theme-cafe', 'theme-azul', 'theme-verde', 'theme-dorado', 'theme-morado', 'theme-rojo'];
+
+        function applyPreviewTheme(colorName) {
+            if (!previewWrapper || !previewCard) return;
+            themesList.forEach(t => {
+                previewWrapper.classList.remove(t);
+                previewCard.classList.remove(t);
+            });
+            const newTheme = 'theme-' + colorName;
+            previewWrapper.classList.add(newTheme);
+            previewCard.classList.add(newTheme);
+        }
+
+        if (grid) {
+            grid.querySelectorAll('.sabor-cupcake-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    grid.querySelectorAll('.sabor-cupcake-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const color = this.getAttribute('data-color');
+                    const nombre = this.getAttribute('data-nombre');
+
+                    if (inputColor) inputColor.value = color;
+                    if (labelSabor) labelSabor.textContent = nombre;
+
+                    applyPreviewTheme(color);
+                });
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const colorVal = inputColor ? inputColor.value : 'rosa';
+                const formData = new FormData();
+                formData.append('color', colorVal);
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+                }
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="fas fa-check me-1"></i>¡Guardado!';
+                    }
+
+                    // Actualizar las tarjetas de la página en tiempo real
+                    document.querySelectorAll('.card-birthday-cupcake, .card-birthday-cupcake-wrapper').forEach(el => {
+                        themesList.forEach(t => el.classList.remove(t));
+                        el.classList.add('theme-' + colorVal);
+                    });
+
+                    // Actualizar el banner de mi_panel si existe
+                    const panelBanner = document.getElementById('panelBirthdayBanner');
+                    if (panelBanner) {
+                        const gradients = {
+                            'rosa': 'linear-gradient(135deg, #d81b60 0%, #ff4081 100%)',
+                            'cafe': 'linear-gradient(135deg, #4e342e 0%, #795548 100%)',
+                            'azul': 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)',
+                            'verde': 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)',
+                            'dorado': 'linear-gradient(135deg, #b45309 0%, #d97706 100%)',
+                            'morado': 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)',
+                            'rojo': 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)'
+                        };
+                        if (gradients[colorVal]) {
+                            panelBanner.style.background = gradients[colorVal];
+                        }
+                    }
+
+                    setTimeout(() => {
+                        const modalEl = document.getElementById('modalPersonalizarCumpleanos');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+                        if (btnSubmit) {
+                            btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i>Guardar Sabor';
+                        }
+                    }, 650);
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i>Guardar Sabor';
+                    }
+                    form.submit(); // Fallback tradicional
+                });
+            });
+        }
+    })();
+</script>

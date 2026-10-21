@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensajería Académica - Repositorio FCA UABC</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-gold: #dd971a;
+            --uabc-gold-light: #fef8ec;
+            --chat-bg: #efeae2;
+            --bubble-outgoing: #d9fdd3;
+            --bubble-incoming: #ffffff;
+        }
+        body {
+            background-color: #f0f2f5;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+        .navbar-chat {
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--uabc-green);
+            height: 56px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            flex-shrink: 0;
+        }
+
+        /* CONTENEDOR PRINCIPAL DEL CHAT */
+        .chat-app-wrapper {
+            height: calc(100vh - 56px);
+            display: flex;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        /* PANEL LATERAL DE CONVERSACIONES */
+        .conversations-sidebar {
+            width: 380px;
+            min-width: 320px;
+            max-width: 420px;
+            border-right: 1px solid #e2e8f0;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .sidebar-header {
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-chat-box {
+            padding: 10px 14px;
+            background: #ffffff;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .filter-pills-bar {
+            padding: 6px 14px 10px 14px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .filter-pills-bar::-webkit-scrollbar {
+            height: 3px;
+        }
+        .filter-pill {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            transition: all 0.15s;
+        }
+        .filter-pill:hover, .filter-pill.active {
+            background: var(--uabc-green);
+            color: #ffffff;
+            border-color: var(--uabc-green);
+        }
+
+        .conversations-list {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .conversations-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .conversations-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* ITEM DE CONVERSACIÓN */
+        .chat-user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            text-decoration: none !important;
+            color: inherit !important;
+            transition: background 0.15s;
+            position: relative;
+        }
+        .chat-user-item:hover {
+            background-color: #f8fafc;
+        }
+        .chat-user-item.active {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--uabc-green);
+        }
+        .chat-user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            margin-right: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chat-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+        .chat-user-avatar.support-avatar {
+            background: linear-gradient(135deg, var(--uabc-green), #047857);
+            color: var(--uabc-gold);
+            font-size: 1.25rem;
+        }
+        .chat-user-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .chat-user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-user-role {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .chat-user-snippet {
+            font-size: 0.82rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-meta {
+            text-align: right;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        .chat-time {
+            font-size: 0.72rem;
+            color: #94a3b8;
+        }
+
+        /* ÁREA PRINCIPAL DEL CHAT */
+        .chat-main-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: var(--chat-bg);
+            background-image: radial-gradient(#d1d5db 0.75px, transparent 0.75px);
+            background-size: 16px 16px;
+            position: relative;
+        }
+
+        /* CABECERA DEL CHAT ACTIVO */
+        .chat-header {
+            padding: 10px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            z-index: 10;
+        }
+
+        /* CONTENEDOR DE MENSAJES */
+        .chat-messages-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 4px;
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 12px 0;
+        }
+        .date-divider span {
+            background: #ffffff;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #64748b;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            font-weight: 500;
+        }
+
+        /* BURBUJAS DE MENSAJE */
+        .message-row {
+            display: flex;
+            width: 100%;
+        }
+        .message-row.outgoing {
+            justify-content: flex-end;
+        }
+        .message-row.incoming {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: relative;
+            word-wrap: break-word;
+        }
+        .message-bubble.outgoing {
+            background: var(--bubble-outgoing);
+            color: #111827;
+            border-top-right-radius: 2px;
+        }
+        .message-bubble.incoming {
+            background: var(--bubble-incoming);
+            color: #111827;
+            border-top-left-radius: 2px;
+        }
+        .message-sender-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .message-sender-name.support-tag {
+            color: var(--uabc-green);
+        }
+        .message-text {
+            font-size: 0.92rem;
+            line-height: 1.45;
+            white-space: pre-wrap;
+        }
+        .message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            font-size: 0.68rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* TARJETAS DE ARCHIVOS ADJUNTOS */
+        .attachment-card {
+            background: rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none !important;
+            color: inherit !important;
+            transition: background 0.15s;
+        }
+        .attachment-card:hover {
+            background: rgba(0,0,0,0.08);
+        }
+        .attachment-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .icon-pdf { background: #fee2e2; color: #dc2626; }
+        .icon-doc { background: #e0e7ff; color: #2563eb; }
+        .icon-ppt { background: #ffedd5; color: #ea580c; }
+        .icon-xls { background: #dcfce7; color: #16a34a; }
+        .icon-other { background: #f1f5f9; color: #64748b; }
+
+        .image-preview-bubble {
+            max-width: 280px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 6px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .image-preview-bubble img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-preview-bubble img:hover {
+            transform: scale(1.02);
+        }
+
+        /* BARRA INFERIOR DE REDACCIÓN */
+        .chat-input-bar {
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 20;
+        }
+        .chat-input-textarea {
+            resize: none;
+            height: 42px;
+            max-height: 120px;
+            border-radius: 22px;
+            padding: 9px 16px;
+            font-size: 0.92rem;
+            border: 1px solid #cbd5e1;
+            outline: none;
+            background: #f8fafc;
+            transition: border-color 0.15s;
+        }
+        .chat-input-textarea:focus {
+            border-color: var(--uabc-green);
+            background: #ffffff;
+        }
+        .chat-btn-action {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .chat-btn-action:hover {
+            background: #f1f5f9;
+            color: var(--uabc-green);
+        }
+        .chat-btn-send {
+            background: var(--uabc-green) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(0, 102, 51, 0.25);
+        }
+        .chat-btn-send:hover {
+            background: var(--uabc-green-dark) !important;
+            transform: scale(1.04);
+        }
+
+        /* BADGE FLOTANTE DE ARCHIVO ADJUNTO */
+        .attachment-preview-pill {
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            background: #ffffff;
+            border: 1px solid var(--uabc-green);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-radius: 20px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #1e293b;
+            z-index: 30;
+            animation: fadeInPill 0.2s ease-out;
+        }
+        @keyframes fadeInPill {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* POPOVER DE EMOJIS */
+        .emoji-picker-popover {
+            position: absolute;
+            bottom: 64px;
+            left: 54px;
+            width: 320px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            z-index: 50;
+            display: none;
+        }
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .emoji-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .emoji-btn:hover {
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="has-sima-sidebar">
+    <!-- Navbar Superior -->
+    <header class="navbar-chat d-flex align-items-center justify-content-between px-3">
+        <div class="d-flex align-items-center">
+            <a href="/" class="d-flex align-items-center text-decoration-none me-3">
+                <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" height="32" class="me-2">
+                <span class="fw-bold" style="color: var(--uabc-green); font-size: 1.05rem;">FCA REPOSITORIO</span>
+            </a>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold">
+                <i class="fas fa-comments me-1"></i>Mensajería Institucional
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'gestion_coautorias' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                <i class="fas fa-user-check me-1"></i>Coautorías
+            </a>
+            <a href="{% url 'mi_panel' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                <i class="fas fa-user-circle me-1"></i>Mi Panel
+            </a>
+        </div>
+    </header>
+
+    {% include 'sidebar_institucional.html' %}
+
+    <div class="chat-app-wrapper">
+        <!-- ============================================================= -->
+        <!-- 1. BARRA LATERAL DE CONVERSACIONES -->
+        <!-- ============================================================= -->
+        <aside class="conversations-sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Mensajería Académica</h6>
+                    <small class="text-muted">Docentes & Investigadores FCA</small>
+                </div>
+                <button type="button" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoChat">
+                    <i class="fas fa-plus me-1"></i>Nuevo Chat
+                </button>
+            </div>
+
+            <!-- Buscador de Chats -->
+            <div class="search-chat-box">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="filtroChatsInput" class="form-control bg-light border-start-0" placeholder="Buscar colega o mensaje...">
+                </div>
+            </div>
+
+            <!-- Píldoras de Filtro -->
+            <div class="filter-pills-bar">
+                <span class="filter-pill active" data-filter="all">Todos</span>
+                <span class="filter-pill" data-filter="uabc">Docentes FCA</span>
+                <span class="filter-pill" data-filter="externo">Externos</span>
+                <span class="filter-pill" data-filter="inv">Investigadores</span>
+            </div>
+
+            <!-- LISTA DE CONVERSACIONES DIRECTAS ENTRE AUTORES -->
+            <div class="conversations-list" id="conversacionesList">
+
+                <!-- CONVERSACIONES DIRECTAS ENTRE AUTORES -->
+                {% if conversaciones_directas %}
+                    {% for conv in conversaciones_directas %}
+                        {% with a=conv.contacto %}
+                        <a href="{% url 'mensajeria' %}?contacto={{ a.id }}"
+                           class="chat-user-item item-chat-row {% if chat_activo.contacto.id == a.id %}active{% endif %}"
+                           data-tipo="{% if a.es_externo %}externo{% elif a.rol_facultad == 'INV_IND' or a.obtener_prefijo_codigo_institucional == 'INV' %}inv{% else %}uabc{% endif %}"
+                           data-search="{{ a.nombre }} {{ a.nombre_con_titulo }} {{ a.id }} ID-{{ a.id }} {{ a.codigo_institucional|default:'' }} {{ a.institucion_origen|default:'' }} {{ conv.ultimo_mensaje.cuerpo|default:'' }}">
+                            <div class="chat-user-avatar">
+                                {% if a.foto_claustro_url %}
+                                    <img src="{{ a.foto_claustro_url }}" alt="{{ a.nombre }}" class="chat-avatar-img" onerror="this.style.display='none'; this.parentElement.innerText='{{ a.inicial_limpia }}';">
+                                {% else %}
+                                    {{ a.inicial_limpia }}
+                                {% endif %}
+                            </div>
+                            <div class="chat-user-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="chat-user-name">{{ a.nombre_con_titulo }}</div>
+                                    <span class="chat-time">{{ conv.ultimo_mensaje.fecha_envio|date:"H:i" }}</span>
+                                </div>
+                                <div class="chat-user-role">
+                                    {{ a.institucion_origen|default:"FCA UABC" }}
+                                    {% if a.codigo_institucional %}
+                                        &bull; {{ a.codigo_institucional }}
+                                    {% endif %}
+                                </div>
+                                <div class="chat-user-snippet">
+                                    {% if conv.ultimo_mensaje.adjunto %}
+                                        <i class="fas fa-paperclip text-primary me-1"></i>
+                                    {% endif %}
+                                    {{ conv.ultimo_mensaje.cuerpo|truncatechars:40 }}
+                                </div>
+                            </div>
+                            {% if conv.no_leidos > 0 %}
+                                <div class="chat-meta">
+                                    <span class="badge bg-danger rounded-pill">{{ conv.no_leidos }}</span>
+                                </div>
+                            {% endif %}
+                        </a>
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    {% if not es_admin %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-comment-dots fa-3x mb-2 text-secondary opacity-50"></i>
+                        <h6 class="fw-bold mb-1">Sin chats activos</h6>
+                        <p class="small mb-3">Inicia una conversación con cualquier colega del claustro o consulta a Soporte.</p>
+                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoChat">
+                            <i class="fas fa-plus me-1"></i>Nuevo Mensaje
+                        </button>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- ============================================================= -->
+        <!-- 2. ÁREA DE CONVERSACIÓN ACTIVA -->
+        <!-- ============================================================= -->
+        <main class="chat-main-area">
+            {% if chat_activo.contacto %}
+                <!-- CABECERA DEL CHAT ACTIVO -->
+                <div class="chat-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="chat-user-avatar" style="width: 44px; height: 44px;">
+                            {% if chat_activo.contacto.foto_claustro_url %}
+                                <img src="{{ chat_activo.contacto.foto_claustro_url }}" alt="{{ chat_activo.contacto.nombre }}" class="chat-avatar-img" onerror="this.style.display='none'; this.parentElement.innerText='{{ chat_activo.contacto.inicial_limpia }}';">
+                            {% else %}
+                                {{ chat_activo.contacto.inicial_limpia|default:chat_activo.titulo|slice:":1"|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                                <span>{{ chat_activo.titulo }}</span>
+                            </div>
+                            <div class="text-muted small" style="font-size: 0.8rem;">
+                                {{ chat_activo.subtitulo|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{% url 'directorio_profesores' %}?q={{ chat_activo.contacto.nombre }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Ver ficha en Claustro Docente">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Ver en Claustro
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CONTENEDOR DE MENSAJES -->
+                <div class="chat-messages-container" id="chatMessagesContainer">
+                    <div class="date-divider">
+                        <span>Canal de Comunicación Cifrado Institucional FCA</span>
+                    </div>
+
+                    {% if chat_activo.mensajes %}
+                        {% for msg in chat_activo.mensajes %}
+                            {% if msg.remitente == user %}
+                                <!-- MENSAJE SALIENTE (PROPIO) -->
+                                <div class="message-row outgoing">
+                                    <div class="message-bubble outgoing">
+                                        <div class="message-sender-name">Tú</div>
+                                        <div class="message-text">{{ msg.cuerpo }}</div>
+
+                                        {% if msg.adjunto %}
+                                            {% if msg.es_imagen %}
+                                                <div class="image-preview-bubble">
+                                                    <a href="{{ msg.adjunto.url }}" target="_blank">
+                                                        <img src="{{ msg.adjunto.url }}" alt="{{ msg.nombre_adjunto|default:'Imagen' }}">
+                                                    </a>
+                                                </div>
+                                            {% else %}
+                                                <a href="{{ msg.adjunto.url }}" target="_blank" download class="attachment-card">
+                                                    <div class="attachment-icon {% if msg.es_pdf %}icon-pdf{% elif msg.es_documento %}icon-doc{% elif msg.es_presentacion %}icon-ppt{% elif msg.es_hoja_calculo %}icon-xls{% else %}icon-other{% endif %}">
+                                                        {% if msg.es_pdf %}
+                                                            <i class="fas fa-file-pdf"></i>
+                                                        {% elif msg.es_documento %}
+                                                            <i class="fas fa-file-word"></i>
+                                                        {% elif msg.es_presentacion %}
+                                                            <i class="fas fa-file-powerpoint"></i>
+                                                        {% elif msg.es_hoja_calculo %}
+                                                            <i class="fas fa-file-excel"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-file-alt"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">
+                                                            {{ msg.nombre_adjunto|default:msg.adjunto.name }}
+                                                        </div>
+                                                        <div class="text-muted" style="font-size: 0.72rem;">
+                                                            Archivo {{ msg.extension_adjunto|upper }} &bull; Clic para descargar
+                                                        </div>
+                                                    </div>
+                                                    <i class="fas fa-download text-muted ms-2"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        <div class="message-footer">
+                                            <span>{{ msg.fecha_envio|date:"H:i" }}</span>
+                                            {% if msg.leido %}
+                                                <i class="fas fa-check-double text-primary" title="Leído"></i>
+                                            {% else %}
+                                                <i class="fas fa-check text-muted" title="Enviado"></i>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- MENSAJE ENTRANTE -->
+                                <div class="message-row incoming">
+                                    <div class="message-bubble incoming">
+                                        <div class="message-sender-name">
+                                            {{ chat_activo.titulo }}
+                                        </div>
+                                        <div class="message-text">{{ msg.cuerpo }}</div>
+
+                                        {% if msg.adjunto %}
+                                            {% if msg.es_imagen %}
+                                                <div class="image-preview-bubble">
+                                                    <a href="{{ msg.adjunto.url }}" target="_blank">
+                                                        <img src="{{ msg.adjunto.url }}" alt="{{ msg.nombre_adjunto|default:'Imagen' }}">
+                                                    </a>
+                                                </div>
+                                            {% else %}
+                                                <a href="{{ msg.adjunto.url }}" target="_blank" download class="attachment-card">
+                                                    <div class="attachment-icon {% if msg.es_pdf %}icon-pdf{% elif msg.es_documento %}icon-doc{% elif msg.es_presentacion %}icon-ppt{% elif msg.es_hoja_calculo %}icon-xls{% else %}icon-other{% endif %}">
+                                                        {% if msg.es_pdf %}
+                                                            <i class="fas fa-file-pdf"></i>
+                                                        {% elif msg.es_documento %}
+                                                            <i class="fas fa-file-word"></i>
+                                                        {% elif msg.es_presentacion %}
+                                                            <i class="fas fa-file-powerpoint"></i>
+                                                        {% elif msg.es_hoja_calculo %}
+                                                            <i class="fas fa-file-excel"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-file-alt"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">
+                                                            {{ msg.nombre_adjunto|default:msg.adjunto.name }}
+                                                        </div>
+                                                        <div class="text-muted" style="font-size: 0.72rem;">
+                                                            Archivo {{ msg.extension_adjunto|upper }} &bull; Clic para descargar
+                                                        </div>
+                                                    </div>
+                                                    <i class="fas fa-download text-muted ms-2"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        <div class="message-footer">
+                                            <span>{{ msg.fecha_envio|date:"H:i" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-paper-plane fa-3x mb-3 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold">No hay mensajes previos en esta conversación</h6>
+                            <p class="small">Escribe abajo tu mensaje o adjunta archivos académicos para comenzar.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- BADGE FLOTANTE DE ARCHIVO SELECCIONADO (PREVIEW ANTES DE ENVIAR) -->
+                <div id="filePreviewBadge" class="attachment-preview-pill" style="display: none;">
+                    <i class="fas fa-paperclip text-success"></i>
+                    <span id="filePreviewName" class="fw-bold text-truncate" style="max-width: 240px;">archivo.pdf</span>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1" id="btnCancelAttachment" title="Quitar archivo">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- POPOVER DE EMOJIS ACADÉMICOS Y REACCIONES -->
+                <div class="emoji-picker-popover" id="emojiPickerPopover">
+                    <div class="small fw-bold text-secondary mb-2">Emojis Académicos y Reacciones</div>
+                    <div class="emoji-grid">
+                        <button type="button" class="emoji-btn">👍</button>
+                        <button type="button" class="emoji-btn">👏</button>
+                        <button type="button" class="emoji-btn">🤝</button>
+                        <button type="button" class="emoji-btn">🎓</button>
+                        <button type="button" class="emoji-btn">📚</button>
+                        <button type="button" class="emoji-btn">📖</button>
+                        <button type="button" class="emoji-btn">✍️</button>
+                        <button type="button" class="emoji-btn">📝</button>
+                        <button type="button" class="emoji-btn">💡</button>
+                        <button type="button" class="emoji-btn">🔬</button>
+                        <button type="button" class="emoji-btn">📊</button>
+                        <button type="button" class="emoji-btn">📈</button>
+                        <button type="button" class="emoji-btn">🏛️</button>
+                        <button type="button" class="emoji-btn">📋</button>
+                        <button type="button" class="emoji-btn">🔍</button>
+                        <button type="button" class="emoji-btn">🎯</button>
+                        <button type="button" class="emoji-btn">📑</button>
+                        <button type="button" class="emoji-btn">✅</button>
+                        <button type="button" class="emoji-btn">⭐</button>
+                        <button type="button" class="emoji-btn">🚀</button>
+                        <button type="button" class="emoji-btn">💬</button>
+                        <button type="button" class="emoji-btn">📅</button>
+                        <button type="button" class="emoji-btn">⏰</button>
+                        <button type="button" class="emoji-btn">😊</button>
+                        <button type="button" class="emoji-btn">😃</button>
+                        <button type="button" class="emoji-btn">🤓</button>
+                        <button type="button" class="emoji-btn">🤔</button>
+                        <button type="button" class="emoji-btn">☕</button>
+                    </div>
+                </div>
+
+                <!-- BARRA INFERIOR DE REDACCIÓN -->
+                <form method="post" action="{% url 'enviar_mensaje_interno' %}" enctype="multipart/form-data" class="chat-input-bar" id="formEnviarMensaje">
+                    {% csrf_token %}
+
+                    <!-- Destinatario del mensaje -->
+                    <input type="hidden" name="destinatario_id" value="{{ chat_activo.contacto.id }}">
+
+                    <!-- Botón Selector de Emojis -->
+                    <button type="button" class="chat-btn-action" id="btnToggleEmoji" title="Insertar emoji">
+                        <i class="far fa-smile"></i>
+                    </button>
+
+                    <!-- Botón de Archivo Adjunto -->
+                    <button type="button" class="chat-btn-action" id="btnAttachFile" title="Adjuntar documento o imagen">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" name="adjunto" id="fileInputActual" class="d-none" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.zip">
+
+                    <!-- Textarea del mensaje -->
+                    <textarea name="cuerpo" id="chatInputText" class="form-control chat-input-textarea" placeholder="Escribe un mensaje o consulta académica..." rows="1" required></textarea>
+
+                    <!-- Botón Enviar -->
+                    <button type="submit" class="chat-btn-action chat-btn-send" id="btnSendChat" title="Enviar mensaje">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            {% else %}
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-4">
+                    <img src="/static/images/LOGO FCA2.png" alt="FCA" height="80" class="mb-3 opacity-75">
+                    <h4 class="fw-bold text-dark">Centro de Mensajería Institucional FCA</h4>
+                    <p class="text-muted" style="max-width: 480px;">
+                        Selecciona una conversación del panel izquierdo o inicia una nueva para coordinar investigaciones, coautorías y proyectos académicos con tus colegas.
+                    </p>
+                    <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoChat">
+                        <i class="fas fa-plus me-1"></i>Iniciar Nuevo Mensaje
+                    </button>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 3. MODAL DE NUEVO CHAT / SELECTOR INTELIGENTE DE COLEGAS -->
+    <!-- ============================================================= -->
+    <div class="modal fade" id="modalNuevoChat" tabindex="-1" aria-labelledby="modalNuevoChatLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-white border-bottom py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="stat-icon-wrap bg-success bg-opacity-10 text-success" style="width: 36px; height: 36px; border-radius: 8px;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="modalNuevoChatLabel">Iniciar Conversación Académica</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+
+                    <!-- BUSCADOR EN EL MODAL -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="modalSearchDocente" class="form-control bg-light border-start-0" placeholder="Buscar colega por nombre, grado, ID institucional o universidad...">
+                    </div>
+
+                    <!-- VISTA UNIFICADA DE RESULTADOS DE BÚSQUEDA DINÁMICA -->
+                    <div id="modalSearchResultsContainer" style="display: none; max-height: 340px; overflow-y: auto;">
+                        <div class="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded text-muted small fw-bold">
+                            <span><i class="fas fa-search me-1 text-success"></i>Resultados de búsqueda:</span>
+                            <span id="modalSearchCountBadge" class="badge bg-success">0</span>
+                        </div>
+                        <div id="modalSearchResultsList" class="list-group list-group-flush">
+                        </div>
+                        <div id="modalSearchNoResults" class="text-center py-5 text-muted" style="display: none;">
+                            <i class="fas fa-user-slash fa-3x mb-2 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold text-dark">No se encontraron colegas</h6>
+                            <p class="small mb-0">No hay resultados para tu búsqueda. Prueba escribiendo el nombre, apellido, código institucional (ej. FCA-1084) o universidad.</p>
+                        </div>
+                    </div>
+
+                    <!-- TABS POR ROL EN EL MODAL -->
+                    <ul class="nav nav-pills mb-3 gap-2" id="modalDocentesTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active rounded-pill btn-sm py-1 px-3" data-bs-toggle="pill" data-bs-target="#tab-uabc-all">
+                                Docentes FCA ({{ docentes_uabc|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill btn-sm py-1 px-3" data-bs-toggle="pill" data-bs-target="#tab-externos-all">
+                                Docentes Externos ({{ docentes_externos|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill btn-sm py-1 px-3" data-bs-toggle="pill" data-bs-target="#tab-inv-all">
+                                Investigadores ({{ investigadores|length }})
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="modalTabContent" style="max-height: 340px; overflow-y: auto;">
+                        <!-- TAB DOCENTES UABC -->
+                        <div class="tab-pane fade show active" id="tab-uabc-all">
+                            <div class="list-group list-group-flush">
+                                {% for a in docentes_uabc %}
+                                <a href="{% url 'mensajeria' %}?contacto={{ a.id }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-bottom item-docente-modal" data-search="{{ a.nombre }} {{ a.nombre_con_titulo }} {{ a.id }} ID-{{ a.id }} {{ a.codigo_institucional|default:'' }} {{ a.institucion_origen|default:'' }} UABC FCA {{ a.correo|default:'' }} {{ a.titulo_academico|default:'' }} {{ a.nombres|default:'' }} {{ a.apellido_paterno|default:'' }} {{ a.apellido_materno|default:'' }}">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="chat-user-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                                            {% if a.foto_claustro_url %}
+                                                <img src="{{ a.foto_claustro_url }}" alt="{{ a.nombre }}" class="chat-avatar-img" onerror="this.style.display='none'; this.parentElement.innerText='{{ a.inicial_limpia }}';">
+                                            {% else %}
+                                                {{ a.inicial_limpia }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ a.nombre_con_titulo }}</div>
+                                            <div class="small text-muted">
+                                                {{ a.institucion_origen|default:"FCA UABC" }}
+                                                {% if a.codigo_institucional %}
+                                                    &bull; <span class="badge bg-secondary py-0 px-1">{{ a.codigo_institucional }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <i class="fas fa-comment me-1"></i>Conversar
+                                    </span>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- TAB DOCENTES EXTERNOS -->
+                        <div class="tab-pane fade" id="tab-externos-all">
+                            <div class="list-group list-group-flush">
+                                {% for a in docentes_externos %}
+                                <a href="{% url 'mensajeria' %}?contacto={{ a.id }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-bottom item-docente-modal" data-search="{{ a.nombre }} {{ a.nombre_con_titulo }} {{ a.id }} ID-{{ a.id }} {{ a.codigo_institucional|default:'' }} {{ a.institucion_origen|default:'' }} externo {{ a.correo|default:'' }} {{ a.titulo_academico|default:'' }} {{ a.nombres|default:'' }} {{ a.apellido_paterno|default:'' }} {{ a.apellido_materno|default:'' }}">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="chat-user-avatar" style="width: 40px; height: 40px; font-size: 1rem; background: #6366f1;">
+                                            {% if a.foto_claustro_url %}
+                                                <img src="{{ a.foto_claustro_url }}" alt="{{ a.nombre }}" class="chat-avatar-img" onerror="this.style.display='none'; this.parentElement.innerText='{{ a.inicial_limpia }}';">
+                                            {% else %}
+                                                {{ a.inicial_limpia }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ a.nombre_con_titulo }}</div>
+                                            <div class="small text-muted">
+                                                {{ a.institucion_origen|default:"Universidad Colaboradora" }}
+                                                {% if a.codigo_institucional %}
+                                                    &bull; <span class="badge bg-secondary py-0 px-1">{{ a.codigo_institucional }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="fas fa-comment me-1"></i>Conversar
+                                    </span>
+                                </a>
+                                {% empty %}
+                                <div class="text-center py-4 text-muted">No hay docentes externos registrados aún.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- TAB INVESTIGADORES -->
+                        <div class="tab-pane fade" id="tab-inv-all">
+                            <div class="list-group list-group-flush">
+                                {% for a in investigadores %}
+                                <a href="{% url 'mensajeria' %}?contacto={{ a.id }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-bottom item-docente-modal" data-search="{{ a.nombre }} {{ a.nombre_con_titulo }} {{ a.id }} ID-{{ a.id }} {{ a.codigo_institucional|default:'' }} {{ a.institucion_origen|default:'' }} investigador independiente {{ a.correo|default:'' }} {{ a.titulo_academico|default:'' }} {{ a.nombres|default:'' }} {{ a.apellido_paterno|default:'' }} {{ a.apellido_materno|default:'' }}">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="chat-user-avatar" style="width: 40px; height: 40px; font-size: 1rem; background: #059669;">
+                                            {% if a.foto_claustro_url %}
+                                                <img src="{{ a.foto_claustro_url }}" alt="{{ a.nombre }}" class="chat-avatar-img" onerror="this.style.display='none'; this.parentElement.innerText='{{ a.inicial_limpia }}';">
+                                            {% else %}
+                                                {{ a.inicial_limpia }}
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ a.nombre_con_titulo }}</div>
+                                            <div class="small text-muted">
+                                                {{ a.institucion_origen|default:"Investigador Independiente" }}
+                                                {% if a.codigo_institucional %}
+                                                    &bull; <span class="badge bg-secondary py-0 px-1">{{ a.codigo_institucional }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <i class="fas fa-comment me-1"></i>Conversar
+                                    </span>
+                                </a>
+                                {% empty %}
+                                <div class="text-center py-4 text-muted">No hay investigadores independientes registrados.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Bootstrap 5 y Reactividad del Chat -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            // Scroll automático al último mensaje al cargar
+            const messagesContainer = document.getElementById('chatMessagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Manejo de Archivos Adjuntos
+            const btnAttachFile = document.getElementById('btnAttachFile');
+            const fileInputActual = document.getElementById('fileInputActual');
+            const filePreviewBadge = document.getElementById('filePreviewBadge');
+            const filePreviewName = document.getElementById('filePreviewName');
+            const btnCancelAttachment = document.getElementById('btnCancelAttachment');
+
+            if (btnAttachFile && fileInputActual) {
+                btnAttachFile.onclick = function() {
+                    fileInputActual.click();
+                };
+
+                fileInputActual.onchange = function() {
+                    if (this.files && this.files.length > 0) {
+                        const file = this.files[0];
+                        if (filePreviewName && filePreviewBadge) {
+                            filePreviewName.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+                            filePreviewBadge.style.display = 'flex';
+                        }
+                    }
+                };
+
+                if (btnCancelAttachment) {
+                    btnCancelAttachment.onclick = function() {
+                        fileInputActual.value = '';
+                        filePreviewBadge.style.display = 'none';
+                    };
+                }
+
+                // Soporte Drag & Drop para adjuntos en mensajería
+                const dropAreaChat = document.getElementById('formEnviarMensaje') || chatMessagesContainer;
+                if (dropAreaChat) {
+                    ['dragenter', 'dragover'].forEach(name => {
+                        dropAreaChat.addEventListener(name, function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            dropAreaChat.style.outline = '2px dashed #16a34a';
+                            dropAreaChat.style.backgroundColor = '#f0fdf4';
+                        }, false);
+                    });
+                    ['dragleave', 'drop'].forEach(name => {
+                        dropAreaChat.addEventListener(name, function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            dropAreaChat.style.outline = '';
+                            dropAreaChat.style.backgroundColor = '';
+                        }, false);
+                    });
+                    dropAreaChat.addEventListener('drop', function(e) {
+                        const dt = e.dataTransfer;
+                        if (dt && dt.files && dt.files.length > 0) {
+                            fileInputActual.files = dt.files;
+                            fileInputActual.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+            }
+
+            // Manejo de Emojis
+            const btnToggleEmoji = document.getElementById('btnToggleEmoji');
+            const emojiPickerPopover = document.getElementById('emojiPickerPopover');
+            const chatInputText = document.getElementById('chatInputText');
+
+            if (btnToggleEmoji && emojiPickerPopover && chatInputText) {
+                btnToggleEmoji.onclick = function(e) {
+                    e.stopPropagation();
+                    const isVisible = emojiPickerPopover.style.display === 'block';
+                    emojiPickerPopover.style.display = isVisible ? 'none' : 'block';
+                };
+
+                document.addEventListener('click', function(e) {
+                    if (!emojiPickerPopover.contains(e.target) && e.target !== btnToggleEmoji) {
+                        emojiPickerPopover.style.display = 'none';
+                    }
+                });
+
+                document.querySelectorAll('.emoji-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        const emoji = this.textContent;
+                        const start = chatInputText.selectionStart;
+                        const end = chatInputText.selectionEnd;
+                        const val = chatInputText.value;
+                        chatInputText.value = val.substring(0, start) + emoji + val.substring(end);
+                        chatInputText.focus();
+                        chatInputText.selectionStart = chatInputText.selectionEnd = start + emoji.length;
+                    };
+                });
+            }
+
+            // Enviar con Enter (Shift+Enter para nueva línea) y auto-crecimiento
+            if (chatInputText) {
+                chatInputText.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const form = document.getElementById('formEnviarMensaje');
+                        if (form) {
+                            form.requestSubmit();
+                        }
+                    }
+                });
+
+                chatInputText.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+
+            // Función auxiliar para normalizar texto (sin acentos, minúsculas, espacios limpios)
+            function normalizeSearchText(text) {
+                if (!text) return '';
+                return text.toString()
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+            }
+
+            // Motor de búsqueda inteligente multi-palabra tolerante a puntuación (Dr., FCA-1083, etc.)
+            function searchMatches(targetText, queryText) {
+                if (!queryText || !queryText.trim()) return true;
+
+                // Normalizar texto del docente y generar variante con espacios en vez de puntuación
+                const normTarget = normalizeSearchText(targetText);
+                const cleanTarget = normTarget.replace(/[.\-_#/\\,:]/g, ' ');
+                const fullTarget = normTarget + ' ' + cleanTarget;
+
+                // Normalizar la consulta del usuario y dividir en tokens/palabras
+                const cleanQuery = normalizeSearchText(queryText).replace(/[.\-_#/\\,:]/g, ' ');
+                const tokens = cleanQuery.split(/\s+/).filter(Boolean);
+
+                if (tokens.length === 0) return true;
+
+                // Cada término buscado por el usuario debe estar presente en los datos del colega
+                return tokens.every(token => fullTarget.includes(token));
+            }
+
+            // Filtrado reactivo en la barra lateral de chats
+            const filtroChatsInput = document.getElementById('filtroChatsInput');
+            if (filtroChatsInput) {
+                filtroChatsInput.addEventListener('input', function() {
+                    const query = this.value;
+                    document.querySelectorAll('.item-chat-row').forEach(row => {
+                        const searchData = row.getAttribute('data-search') || row.innerText || '';
+                        if (searchMatches(searchData, query)) {
+                            row.style.display = 'flex';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Píldoras de filtro en la barra lateral
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.onclick = function() {
+                    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    const filter = this.getAttribute('data-filter');
+
+                    document.querySelectorAll('.item-chat-row').forEach(row => {
+                        const tipo = row.getAttribute('data-tipo');
+                        if (filter === 'all' || tipo === filter) {
+                            row.style.display = 'flex';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                };
+            });
+
+            // Buscador Inteligente en el modal de nuevo chat
+            const modalSearchDocente = document.getElementById('modalSearchDocente');
+            const modalDocentesTabs = document.getElementById('modalDocentesTabs');
+            const modalTabContent = document.getElementById('modalTabContent');
+            const modalSearchResultsContainer = document.getElementById('modalSearchResultsContainer');
+            const modalSearchResultsList = document.getElementById('modalSearchResultsList');
+            const modalSearchNoResults = document.getElementById('modalSearchNoResults');
+            const modalSearchCountBadge = document.getElementById('modalSearchCountBadge');
+
+            if (modalSearchDocente) {
+                modalSearchDocente.addEventListener('input', function() {
+                    const query = this.value;
+
+                    if (!query || !query.trim()) {
+                        // Restaurar vista habitual organizada por pestañas
+                        if (modalSearchResultsContainer) modalSearchResultsContainer.style.display = 'none';
+                        if (modalDocentesTabs) modalDocentesTabs.style.display = 'flex';
+                        if (modalTabContent) modalTabContent.style.display = 'block';
+                        return;
+                    }
+
+                    // Modo de búsqueda global unificada
+                    if (modalDocentesTabs) modalDocentesTabs.style.display = 'none';
+                    if (modalTabContent) modalTabContent.style.display = 'none';
+                    if (modalSearchResultsContainer) modalSearchResultsContainer.style.display = 'block';
+
+                    let matchesCount = 0;
+                    if (modalSearchResultsList) {
+                        modalSearchResultsList.innerHTML = '';
+                    }
+
+                    const allItems = modalTabContent ? modalTabContent.querySelectorAll('.item-docente-modal') : document.querySelectorAll('.item-docente-modal');
+                    const seenHrefs = new Set();
+
+                    allItems.forEach(item => {
+                        const href = item.getAttribute('href');
+                        if (seenHrefs.has(href)) return;
+
+                        const searchData = item.getAttribute('data-search') || item.innerText || '';
+                        if (searchMatches(searchData, query)) {
+                            seenHrefs.add(href);
+                            matchesCount++;
+                            const clone = item.cloneNode(true);
+                            clone.style.display = 'flex';
+                            if (modalSearchResultsList) {
+                                modalSearchResultsList.appendChild(clone);
+                            }
+                        }
+                    });
+
+                    if (modalSearchCountBadge) {
+                        modalSearchCountBadge.textContent = `${matchesCount} colega${matchesCount === 1 ? '' : 's'}`;
+                    }
+
+                    if (matchesCount > 0) {
+                        if (modalSearchResultsList) modalSearchResultsList.style.display = 'block';
+                        if (modalSearchNoResults) modalSearchNoResults.style.display = 'none';
+                    } else {
+                        if (modalSearchResultsList) modalSearchResultsList.style.display = 'none';
+                        if (modalSearchNoResults) modalSearchNoResults.style.display = 'block';
+                    }
+                });
+            }
+
+            // Eventos del modal para foco y reseteo limpio
+            const modalNuevoChatEl = document.getElementById('modalNuevoChat');
+            if (modalNuevoChatEl) {
+                modalNuevoChatEl.addEventListener('shown.bs.modal', function () {
+                    if (modalSearchDocente) {
+                        modalSearchDocente.focus();
+                    }
+                });
+                modalNuevoChatEl.addEventListener('hidden.bs.modal', function () {
+                    if (modalSearchDocente) {
+                        modalSearchDocente.value = '';
+                        modalSearchDocente.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

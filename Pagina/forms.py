@@ -59,6 +59,7 @@ class ArticuloForm(forms.ModelForm):
 
     # Campos de Tesis, Libros y otros recursos
     asesor = forms.CharField(max_length=150, required=False)
+    coasesor = forms.CharField(max_length=150, required=False)
     grado_academico = forms.CharField(max_length=50, required=False)
     carrera_o_posgrado = forms.CharField(max_length=150, required=False)
     editorial = forms.CharField(max_length=150, required=False)
@@ -92,6 +93,11 @@ class ArticuloForm(forms.ModelForm):
                 self.initial['asesor'] = nombre_asesor
                 self.fields['asesor'].initial = nombre_asesor
 
+            if self.instance.coasesor:
+                nombre_coasesor = getattr(self.instance.coasesor, 'nombre', str(self.instance.coasesor))
+                self.initial['coasesor'] = nombre_coasesor
+                self.fields['coasesor'].initial = nombre_coasesor
+
             self.fields['grado_academico'].initial = self.instance.grado_academico
             self.fields['carrera_o_posgrado'].initial = self.instance.carrera_o_posgrado
             self.fields['editorial'].initial = self.instance.editorial
@@ -122,6 +128,20 @@ class ArticuloForm(forms.ModelForm):
         entidad, _ = Entidad.objects.get_or_create(nombre=nombre)
         return entidad
 
+    def clean_grado_academico(self):
+        grado = self.cleaned_data.get('grado_academico', '')
+        if isinstance(grado, str):
+            grado = grado.strip()
+            if grado.lower() in ['maestría', 'maestria']:
+                return 'Maestria'
+            elif grado.lower() in ['doctorado']:
+                return 'Doctorado'
+            elif grado.lower() in ['licenciatura']:
+                return 'Licenciatura'
+            elif grado.lower() in ['especialidad']:
+                return 'Especialidad'
+        return grado
+
     def clean_asesor(self):
         nombre = self.cleaned_data.get('asesor', '')
         if isinstance(nombre, str):
@@ -129,6 +149,19 @@ class ArticuloForm(forms.ModelForm):
         if not nombre:
             return None
         # Busca al asesor en el catálogo de autores o lo crea automáticamente
+        autor, _ = Autor.objects.get_or_create(
+            nombre=nombre,
+            defaults={'institucion_origen': 'UABC'}
+        )
+        return autor
+
+    def clean_coasesor(self):
+        nombre = self.cleaned_data.get('coasesor', '')
+        if isinstance(nombre, str):
+            nombre = nombre.strip()
+        if not nombre:
+            return None
+        # Busca al coasesor en el catálogo de autores o lo crea automáticamente
         autor, _ = Autor.objects.get_or_create(
             nombre=nombre,
             defaults={'institucion_origen': 'UABC'}
@@ -147,6 +180,7 @@ class ArticuloForm(forms.ModelForm):
 
         # Asignamos la instancia de Autor o None según la limpieza
         articulo.asesor = self.cleaned_data.get('asesor')
+        articulo.coasesor = self.cleaned_data.get('coasesor')
         articulo.grado_academico = self.cleaned_data.get('grado_academico', '')
         articulo.carrera_o_posgrado = self.cleaned_data.get('carrera_o_posgrado', '')
         articulo.editorial = self.cleaned_data.get('editorial', '')

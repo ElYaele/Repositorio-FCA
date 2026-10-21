@@ -7,7 +7,12 @@ from .views import (
     login_view,
     logout_view,
     solicitar_registro_view,
+    verificar_codigo_registro_view,
+    reenviar_codigo_registro_view,
+    recuperar_password_view,
+    validar_recuperar_password_view,
     mi_panel_view,
+    gestionar_auxiliar_docente_view,
     actualizar_perfil_docente_view,
     cambiar_password_propia_view,
     directorio_profesores_view,
@@ -15,6 +20,7 @@ from .views import (
     universidades_colaboradoras_view,
     panel_usuarios_view,
     ver_subidas_usuario_view,
+    asignar_autor_propio_doc_view,
     restablecer_password_usuario_view,
     aprobar_usuario_view,
     rechazar_usuario_view,
@@ -25,12 +31,39 @@ from .views import (
     aprobar_documento_view,
     rechazar_documento_view,
     eliminar_documento_view,
+    restaurar_documento_view,
+    vaciar_papelera_documentos_view,
+    marcar_archivo_checado_view,
+    acciones_masivas_documentos_view,
+    exportar_documentos_excel_view,
+    exportar_respaldo_sistema_view,
+    restaurar_respaldo_sistema_view,
     aprobar_semblanza_view,
     rechazar_semblanza_view,
     editar_semblanza_admin_view,
     restablecer_semblanza_admin_view,
     crear_autor_rapido_view,
     editar_ficha_usuario_admin_view,
+    suspender_usuario_view,
+    reactivar_usuario_view,
+    solicitar_reactivacion_view,
+    toggle_trusted_publisher_view,
+    desactivar_cuenta_propia_view,
+    gestion_coautorias_view,
+    responder_invitacion_coautoria_view,
+    mensajeria_view,
+    soporte_institucional_view,
+    enviar_mensaje_interno_view,
+    marcar_mensaje_leido_view,
+    cambiar_estado_soporte_view,
+    fusionar_autores_view,
+    revertir_fusion_view,
+    limpiar_autores_huerfanos_admin_view,
+    eliminar_autor_huerfano_individual_view,
+    cambiar_color_cumpleanos_view,
+    impersonar_usuario_view,
+    dejar_impersonacion_view,
+    bitacora_usuario_ajax_view,
 )
 
 urlpatterns = [
@@ -43,35 +76,77 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('solicitar-cuenta/', solicitar_registro_view, name='solicitar_registro'),
+    path('verificar-cuenta/<int:user_id>/', verificar_codigo_registro_view, name='verificar_codigo_registro'),
+    path('verificar-cuenta/reenviar/<int:user_id>/', reenviar_codigo_registro_view, name='reenviar_codigo_registro'),
+    path('recuperar-contrasena/', recuperar_password_view, name='recuperar_password'),
+    path('recuperar-contrasena/validar/<int:user_id>/', validar_recuperar_password_view, name='validar_recuperar_password'),
+    path('solicitar-reactivacion/', solicitar_reactivacion_view, name='solicitar_reactivacion'),
 
     # Panel personal de docente / usuario
     path('mi-panel/', mi_panel_view, name='mi_panel'),
     path('mi-panel/actualizar-perfil/', actualizar_perfil_docente_view, name='actualizar_perfil_docente'),
     path('mi-panel/cambiar-clave/', cambiar_password_propia_view, name='cambiar_password_propia'),
+    path('mi-panel/desactivar-cuenta/', desactivar_cuenta_propia_view, name='desactivar_cuenta_propia'),
+    path('mi-panel/auxiliares/<int:auxiliar_id>/gestionar/', gestionar_auxiliar_docente_view, name='gestionar_auxiliar_docente'),
+    path('mi-panel/coautoria/<int:invitacion_id>/', responder_invitacion_coautoria_view, name='responder_invitacion_coautoria_legacy'),
+    path('mi-panel/mensajes/enviar/', enviar_mensaje_interno_view, name='enviar_mensaje_interno_legacy'),
+    path('mi-panel/mensajes/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido_legacy'),
+
+    # Módulo de Coautorías e Invitaciones Académicas
+    path('coautorias/', gestion_coautorias_view, name='gestion_coautorias'),
+    path('coautorias/<int:invitacion_id>/responder/', responder_invitacion_coautoria_view, name='responder_invitacion_coautoria'),
+
+    # Módulo de Mensajería Académica entre Colegas
+    path('mensajeria/', mensajeria_view, name='mensajeria'),
+    path('mensajeria/enviar/', enviar_mensaje_interno_view, name='enviar_mensaje_interno'),
+    path('mensajeria/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido'),
+
+    # Módulo Dedicado de Soporte Institucional y Mesa de Ayuda
+    path('soporte/', soporte_institucional_view, name='soporte_institucional'),
+    path('soporte/estado/<int:ticket_autor_id>/', cambiar_estado_soporte_view, name='cambiar_estado_soporte'),
 
     # Directorio de profesores y cumpleaños
     path('profesores/', directorio_profesores_view, name='directorio_profesores'),
     path('profesores/felicitar/<int:autor_id>/', enviar_felicitacion_cumpleanos_view, name='enviar_felicitacion_cumpleanos'),
+    path('profesores/color-cumpleanos/', cambiar_color_cumpleanos_view, name='cambiar_color_cumpleanos'),
 
     # Red de Universidades Colaboradoras
     path('universidades-colaboradoras/', universidades_colaboradoras_view, name='universidades_colaboradoras'),
 
     # Panel de administración (Superusuario)
     path('gestion-usuarios/', panel_usuarios_view, name='panel_usuarios'),
+    path('gestion-usuarios/fusionar-autores/', fusionar_autores_view, name='fusionar_autores'),
+    path('gestion-usuarios/revertir-fusion/<int:fusion_id>/', revertir_fusion_view, name='revertir_fusion'),
+    path('gestion-usuarios/limpiar-autores-huerfanos/', limpiar_autores_huerfanos_admin_view, name='limpiar_autores_huerfanos_admin'),
+    path('gestion-usuarios/eliminar-autor-huerfano/<int:autor_id>/', eliminar_autor_huerfano_individual_view, name='eliminar_autor_huerfano_individual'),
     path('gestion-usuarios/ver-subidas/<int:user_id>/', ver_subidas_usuario_view, name='ver_subidas_usuario'),
+    path('gestion-usuarios/asignar-autor-propio/<int:doc_id>/<int:user_id>/', asignar_autor_propio_doc_view, name='asignar_autor_propio_doc'),
     path('gestion-usuarios/cambiar-clave/<int:user_id>/', restablecer_password_usuario_view, name='restablecer_password_usuario'),
     path('gestion-usuarios/editar-ficha/<int:user_id>/', editar_ficha_usuario_admin_view, name='editar_ficha_usuario_admin'),
     path('gestion-usuarios/aprobar/<int:user_id>/', aprobar_usuario_view, name='aprobar_usuario'),
     path('gestion-usuarios/rechazar/<int:user_id>/', rechazar_usuario_view, name='rechazar_usuario'),
+    path('gestion-usuarios/suspender/<int:user_id>/', suspender_usuario_view, name='suspender_usuario'),
+    path('gestion-usuarios/reactivar/<int:user_id>/', reactivar_usuario_view, name='reactivar_usuario'),
+    path('gestion-usuarios/toggle-trusted/<int:user_id>/', toggle_trusted_publisher_view, name='toggle_trusted_publisher'),
     path('gestion-usuarios/toggle/<int:user_id>/', toggle_estado_usuario_view, name='toggle_estado_usuario'),
     path('gestion-usuarios/toggle-super/<int:user_id>/', toggle_superuser_view, name='toggle_superuser'),
     path('gestion-usuarios/cambiar-rol/<int:user_id>/', cambiar_rol_usuario_view, name='cambiar_rol_usuario'),
     path('gestion-usuarios/eliminar/<int:user_id>/', eliminar_usuario_view, name='eliminar_usuario'),
+    path('gestion-usuarios/impersonar/<int:user_id>/', impersonar_usuario_view, name='impersonar_usuario'),
+    path('gestion-usuarios/dejar-impersonacion/', dejar_impersonacion_view, name='dejar_impersonacion'),
+    path('gestion-usuarios/bitacora/<int:user_id>/', bitacora_usuario_ajax_view, name='bitacora_usuario_ajax'),
 
     # Moderación de documentos
     path('gestion-documentos/aprobar/<int:doc_id>/', aprobar_documento_view, name='aprobar_documento'),
     path('gestion-documentos/rechazar/<int:doc_id>/', rechazar_documento_view, name='rechazar_documento'),
     path('gestion-documentos/eliminar/<int:doc_id>/', eliminar_documento_view, name='eliminar_documento'),
+    path('gestion-documentos/restaurar/<int:doc_id>/', restaurar_documento_view, name='restaurar_documento'),
+    path('gestion-documentos/vaciar-papelera/', vaciar_papelera_documentos_view, name='vaciar_papelera_documentos'),
+    path('gestion-documentos/marcar-checado/<int:doc_id>/', marcar_archivo_checado_view, name='marcar_archivo_checado'),
+    path('gestion-documentos/acciones-masivas/', acciones_masivas_documentos_view, name='acciones_masivas_documentos'),
+    path('gestion-documentos/exportar-excel/', exportar_documentos_excel_view, name='exportar_documentos_excel'),
+    path('gestion-sistema/exportar-respaldo/', exportar_respaldo_sistema_view, name='exportar_respaldo_sistema'),
+    path('gestion-sistema/restaurar-respaldo/', restaurar_respaldo_sistema_view, name='restaurar_respaldo_sistema'),
 
     # Moderación de semblanzas (Claustro)
     path('gestion-semblanzas/aprobar/<int:autor_id>/', aprobar_semblanza_view, name='aprobar_semblanza'),
@@ -81,4 +156,4 @@ urlpatterns = [
 
     # API para autores
     path('ajax/crear-autor-rapido/', crear_autor_rapido_view, name='crear_autor_rapido'),
-]
+]

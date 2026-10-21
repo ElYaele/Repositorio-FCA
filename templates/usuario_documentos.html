@@ -369,19 +369,7 @@
 </head>
 <body>
     <!-- BARRA LATERAL INSTITUCIONAL -->
-    <aside class="sima-sidebar">
-        <div class="menu-tag">MENÚ</div>
-        <a href="/" class="sima-nav-item" title="Inicio / Catálogo"><i class="fas fa-home"></i></a>
-        <a href="{% url 'mi_panel' %}" class="sima-nav-item" title="Mi Panel / Mi Semblanza"><i class="fas fa-user-circle"></i></a>
-        <a href="{% url 'directorio_profesores' %}" class="sima-nav-item" title="Directorio de Profesores FCA"><i class="fas fa-chalkboard-teacher"></i></a>
-        <a href="{% url 'universidades_colaboradoras' %}" class="sima-nav-item" title="Red de Universidades Colaboradoras"><i class="fas fa-globe-americas"></i></a>
-        <a href="{% url 'upload_document' %}" class="sima-nav-item" title="Subir Publicación"><i class="fas fa-cloud-upload-alt"></i></a>
-        <a href="{% url 'panel_usuarios' %}" class="sima-nav-item active" title="Moderación y Gestión de Usuarios"><i class="fas fa-tasks"></i></a>
-
-        <div class="mt-auto mb-3 w-100">
-            <a href="{% url 'logout' %}" class="sima-nav-item text-danger" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
-        </div>
-    </aside>
+    {% include 'sidebar_institucional.html' %}
 
     <!-- BARRA SUPERIOR FIJA -->
     <header class="sima-topbar">
@@ -405,21 +393,46 @@
         <div class="profile-card p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 70px; height: 70px; font-size: 2rem; flex-shrink: 0;">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
+                    {% if usuario_consultado.autor and usuario_consultado.autor.foto %}
+                        <img src="{{ usuario_consultado.autor.foto.url }}" alt="{{ usuario_consultado.username }}" class="rounded-circle me-3 shadow-sm border border-2 border-success" style="width: 72px; height: 72px; object-fit: cover; flex-shrink: 0;">
+                    {% else %}
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 72px; height: 72px; font-size: 2rem; flex-shrink: 0;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    {% endif %}
                     <div>
                         <div class="d-flex align-items-center mb-1 flex-wrap gap-2">
                             <h4 class="mb-0 fw-bold text-dark">{{ usuario_consultado.username }}</h4>
-                            {% if usuario_consultado.autor and usuario_consultado.autor.es_externo %}
-                                <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                            {% if usuario_consultado.autor and usuario_consultado.autor.rol_facultad == 'INV_IND' %}
+                                <span class="badge rounded-pill px-3 shadow-xs" style="background-color: #6f42c1; color: white;"><i class="fas fa-user-graduate me-1"></i>Investigador Independiente</span>
+                            {% elif usuario_consultado.autor and usuario_consultado.autor.es_externo %}
+                                <span class="badge bg-info text-dark rounded-pill px-3 shadow-xs"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
                             {% elif usuario_consultado.autor and usuario_consultado.autor.es_profesor %}
-                                <span class="badge bg-success rounded-pill px-3"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
+                                <span class="badge bg-success rounded-pill px-3 shadow-xs"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
                             {% elif usuario_consultado.is_superuser %}
-                                <span class="badge bg-primary rounded-pill px-3"><i class="fas fa-shield-alt me-1"></i>Superusuario</span>
+                                <span class="badge bg-primary rounded-pill px-3 shadow-xs"><i class="fas fa-shield-alt me-1"></i>Superusuario</span>
                             {% else %}
-                                <span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-user-tie me-1"></i>Administrativo</span>
+                                <span class="badge bg-secondary rounded-pill px-3 shadow-xs"><i class="fas fa-user-tie me-1"></i>Administrativo</span>
                             {% endif %}
+
+                            <!-- DISTINTIVO DE CONFIANZA / ELEGIBILIDAD -->
+                            <span id="badge-trusted-container">
+                                {% if is_trusted %}
+                                    <span class="badge bg-success text-white rounded-pill px-3 shadow-xs" title="Publicador de Confianza Activo: Sus obras se publican automáticamente sin moderación previa">
+                                        <i class="fas fa-shield-alt me-1"></i>De Confianza Activo
+                                    </span>
+                                {% elif es_candidato_confianza %}
+                                    <span class="badge bg-warning text-dark border border-warning rounded-pill px-3 shadow-xs" title="Candidato Elegible: Tiene racha de {{ racha_actual }} obras aprobadas consecutivas sin ningún rechazo">
+                                        <i class="fas fa-medal text-warning me-1"></i>10+ Obras sin Rechazos (Elegible)
+                                    </span>
+                                {% endif %}
+                            </span>
+
+                            <!-- BOTÓN DE ACCIÓN RÁPIDA PARA LA CREDENCIAL DE CONFIANZA -->
+                            <button type="button" class="btn btn-sm {% if is_trusted %}btn-success text-white{% elif es_candidato_confianza %}btn-outline-warning text-dark fw-bold border-warning shadow-xs{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-0 ms-1 shadow-xs" id="btnToggleTrustedHeader" data-userid="{{ usuario_consultado.id }}" data-trusted="{{ is_trusted|yesno:'true,false' }}" title="Alternar Credencial de Confianza (Bypass de Moderación)">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                <span id="btnToggleTrustedText">{% if is_trusted %}De Confianza (Revocar){% else %}Otorgar Confianza{% endif %}</span>
+                            </button>
                         </div>
                         <p class="text-muted small mb-0">
                             <strong class="text-dark">Nombre:</strong> {{ usuario_consultado.autor.nombre|default:usuario_consultado.get_full_name|default:"No especificado" }} &bull;
@@ -430,14 +443,37 @@
                     </div>
                 </div>
 
-                <div class="d-flex gap-3">
-                    <div class="stat-box text-center shadow-sm">
-                        <span class="fs-4 fw-bold text-primary">{{ total_cargados }}</span>
-                        <div class="small text-muted fw-bold" style="font-size: 0.75rem;">Cargados al Sistema</div>
+                <!-- MÉTRICAS ENRIQUECIDAS -->
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="stat-box text-center shadow-sm py-2 px-3">
+                        <span class="fs-5 fw-bold text-primary">{{ total_cargados }}</span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.7rem;">Cargados</div>
                     </div>
-                    <div class="stat-box text-center shadow-sm">
-                        <span class="fs-4 fw-bold text-success">{{ total_autor }}</span>
-                        <div class="small text-muted fw-bold" style="font-size: 0.75rem;">Autor / Coautor</div>
+                    <div class="stat-box text-center shadow-sm py-2 px-3">
+                        <span class="fs-5 fw-bold text-success">{{ cargados_aprobados }}</span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.7rem;">Aprobados</div>
+                    </div>
+                    {% if cargados_pendientes > 0 %}
+                    <div class="stat-box text-center shadow-sm py-2 px-3 border border-warning" style="background-color: #fffdf5;">
+                        <span class="fs-5 fw-bold text-warning">{{ cargados_pendientes }}</span>
+                        <div class="small text-dark fw-bold" style="font-size: 0.7rem;">En Espera</div>
+                    </div>
+                    {% endif %}
+                    {% if cargados_rechazados > 0 %}
+                    <div class="stat-box text-center shadow-sm py-2 px-3 border border-danger" style="background-color: #fff5f5;">
+                        <span class="fs-5 fw-bold text-danger">{{ cargados_rechazados }}</span>
+                        <div class="small text-dark fw-bold" style="font-size: 0.7rem;">Rechazados</div>
+                    </div>
+                    {% endif %}
+                    <div class="stat-box text-center shadow-sm py-2 px-3">
+                        <span class="fs-5 fw-bold {% if racha_actual >= 10 %}text-warning{% else %}text-secondary{% endif %}">
+                            <i class="fas fa-fire me-1" style="font-size: 0.9rem;"></i>{{ racha_actual }}
+                        </span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.7rem;">Racha Aprobadas</div>
+                    </div>
+                    <div class="stat-box text-center shadow-sm py-2 px-3">
+                        <span class="fs-5 fw-bold text-info">{{ total_autor }}</span>
+                        <div class="small text-muted fw-bold" style="font-size: 0.7rem;">Autor/Coautor</div>
                     </div>
                 </div>
             </div>
@@ -517,9 +553,30 @@
                                 </thead>
                                 <tbody>
                                     {% for doc in cargados_por_cuenta %}
-                                    <tr class="doc-row-cargados" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
+                                    <tr class="doc-row-cargados {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}border-start border-warning border-4{% endif %}"
+                                        {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}style="background-color: #fffdf2;"{% endif %}
+                                        data-estado="{{ doc.estado }}"
+                                        data-automatico="{{ doc.es_subida_automatica|yesno:'true,false' }}"
+                                        data-chequeado="{{ doc.chequeado_por_moderador|yesno:'true,false' }}"
+                                        data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
                                         <td class="ps-3">
-                                            <strong class="text-dark fs-6">{{ doc.titulo }}</strong><br>
+                                            <div class="d-flex align-items-start gap-1 flex-wrap">
+                                                <strong class="text-dark fs-6">{{ doc.titulo }}</strong>
+                                                {% if doc.es_subida_automatica %}
+                                                    {% if not doc.chequeado_por_moderador %}
+                                                        <span class="badge bg-warning text-dark border border-warning shadow-xs ms-1" style="font-size: 0.7rem;" title="Subida directa por credencial de confianza. Pendiente de cotejo por moderadores.">
+                                                            <i class="fas fa-shield-alt me-1"></i>Publicación Directa (De Confianza)
+                                                        </span>
+                                                        <span class="badge bg-white text-dark border border-warning shadow-xs ms-1" style="font-size: 0.68rem;">
+                                                            <i class="fas fa-clock text-warning me-1"></i>Pendiente de Cotejo
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success ms-1" style="font-size: 0.7rem;" title="Publicación directa auditada y verificada">
+                                                            <i class="fas fa-check-double me-1"></i>Archivo Checado
+                                                        </span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
                                             <small class="text-muted"><i class="far fa-clock me-1"></i>Carga: {{ doc.created_at|date:"d/m/Y H:i" }}</small>
                                             {% if doc.pdf %}
                                                 <br><a href="{{ doc.pdf.url }}" target="_blank" class="small text-danger text-decoration-none fw-bold mt-1 d-inline-block">
@@ -538,11 +595,20 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div class="d-flex flex-wrap gap-1">
+                                            <div class="d-flex flex-wrap gap-1 align-items-center">
                                                 {% for a in doc.autor.all %}
-                                                    <span class="badge bg-light text-dark border px-2 py-1">{{ a.nombre }}</span>
+                                                    {% if forloop.first %}
+                                                        <span class="badge bg-warning text-dark border px-2 py-1"><i class="fas fa-star me-1"></i>{{ a.nombre }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-dark border px-2 py-1">{{ a.nombre }}</span>
+                                                    {% endif %}
                                                 {% empty %}
-                                                    <span class="text-muted small">Sin autor asignado</span>
+                                                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1" title="Esta obra no tiene ningún autor acreditado">
+                                                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>Sin autor asignado
+                                                    </span>
+                                                    <a href="{% url 'asignar_autor_propio_doc' doc.id usuario_consultado.id %}" class="btn btn-xs btn-outline-success py-0 px-2 rounded-pill shadow-xs mt-1" style="font-size: 0.68rem;" title="Acreditar a {{ usuario_consultado.autor.nombre|default:usuario_consultado.username }} en esta obra">
+                                                        <i class="fas fa-user-plus me-1"></i>Asignar a esta cuenta
+                                                    </a>
                                                 {% endfor %}
                                             </div>
                                         </td>
@@ -561,6 +627,27 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-center pe-3 text-nowrap">
+                                            {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}
+                                                <a href="{% url 'marcar_archivo_checado' doc.id %}" class="btn btn-warning btn-action-circle me-1 text-dark fw-bold shadow-xs" title="Marcar como Archivo Checado (Cotejar Publicación Directa)">
+                                                    <i class="fas fa-check-double"></i>
+                                                </a>
+                                            {% endif %}
+
+                                            {% if doc.estado == 'pendiente' %}
+                                                <a href="{% url 'aprobar_documento' doc.id %}" class="btn btn-success btn-action-circle me-1 text-white shadow-xs" title="Aprobar y Publicar">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-warning btn-action-circle me-1" data-bs-toggle="modal" data-bs-target="#modalRechazarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Solicitar Correcciones / Rechazar">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            {% endif %}
+
+                                            {% if doc.pdf %}
+                                                <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-outline-danger btn-action-circle me-1" title="Abrir Archivo PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            {% endif %}
+
                                             <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
                                                     data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
                                                     data-titulo="{{ doc.titulo }}"
@@ -577,6 +664,7 @@
                                                     data-doi="{{ doc.doi_enlace|default:'N/A' }}"
                                                     data-grado="{{ doc.grado_academico|default:'N/A' }}"
                                                     data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                    data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
                                                     data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
                                                     data-editorial="{{ doc.editorial|default:'N/A' }}"
                                                     data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
@@ -605,13 +693,19 @@
                             <div class="row g-3">
                                 {% for doc in cargados_por_cuenta %}
                                 <div class="col-xxl-3 col-xl-4 col-md-6 doc-card-cargados" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }}">
-                                    <div class="doc-card-bubble">
+                                    <div class="doc-card-bubble {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}border border-warning border-2 shadow-xs{% endif %}"
+                                         {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}style="background-color: #fffdf5;"{% endif %}>
                                         <div>
                                             <div class="bubble-header">
                                                 <div class="bubble-icon">
                                                     <i class="fas fa-book-reader"></i>
                                                 </div>
-                                                <div>
+                                                <div class="text-end">
+                                                    {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}
+                                                        <span class="badge bg-warning text-dark border border-warning shadow-xs mb-1 d-inline-block" style="font-size: 0.65rem;">
+                                                            <i class="fas fa-shield-alt me-1"></i>De Confianza
+                                                        </span><br>
+                                                    {% endif %}
                                                     {% if doc.estado == 'aprobado' %}
                                                         <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">Aprobado</span>
                                                     {% elif doc.estado == 'rechazado' %}
@@ -625,13 +719,43 @@
                                             <small class="text-muted d-block mb-1">
                                                 <i class="fas fa-tag me-1 text-success"></i>{{ doc.tipo_contenido.nombre }} ({{ doc.año_produccion }})
                                             </small>
-                                            <small class="text-muted d-block mb-2 text-truncate">
-                                                <i class="fas fa-user-edit me-1"></i>{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autor{% endfor %}
+                                            <small class="text-muted d-block mb-2 text-truncate" title="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                                <i class="fas fa-user-edit me-1 text-success"></i>
+                                                {% for a in doc.autor.all %}
+                                                    {% if forloop.first %}
+                                                        <strong class="text-dark">{{ a.nombre }}</strong> <span class="badge bg-warning text-dark border px-1 py-0 me-1" style="font-size: 0.62rem;">★ Principal</span>
+                                                    {% else %}
+                                                        <span>{{ a.nombre }}</span>{% if not forloop.last %}, {% endif %}
+                                                    {% endif %}
+                                                {% empty %}
+                                                    <span class="text-warning">Sin autor</span>
+                                                    <a href="{% url 'asignar_autor_propio_doc' doc.id usuario_consultado.id %}" class="badge bg-success text-white text-decoration-none ms-1" title="Asignar a esta cuenta">
+                                                        <i class="fas fa-plus"></i> Asignar
+                                                    </a>
+                                                {% endfor %}
                                             </small>
                                         </div>
                                         <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
                                             <small class="text-muted">{{ doc.created_at|date:"d/m/y" }}</small>
                                             <div class="d-flex align-items-center">
+                                                {% if doc.es_subida_automatica and not doc.chequeado_por_moderador %}
+                                                    <a href="{% url 'marcar_archivo_checado' doc.id %}" class="btn btn-warning btn-action-circle me-1 text-dark fw-bold shadow-xs" title="Marcar como Archivo Checado (Cotejar Publicación Directa)">
+                                                        <i class="fas fa-check-double"></i>
+                                                    </a>
+                                                {% endif %}
+                                                {% if doc.estado == 'pendiente' %}
+                                                    <a href="{% url 'aprobar_documento' doc.id %}" class="btn btn-success btn-action-circle me-1 text-white shadow-xs" title="Aprobar Obra">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-warning btn-action-circle me-1" data-bs-toggle="modal" data-bs-target="#modalRechazarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Rechazar">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if doc.pdf %}
+                                                    <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-outline-danger btn-action-circle me-1" title="Abrir Archivo PDF">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                {% endif %}
                                                 <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
                                                         data-titulo="{{ doc.titulo }}"
@@ -648,6 +772,7 @@
                                                         data-doi="{{ doc.doi_enlace|default:'N/A' }}"
                                                         data-grado="{{ doc.grado_academico|default:'N/A' }}"
                                                         data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
                                                         data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
                                                         data-editorial="{{ doc.editorial|default:'N/A' }}"
                                                         data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
@@ -787,6 +912,19 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-center pe-3 text-nowrap">
+                                            {% if doc.estado == 'pendiente' %}
+                                                <a href="{% url 'aprobar_documento' doc.id %}" class="btn btn-success btn-action-circle me-1 text-white shadow-xs" title="Aprobar y Publicar">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-warning btn-action-circle me-1" data-bs-toggle="modal" data-bs-target="#modalRechazarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Solicitar Correcciones / Rechazar">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if doc.pdf %}
+                                                <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-outline-danger btn-action-circle me-1" title="Abrir Archivo PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            {% endif %}
                                             <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
                                                     data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
                                                     data-titulo="{{ doc.titulo }}"
@@ -803,6 +941,7 @@
                                                     data-doi="{{ doc.doi_enlace|default:'N/A' }}"
                                                     data-grado="{{ doc.grado_academico|default:'N/A' }}"
                                                     data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                    data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
                                                     data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
                                                     data-editorial="{{ doc.editorial|default:'N/A' }}"
                                                     data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
@@ -858,6 +997,19 @@
                                         <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
                                             <small class="text-muted">Año: {{ doc.año_produccion }}</small>
                                             <div class="d-flex align-items-center">
+                                                {% if doc.estado == 'pendiente' %}
+                                                    <a href="{% url 'aprobar_documento' doc.id %}" class="btn btn-success btn-action-circle me-1 text-white shadow-xs" title="Aprobar Obra">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-warning btn-action-circle me-1" data-bs-toggle="modal" data-bs-target="#modalRechazarDoc" data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo }}" title="Rechazar">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if doc.pdf %}
+                                                    <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-outline-danger btn-action-circle me-1" title="Abrir Archivo PDF">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                {% endif %}
                                                 <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
                                                         data-titulo="{{ doc.titulo }}"
@@ -874,6 +1026,7 @@
                                                         data-doi="{{ doc.doi_enlace|default:'N/A' }}"
                                                         data-grado="{{ doc.grado_academico|default:'N/A' }}"
                                                         data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
                                                         data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
                                                         data-editorial="{{ doc.editorial|default:'N/A' }}"
                                                         data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.' }}"
@@ -910,6 +1063,48 @@
 
         </div>
     </main>
+
+    <!-- ================= MODAL RECHAZAR DOCUMENTO CON OBSERVACIONES ================= -->
+    <div class="modal fade" id="modalRechazarDoc" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formRechazarDoc" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-warning py-3">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-exclamation-triangle me-2"></i> Indicar Correcciones Requeridas</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="mb-3 small text-muted">Selecciona los elementos que necesitan corrección en la obra <strong id="docTituloModal"></strong>:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="motivo_checks" value="El documento PDF no es legible, está incompleto o no corresponde." id="chkPdf">
+                            <label class="form-check-label small" for="chkPdf">Documento PDF incorrecto, incompleto o ilegible</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="motivo_checks" value="Los autores asignados no coinciden o están incompletos." id="chkAutores">
+                            <label class="form-check-label small" for="chkAutores">Autores incorrectos o incompletos</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="motivo_checks" value="Faltan o son incorrectos los datos específicos (DOI, ISSN, Volumen o Páginas)." id="chkDatos">
+                            <label class="form-check-label small" for="chkDatos">Faltan o son incorrectos los datos específicos (DOI, ISSN, Páginas)</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="motivo_checks" value="El título, resumen o palabras clave requieren ajustes de formato u ortografía." id="chkTitulo">
+                            <label class="form-check-label small" for="chkTitulo">Título, resumen o palabras clave requieren ajustes</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-bold small">Observaciones detalladas adicionales:</label>
+                            <textarea name="motivo_rechazo" class="form-control" rows="3" placeholder="Escribe notas o instrucciones específicas para el autor..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Enviar con Observaciones</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- ================= MODAL ELIMINAR DOCUMENTO ELEGANTE ================= -->
     <div class="modal fade" id="modalEliminarDoc" tabindex="-1" aria-hidden="true">
@@ -1263,6 +1458,89 @@
                 });
             }
 
+            // MODAL RECHAZAR DOCUMENTO
+            const modalRechazarDoc = document.getElementById('modalRechazarDoc');
+            if (modalRechazarDoc) {
+                modalRechazarDoc.addEventListener('show.bs.modal', function(event) {
+                    const btn = event.relatedTarget;
+                    if (!btn) return;
+                    const docId = btn.getAttribute('data-docid');
+                    const titulo = btn.getAttribute('data-doctitulo');
+                    const labelTitulo = document.getElementById('docTituloModal');
+                    if (labelTitulo) labelTitulo.textContent = `"${titulo}"`;
+                    const form = document.getElementById('formRechazarDoc');
+                    if (form) form.action = `/gestion-documentos/rechazar/${docId}/`;
+                });
+            }
+
+            // TOGGLE CREDENCIAL DE CONFIANZA EN CABECERA
+            const btnToggleTrusted = document.getElementById('btnToggleTrustedHeader');
+            if (btnToggleTrusted) {
+                btnToggleTrusted.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-userid');
+                    const currentTrusted = this.getAttribute('data-trusted') === 'true';
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+                    btnToggleTrusted.disabled = true;
+                    btnToggleTrusted.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Actualizando...';
+
+                    fetch(`/gestion-usuarios/toggle-trusted/${userId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        btnToggleTrusted.disabled = false;
+                        if (data.success) {
+                            const newTrusted = data.is_trusted;
+                            btnToggleTrusted.setAttribute('data-trusted', newTrusted ? 'true' : 'false');
+                            const badgeContainer = document.getElementById('badge-trusted-container');
+
+                            if (newTrusted) {
+                                btnToggleTrusted.className = 'btn btn-sm btn-success text-white rounded-pill px-3 py-0 ms-1 shadow-xs';
+                                btnToggleTrusted.innerHTML = '<i class="fas fa-shield-alt me-1"></i><span id="btnToggleTrustedText">De Confianza (Revocar)</span>';
+                                if (badgeContainer) {
+                                    badgeContainer.innerHTML = '<span class="badge bg-success text-white rounded-pill px-3 shadow-xs" title="Publicador de Confianza Activo: Sus obras se publican automáticamente sin moderación previa"><i class="fas fa-shield-alt me-1"></i>De Confianza Activo</span>';
+                                }
+                            } else {
+                                btnToggleTrusted.className = 'btn btn-sm btn-outline-warning text-dark fw-bold border-warning shadow-xs rounded-pill px-3 py-0 ms-1';
+                                btnToggleTrusted.innerHTML = '<i class="fas fa-shield-alt me-1"></i><span id="btnToggleTrustedText">Otorgar Confianza</span>';
+                                if (badgeContainer) {
+                                    badgeContainer.innerHTML = '';
+                                }
+                            }
+                        } else {
+                            btnToggleTrusted.disabled = false;
+                            mostrarToastDoc(data.error || 'No se pudo actualizar la credencial de confianza.', 'danger');
+                        }
+                    })
+                    .catch(err => {
+                        btnToggleTrusted.disabled = false;
+                        console.error('Error toggling trust:', err);
+                        mostrarToastDoc('Error de conexión al actualizar la credencial.', 'danger');
+                    });
+                });
+            }
+
+            function mostrarToastDoc(mensaje, tipo = 'danger') {
+                let container = document.getElementById('toastContainerDoc');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toastContainerDoc';
+                    container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 380px;';
+                    document.body.appendChild(container);
+                }
+                const t = document.createElement('div');
+                t.className = `alert alert-${tipo} shadow-lg rounded-4 p-3 mb-0 d-flex align-items-center justify-content-between`;
+                t.style.border = 'none';
+                t.innerHTML = `<div><i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i><span>${mensaje}</span></div><button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>`;
+                container.appendChild(t);
+                setTimeout(() => { if (t.parentElement) t.remove(); }, 4000);
+            }
+
             // 4. MODAL DETALLE DE OBRA CON 3 PESTAÑAS (DINÁMICO SEGÚN TIPO DE RECURSO)
             const modalDetalle = document.getElementById('modalDetalleObra');
             if (modalDetalle) {
@@ -1291,6 +1569,13 @@
                         if (!director) director = 'N/A';
                     }
 
+                    let rawCoDirector = btn.getAttribute('data-codirector') || 'N/A';
+                    let codirector = 'N/A';
+                    if (rawCoDirector && rawCoDirector !== 'N/A') {
+                        codirector = rawCoDirector.replace(/\s*\([^)]*\)/g, '').trim();
+                        if (!codirector) codirector = 'N/A';
+                    }
+
                     const programa = btn.getAttribute('data-programa') || 'N/A';
                     const editorial = btn.getAttribute('data-editorial') || 'N/A';
                     const descripcion = btn.getAttribute('data-descripcion') || 'Sin resumen disponible.';
@@ -1303,6 +1588,7 @@
                         htmlEspecificos = `
                             <div class="mb-2"><strong><i class="fas fa-graduation-cap me-1 text-success"></i>Grado Académico:</strong> ${grado}</div>
                             <div class="mb-2"><strong><i class="fas fa-user-tie me-1 text-success"></i>Director / Asesor:</strong> ${director}</div>
+                            ${codirector && codirector !== 'N/A' ? `<div class="mb-2"><strong><i class="fas fa-user-friends me-1 text-success"></i>Co-director / Co-asesor:</strong> ${codirector}</div>` : ''}
                             <div><strong><i class="fas fa-university me-1 text-success"></i>Programa Educativo:</strong> ${programa}</div>
                         `;
                     } else if (tipoL.includes('capítulo') || tipoL.includes('capitulo')) {

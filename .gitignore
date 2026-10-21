@@ -1,0 +1,31 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled / optimizados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos de medios subidos localmente
+media/
+
+# Configuraciones de IDEs
+.idea/
+.vscode/
+
+# Logs y variables de entorno
+*.log
+.env
+
+# Scripts temporales de desarrollo
+scratch/
+
+# Archivos estáticos recolectados
+static/

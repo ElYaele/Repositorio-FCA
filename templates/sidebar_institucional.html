@@ -1,0 +1,277 @@
+{% if user.is_authenticated %}
+<style>
+    :root {
+        --uabc-green: {{ tema_rol.primary|default:'#006633' }};
+        --uabc-green-dark: {{ tema_rol.primary_dark|default:'#004d26' }};
+        --uabc-gold: {{ tema_rol.accent|default:'#dd971a' }};
+        --theme-primary: {{ tema_rol.primary|default:'#006633' }};
+        --theme-primary-dark: {{ tema_rol.primary_dark|default:'#004d26' }};
+        --theme-accent: {{ tema_rol.accent|default:'#dd971a' }};
+        --theme-tag-color: {{ tema_rol.tag_color|default:'#a3e9c0' }};
+        --sidebar-width: 72px;
+        --birthday-pink: #ff4081;
+    }
+    body.sidebar-expanded {
+        --sidebar-width: 225px;
+    }
+    {% if request.resolver_match.url_name not in 'mi_panel,panel_usuarios,ver_subidas_usuario' %}
+    body.has-sima-sidebar {
+        padding-left: var(--sidebar-width) !important;
+        transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    {% else %}
+    body {
+        padding-left: 0 !important;
+    }
+    {% endif %}
+
+    /* BARRA LATERAL INSTITUCIONAL DINÁMICA POR ROL */
+    .sima-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background-color: var(--theme-primary) !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 12px;
+        z-index: 1045;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+        transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+        overflow-x: hidden;
+        overflow-y: auto;
+        user-select: none;
+    }
+    .sima-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .sima-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+    }
+    .sima-sidebar .menu-tag {
+        color: var(--theme-tag-color) !important;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 14px;
+    }
+    .sima-nav-item {
+        width: calc(100% - 16px);
+        height: 48px;
+        margin: 4px 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-size: 1.15rem;
+        transition: all 0.22s ease-in-out;
+        position: relative;
+        white-space: nowrap;
+        border: none;
+    }
+    body:not(.sidebar-expanded) .sima-nav-item {
+        justify-content: center;
+        padding: 0;
+    }
+    body.sidebar-expanded .sima-nav-item {
+        justify-content: flex-start;
+        padding: 0 14px;
+    }
+    .sima-nav-item .nav-icon {
+        min-width: 24px;
+        text-align: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .sima-nav-item .nav-label {
+        margin-left: 14px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: none;
+        color: #ffffff;
+    }
+    body.sidebar-expanded .sima-nav-item .nav-label {
+        display: inline-block;
+    }
+    .sima-nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: var(--theme-accent) !important;
+        transform: translateX(3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .sima-nav-item:hover .nav-label {
+        color: var(--theme-accent) !important;
+    }
+    .sima-nav-item.active {
+        background-color: rgba(255, 255, 255, 0.22) !important;
+        border-left: 4px solid var(--theme-accent) !important;
+        color: #ffffff !important;
+    }
+    .sima-nav-item.active .nav-icon {
+        color: var(--theme-accent) !important;
+    }
+    .birthday-badge-dot {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 0.85rem;
+        animation: bounceBirthdayDot 1.8s infinite ease-in-out;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
+    @keyframes bounceBirthdayDot {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-3px) scale(1.15); }
+    }
+    .sima-nav-badge-dot {
+        position: absolute;
+        top: 8px;
+        right: 14px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #dc3545;
+        border: 2px solid var(--theme-primary);
+        box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    }
+    body.sidebar-expanded .sima-nav-badge-dot {
+        display: none !important;
+    }
+</style>
+
+<aside class="sima-sidebar" id="mainSidebar" style="background-color: {{ tema_rol.primary|default:'#006633' }} !important;">
+    <div class="d-flex align-items-center justify-content-between w-100 px-3 mb-2">
+        <button type="button" class="btn btn-sm btn-link text-white text-decoration-none p-1" id="sidebarToggleBtn" title="Expandir / Colapsar menú lateral">
+            <i class="fas fa-bars fs-5"></i>
+        </button>
+        <span class="menu-tag mb-0 nav-label" style="display: none; color: {{ tema_rol.tag_color|default:'#a3e9c0' }} !important;">{{ tema_rol.tag_text|default:'MENÚ FCA' }}</span>
+    </div>
+
+    <!-- 1. Catálogo General (Home) -->
+    <a href="/" class="sima-nav-item {% if request.resolver_match.url_name == 'Home' or request.resolver_match.url_name == 'resultado_busqueda' %}active{% endif %}" title="Inicio / Catálogo General">
+        <i class="fas fa-home nav-icon"></i>
+        <span class="nav-label">Catálogo General</span>
+    </a>
+
+    <!-- 2. Mi Panel -->
+    <a href="{% url 'mi_panel' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'mi_panel' %}active{% endif %}" title="Mi Panel Académico">
+        <i class="fas fa-user-circle nav-icon"></i>
+        <span class="nav-label">Mi Panel</span>
+    </a>
+
+    <!-- 3. Coautorías e Invitaciones -->
+    <a href="{% url 'gestion_coautorias' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'gestion_coautorias' %}active{% endif %}" title="Gestión de Coautorías e Invitaciones">
+        <i class="fas fa-user-check nav-icon"></i>
+        <span class="nav-label">Coautorías</span>
+        {% if invitaciones_pendientes_count > 0 %}
+            <span class="sima-nav-badge-dot" title="{{ invitaciones_pendientes_count }} invitaciones pendientes"></span>
+            <span class="badge bg-warning text-dark rounded-pill ms-auto nav-label" style="font-size: 0.65rem; font-weight: 700;">
+                {{ invitaciones_pendientes_count }}
+            </span>
+        {% endif %}
+    </a>
+
+    <!-- 4. Mensajes Académicos -->
+    <a href="{% url 'mensajeria' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'mensajeria' %}active{% endif %}" title="Mensajería Académica entre Colegas">
+        <i class="fas fa-comments nav-icon"></i>
+        <span class="nav-label">Mensajes</span>
+        {% if mensajes_no_leidos_count > 0 %}
+            <span class="sima-nav-badge-dot" title="{{ mensajes_no_leidos_count }} mensajes sin leer"></span>
+            <span class="badge bg-danger rounded-pill ms-auto nav-label" style="font-size: 0.65rem;">
+                {{ mensajes_no_leidos_count }}
+            </span>
+        {% endif %}
+    </a>
+
+    <!-- 5. Claustro Docente -->
+    <a href="{% url 'directorio_profesores' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'directorio_profesores' %}active{% endif %}" title="Claustro Docente FCA">
+        <i class="fas fa-chalkboard-teacher nav-icon"></i>
+        <span class="nav-label">Claustro Docente</span>
+        {% if cumpleaneros_hoy %}
+            <span class="birthday-badge-dot" title="¡Hay docentes de cumpleaños hoy!">🎂</span>
+        {% endif %}
+    </a>
+
+    <!-- 6. Red de Universidades -->
+    <a href="{% url 'universidades_colaboradoras' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'universidades_colaboradoras' %}active{% endif %}" title="Red de Universidades Colaboradoras">
+        <i class="fas fa-globe-americas nav-icon"></i>
+        <span class="nav-label">Universidades</span>
+    </a>
+
+    <!-- 7. Subir Publicación / Trabajo -->
+    <a href="{% url 'upload_document' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'upload_document' or request.resolver_match.url_name == 'editar_documento' %}active{% endif %}" title="Subir Publicación">
+        <i class="fas fa-cloud-upload-alt nav-icon"></i>
+        <span class="nav-label">Subir Trabajo</span>
+    </a>
+
+    <!-- 8. Moderación (Superuser) -->
+    {% if user.is_superuser %}
+        <a href="{% url 'panel_usuarios' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'panel_usuarios' or request.resolver_match.url_name == 'ver_subidas_usuario' %}active{% endif %}" title="Moderación y Gestión de Usuarios">
+            <i class="fas fa-tasks nav-icon"></i>
+            <span class="nav-label">Moderación</span>
+        </a>
+    {% endif %}
+
+    <!-- SECCIÓN INFERIOR: ASISTENCIA INSTITUCIONAL Y CERRAR SESIÓN -->
+    <div class="mt-auto mb-3 w-100">
+        <!-- Soporte Institucional -->
+        <a href="{% url 'soporte_institucional' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'soporte_institucional' %}active{% endif %}" title="Mesa de Ayuda y Soporte Institucional FCA">
+            <i class="fas fa-headset nav-icon text-warning"></i>
+            <span class="nav-label text-warning">Soporte FCA</span>
+            {% if soporte_pendientes_count > 0 %}
+                <span class="sima-nav-badge-dot" style="background-color: #ffc107;" title="{{ soporte_pendientes_count }} consultas o respuestas de soporte"></span>
+                <span class="badge bg-warning text-dark rounded-pill ms-auto nav-label" style="font-size: 0.65rem; font-weight: 700;">
+                    {{ soporte_pendientes_count }}
+                </span>
+            {% endif %}
+        </a>
+
+        <!-- Cerrar Sesión -->
+        <a href="{% url 'logout' %}" class="sima-nav-item text-danger" title="Cerrar Sesión">
+            <i class="fas fa-power-off nav-icon text-danger"></i>
+            <span class="nav-label text-danger">Cerrar Sesión</span>
+        </a>
+    </div>
+</aside>
+
+<script>
+    (function() {
+        {% if request.resolver_match.url_name not in 'mi_panel,panel_usuarios,ver_subidas_usuario' %}
+        document.body.classList.add('has-sima-sidebar');
+        {% else %}
+        document.body.classList.remove('has-sima-sidebar');
+        {% endif %}
+
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+        if (sidebarToggleBtn) {
+            // Sincronizar estado inicial guardado de expansión
+            const isExpanded = localStorage.getItem('sima_sidebar_expanded') === 'true';
+            if (isExpanded) {
+                document.body.classList.add('sidebar-expanded');
+                document.querySelectorAll('.sima-sidebar .nav-label').forEach(el => el.style.display = 'inline-block');
+            } else {
+                document.body.classList.remove('sidebar-expanded');
+                document.querySelectorAll('.sima-sidebar .nav-label').forEach(el => el.style.display = 'none');
+            }
+
+            sidebarToggleBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const willExpand = !document.body.classList.contains('sidebar-expanded');
+                if (willExpand) {
+                    document.body.classList.add('sidebar-expanded');
+                } else {
+                    document.body.classList.remove('sidebar-expanded');
+                }
+                localStorage.setItem('sima_sidebar_expanded', willExpand ? 'true' : 'false');
+                document.querySelectorAll('.sima-sidebar .nav-label').forEach(el => {
+                    el.style.display = willExpand ? 'inline-block' : 'none';
+                });
+            };
+        }
+    })();
+</script>
+{% endif %}
