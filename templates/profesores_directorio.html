@@ -857,10 +857,13 @@
                         <div class="card h-100 border-0 shadow-xs rounded-4 p-3 bg-white d-flex flex-row align-items-center gap-3" style="transition: transform 0.2s ease, box-shadow 0.2s ease;">
                             <div class="position-relative">
                                 {% if top.foto_perfil %}
-                                    <img src="{{ top.foto_perfil.url }}" alt="{{ top.nombre }}" class="rounded-circle shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
+                                    <img src="{{ top.foto_perfil.url }}" alt="{{ top.nombre }}" class="rounded-circle shadow-sm" style="width: 58px; height: 58px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow-sm fw-bold" style="width: 58px; height: 58px; font-size: 1.5rem; display: none;">
+                                        {{ top.inicial_limpia }}
+                                    </div>
                                 {% else %}
-                                    <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow-sm" style="width: 58px; height: 58px; font-size: 1.5rem;">
-                                        <i class="fas fa-user"></i>
+                                    <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow-sm fw-bold" style="width: 58px; height: 58px; font-size: 1.5rem;">
+                                        {{ top.inicial_limpia }}
                                     </div>
                                 {% endif %}
                                 <span class="position-absolute bottom-0 end-0 badge rounded-circle p-1 shadow-xs" style="font-size: 0.9rem;">
@@ -934,9 +937,10 @@
 
                                 <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                     {% if prof.foto_perfil %}
-                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake">
+                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold" style="display: none;">{{ prof.inicial_limpia }}</div>
                                     {% else %}
-                                        <div class="prof-avatar-placeholder avatar-cupcake"><i class="fas fa-user"></i></div>
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold">{{ prof.inicial_limpia }}</div>
                                     {% endif %}
                                     <h5 class="fw-bold text-dark mt-3 mb-1 cupcake-title-name">
                                         {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -1026,9 +1030,10 @@
 
                             <div class="text-center mb-3" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                 {% if prof.foto_perfil %}
-                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar">
+                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="prof-avatar-placeholder fw-bold" style="display: none;">{{ prof.inicial_limpia }}</div>
                                 {% else %}
-                                    <div class="prof-avatar-placeholder"><i class="fas fa-user"></i></div>
+                                    <div class="prof-avatar-placeholder fw-bold">{{ prof.inicial_limpia }}</div>
                                 {% endif %}
                                 <h5 class="fw-bold text-dark mt-3 mb-1">
                                     {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -1088,9 +1093,10 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-auto text-center mb-3 mb-md-0">
                                         {% if prof.foto_perfil %}
-                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #006633;">
+                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #006633;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow fw-bold {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; display: none;">{{ prof.inicial_limpia }}</div>
                                         {% else %}
-                                            <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto;"><i class="fas fa-user"></i></div>
+                                            <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow fw-bold {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto;">{{ prof.inicial_limpia }}</div>
                                         {% endif %}
                                     </div>
                                     <div class="col-md">
@@ -1433,9 +1439,10 @@
 
                                 <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                     {% if prof.foto_perfil %}
-                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake">
+                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold" style="display: none;">{{ prof.inicial_limpia }}</div>
                                     {% else %}
-                                        <div class="prof-avatar-placeholder avatar-cupcake"><i class="fas fa-user"></i></div>
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold">{{ prof.inicial_limpia }}</div>
                                     {% endif %}
                                     <h5 class="fw-bold text-dark mt-3 mb-1 cupcake-title-name">
                                         {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -1522,9 +1529,10 @@
 
                             <div class="text-center mb-3" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                 {% if prof.foto_perfil %}
-                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar" style="border-color: #0284c7;">
+                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar" style="border-color: #0284c7;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="prof-avatar-placeholder fw-bold" style="background: #f0f9ff; color: #0284c7; border-color: #bae6fd; display: none;">{{ prof.inicial_limpia }}</div>
                                 {% else %}
-                                    <div class="prof-avatar-placeholder" style="background: #f0f9ff; color: #0284c7; border-color: #bae6fd;"><i class="fas fa-user"></i></div>
+                                    <div class="prof-avatar-placeholder fw-bold" style="background: #f0f9ff; color: #0284c7; border-color: #bae6fd;">{{ prof.inicial_limpia }}</div>
                                 {% endif %}
                                 <h5 class="fw-bold text-dark mt-3 mb-1">
                                     {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -1584,9 +1592,10 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-auto text-center mb-3 mb-md-0">
                                         {% if prof.foto_perfil %}
-                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #0284c7;">
+                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #0284c7;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="rounded-circle align-items-center justify-content-center shadow fw-bold {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f0f9ff; color: #0284c7; border: 4px solid #bae6fd; display: none;">{{ prof.inicial_limpia }}</div>
                                         {% else %}
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f0f9ff; color: #0284c7; border: 4px solid #bae6fd;"><i class="fas fa-user"></i></div>
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow fw-bold {% if prof.es_cumpleanos_hoy %}avatar-cupcake{% endif %}" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f0f9ff; color: #0284c7; border: 4px solid #bae6fd;">{{ prof.inicial_limpia }}</div>
                                         {% endif %}
                                     </div>
                                     <div class="col-md">
@@ -1928,9 +1937,10 @@
 
                                 <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalleInv{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                     {% if prof.foto_perfil %}
-                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake">
+                                        <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar avatar-cupcake" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; display: none;">{{ prof.inicial_limpia }}</div>
                                     {% else %}
-                                        <div class="prof-avatar-placeholder avatar-cupcake" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;"><i class="fas fa-microscope"></i></div>
+                                        <div class="prof-avatar-placeholder avatar-cupcake fw-bold" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;">{{ prof.inicial_limpia }}</div>
                                     {% endif %}
                                     <h5 class="fw-bold text-dark mt-3 mb-1 cupcake-title-name">
                                         {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -2017,9 +2027,10 @@
 
                             <div class="text-center mb-3" data-bs-toggle="modal" data-bs-target="#modalDetalleInv{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
                                 {% if prof.foto_perfil %}
-                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar" style="border-color: #7c3aed;">
+                                    <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="prof-avatar" style="border-color: #7c3aed;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="prof-avatar-placeholder fw-bold" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; display: none;">{{ prof.inicial_limpia }}</div>
                                 {% else %}
-                                    <div class="prof-avatar-placeholder" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;"><i class="fas fa-microscope"></i></div>
+                                    <div class="prof-avatar-placeholder fw-bold" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;">{{ prof.inicial_limpia }}</div>
                                 {% endif %}
                                 <h5 class="fw-bold text-dark mt-3 mb-1">
                                     {{ prof.nombre_con_titulo|default:prof.nombre }}
@@ -2079,9 +2090,10 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-auto text-center mb-3 mb-md-0">
                                         {% if prof.foto_perfil %}
-                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #7c3aed;">
+                                            <img src="{{ prof.foto_perfil.url }}" alt="{{ prof.nombre }}" class="rounded-circle shadow" style="width: 125px; height: 125px; object-fit: cover; object-position: top center; border: 4px solid #7c3aed;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="rounded-circle align-items-center justify-content-center shadow fw-bold" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f5f3ff; color: #7c3aed; border: 4px solid #ddd6fe; display: none;">{{ prof.inicial_limpia }}</div>
                                         {% else %}
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f5f3ff; color: #7c3aed; border: 4px solid #ddd6fe;"><i class="fas fa-microscope"></i></div>
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow fw-bold" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto; background: #f5f3ff; color: #7c3aed; border: 4px solid #ddd6fe;">{{ prof.inicial_limpia }}</div>
                                         {% endif %}
                                     </div>
                                     <div class="col-md">
