@@ -4156,7 +4156,7 @@ def restaurar_respaldo_sistema_view(request):
                     autor_local.save()
 
                 # Desvincular de artículos del respaldo atribuidos por error
-                for art in autor_local.articulos.all():
+                for art in Articulo.objects.filter(autor=autor_local):
                     if art.titulo and art.titulo.strip().lower() in backup_articulos_titulos_set:
                         art.autor.remove(autor_local)
 
@@ -4220,7 +4220,7 @@ def restaurar_respaldo_sistema_view(request):
                         existente.usuario_id = mapped_u_id
 
                     campos_autor = [
-                        'codigo_institucional', 'numero_empleado', 'titulo_academico',
+                        'nombre', 'codigo_institucional', 'numero_empleado', 'titulo_academico',
                         'nombres', 'apellido_paterno', 'apellido_materno', 'orcid',
                         'biografia', 'biografia_extendida', 'correo', 'institucion_origen',
                         'rol_facultad', 'es_profesor', 'es_externo', 'es_auxiliar',
