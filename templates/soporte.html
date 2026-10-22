@@ -1054,7 +1054,7 @@
                         {% endif %}
                     {% endfor %}
                 {% else %}
-                    <div class="text-center py-5 text-muted">
+                    <div class="text-center py-5 text-muted" id="placeholderSinMensajesSoporte">
                         <i class="fas fa-comment-dots fa-3x text-warning opacity-50 mb-3"></i>
                         <h6 class="fw-bold text-dark">No hay mensajes previos en este ticket</h6>
                         <small class="text-muted">Escribe un mensaje en la barra inferior para responder al docente o iniciar la conversación.</small>
@@ -1129,7 +1129,7 @@
                     <!-- Campo de Texto -->
                     <textarea name="cuerpo" id="soporteInputText" class="form-control helpdesk-textarea"
                               placeholder="{% if es_admin %}Escribe una respuesta oficial de soporte para el docente...{% else %}Escribe tu consulta o duda académica para el equipo de soporte...{% endif %}"
-                              rows="1" required></textarea>
+                              rows="1"></textarea>
 
                     <!-- Botón Enviar -->
                     <button type="submit" class="btn-helpdesk-action btn-helpdesk-send" id="btnSendSoporte" title="Enviar a soporte">
@@ -1180,7 +1180,7 @@
                 }
 
                 // Soporte Drag & Drop para adjuntos
-                const dropAreaSoporte = document.getElementById('soporteReplyForm') || messagesContainer;
+                const dropAreaSoporte = document.getElementById('formEnviarSoporte') || messagesContainer;
                 if (dropAreaSoporte) {
                     ['dragenter', 'dragover'].forEach(name => {
                         dropAreaSoporte.addEventListener(name, function(e) {
@@ -1383,7 +1383,7 @@
                 formEnviarSoporte.addEventListener('submit', function(e) {
                     e.preventDefault();
                     const textVal = soporteInputText ? soporteInputText.value.trim() : '';
-                    const hasFile = fileInputActual && fileInputActual.files && fileInputActual.files.length > 0;
+                    const hasFile = fileInputSoporte && fileInputSoporte.files && fileInputSoporte.files.length > 0;
                     if (!textVal && !hasFile) return;
 
                     const formData = new FormData(formEnviarSoporte);
@@ -1393,8 +1393,15 @@
                         soporteInputText.value = '';
                         soporteInputText.style.height = 'auto';
                     }
-                    if (btnCancelAttachment) {
-                        btnCancelAttachment.click();
+                    if (btnCancelAttachmentSoporte) {
+                        btnCancelAttachmentSoporte.click();
+                    }
+
+                    // Remover mensaje de "No hay mensajes previos" inmediatamente
+                    const placeholderVacio = document.getElementById('placeholderSinMensajesSoporte') ||
+                        (messagesContainer ? messagesContainer.querySelector('.text-center.py-5.text-muted') : null);
+                    if (placeholderVacio) {
+                        placeholderVacio.remove();
                     }
 
                     fetch(formEnviarSoporte.action, {
@@ -1407,11 +1414,17 @@
                         if (data.success && data.mensaje) {
                             if (!document.querySelector(`[data-msg-id="${data.mensaje.id}"]`)) {
                                 if (messagesContainer) {
+                                    const ph = document.getElementById('placeholderSinMensajesSoporte') ||
+                                        messagesContainer.querySelector('.text-center.py-5.text-muted');
+                                    if (ph) ph.remove();
+
                                     messagesContainer.insertAdjacentHTML('beforeend', construirMensajeSoporteHTML(data.mensaje));
                                     ultimoSoporteId = Math.max(ultimoSoporteId, data.mensaje.id);
                                     scrollAbajoSoporte(true);
                                 }
                             }
+                        } else if (data.error) {
+                            alert(data.error);
                         }
                     })
                     .catch(err => {
@@ -1436,6 +1449,10 @@
                         data.mensajes.forEach(m => {
                             if (!document.querySelector(`[data-msg-id="${m.id}"]`)) {
                                 if (messagesContainer) {
+                                    const ph = document.getElementById('placeholderSinMensajesSoporte') ||
+                                        messagesContainer.querySelector('.text-center.py-5.text-muted');
+                                    if (ph) ph.remove();
+
                                     messagesContainer.insertAdjacentHTML('beforeend', construirMensajeSoporteHTML(m));
                                     ultimoSoporteId = Math.max(ultimoSoporteId, m.id);
                                     huboNuevos = true;

@@ -2248,10 +2248,16 @@ def enviar_mensaje_interno_view(request):
                             'cuerpo': nuevo_msg.cuerpo,
                             'fecha': timezone.localtime(nuevo_msg.fecha_envio).strftime("%H:%M"),
                             'remitente': 'Soporte Institucional',
+                            'remitente_nombre': 'Soporte Institucional',
                             'es_propio': True,
                             'adjunto_url': nuevo_msg.adjunto.url if nuevo_msg.adjunto else None,
                             'adjunto_nombre': nuevo_msg.nombre_adjunto,
                             'extension': nuevo_msg.extension_adjunto,
+                            'es_imagen': nuevo_msg.es_imagen,
+                            'es_pdf': nuevo_msg.es_pdf,
+                            'es_documento': nuevo_msg.es_documento,
+                            'es_presentacion': nuevo_msg.es_presentacion,
+                            'es_hoja_calculo': nuevo_msg.es_hoja_calculo,
                         }
                     })
                 messages.success(request, f'Respuesta enviada al ticket de {destinatario_autor.nombre if destinatario_autor else "docente"}.')
@@ -2277,10 +2283,16 @@ def enviar_mensaje_interno_view(request):
                         'cuerpo': nuevo_msg.cuerpo,
                         'fecha': timezone.localtime(nuevo_msg.fecha_envio).strftime("%H:%M"),
                         'remitente': request.user.get_full_name() or request.user.username,
+                        'remitente_nombre': request.user.get_full_name() or request.user.username,
                         'es_propio': True,
                         'adjunto_url': nuevo_msg.adjunto.url if nuevo_msg.adjunto else None,
                         'adjunto_nombre': nuevo_msg.nombre_adjunto,
                         'extension': nuevo_msg.extension_adjunto,
+                        'es_imagen': nuevo_msg.es_imagen,
+                        'es_pdf': nuevo_msg.es_pdf,
+                        'es_documento': nuevo_msg.es_documento,
+                        'es_presentacion': nuevo_msg.es_presentacion,
+                        'es_hoja_calculo': nuevo_msg.es_hoja_calculo,
                     }
                 })
             messages.success(request, 'Tu consulta ha sido enviada a Soporte Institucional. Un administrador te responderá a la brevedad.')
