@@ -4036,6 +4036,131 @@ def restaurar_respaldo_sistema_view(request):
                     total_creados += 1
 
             # -------------------------------------------------------------
+            # PRE-FLIGHT: Resolución preventiva de colisiones de identidad
+            # Si existen cuentas creadas antes de restaurar el respaldo (ej. nueva cuenta o Directora),
+            # protegemos el respaldo y extendemos sus códigos institucionales y números de empleado
+            # para que NUNCA colisionen ni despojen al usuario original (como demo / Rafael Solano).
+            # -------------------------------------------------------------
+            import re
+
+            backup_usernames = {
+                (item.get('fields', {}).get('username') or '').strip().lower()
+                for item in fixtures_por_modelo.get('auth.user', [])
+                if (item.get('fields', {}).get('username') or '').strip()
+            }
+            backup_emails = {
+                (item.get('fields', {}).get('email') or '').strip().lower()
+                for item in fixtures_por_modelo.get('auth.user', [])
+                if (item.get('fields', {}).get('email') or '').strip()
+            }
+
+            backup_codigos_set = set()
+            backup_num_emps_set = set()
+            backup_biografias_set = set()
+            backup_fotos_set = set()
+            max_fca_num = 1000
+            max_emp_num = 0
+
+            for item in fixtures_por_modelo.get('pagina.autor', []):
+                f = item.get('fields', {})
+                cod = (f.get('codigo_institucional') or '').strip()
+                if cod:
+                    backup_codigos_set.add(cod.upper())
+                    m = re.search(r'FCA-(\d+)', cod, re.IGNORECASE)
+                    if m:
+                        max_fca_num = max(max_fca_num, int(m.group(1)))
+                    else:
+                        nums = re.findall(r'\d+', cod)
+                        if nums:
+                            max_fca_num = max(max_fca_num, int(nums[-1]))
+
+                emp = (f.get('numero_empleado') or '').strip()
+                if emp:
+                    backup_num_emps_set.add(emp.upper())
+                    nums = re.findall(r'\d+', emp)
+                    if nums:
+                        max_emp_num = max(max_emp_num, int(nums[-1]))
+
+                bio = (f.get('biografia') or '').strip()
+                if bio:
+                    backup_biografias_set.add(bio)
+                bio_ext = (f.get('biografia_extendida') or '').strip()
+                if bio_ext:
+                    backup_biografias_set.add(bio_ext)
+
+                foto = (f.get('foto_perfil') or '').strip()
+                if foto:
+                    backup_fotos_set.add(foto)
+
+            for a in Autor.objects.all():
+                if a.codigo_institucional:
+                    m = re.search(r'FCA-(\d+)', a.codigo_institucional, re.IGNORECASE)
+                    if m:
+                        max_fca_num = max(max_fca_num, int(m.group(1)))
+                if a.numero_empleado:
+                    nums = re.findall(r'\d+', a.numero_empleado)
+                    if nums:
+                        max_emp_num = max(max_emp_num, int(nums[-1]))
+
+            # Identificar usuarios creados localmente que NO están en el respaldo
+            usuarios_locales_nuevos = [
+                u for u in User.objects.all()
+                if u.username.lower() not in backup_usernames and (not u.email or u.email.lower() not in backup_emails)
+            ]
+
+            backup_articulos_titulos_set = {
+                (item.get('fields', {}).get('titulo') or '').strip().lower()
+                for item in fixtures_por_modelo.get('pagina.articulo', [])
+                if (item.get('fields', {}).get('titulo') or '').strip()
+            }
+
+            for u_local in usuarios_locales_nuevos:
+                autor_local = getattr(u_local, 'autor', None)
+                if not autor_local:
+                    continue
+
+                cambio_local = False
+                cod_actual = (autor_local.codigo_institucional or '').strip()
+                if not cod_actual or cod_actual.upper() in backup_codigos_set:
+                    max_fca_num += 1
+                    nuevo_cod = f"FCA-{max_fca_num}"
+                    while Autor.objects.filter(codigo_institucional__iexact=nuevo_cod).exclude(pk=autor_local.pk).exists() or nuevo_cod.upper() in backup_codigos_set:
+                        max_fca_num += 1
+                        nuevo_cod = f"FCA-{max_fca_num}"
+                    autor_local.codigo_institucional = nuevo_cod
+                    cambio_local = True
+
+                emp_actual = (autor_local.numero_empleado or '').strip()
+                if emp_actual and emp_actual.upper() in backup_num_emps_set:
+                    max_emp_num += 1
+                    nuevo_emp = f"#EMP-{max_emp_num:04d}"
+                    while Autor.objects.filter(numero_empleado__iexact=nuevo_emp).exclude(pk=autor_local.pk).exists() or nuevo_emp.upper() in backup_num_emps_set:
+                        max_emp_num += 1
+                        nuevo_emp = f"#EMP-{max_emp_num:04d}"
+                    autor_local.numero_empleado = nuevo_emp
+                    cambio_local = True
+
+                # Descontaminar semblanza o foto si fueron absorbidas previamente por una colisión
+                if autor_local.biografia and autor_local.biografia.strip() in backup_biografias_set:
+                    autor_local.biografia = ""
+                    autor_local.estado_semblanza = 'borrador'
+                    cambio_local = True
+                if autor_local.biografia_extendida and autor_local.biografia_extendida.strip() in backup_biografias_set:
+                    autor_local.biografia_extendida = ""
+                    cambio_local = True
+                if autor_local.foto_perfil and str(autor_local.foto_perfil).strip() in backup_fotos_set:
+                    autor_local.foto_perfil = None
+                    cambio_local = True
+
+                if cambio_local:
+                    autor_local.save()
+
+                # Desvincular de artículos del respaldo atribuidos por error
+                for art in autor_local.articulos.all():
+                    if art.titulo and art.titulo.strip().lower() in backup_articulos_titulos_set:
+                        art.autor.remove(autor_local)
+
+            # -------------------------------------------------------------
             # 2. Usuarios (auth.user)
             # NUNCA borra usuarios existentes (como la Directora o nuevos profesores)
             # -------------------------------------------------------------
@@ -4077,24 +4202,38 @@ def restaurar_respaldo_sistema_view(request):
                 mapped_u_id = user_id_map.get(old_u_id) if old_u_id else None
 
                 existente = None
+                # 1. Si el autor del respaldo pertenece a un usuario específico (ej. 'demo'):
                 if mapped_u_id:
                     existente = Autor.objects.filter(usuario_id=mapped_u_id).first()
-                if not existente and codigo:
-                    existente = Autor.objects.filter(codigo_institucional=codigo).first()
+                # 2. Si no tiene usuario o no se halló por usuario, buscar por nombre exacto,
+                # PERO sólo si dicho autor en la BD no le pertenece a un usuario ajeno:
                 if not existente and nombre:
-                    existente = Autor.objects.filter(nombre__iexact=nombre).first()
+                    cand = Autor.objects.filter(nombre__iexact=nombre).first()
+                    if cand and (cand.usuario_id is None or cand.usuario_id == mapped_u_id):
+                        existente = cand
 
                 if existente:
                     autor_id_map[old_pk] = existente.id
                     total_fusionados += 1
-                    modificado = False
-                    for campo in ['orcid', 'biografia', 'correo', 'institucion_origen', 'numero_empleado', 'fecha_nacimiento']:
-                        val_b = fields.get(campo)
-                        if val_b and not getattr(existente, campo, None):
-                            setattr(existente, campo, val_b)
-                            modificado = True
-                    if modificado:
-                        existente.save()
+
+                    if mapped_u_id and existente.usuario_id != mapped_u_id:
+                        existente.usuario_id = mapped_u_id
+
+                    campos_autor = [
+                        'codigo_institucional', 'numero_empleado', 'titulo_academico',
+                        'nombres', 'apellido_paterno', 'apellido_materno', 'orcid',
+                        'biografia', 'biografia_extendida', 'correo', 'institucion_origen',
+                        'rol_facultad', 'es_profesor', 'es_externo', 'es_auxiliar',
+                        'es_operador_tecnico', 'es_soporte', 'fecha_nacimiento',
+                        'foto_perfil', 'foto_personal', 'estado_semblanza',
+                        'is_trusted_publisher', 'perfil_completado', 'color_cumpleanos'
+                    ]
+                    for campo in campos_autor:
+                        if campo in fields:
+                            val = fields.get(campo)
+                            if val is not None:
+                                setattr(existente, campo, val)
+                    existente.save()
                 else:
                     autor_obj = Autor()
                     excluir = {'id', 'usuario', 'moderado_por_semblanza', 'suspendido_por', 'profesor_tutor', 'codigo_institucional'}
@@ -4174,13 +4313,20 @@ def restaurar_respaldo_sistema_view(request):
                 if titulo:
                     existente = Articulo.objects.filter(titulo__iexact=titulo).first()
 
+                mapped_aids = [autor_id_map[aid] for aid in fields.get('autor', []) if aid in autor_id_map]
+
                 if existente:
                     articulo_id_map[old_pk] = existente.id
                     total_fusionados += 1
-                    for old_aid in fields.get('autor', []):
-                        mapped_aid = autor_id_map.get(old_aid)
-                        if mapped_aid:
-                            existente.autor.add(mapped_aid)
+
+                    # Restaurar usuario subidor original si viene en el respaldo
+                    if fields.get('subido_por') and fields['subido_por'] in user_id_map:
+                        existente.subido_por_id = user_id_map[fields['subido_por']]
+                        existente.save()
+
+                    # Asegurar que los autores del artículo correspondan a los del respaldo
+                    if mapped_aids:
+                        existente.autor.set(mapped_aids)
                 else:
                     art_obj = Articulo()
                     excluir = {
@@ -4207,10 +4353,8 @@ def restaurar_respaldo_sistema_view(request):
                         art_obj.id = None
                     art_obj.save()
 
-                    for old_aid in fields.get('autor', []):
-                        mapped_aid = autor_id_map.get(old_aid)
-                        if mapped_aid:
-                            art_obj.autor.add(mapped_aid)
+                    if mapped_aids:
+                        art_obj.autor.set(mapped_aids)
 
                     articulo_id_map[old_pk] = art_obj.id
                     total_creados += 1
