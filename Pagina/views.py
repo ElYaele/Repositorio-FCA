@@ -2,6 +2,10 @@ import logging
 import re
 import unicodedata
 import json
+import os
+import shutil
+import zipfile
+import io
 
 logger = logging.getLogger(__name__)
 from difflib import SequenceMatcher
@@ -3861,7 +3865,14 @@ def vaciar_papelera_documentos_view(request):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def exportar_respaldo_sistema_view(request):
-    """Genera y descarga un snapshot completo del repositorio en formato JSON (.json)."""
+    """
+    Genera y descarga un snapshot completo del repositorio.
+    - Por defecto o ?tipo=zip: Empaqueta la base de datos (JSON) junto con todas las carpetas
+      de archivos multimedia (fotos de perfiles, claustro, horarios, reconocimientos, PDFs) en un .zip.
+    - Con ?tipo=json: Descarga únicamente el archivo JSON de registros de base de datos.
+    """
+    from django.conf import settings
+
     modelos = [
         User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
         Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
@@ -3879,7 +3890,7 @@ def exportar_respaldo_sistema_view(request):
     fixtures_data = json.loads(fixtures_json)
 
     payload = {
-        'backup_version': '2.0',
+        'backup_version': '2.1',
         'sistema': 'Repositorio FCA - Universidad Autónoma de Baja California',
         'fecha_generacion': timezone.now().isoformat(),
         'generado_por': request.user.username,
@@ -3888,12 +3899,38 @@ def exportar_respaldo_sistema_view(request):
         'fixtures': fixtures_data
     }
 
-    json_bytes = json.dumps(payload, indent=2, ensure_ascii=False).encode('utf-8')
-    filename = f"backup_fca_{timezone.now().strftime('%Y%m%d_%H%M%S')}.json"
-    response = HttpResponse(json_bytes, content_type='application/json; charset=utf-8')
+    formato = request.GET.get('tipo', 'zip').lower()
+    timestamp_str = timezone.now().strftime('%Y%m%d_%H%M%S')
+
+    if formato == 'json':
+        json_bytes = json.dumps(payload, indent=2, ensure_ascii=False).encode('utf-8')
+        filename = f"backup_fca_{timestamp_str}.json"
+        response = HttpResponse(json_bytes, content_type='application/json; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        registrar_auditoria(request.user, "Generación de Respaldo JSON", f"Descargó copia JSON de la base de datos ({len(fixtures_data)} registros)")
+        return response
+
+    # Empaquetado completo en ZIP con archivos multimedia
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        json_str = json.dumps(payload, indent=2, ensure_ascii=False)
+        zf.writestr('backup_data.json', json_str.encode('utf-8'))
+
+        media_root = getattr(settings, 'MEDIA_ROOT', None)
+        if media_root and os.path.exists(media_root):
+            for root, dirs, files in os.walk(media_root):
+                for f in files:
+                    full_path = os.path.join(root, f)
+                    rel_path = os.path.relpath(full_path, media_root)
+                    arcname = os.path.join('media', rel_path).replace('\\', '/')
+                    zf.write(full_path, arcname)
+
+    zip_buffer.seek(0)
+    filename = f"backup_fca_completo_{timestamp_str}.zip"
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-    registrar_auditoria(request.user, "Generación de Respaldo", f"Descargó copia de seguridad del sistema ({len(fixtures_data)} registros)")
+    registrar_auditoria(request.user, "Generación de Respaldo Completo", f"Descargó copia de seguridad completa ZIP (DB + Medios, {len(fixtures_data)} registros)")
     return response
 
 
@@ -3901,12 +3938,15 @@ def exportar_respaldo_sistema_view(request):
 def restaurar_respaldo_sistema_view(request):
     """
     Sincronización Inteligente y No Destructiva de Respaldos ('Poner backup aquí'):
+    - Soporta paquetes completos .ZIP (que incluyen base de datos e imágenes/PDFs) y archivos .JSON individuales.
     - NUNCA elimina las cuentas nuevas creadas posteriormente (por ejemplo la Directora o nuevos profesores).
     - Compara y unifica registros que ya existan (por username, nombre de obra, nombre de catálogo).
     - Reasigna identificadores (PKs) de forma segura para registros que tengan colisión de ID.
     - Remapea todas las relaciones de llaves foráneas (ForeignKeys) y ManyToMany.
     - Garantiza cero pérdidas de datos y compatibilidad total con MySQL, PostgreSQL y SQLite.
     """
+    from django.conf import settings
+
     if request.method != 'POST':
         messages.warning(request, "Método no permitido para restauración.")
         return redirect(f"{reverse('panel_usuarios')}#documentos")
@@ -3916,16 +3956,69 @@ def restaurar_respaldo_sistema_view(request):
         messages.error(request, "No seleccionaste ningún archivo de respaldo.")
         return redirect(f"{reverse('panel_usuarios')}#documentos")
 
-    if not archivo.name.lower().endswith('.json'):
-        messages.error(request, "El archivo debe tener formato .json válido de copia de seguridad.")
+    nombre_archivo_lower = archivo.name.lower()
+    es_zip = nombre_archivo_lower.endswith('.zip')
+    es_json = nombre_archivo_lower.endswith('.json')
+
+    if not es_zip and not es_json:
+        messages.error(request, "El archivo debe tener formato .zip (respaldo completo) o .json (solo base de datos).")
         return redirect(f"{reverse('panel_usuarios')}#documentos")
 
-    try:
-        contenido = archivo.read().decode('utf-8')
-        data = json.loads(contenido)
-    except Exception as e:
-        messages.error(request, f"Error al procesar el archivo JSON: {str(e)}")
-        return redirect(f"{reverse('panel_usuarios')}#documentos")
+    data = None
+    media_restaurada_count = 0
+
+    if es_zip:
+        try:
+            with zipfile.ZipFile(archivo, 'r') as zf:
+                # 1. Localizar archivo JSON de datos
+                json_filename = None
+                for name in zf.namelist():
+                    if name.lower().endswith('.json') and not name.startswith('__MACOSX'):
+                        json_filename = name
+                        break
+                if not json_filename:
+                    messages.error(request, "El archivo ZIP no contiene ningún archivo de base de datos (.json).")
+                    return redirect(f"{reverse('panel_usuarios')}#documentos")
+
+                json_bytes = zf.read(json_filename)
+                data = json.loads(json_bytes.decode('utf-8'))
+
+                # 2. Extraer archivos multimedia de forma segura a MEDIA_ROOT
+                media_root = getattr(settings, 'MEDIA_ROOT', None)
+                if media_root:
+                    os.makedirs(media_root, exist_ok=True)
+                    real_media_root = os.path.realpath(media_root)
+
+                    for member in zf.infolist():
+                        if member.is_dir():
+                            continue
+                        norm_name = member.filename.replace('\\', '/')
+                        if norm_name.startswith('__MACOSX') or norm_name.lower().endswith('.json'):
+                            continue
+
+                        # Si viene dentro de carpeta media/, quitamos ese prefijo
+                        if norm_name.startswith('media/'):
+                            rel_target = norm_name[6:]
+                        else:
+                            rel_target = norm_name
+
+                        dest_path = os.path.realpath(os.path.join(media_root, rel_target))
+                        # Prevención de Zip Slip (seguridad de rutas relativas)
+                        if dest_path.startswith(real_media_root):
+                            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                            with zf.open(member) as src_f, open(dest_path, 'wb') as dst_f:
+                                shutil.copyfileobj(src_f, dst_f)
+                            media_restaurada_count += 1
+        except Exception as e:
+            messages.error(request, f"Error al procesar el archivo ZIP de respaldo: {str(e)}")
+            return redirect(f"{reverse('panel_usuarios')}#documentos")
+    else:
+        try:
+            contenido = archivo.read().decode('utf-8')
+            data = json.loads(contenido)
+        except Exception as e:
+            messages.error(request, f"Error al procesar el archivo JSON: {str(e)}")
+            return redirect(f"{reverse('panel_usuarios')}#documentos")
 
     fixtures = data.get('fixtures')
     if not isinstance(fixtures, list):
@@ -4225,8 +4318,11 @@ def restaurar_respaldo_sistema_view(request):
                         'biografia', 'biografia_extendida', 'correo', 'institucion_origen',
                         'rol_facultad', 'es_profesor', 'es_externo', 'es_auxiliar',
                         'es_operador_tecnico', 'es_soporte', 'fecha_nacimiento',
-                        'foto_perfil', 'foto_personal', 'estado_semblanza',
-                        'is_trusted_publisher', 'perfil_completado', 'color_cumpleanos'
+                        'foto_perfil', 'foto_perfil_borrador', 'foto_personal',
+                        'biografia_borrador', 'biografia_extendida_borrador',
+                        'reconocimiento_pdf', 'reconocimiento_pdf_borrador',
+                        'horario_pdf', 'horario_pdf_borrador',
+                        'estado_semblanza', 'is_trusted_publisher', 'perfil_completado', 'color_cumpleanos'
                     ]
                     for campo in campos_autor:
                         if campo in fields:
@@ -4470,15 +4566,16 @@ def restaurar_respaldo_sistema_view(request):
 
             usuarios_nuevos_conservados = User.objects.exclude(id__in=user_id_map.values()).count()
 
+        msg_media = f", Archivos multimedia vinculados: {media_restaurada_count}" if media_restaurada_count > 0 else ""
         registrar_auditoria(
             request.user,
             "Restauración y Fusión de Respaldo",
-            f"Sincronizó respaldo: {archivo.name}. Creados: {total_creados}, Unificados: {total_fusionados}, Cuentas conservadas intactas: {usuarios_nuevos_conservados}."
+            f"Sincronizó respaldo: {archivo.name}. Creados: {total_creados}, Unificados: {total_fusionados}, Cuentas conservadas intactas: {usuarios_nuevos_conservados}{msg_media}."
         )
         messages.success(
             request,
             f"¡Respaldo sincronizado exitosamente! Se integraron {total_creados} registros nuevos y se unificaron {total_fusionados} existentes sin pérdida ni sobreescritura. "
-            f"Todas las cuentas creadas recientemente ({usuarios_nuevos_conservados}) se mantuvieron 100% intactas."
+            f"Todas las cuentas creadas recientemente ({usuarios_nuevos_conservados}) se mantuvieron 100% intactas.{msg_media}"
         )
     except Exception as e:
         logger.exception("Error durante la restauración del respaldo")

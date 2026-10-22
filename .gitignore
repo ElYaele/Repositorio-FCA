@@ -13,8 +13,8 @@ __pycache__/
 db.sqlite3
 db.sqlite3-journal
 
-# Archivos de medios subidos localmente
-media/
+# Archivos de medios temporales
+# (Permitir media/ para despliegues en Render sin almacenamiento externo)
 
 # Configuraciones de IDEs
 .idea/

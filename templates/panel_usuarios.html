@@ -5646,12 +5646,15 @@
                                     </div>
                                     <h5 class="fw-bold text-dark mb-2">Crear Copia de Seguridad</h5>
                                     <p class="text-muted small mb-3">
-                                        Descarga un archivo <code>.json</code> completo con todas las obras, autores, semblanzas institucionales y clasificaciones actuales.
+                                        Descarga un paquete completo <code>.zip</code> con la base de datos (obras, autores, clasificaciones) y todos los archivos multimedia (fotos de claustro, horarios y PDFs).
                                     </p>
                                 </div>
-                                <div>
-                                    <a href="{% url 'exportar_respaldo_sistema' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs w-100">
-                                        <i class="fas fa-download me-2"></i>Descargar Respaldo JSON
+                                <div class="d-flex flex-column gap-2">
+                                    <a href="{% url 'exportar_respaldo_sistema' %}?tipo=zip" class="btn btn-primary rounded-pill px-4 fw-bold shadow-xs w-100">
+                                        <i class="fas fa-file-archive me-2"></i>Descargar Respaldo Completo (.ZIP)
+                                    </a>
+                                    <a href="{% url 'exportar_respaldo_sistema' %}?tipo=json" class="btn btn-outline-secondary rounded-pill px-3 py-1 small fw-semibold border-0 w-100" style="font-size: 0.8rem;">
+                                        <i class="fas fa-file-code me-1"></i>Descargar solo Base de Datos (.JSON)
                                     </a>
                                 </div>
                             </div>
@@ -5668,17 +5671,17 @@
                                     </div>
                                     <h5 class="fw-bold text-dark mb-2">Restaurar Copia Guardada</h5>
                                     <p class="text-muted small mb-2">
-                                        Arrastra tu archivo <code>.json</code> para recuperar el repositorio a un punto guardado previamente.
+                                        Arrastra tu archivo <code>.zip</code> (respaldo completo con imágenes) o <code>.json</code> para recuperar el repositorio sin alterar cuentas nuevas.
                                     </p>
 
                                     <!-- DROPZONE "PONER BACKUP AQUÍ" -->
                                     <form id="formRestaurarBackup" method="post" action="{% url 'restaurar_respaldo_sistema' %}" enctype="multipart/form-data">
                                         {% csrf_token %}
-                                        <input type="file" name="archivo_backup" id="inputArchivoBackup" accept=".json" class="d-none">
+                                        <input type="file" name="archivo_backup" id="inputArchivoBackup" accept=".json,.zip" class="d-none">
                                         <div id="dropzoneBackup" class="p-3 border border-2 border-dashed rounded-4 mb-2 cursor-pointer" style="border-style: dashed !important; cursor: pointer; transition: all 0.2s ease;">
                                             <i class="fas fa-file-import text-muted fa-2x mb-1"></i>
                                             <div class="small fw-bold text-dark">Poner backup aquí</div>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Haz clic o arrastra un archivo .json</small>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Haz clic o arrastra un archivo .zip o .json</small>
                                         </div>
                                         <div id="backupFileInfo" class="alert alert-success py-2 px-3 small d-none text-start mb-2 rounded-3">
                                             <i class="fas fa-check-circle me-1"></i><strong id="backupFileName"></strong> (<span id="backupFileSize"></span>)
@@ -8345,23 +8348,27 @@
 
             function actualizarArchivoBackupSeleccionado(file) {
                 if (!file) return;
-                if (!file.name.toLowerCase().endsWith('.json')) {
+                const nameLower = file.name.toLowerCase();
+                const isJson = nameLower.endsWith('.json');
+                const isZip = nameLower.endsWith('.zip');
+                if (!isJson && !isZip) {
                     if (backupInfo) {
                         backupInfo.className = 'alert alert-danger py-2 px-3 small text-start mb-2 rounded-3';
-                        backupInfo.innerHTML = '<i class="fas fa-times-circle me-1"></i> Formato no válido. Debe ser un archivo <strong>.json</strong>';
+                        backupInfo.innerHTML = '<i class="fas fa-times-circle me-1"></i> Formato no válido. Debe ser un archivo <strong>.zip</strong> o <strong>.json</strong>';
                         backupInfo.classList.remove('d-none');
                     }
                     if (btnConfirmarRestaurar) btnConfirmarRestaurar.disabled = true;
                     return;
                 }
                 if (backupName) backupName.textContent = file.name;
+                const sizeStr = file.size > 1048576 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${(file.size / 1024).toFixed(1)} KB`;
                 if (backupSize) {
-                    const kb = (file.size / 1024).toFixed(1);
-                    backupSize.textContent = `${kb} KB`;
+                    backupSize.textContent = sizeStr;
                 }
                 if (backupInfo) {
+                    const icon = isZip ? 'fa-file-archive text-primary' : 'fa-check-circle text-success';
                     backupInfo.className = 'alert alert-success py-2 px-3 small text-start mb-2 rounded-3';
-                    backupInfo.innerHTML = `<i class="fas fa-check-circle me-1"></i><strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+                    backupInfo.innerHTML = `<i class="fas ${icon} me-1"></i><strong>${file.name}</strong> (${sizeStr})`;
                     backupInfo.classList.remove('d-none');
                 }
                 if (btnConfirmarRestaurar) btnConfirmarRestaurar.disabled = false;
