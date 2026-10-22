@@ -121,6 +121,8 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
             position: relative;
             padding: 24px;
+            min-width: 0;
+            overflow: hidden;
         }
         .prof-card:hover {
             transform: translateY(-5px);
@@ -921,11 +923,11 @@
                         <div class="prof-card card-birthday-cupcake theme-{{ prof.color_cumpleanos|default:'rosa' }}">
                             <!-- DOMO DE BETÚN CON CHISPITAS -->
                             <div class="cupcake-frosting-section">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-white text-dark border shadow-sm small">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                    <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="max-width: 100%;" title="{{ prof.institucion_origen|default:'UABC' }}">
                                         <i class="fas fa-university me-1 text-success"></i>{{ prof.institucion_origen|default:"UABC" }}
                                     </span>
-                                    <div class="d-flex align-items-center gap-1">
+                                    <div class="d-flex align-items-center gap-1 ms-auto flex-shrink-0">
                                         {% if prof.medalla_productividad %}
                                             <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1" style="font-size: 0.68rem;" title="{{ prof.medalla_productividad.descripcion }}">
                                                 {{ prof.medalla_productividad.emoji }}
@@ -1017,12 +1019,12 @@
                     <!-- TARJETA REGULAR (NO CUMPLEAÑERO) -->
                     <div class="prof-card prof-card-uabc">
                         <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-light text-dark border small">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                <span class="badge bg-light text-dark border small text-truncate" style="max-width: 100%;" title="{{ prof.institucion_origen|default:'UABC' }}">
                                     <i class="fas fa-university me-1 text-success"></i>{{ prof.institucion_origen|default:"UABC" }}
                                 </span>
                                 {% if prof.medalla_productividad %}
-                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs" title="{{ prof.medalla_productividad.descripcion }}">
+                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs ms-auto flex-shrink-0" style="font-size: 0.72rem;" title="{{ prof.medalla_productividad.descripcion }}">
                                         {{ prof.medalla_productividad.emoji }} {{ prof.medalla_productividad.titulo }}
                                     </span>
                                 {% endif %}
@@ -1430,11 +1432,11 @@
                         <div class="cupcake-candle"></div>
                         <div class="prof-card card-birthday-cupcake theme-{{ prof.color_cumpleanos|default:'rosa' }}">
                             <div class="cupcake-frosting-section">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-white text-dark border shadow-sm small">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                    <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="max-width: 100%;" title="{{ prof.institucion_origen }}">
                                         <i class="fas fa-globe-americas me-1 text-primary"></i>{{ prof.institucion_origen }}
                                     </span>
-                                    <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                    <span class="cupcake-badge ms-auto flex-shrink-0"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
                                 </div>
 
                                 <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalleExt{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
@@ -1516,12 +1518,12 @@
                 {% else %}
                     <div class="prof-card prof-card-externos">
                         <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge border small" style="background: #f0f9ff; color: #0284c7; border-color: #bae6fd;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                <span class="badge border small text-truncate" style="max-width: 100%; background: #f0f9ff; color: #0284c7; border-color: #bae6fd;" title="{{ prof.institucion_origen }}">
                                     <i class="fas fa-globe-americas me-1"></i>{{ prof.institucion_origen }}
                                 </span>
                                 {% if prof.medalla_productividad %}
-                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs" title="{{ prof.medalla_productividad.descripcion }}">
+                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs ms-auto flex-shrink-0" style="font-size: 0.72rem;" title="{{ prof.medalla_productividad.descripcion }}">
                                         {{ prof.medalla_productividad.emoji }} {{ prof.medalla_productividad.titulo }}
                                     </span>
                                 {% endif %}
@@ -1928,11 +1930,11 @@
                         <div class="cupcake-candle"></div>
                         <div class="prof-card card-birthday-cupcake theme-{{ prof.color_cumpleanos|default:'rosa' }}">
                             <div class="cupcake-frosting-section">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-white text-dark border shadow-sm small" style="color: #7c3aed !important;">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                    <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="color: #7c3aed !important; max-width: 100%;" title="{{ prof.institucion_origen|default:'Investigador Independiente' }}">
                                         <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador Independiente" }}
                                     </span>
-                                    <span class="cupcake-badge"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
+                                    <span class="cupcake-badge ms-auto flex-shrink-0"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
                                 </div>
 
                                 <div class="text-center mb-2" data-bs-toggle="modal" data-bs-target="#modalDetalleInv{{ prof.id }}" style="cursor: pointer;" title="Haz clic para ver semblanza completa">
@@ -2014,12 +2016,12 @@
                 {% else %}
                     <div class="prof-card prof-card-investigadores">
                         <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge border small" style="background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
+                                <span class="badge border small text-truncate" style="max-width: 100%; background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;" title="{{ prof.institucion_origen|default:'Investigador Independiente' }}">
                                     <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador Independiente" }}
                                 </span>
                                 {% if prof.medalla_productividad %}
-                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs" title="{{ prof.medalla_productividad.descripcion }}">
+                                    <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs ms-auto flex-shrink-0" style="font-size: 0.72rem;" title="{{ prof.medalla_productividad.descripcion }}">
                                         {{ prof.medalla_productividad.emoji }} {{ prof.medalla_productividad.titulo }}
                                     </span>
                                 {% endif %}

@@ -544,20 +544,24 @@
         }
 
         .footer {
-            background-color: #2b2b2b;
+            background-color: #006633;
             color: #ffffff;
-            padding: 40px 0 20px 0;
+            padding: 48px 0 28px 0;
+            border-top: 4px solid var(--secondary-color, #dd971a);
         }
 
-        .footer h3 {
-            color: var(--secondary-color);
-            font-size: 1.3rem;
-            margin-bottom: 20px;
+        .footer h4, .footer h5, .footer .footer-col-title {
+            color: #ffffff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
         }
 
         .footer ul {
             list-style-type: none;
             padding-left: 0;
+            margin-bottom: 0;
         }
 
         .footer ul li {
@@ -565,18 +569,46 @@
         }
 
         .footer a {
-            color: #d1d1d1;
+            color: #f1f5f9;
             text-decoration: none;
-            transition: color 0.3s ease;
+            font-size: 0.92rem;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: inline-block;
         }
 
         .footer a:hover {
-            color: var(--secondary-color);
+            color: #ffd54f;
+            text-decoration: none;
+            transform: translateX(2px);
         }
 
-        .social-icons a {
-            font-size: 1.5rem;
-            margin-right: 15px;
+        .footer-social-icons a {
+            color: #ffffff;
+            font-size: 1.4rem;
+            margin-right: 14px;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .footer-social-icons a:last-child {
+            margin-right: 0;
+        }
+
+        .footer-social-icons a:hover {
+            color: #ffd54f;
+            transform: translateY(-2px) scale(1.1);
+        }
+
+        .footer-bottom-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 36px 0 24px 0;
+        }
+
+        .footer-shield-logo {
+            height: 48px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
     </style>
 </head>
@@ -613,7 +645,7 @@
                             <a class="nav-link" href="/">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://fca.tij.uabc.mx/posgrados" target="_blank">Acerca de</a>
+                            <a class="nav-link" href="https://fca.tij.uabc.mx/en" target="_blank">Acerca de</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="https://fca.tij.uabc.mx/contactus" target="_blank">Contacto</a>
@@ -1290,37 +1322,94 @@
         </div>
     </div>
 
-    <!-- PIE DE PÁGINA -->
+    <!-- PIE DE PÁGINA INSTITUCIONAL FCA -->
     <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h3>Acerca de FCA</h3>
-                    <p>La Facultad de Contaduría y Administración se dedica a formar profesionales de excelencia en las áreas de negocios y gestión.</p>
-                </div>
-                <div class="col-md-4">
-                    <h3>Enlaces rápidos y Redes</h3>
+            <div class="row align-items-start">
+                <!-- COLUMNA 1: FCA -->
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <div class="footer-col-title">FCA</div>
                     <ul>
-                        <li><a href="{% url 'Home' %}">Inicio</a></li>
-                        <li><a href="{% url 'directorio_profesores' %}">Claustro de Profesores</a></li>
-                        <li><a href="{% url 'universidades_colaboradoras' %}">Red de Universidades Aliadas</a></li>
-                        <li><a href="https://www.remeri.org.mx/" target="_blank"><i class="fas fa-external-link-alt mr-1"></i> REMERI (Red Mexicana)</a></li>
-                        <li><a href="https://scholar.google.com" target="_blank"><i class="fas fa-graduation-cap mr-1"></i> Google Académico</a></li>
+                        <li><a href="https://fca.tij.uabc.mx/" target="_blank">Inicio</a></li>
+                        <li><a href="https://fca.tij.uabc.mx/acerca-de" target="_blank">Nuestra facultad</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h3>Contacto</h3>
-                    <p>Teléfono: +52 (664) 6833174</p>
-                    <div class="social-icons">
-                        <a href="https://www.facebook.com/fcatijuana" target="_blank"><i class="fab fa-facebook"></i></a>
-                        <a href="https://www.instagram.com/fca.tij.uabc/" target="_blank"><i class="fab fa-instagram"></i></a>
+
+                <!-- COLUMNA 2: ESTUDIANTES -->
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="footer-col-title">Estudiantes</div>
+                    <ul>
+                        <li><a href="https://fca.tij.uabc.mx/ticketayuda" target="_blank">Ticket de ayuda (odoo)</a></li>
+                        <li><a href="https://drive.google.com/file/d/1KZwB3fAkZ_88xWOL-iM0gBYVRuFws4oo/view" target="_blank">Calendario escolar</a></li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 3: DOCENTES -->
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+                    <div class="footer-col-title">Docentes</div>
+                    <ul>
+                        <li><a href="https://fca.tij.uabc.mx/docentes-infogral" target="_blank">Consultar aviso</a></li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 4: INSTITUCIONAL -->
+                <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                    <div class="footer-col-title">Institucional</div>
+                    <ul>
+                        <li><a href="https://fca.tij.uabc.mx/plandedesarrollo" target="_blank">Plan de desarrollo 2023-2027</a></li>
+                        <li><a href="https://www.uabc.mx/wp-content/uploads/bsk-pdf-manager/2023/10/Programa-Institucional-para-la-Cultura-de-Paz-UABC_.pdf" target="_blank">Programa para la cultura de paz</a></li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 5: REDES SOCIALES -->
+                <div class="col-lg-2 col-md-6 col-12 mb-4 text-lg-right text-md-left">
+                    <div class="footer-social-icons d-inline-flex justify-content-lg-end">
+                        <a href="https://www.facebook.com/fcatijuana" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/fca.tij.uabc/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@fca.tij" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@FCATijuanaOficial" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.linkedin.com/in/fcatijuana" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
             </div>
-            <hr style="border-color: #555;">
-            <div class="row">
-                <div class="col-md-12 text-center text-muted">
-                    <p>&copy; 2026 Facultad de Contaduría y Administración. Todos los derechos reservados.</p>
+
+            <!-- LÍNEA DIVISORIA INFERIOR -->
+            <div class="footer-bottom-divider"></div>
+
+            <!-- BLOQUE INFERIOR: ESCUDOS, CAMPUS Y LÍNEAS TELEFÓNICAS -->
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mr-3">
+                            <img src="{% static 'images/esc3.png' %}" alt="Escudo UABC" class="footer-shield-logo mr-2">
+                            <img src="{% static 'images/LOGO FCA1.png' %}" alt="Escudo FCA" class="footer-shield-logo">
+                        </div>
+                        <div>
+                            <div class="font-weight-bold text-white" style="font-size: 1.05rem; line-height: 1.2;">
+                                Facultad de Contaduría y Administración
+                            </div>
+                            <div class="text-white-50 small mt-1">
+                                <strong class="text-white">UABC - Campus Tijuana</strong><br>
+                                Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 mb-2 mb-lg-0 text-lg-right">
+                    <div class="text-white-50 small">Línea Universitaria</div>
+                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">+52 (664) 979-7500</div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 text-lg-right">
+                    <div class="text-white-50 small">Línea Directa de la Facultad</div>
+                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">+52 (664) 683-3174</div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12 text-center text-white-50" style="font-size: 0.78rem;">
+                    &copy; 2026 Facultad de Contaduría y Administración &bull; Universidad Autónoma de Baja California. Todos los derechos reservados.
                 </div>
             </div>
         </div>

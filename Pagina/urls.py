@@ -55,6 +55,7 @@ from .views import (
     soporte_institucional_view,
     enviar_mensaje_interno_view,
     marcar_mensaje_leido_view,
+    obtener_mensajes_nuevos_ajax_view,
     cambiar_estado_soporte_view,
     fusionar_autores_view,
     revertir_fusion_view,
@@ -100,6 +101,7 @@ urlpatterns = [
     path('mensajeria/', mensajeria_view, name='mensajeria'),
     path('mensajeria/enviar/', enviar_mensaje_interno_view, name='enviar_mensaje_interno'),
     path('mensajeria/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido'),
+    path('mensajeria/obtener-nuevos/', obtener_mensajes_nuevos_ajax_view, name='obtener_mensajes_nuevos_ajax'),
 
     # Módulo Dedicado de Soporte Institucional y Mesa de Ayuda
     path('soporte/', soporte_institucional_view, name='soporte_institucional'),

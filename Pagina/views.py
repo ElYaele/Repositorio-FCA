@@ -1167,12 +1167,22 @@ def verificar_codigo_registro_view(request, user_id):
                 'codigo_demo': autor.codigo_verificacion,
             })
 
-        # Código válido: marcar correo autenticado y cambiar a estado 'pendiente' para moderación del Super Admin
+        # Determinar si la cuenta corresponde a un perfil docente autoactivable
+        es_docente_autoactivable = autor.es_profesor and not (autor.es_auxiliar or autor.es_soporte or autor.es_operador_tecnico)
+
+        # Código válido: marcar correo autenticado y liberar cuenta instantáneamente si es docente
         autor.correo_verificado = True
         autor.codigo_verificacion = None
         autor.codigo_verificacion_expira = None
-        autor.estado_cuenta = 'pendiente'
-        autor.save()
+
+        if es_docente_autoactivable:
+            autor.estado_cuenta = 'activa'
+            autor.save()
+            user.is_active = True
+            user.save()
+        else:
+            autor.estado_cuenta = 'pendiente'
+            autor.save()
 
         # Determinar nombre descriptivo del perfil para las notificaciones
         if autor.es_auxiliar:
@@ -1190,23 +1200,37 @@ def verificar_codigo_registro_view(request, user_id):
 
         # Envío formal de correos de acuse al usuario y notificación al Super Admin
         try:
-            notificar_solicitud_registro_usuario(user, autor.nombre, tipo_perfil_nombre)
-            notificar_solicitud_registro_admins(user, autor.nombre, tipo_perfil_nombre)
-            if autor.es_auxiliar and autor.profesor_tutor:
-                notificar_solicitud_tutor_auxiliar(autor, autor.profesor_tutor)
+            if es_docente_autoactivable:
+                from .emails import notificar_aprobacion_cuenta
+                notificar_aprobacion_cuenta(user, tipo_perfil_nombre)
+                notificar_solicitud_registro_admins(user, autor.nombre, f"{tipo_perfil_nombre} (Activación Automática)")
+            else:
+                notificar_solicitud_registro_usuario(user, autor.nombre, tipo_perfil_nombre)
+                notificar_solicitud_registro_admins(user, autor.nombre, tipo_perfil_nombre)
+                if autor.es_auxiliar and autor.profesor_tutor:
+                    notificar_solicitud_tutor_auxiliar(autor, autor.profesor_tutor)
         except Exception as e:
             logger.warning(f"Error al enviar correos tras verificación OTP: {e}")
 
-        registrar_auditoria(None, "Autenticación de Correo Exitosa",
-                            f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
-
-        if autor.es_auxiliar:
+        if es_docente_autoactivable:
+            registrar_auditoria(None, "Liberación Instantánea de Cuenta Docente",
+                                f"El docente {user.username} ({user.email}) autenticó su correo mediante código OTP y su cuenta fue activada automáticamente sin requerir aprobación manual del Super Admin.")
+            messages.success(request, '¡Correo verificado con éxito! Tu cuenta docente ha sido liberada y activada automáticamente. Ya puedes iniciar sesión ahora mismo con tus credenciales.')
+        elif autor.es_auxiliar:
+            registrar_auditoria(None, "Autenticación de Correo Exitosa",
+                                f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
             messages.success(request, f'¡Correo autenticado exitosamente! Tu profesor tutor ({autor.profesor_tutor.nombre if autor.profesor_tutor else "Docente FCA"}) revisará tu solicitud para otorgar su Visto Bueno antes de la activación.')
         elif autor.es_soporte:
+            registrar_auditoria(None, "Autenticación de Correo Exitosa",
+                                f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
             messages.success(request, '¡Correo autenticado exitosamente! Tu cuenta de Soporte Técnico pasará al Administrador Principal para otorgar los privilegios correspondientes.')
         elif autor.es_operador_tecnico:
+            registrar_auditoria(None, "Autenticación de Correo Exitosa",
+                                f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
             messages.success(request, '¡Correo autenticado exitosamente! Tu cuenta de Operador Técnico ha quedado enviada a revisión por la administración.')
         else:
+            registrar_auditoria(None, "Autenticación de Correo Exitosa",
+                                f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
             messages.success(request, '¡Correo autenticado exitosamente! Tu solicitud de cuenta ha sido enviada al Administrador para su aprobación.')
 
         return redirect('login')
@@ -2328,6 +2352,127 @@ def marcar_mensaje_leido_view(request, mensaje_id):
         mensaje.save()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'No autorizado'}, status=403)
+
+
+@login_required
+def obtener_mensajes_nuevos_ajax_view(request):
+    """
+    Endpoint reactivo para mensajería y tickets de soporte.
+    Permite obtener mensajes nuevos en tiempo real sin tener que recargar la página.
+    """
+    mi_autor = getattr(request.user, 'autor', None)
+    contacto_id = request.GET.get('contacto_id') or request.GET.get('contacto')
+    es_soporte = request.GET.get('es_soporte') in ['1', 'true', 'True']
+    ticket_autor_id = request.GET.get('ticket_autor_id')
+    ultimo_id = request.GET.get('ultimo_id', 0)
+    try:
+        ultimo_id = int(ultimo_id)
+    except (ValueError, TypeError):
+        ultimo_id = 0
+
+    mensajes_nuevos = []
+
+    if es_soporte:
+        if request.user.is_superuser and ticket_autor_id:
+            # Superadmin consultando ticket de un docente
+            target_autor = Autor.objects.filter(id=ticket_autor_id).first()
+            target_user = target_autor.usuario if target_autor else None
+            if not target_user:
+                target_user = User.objects.filter(id=ticket_autor_id, is_superuser=False).first()
+                if target_user:
+                    target_autor = getattr(target_user, 'autor', None)
+
+            if target_user or target_autor:
+                q_soporte = (
+                    (Q(remitente=target_user) if target_user else Q()) |
+                    (Q(destinatario=target_autor) if target_autor else Q())
+                )
+                qs = MensajeInterno.objects.filter(
+                    es_soporte=True,
+                    id__gt=ultimo_id
+                ).filter(q_soporte).order_by('fecha_envio')
+
+                # Marcar como leídos los que envió el usuario cliente
+                if target_user:
+                    MensajeInterno.objects.filter(
+                        es_soporte=True,
+                        remitente=target_user,
+                        leido=False
+                    ).update(leido=True)
+                mensajes_nuevos = list(qs)
+        else:
+            # Docente consultando su ticket de soporte
+            qs = MensajeInterno.objects.filter(
+                es_soporte=True,
+                id__gt=ultimo_id
+            ).filter(
+                Q(remitente=request.user) | (Q(destinatario=mi_autor) if mi_autor else Q())
+            ).order_by('fecha_envio')
+
+            # Marcar como leídos los que le enviaron al docente
+            if mi_autor:
+                MensajeInterno.objects.filter(
+                    es_soporte=True,
+                    destinatario=mi_autor,
+                    leido=False
+                ).update(leido=True)
+            mensajes_nuevos = list(qs)
+    elif contacto_id:
+        contacto = Autor.objects.filter(id=contacto_id).first()
+        if contacto:
+            q_filter = (Q(remitente=request.user) & Q(destinatario=contacto))
+            if contacto.usuario and mi_autor:
+                q_filter |= (Q(remitente=contacto.usuario) & Q(destinatario=mi_autor))
+
+            qs = MensajeInterno.objects.filter(
+                es_soporte=False,
+                id__gt=ultimo_id
+            ).filter(q_filter).order_by('fecha_envio')
+
+            if mi_autor and contacto.usuario:
+                MensajeInterno.objects.filter(
+                    es_soporte=False,
+                    remitente=contacto.usuario,
+                    destinatario=mi_autor,
+                    leido=False
+                ).update(leido=True)
+            mensajes_nuevos = list(qs)
+
+    data = []
+    for m in mensajes_nuevos:
+        es_propio = (m.remitente == request.user)
+        nombre_remitente = "Tú" if es_propio else (
+            "Soporte Institucional" if (m.es_soporte and m.remitente.is_superuser) else (
+                m.remitente.get_full_name() or m.remitente.username
+            )
+        )
+        data.append({
+            'id': m.id,
+            'cuerpo': m.cuerpo,
+            'fecha': timezone.localtime(m.fecha_envio).strftime("%H:%M"),
+            'es_propio': es_propio,
+            'remitente_nombre': nombre_remitente,
+            'adjunto_url': m.adjunto.url if m.adjunto else None,
+            'adjunto_nombre': m.nombre_adjunto or (m.adjunto.name.split('/')[-1] if m.adjunto else None),
+            'es_imagen': m.es_imagen,
+            'es_pdf': m.es_pdf,
+            'es_documento': m.es_documento,
+            'es_presentacion': m.es_presentacion,
+            'es_hoja_calculo': m.es_hoja_calculo,
+            'extension': m.extension_adjunto,
+            'leido': m.leido,
+        })
+
+    # Conteo global de no leídos para badges
+    no_leidos_global = 0
+    if mi_autor:
+        no_leidos_global = MensajeInterno.objects.filter(destinatario=mi_autor, leido=False).count()
+
+    return JsonResponse({
+        'success': True,
+        'mensajes': data,
+        'no_leidos_global': no_leidos_global
+    })
 
 
 @login_required

@@ -613,7 +613,7 @@
                         {% for msg in chat_activo.mensajes %}
                             {% if msg.remitente == user %}
                                 <!-- MENSAJE SALIENTE (PROPIO) -->
-                                <div class="message-row outgoing">
+                                <div class="message-row outgoing" data-msg-id="{{ msg.id }}">
                                     <div class="message-bubble outgoing">
                                         <div class="message-sender-name">Tú</div>
                                         <div class="message-text">{{ msg.cuerpo }}</div>
@@ -665,7 +665,7 @@
                                 </div>
                             {% else %}
                                 <!-- MENSAJE ENTRANTE -->
-                                <div class="message-row incoming">
+                                <div class="message-row incoming" data-msg-id="{{ msg.id }}">
                                     <div class="message-bubble incoming">
                                         <div class="message-sender-name">
                                             {{ chat_activo.titulo }}
@@ -1083,6 +1083,175 @@
                     this.style.height = 'auto';
                     this.style.height = (this.scrollHeight) + 'px';
                 });
+            }
+
+            // =========================================================================
+            // MENSAJERÍA INSTANTÁNEA EN TIEMPO REAL (SIN RECARGAR LA PÁGINA)
+            // =========================================================================
+            const formEnviarMensaje = document.getElementById('formEnviarMensaje');
+            let ultimoMensajeId = 0;
+
+            // Detectar el ID más alto existente al cargar
+            document.querySelectorAll('#chatMessagesContainer .message-row').forEach(row => {
+                const mid = parseInt(row.getAttribute('data-msg-id'), 10);
+                if (!isNaN(mid) && mid > ultimoMensajeId) {
+                    ultimoMensajeId = mid;
+                }
+            });
+
+            function scrollAbajo(smooth = true) {
+                if (messagesContainer) {
+                    messagesContainer.scrollTo({
+                        top: messagesContainer.scrollHeight,
+                        behavior: smooth ? 'smooth' : 'auto'
+                    });
+                }
+            }
+
+            function construirMensajeHTML(m) {
+                let adjuntoHTML = '';
+                if (m.adjunto_url) {
+                    if (m.es_imagen) {
+                        adjuntoHTML = `
+                            <div class="image-preview-bubble">
+                                <a href="${m.adjunto_url}" target="_blank">
+                                    <img src="${m.adjunto_url}" alt="${m.adjunto_nombre || 'Imagen'}">
+                                </a>
+                            </div>`;
+                    } else {
+                        let iconCls = 'fa-file-alt';
+                        let cardCls = 'icon-other';
+                        if (m.es_pdf) { iconCls = 'fa-file-pdf'; cardCls = 'icon-pdf'; }
+                        else if (m.es_documento) { iconCls = 'fa-file-word'; cardCls = 'icon-doc'; }
+                        else if (m.es_presentacion) { iconCls = 'fa-file-powerpoint'; cardCls = 'icon-ppt'; }
+                        else if (m.es_hoja_calculo) { iconCls = 'fa-file-excel'; cardCls = 'icon-xls'; }
+
+                        adjuntoHTML = `
+                            <a href="${m.adjunto_url}" target="_blank" download class="attachment-card">
+                                <div class="attachment-icon ${cardCls}">
+                                    <i class="fas ${iconCls}"></i>
+                                </div>
+                                <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                    <div class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">
+                                        ${m.adjunto_nombre || 'Archivo adjunto'}
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">
+                                        Archivo ${(m.extension || '').toUpperCase()} &bull; Clic para descargar
+                                    </div>
+                                </div>
+                                <i class="fas fa-download text-muted ms-2"></i>
+                            </a>`;
+                    }
+                }
+
+                if (m.es_propio) {
+                    const checkIcon = m.leido ?
+                        '<i class="fas fa-check-double text-primary" title="Leído"></i>' :
+                        '<i class="fas fa-check text-muted" title="Enviado"></i>';
+                    return `
+                        <div class="message-row outgoing" data-msg-id="${m.id}">
+                            <div class="message-bubble outgoing">
+                                <div class="message-sender-name">Tú</div>
+                                <div class="message-text">${m.cuerpo || ''}</div>
+                                ${adjuntoHTML}
+                                <div class="message-footer">
+                                    <span>${m.fecha || ''}</span>
+                                    ${checkIcon}
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    return `
+                        <div class="message-row incoming" data-msg-id="${m.id}">
+                            <div class="message-bubble incoming">
+                                <div class="message-sender-name">${m.remitente_nombre || 'Colega'}</div>
+                                <div class="message-text">${m.cuerpo || ''}</div>
+                                ${adjuntoHTML}
+                                <div class="message-footer">
+                                    <span>${m.fecha || ''}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            if (formEnviarMensaje) {
+                formEnviarMensaje.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const textVal = chatInputText ? chatInputText.value.trim() : '';
+                    const hasFile = fileInputActual && fileInputActual.files && fileInputActual.files.length > 0;
+                    if (!textVal && !hasFile) return;
+
+                    const formData = new FormData(formEnviarMensaje);
+                    formData.append('ajax', '1');
+
+                    // Limpieza inmediata del input y preview para sensación ultra-rápida
+                    if (chatInputText) {
+                        chatInputText.value = '';
+                        chatInputText.style.height = 'auto';
+                    }
+                    if (btnCancelAttachment) {
+                        btnCancelAttachment.click();
+                    }
+
+                    fetch(formEnviarMensaje.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.mensaje) {
+                            if (!document.querySelector(`[data-msg-id="${data.mensaje.id}"]`)) {
+                                if (messagesContainer) {
+                                    messagesContainer.insertAdjacentHTML('beforeend', construirMensajeHTML(data.mensaje));
+                                    ultimoMensajeId = Math.max(ultimoMensajeId, data.mensaje.id);
+                                    scrollAbajo(true);
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error al enviar mensaje vía AJAX:", err);
+                    });
+                });
+            }
+
+            // Polling en tiempo real cada 3 segundos
+            const contactoActivoId = "{{ chat_activo.contacto.id|default:'' }}";
+            function checarMensajesNuevos() {
+                if (!contactoActivoId) return;
+
+                fetch(`{% url 'obtener_mensajes_nuevos_ajax' %}?contacto_id=${contactoActivoId}&ultimo_id=${ultimoMensajeId}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.mensajes && data.mensajes.length > 0) {
+                        let huboNuevos = false;
+                        data.mensajes.forEach(m => {
+                            if (!document.querySelector(`[data-msg-id="${m.id}"]`)) {
+                                if (messagesContainer) {
+                                    messagesContainer.insertAdjacentHTML('beforeend', construirMensajeHTML(m));
+                                    ultimoMensajeId = Math.max(ultimoMensajeId, m.id);
+                                    huboNuevos = true;
+                                }
+                            }
+                        });
+                        if (huboNuevos) {
+                            scrollAbajo(true);
+                        }
+                    }
+                })
+                .catch(err => {
+                    // Silencioso en desconexión momentánea
+                });
+            }
+
+            if (contactoActivoId) {
+                setInterval(checarMensajesNuevos, 3000);
             }
 
             // Función auxiliar para normalizar texto (sin acentos, minúsculas, espacios limpios)

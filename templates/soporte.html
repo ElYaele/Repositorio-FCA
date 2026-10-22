@@ -885,7 +885,7 @@
                             <!-- VISTA SUPERADMIN -->
                             {% if msg.remitente.is_superuser %}
                                 <!-- RESPUESTA DE SOPORTE ADMIN (DERECHA) -->
-                                <div class="ticket-msg-row from-admin-support mb-2">
+                                <div class="ticket-msg-row from-admin-support mb-2" data-msg-id="{{ msg.id }}">
                                     <div class="ticket-msg-bubble from-admin-support">
                                         <div class="admin-support-badge">
                                             <i class="fas fa-shield-alt"></i>
@@ -926,7 +926,7 @@
                                 </div>
                             {% else %}
                                 <!-- MENSAJE DEL DOCENTE (IZQUIERDA) -->
-                                <div class="ticket-msg-row from-docente-client mb-2">
+                                <div class="ticket-msg-row from-docente-client mb-2" data-msg-id="{{ msg.id }}">
                                     <div class="ticket-msg-bubble from-docente-client">
                                         <div class="docente-client-badge">
                                             <i class="fas fa-user-graduate me-1"></i>
@@ -969,7 +969,7 @@
                             <!-- VISTA DOCENTE -->
                             {% if msg.remitente == user %}
                                 <!-- MENSAJE ENVIADO POR EL DOCENTE (DERECHA) -->
-                                <div class="ticket-msg-row from-user mb-2">
+                                <div class="ticket-msg-row from-user mb-2" data-msg-id="{{ msg.id }}">
                                     <div class="ticket-msg-bubble from-user">
                                         <div class="user-sender-badge">
                                             <i class="fas fa-user me-1"></i>Tú
@@ -1013,7 +1013,7 @@
                                 </div>
                             {% else %}
                                 <!-- RESPUESTA DE SOPORTE FCA (IZQUIERDA) -->
-                                <div class="ticket-msg-row from-support mb-2">
+                                <div class="ticket-msg-row from-support mb-2" data-msg-id="{{ msg.id }}">
                                     <div class="ticket-msg-bubble from-support">
                                         <div class="support-sender-badge">
                                             <i class="fas fa-shield-alt text-warning"></i>Soporte Institucional FCA
@@ -1256,6 +1256,203 @@
                     this.style.height = (this.scrollHeight) + 'px';
                 });
             }
+
+            // =========================================================================
+            // TICKETS DE SOPORTE EN TIEMPO REAL (SIN RECARGAR LA PÁGINA)
+            // =========================================================================
+            const formEnviarSoporte = document.getElementById('formEnviarSoporte');
+            let ultimoSoporteId = 0;
+
+            document.querySelectorAll('#soporteMessagesContainer .ticket-msg-row').forEach(row => {
+                const mid = parseInt(row.getAttribute('data-msg-id'), 10);
+                if (!isNaN(mid) && mid > ultimoSoporteId) {
+                    ultimoSoporteId = mid;
+                }
+            });
+
+            function scrollAbajoSoporte(smooth = true) {
+                if (messagesContainer) {
+                    messagesContainer.scrollTo({
+                        top: messagesContainer.scrollHeight,
+                        behavior: smooth ? 'smooth' : 'auto'
+                    });
+                }
+            }
+
+            function construirMensajeSoporteHTML(m) {
+                let adjuntoHTML = '';
+                if (m.adjunto_url) {
+                    if (m.es_imagen) {
+                        adjuntoHTML = `
+                            <div class="attachment-preview-box">
+                                <a href="${m.adjunto_url}" target="_blank">
+                                    <img src="${m.adjunto_url}" alt="${m.adjunto_nombre || 'Imagen'}">
+                                </a>
+                            </div>`;
+                    } else {
+                        adjuntoHTML = `
+                            <a href="${m.adjunto_url}" target="_blank" download class="attachment-support-card">
+                                <div class="fs-4 text-warning">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                    <div class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">
+                                        ${m.adjunto_nombre || 'Archivo adjunto'}
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">
+                                        Archivo ${(m.extension || '').toUpperCase()} &bull; Descargar
+                                    </div>
+                                </div>
+                                <i class="fas fa-download text-muted ms-2"></i>
+                            </a>`;
+                    }
+                }
+
+                const esAdmin = {% if es_admin %}true{% else %}false{% endif %};
+                if (esAdmin) {
+                    if (m.es_propio) {
+                        return `
+                            <div class="ticket-msg-row from-admin-support mb-2" data-msg-id="${m.id}">
+                                <div class="ticket-msg-bubble from-admin-support">
+                                    <div class="admin-support-badge">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Soporte FCA &bull; Tú (Super Admin)</span>
+                                    </div>
+                                    <div style="font-size: 0.92rem; white-space: pre-line;">${m.cuerpo || ''}</div>
+                                    ${adjuntoHTML}
+                                    <div class="ticket-msg-footer">
+                                        <span>${m.fecha || ''}</span>
+                                        <i class="fas fa-check-double ms-1" title="Enviado"></i>
+                                    </div>
+                                </div>
+                            </div>`;
+                    } else {
+                        return `
+                            <div class="ticket-msg-row from-docente-client mb-2" data-msg-id="${m.id}">
+                                <div class="ticket-msg-bubble from-docente-client">
+                                    <div class="docente-client-badge">
+                                        <i class="fas fa-user-graduate me-1"></i>
+                                        <span>${m.remitente_nombre || 'Docente'}</span>
+                                    </div>
+                                    <div class="text-dark" style="font-size: 0.92rem; white-space: pre-line;">${m.cuerpo || ''}</div>
+                                    ${adjuntoHTML}
+                                    <div class="ticket-msg-footer">
+                                        <span>${m.fecha || ''}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                } else {
+                    if (m.es_propio) {
+                        const checkIcon = m.leido ?
+                            '<i class="fas fa-check-double text-primary" title="Leído"></i>' :
+                            '<i class="fas fa-check text-muted" title="Enviado"></i>';
+                        return `
+                            <div class="ticket-msg-row from-user mb-2" data-msg-id="${m.id}">
+                                <div class="ticket-msg-bubble from-user">
+                                    <div class="user-sender-badge">
+                                        <i class="fas fa-user me-1"></i>Tú
+                                    </div>
+                                    <div class="text-dark" style="font-size: 0.92rem; white-space: pre-line;">${m.cuerpo || ''}</div>
+                                    ${adjuntoHTML}
+                                    <div class="ticket-msg-footer">
+                                        <span>${m.fecha || ''}</span>
+                                        ${checkIcon}
+                                    </div>
+                                </div>
+                            </div>`;
+                    } else {
+                        return `
+                            <div class="ticket-msg-row from-support mb-2" data-msg-id="${m.id}">
+                                <div class="ticket-msg-bubble from-support">
+                                    <div class="support-sender-badge">
+                                        <i class="fas fa-shield-alt text-warning"></i>Soporte Institucional FCA
+                                    </div>
+                                    <div class="text-dark" style="font-size: 0.92rem; white-space: pre-line;">${m.cuerpo || ''}</div>
+                                    ${adjuntoHTML}
+                                    <div class="ticket-msg-footer">
+                                        <span>${m.fecha || ''}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                }
+            }
+
+            if (formEnviarSoporte) {
+                formEnviarSoporte.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const textVal = soporteInputText ? soporteInputText.value.trim() : '';
+                    const hasFile = fileInputActual && fileInputActual.files && fileInputActual.files.length > 0;
+                    if (!textVal && !hasFile) return;
+
+                    const formData = new FormData(formEnviarSoporte);
+                    formData.append('ajax', '1');
+
+                    if (soporteInputText) {
+                        soporteInputText.value = '';
+                        soporteInputText.style.height = 'auto';
+                    }
+                    if (btnCancelAttachment) {
+                        btnCancelAttachment.click();
+                    }
+
+                    fetch(formEnviarSoporte.action, {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.mensaje) {
+                            if (!document.querySelector(`[data-msg-id="${data.mensaje.id}"]`)) {
+                                if (messagesContainer) {
+                                    messagesContainer.insertAdjacentHTML('beforeend', construirMensajeSoporteHTML(data.mensaje));
+                                    ultimoSoporteId = Math.max(ultimoSoporteId, data.mensaje.id);
+                                    scrollAbajoSoporte(true);
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error al enviar mensaje de soporte vía AJAX:", err);
+                    });
+                });
+            }
+
+            // Polling en tiempo real de soporte cada 3.5 segundos
+            const ticketAutorIdParam = "{% if es_admin and ticket_activo.usuario %}{{ ticket_activo.usuario.id }}{% elif es_admin and ticket_activo.autor %}{{ ticket_activo.autor.id }}{% else %}{% endif %}";
+            function checarMensajesSoporteNuevos() {
+                let url = `{% url 'obtener_mensajes_nuevos_ajax' %}?es_soporte=1&ultimo_id=${ultimoSoporteId}`;
+                if (ticketAutorIdParam) {
+                    url += `&ticket_autor_id=${ticketAutorIdParam}`;
+                }
+
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.mensajes && data.mensajes.length > 0) {
+                        let huboNuevos = false;
+                        data.mensajes.forEach(m => {
+                            if (!document.querySelector(`[data-msg-id="${m.id}"]`)) {
+                                if (messagesContainer) {
+                                    messagesContainer.insertAdjacentHTML('beforeend', construirMensajeSoporteHTML(m));
+                                    ultimoSoporteId = Math.max(ultimoSoporteId, m.id);
+                                    huboNuevos = true;
+                                }
+                            }
+                        });
+                        if (huboNuevos) {
+                            scrollAbajoSoporte(true);
+                        }
+                    }
+                })
+                .catch(err => {
+                    // Silencioso
+                });
+            }
+
+            setInterval(checarMensajesSoporteNuevos, 3500);
 
             // Buscador de Tickets (Admin)
             const filtroTicketsAdmin = document.getElementById('filtroTicketsAdmin');
