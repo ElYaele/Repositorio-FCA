@@ -7599,7 +7599,7 @@
                     document.getElementById('inputEditFnac').value = fnac;
                     document.getElementById('inputEditNumEmp').value = (numemp && !numemp.startsWith('No aplica') && numemp !== 'No registrado' && numemp !== 'N/A' ? numemp : '');
 
-                    document.getElementById('formEditarFichaAdmin').action = `/gestion-usuarios/editar-ficha/${userId}/`;
+                    document.getElementById('formEditarFichaAdmin').action = `/gestion-usuarios/editar-ficha/${userId}/#usuarios`;
                     toggleModoEdicionFicha(false);
 
                     // Carga asíncrona de bitácora

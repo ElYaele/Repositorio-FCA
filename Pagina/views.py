@@ -5091,6 +5091,19 @@ def editar_ficha_usuario_admin_view(request, user_id):
                 return redirect('panel_usuarios')
             usuario.email = nuevo_email
 
+        if nuevo_nombre:
+            partes_u = nuevo_nombre.split()
+            prefijos = ['dr.', 'dr', 'dra.', 'dra', 'mtro.', 'mtro', 'mtra.', 'mtra', 'lic.', 'lic', 'ing.', 'ing', 'ph.d.', 'phd']
+            if partes_u and partes_u[0].lower() in prefijos:
+                partes_u.pop(0)
+
+            if len(partes_u) >= 2:
+                usuario.first_name = " ".join(partes_u[:-1])
+                usuario.last_name = partes_u[-1]
+            elif len(partes_u) == 1:
+                usuario.first_name = partes_u[0]
+                usuario.last_name = ""
+
         usuario.save()
 
         # SOLUCIÓN BUG 1: Se eliminó el "if not usuario.is_superuser:" para permitir
@@ -5106,6 +5119,28 @@ def editar_ficha_usuario_admin_view(request, user_id):
 
         if nuevo_nombre:
             autor.nombre = nuevo_nombre
+            partes = nuevo_nombre.split()
+            prefijos = ['dr.', 'dr', 'dra.', 'dra', 'mtro.', 'mtro', 'mtra.', 'mtra', 'lic.', 'lic', 'ing.', 'ing', 'ph.d.', 'phd']
+            if partes and partes[0].lower() in prefijos:
+                autor.titulo_academico = partes.pop(0)
+
+            if len(partes) >= 3:
+                autor.nombres = " ".join(partes[:-2])
+                autor.apellido_paterno = partes[-2]
+                autor.apellido_materno = partes[-1]
+            elif len(partes) == 2:
+                autor.nombres = partes[0]
+                autor.apellido_paterno = partes[1]
+                autor.apellido_materno = ""
+            elif len(partes) == 1:
+                autor.nombres = partes[0]
+                autor.apellido_paterno = ""
+                autor.apellido_materno = ""
+            else:
+                autor.nombres = nuevo_nombre
+                autor.apellido_paterno = ""
+                autor.apellido_materno = ""
+
         if nuevo_email:
             autor.correo = nuevo_email
 
@@ -5113,10 +5148,15 @@ def editar_ficha_usuario_admin_view(request, user_id):
             autor.numero_empleado = nuevo_numemp if nuevo_numemp else None
 
         if nueva_fnac:
-            try:
-                autor.fecha_nacimiento = datetime.strptime(nueva_fnac, '%Y-%m-%d').date()
-            except ValueError:
-                pass
+            parsed_date = None
+            for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y'):
+                try:
+                    parsed_date = datetime.strptime(nueva_fnac, fmt).date()
+                    break
+                except ValueError:
+                    pass
+            if parsed_date:
+                autor.fecha_nacimiento = parsed_date
         else:
             autor.fecha_nacimiento = None
 
@@ -5125,7 +5165,7 @@ def editar_ficha_usuario_admin_view(request, user_id):
         registrar_auditoria(request.user, "Edición de Ficha de Usuario",
                             f"Modificó los datos de la cuenta: {usuario.username}")
         messages.success(request, f'La ficha y datos de "{usuario.username}" han sido actualizados exitosamente.')
-    return redirect('panel_usuarios')
+    return redirect(f"{reverse('panel_usuarios')}#usuarios")
 
 
 @login_required

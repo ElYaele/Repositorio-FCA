@@ -456,12 +456,13 @@ class Autor(models.Model):
         return clean[:6].upper() if clean else 'EXT'
 
     def save(self, *args, **kwargs):
-        # Sincronización automática de nombre si están los componentes
+        # Sincronización automática de nombre si están los componentes y no se fijó un nombre explícito
         if self.nombres and self.apellido_paterno:
             partes = [self.nombres.strip(), self.apellido_paterno.strip()]
             if self.apellido_materno:
                 partes.append(self.apellido_materno.strip())
-            self.nombre = " ".join(partes)
+            if not self.nombre:
+                self.nombre = " ".join(partes)
 
         # Generación garantizada de código institucional único (FCA-ID, UNAM-ID, INV-ID, etc.)
         prefijo = self.obtener_prefijo_codigo_institucional()
