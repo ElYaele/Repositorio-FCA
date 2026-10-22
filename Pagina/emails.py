@@ -93,10 +93,17 @@ def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, 
 
     def _ejecutar_envio():
         # 1. Intentar envío por API HTTP (Brevo) si existe API Key (pasa por puerto 443 en Render Free)
-        brevo_api_key = os.getenv('BREVO_API_KEY', '').strip()
+        brevo_api_key = (
+            os.getenv('BREVO_API_KEY') or 
+            os.getenv('BREVO API KEY') or 
+            os.getenv('BREVO_KEY') or 
+            os.getenv('SENDINBLUE_API_KEY') or 
+            ''
+        ).strip().strip("'\"")
+
         if brevo_api_key:
             try:
-                remitente_correo = os.getenv('EMAIL_HOST_USER', 'pruebarepsoitoriofca@gmail.com')
+                remitente_correo = os.getenv('EMAIL_HOST_USER', 'pruebarepsoitoriofca@gmail.com').strip()
                 to_list = [{"email": d.strip()} for d in (destinatario if isinstance(destinatario, list) else [destinatario]) if d.strip()]
                 payload = {
                     "sender": {"name": "Repositorio FCA UABC", "email": remitente_correo},
@@ -115,12 +122,18 @@ def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, 
                     },
                     method='POST'
                 )
-                with urllib.request.urlopen(req, timeout=5) as response:
+                with urllib.request.urlopen(req, timeout=6) as response:
                     if response.status in (200, 201):
                         logger.info(f"[BREVO API HTTPS] Correo enviado exitosamente a {destinatario}: {asunto}")
                         return True
+            except urllib.error.HTTPError as e_api:
+                try:
+                    cuerpo_error = e_api.read().decode('utf-8')
+                except Exception:
+                    cuerpo_error = str(e_api)
+                logger.warning(f"[BREVO API HTTPS] Error al enviar vía API HTTP ({e_api.code}): {cuerpo_error}. Intentando SMTP estándar...")
             except Exception as e_api:
-                logger.warning(f"[BREVO API HTTPS] Error al enviar vía API HTTP: {e_api}. Intentando SMTP estándar...")
+                logger.warning(f"[BREVO API HTTPS] Error general al enviar vía API HTTP: {e_api}. Intentando SMTP estándar...")
 
         # 2. Envío por SMTP estándar de Django
         remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
