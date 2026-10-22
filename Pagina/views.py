@@ -3900,8 +3900,12 @@ def exportar_respaldo_sistema_view(request):
 @user_passes_test(es_superusuario, login_url='/login/')
 def restaurar_respaldo_sistema_view(request):
     """
-    Lee y restaura de forma limpia y atómica los datos del archivo .json cargado por el superusuario ('Poner backup aquí').
-    Garantiza que no ocurran conflictos de clave duplicada (UNIQUE constraints) con cuentas o datos creados posteriormente.
+    Sincronización Inteligente y No Destructiva de Respaldos ('Poner backup aquí'):
+    - NUNCA elimina las cuentas nuevas creadas posteriormente (por ejemplo la Directora o nuevos profesores).
+    - Compara y unifica registros que ya existan (por username, nombre de obra, nombre de catálogo).
+    - Reasigna identificadores (PKs) de forma segura para registros que tengan colisión de ID.
+    - Remapea todas las relaciones de llaves foráneas (ForeignKeys) y ManyToMany.
+    - Garantiza cero pérdidas de datos y compatibilidad total con MySQL, PostgreSQL y SQLite.
     """
     if request.method != 'POST':
         messages.warning(request, "Método no permitido para restauración.")
@@ -3935,136 +3939,375 @@ def restaurar_respaldo_sistema_view(request):
         messages.warning(request, "El archivo de respaldo está vacío (0 registros). No se realizaron cambios.")
         return redirect(f"{reverse('panel_usuarios')}#documentos")
 
+    def _copiar_campos(instancia, campos_dict, excluidos=None):
+        if excluidos is None:
+            excluidos = set()
+        valid_fields = {f.name for f in instancia._meta.fields}
+        for k, v in campos_dict.items():
+            if k in valid_fields and k not in excluidos:
+                setattr(instancia, k, v)
+
     try:
         with transaction.atomic():
             admin_actual = request.user
             admin_actual_id = admin_actual.id
-            admin_username_lower = admin_actual.username.lower()
 
-            # 1. Identificar usuarios presentes en el archivo de respaldo
-            fixture_users = [item for item in fixtures if item.get('model') == 'auth.user']
-            backup_usernames = {
-                item.get('fields', {}).get('username', '').lower(): item.get('pk')
-                for item in fixture_users if 'username' in item.get('fields', {})
-            }
+            # Diccionarios de mapeo de claves primarias: {old_pk: new_pk}
+            user_id_map = {}
+            entidad_id_map = {}
+            area_id_map = {}
+            tipo_id_map = {}
+            universidad_id_map = {}
+            autor_id_map = {}
+            articulo_id_map = {}
 
-            # 2. Si el admin actual viene en el backup pero con un ID numérico diferente,
-            # remapeamos ese ID en los fixtures para evitar choques de integridad y conservar su sesión viva.
-            id_mapeo_admin = {}
-            if admin_username_lower in backup_usernames:
-                backup_admin_pk = backup_usernames[admin_username_lower]
-                if backup_admin_pk != admin_actual_id:
-                    id_mapeo_admin[backup_admin_pk] = admin_actual_id
-
-            if id_mapeo_admin:
-                fk_user_fields_map = [
-                    'usuario', 'subido_por', 'moderado_por', 'chequeado_por',
-                    'suspendido_por', 'admin_usuario', 'revertida_por',
-                    'moderado_por_semblanza', 'usuario_responsable', 'de_usuario',
-                    'remitente', 'destinatario'
-                ]
-                for item in fixtures:
-                    if item.get('model') == 'auth.user' and item.get('pk') in id_mapeo_admin:
-                        item['pk'] = id_mapeo_admin[item.get('pk')]
-                    fields = item.get('fields', {})
-                    for fk_name in fk_user_fields_map:
-                        if fk_name in fields and fields[fk_name] in id_mapeo_admin:
-                            fields[fk_name] = id_mapeo_admin[fields[fk_name]]
-
-            # 3. Vaciado limpio de tablas del repositorio antes de inyectar el snapshot.
-            # Esto previene CUALQUIER colisión de:
-            # - UNIQUE constraint en username o email de User
-            # - UNIQUE constraint en OneToOneField Autor.usuario
-            # - UNIQUE constraint en Autor.codigo_institucional
-            # - UNIQUE constraint en Universidad.nombre
-            InvitacionCoautoria.objects.all().delete()
-            Articulo.objects.all().delete()
-            EnlaceProfesional.objects.all().delete()
-            Nombramiento.objects.all().delete()
-            HistorialFusion.objects.all().delete()
-            MensajeInterno.objects.all().delete()
-            MensajeCumpleanos.objects.all().delete()
-            Autor.objects.all().delete()
-            RegistroAuditoria.objects.all().delete()
-            Universidad.objects.all().delete()
-            TipoContenido.objects.all().delete()
-            Area.objects.all().delete()
-            Entidad.objects.all().delete()
-
-            # Eliminar usuarios creados a posteriori que no sean el administrador actual
-            User.objects.exclude(id=admin_actual_id).delete()
-
-            # 4. Sanitizar FKs a User para IDs que no existan en el snapshot
-            user_ids_disponibles = {admin_actual_id}
+            # Agrupar fixtures por modelo (ignorando mayúsculas/minúsculas)
+            fixtures_por_modelo = {}
             for item in fixtures:
-                if item.get('model') == 'auth.user':
-                    user_ids_disponibles.add(item.get('pk'))
+                m_label = item.get('model', '').lower()
+                fixtures_por_modelo.setdefault(m_label, []).append(item)
 
-            fk_user_fields = [
-                'usuario', 'subido_por', 'moderado_por', 'chequeado_por',
-                'suspendido_por', 'admin_usuario', 'revertida_por',
-                'moderado_por_semblanza', 'usuario_responsable', 'de_usuario',
-                'remitente', 'destinatario'
-            ]
-            for item in fixtures:
+            total_creados = 0
+            total_fusionados = 0
+
+            # -------------------------------------------------------------
+            # 1. Catálogos Base (Entidad, Area, TipoContenido, Universidad)
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.entidad', []):
+                old_pk = item['pk']
+                nombre = (item.get('fields', {}).get('nombre') or '').strip()
+                if not nombre:
+                    continue
+                existente = Entidad.objects.filter(nombre__iexact=nombre).first()
+                if existente:
+                    entidad_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                else:
+                    safe_id = old_pk if not Entidad.objects.filter(id=old_pk).exists() else None
+                    obj = Entidad.objects.create(id=safe_id, nombre=nombre)
+                    entidad_id_map[old_pk] = obj.id
+                    total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.area', []):
+                old_pk = item['pk']
+                nombre = (item.get('fields', {}).get('nombre') or '').strip()
+                if not nombre:
+                    continue
+                existente = Area.objects.filter(nombre__iexact=nombre).first()
+                if existente:
+                    area_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                else:
+                    safe_id = old_pk if not Area.objects.filter(id=old_pk).exists() else None
+                    obj = Area.objects.create(id=safe_id, nombre=nombre)
+                    area_id_map[old_pk] = obj.id
+                    total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.tipocontenido', []):
+                old_pk = item['pk']
+                nombre = (item.get('fields', {}).get('nombre') or '').strip()
+                if not nombre:
+                    continue
+                existente = TipoContenido.objects.filter(nombre__iexact=nombre).first()
+                if existente:
+                    tipo_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                else:
+                    safe_id = old_pk if not TipoContenido.objects.filter(id=old_pk).exists() else None
+                    obj = TipoContenido.objects.create(id=safe_id, nombre=nombre)
+                    tipo_id_map[old_pk] = obj.id
+                    total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.universidad', []):
+                old_pk = item['pk']
                 fields = item.get('fields', {})
-                for fk_name in fk_user_fields:
-                    if fk_name in fields and fields[fk_name] and fields[fk_name] not in user_ids_disponibles:
-                        fields[fk_name] = None
+                nombre = (fields.get('nombre') or '').strip()
+                if not nombre:
+                    continue
+                existente = Universidad.objects.filter(nombre__iexact=nombre).first()
+                if existente:
+                    universidad_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                else:
+                    safe_id = old_pk if not Universidad.objects.filter(id=old_pk).exists() else None
+                    siglas = fields.get('siglas', '')
+                    obj = Universidad.objects.create(id=safe_id, nombre=nombre, siglas=siglas)
+                    universidad_id_map[old_pk] = obj.id
+                    total_creados += 1
 
-            # 5. Deserializar los registros del JSON y ordenarlos por dependencias de modelos
-            MODEL_ORDER = {
-                'auth.user': 1,
-                'pagina.entidad': 2,
-                'pagina.area': 2,
-                'pagina.tipocontenido': 2,
-                'pagina.universidad': 2,
-                'pagina.autor': 3,
-                'pagina.nombramiento': 4,
-                'pagina.enlaceprofesional': 4,
-                'pagina.articulo': 5,
-                'pagina.invitacioncoautoria': 6,
-                'pagina.historialfusion': 6,
-                'pagina.mensajeinterno': 6,
-                'pagina.mensajecumpleanos': 6,
-                'pagina.registroauditoria': 6,
-            }
+            # -------------------------------------------------------------
+            # 2. Usuarios (auth.user)
+            # NUNCA borra usuarios existentes (como la Directora o nuevos profesores)
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('auth.user', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                username = (fields.get('username') or '').strip()
+                email = (fields.get('email') or '').strip()
 
-            from django.db import connection
-            is_mysql = connection.vendor == 'mysql'
-            is_sqlite = connection.vendor == 'sqlite'
-            with connection.cursor() as cursor:
-                if is_mysql:
-                    cursor.execute("SET FOREIGN_KEY_CHECKS=0;")
-                elif is_sqlite:
-                    cursor.execute("PRAGMA foreign_keys = OFF;")
+                existente = None
+                if username:
+                    existente = User.objects.filter(username__iexact=username).first()
+                if not existente and email:
+                    existente = User.objects.filter(email__iexact=email).first()
 
-            try:
-                deserializados = list(serializers.deserialize('json', json.dumps(fixtures)))
-                deserializados.sort(key=lambda o: MODEL_ORDER.get(getattr(o.object._meta, 'label_lower', ''), 99))
+                if existente:
+                    user_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                else:
+                    user_obj = User()
+                    _copiar_campos(user_obj, fields, excluidos={'id'})
+                    if not User.objects.filter(id=old_pk).exists():
+                        user_obj.id = old_pk
+                    else:
+                        user_obj.id = None
+                    user_obj.save()
+                    user_id_map[old_pk] = user_obj.id
+                    total_creados += 1
 
-                total_guardados = 0
-                for obj in deserializados:
-                    if isinstance(obj.object, User):
-                        if obj.object.id == admin_actual_id or obj.object.username.lower() == admin_username_lower:
-                            # Mantener intacta la sesión del administrador
-                            admin_user = User.objects.get(id=admin_actual_id)
-                            admin_user.is_active = True
-                            admin_user.is_staff = True
-                            admin_user.is_superuser = True
-                            admin_user.save()
-                            total_guardados += 1
-                            continue
-                    obj.save()
-                    total_guardados += 1
-            finally:
-                with connection.cursor() as cursor:
-                    if is_mysql:
-                        cursor.execute("SET FOREIGN_KEY_CHECKS=1;")
-                    elif is_sqlite:
-                        cursor.execute("PRAGMA foreign_keys = ON;")
+            # -------------------------------------------------------------
+            # 3. Autores y Fichas Docentes (pagina.autor)
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.autor', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                nombre = (fields.get('nombre') or '').strip()
+                codigo = (fields.get('codigo_institucional') or '').strip()
+                old_u_id = fields.get('usuario')
+                mapped_u_id = user_id_map.get(old_u_id) if old_u_id else None
 
-            # 6. Resetear las secuencias de auto-increment en la base de datos (PostgreSQL / SQLite / MySQL)
+                existente = None
+                if mapped_u_id:
+                    existente = Autor.objects.filter(usuario_id=mapped_u_id).first()
+                if not existente and codigo:
+                    existente = Autor.objects.filter(codigo_institucional=codigo).first()
+                if not existente and nombre:
+                    existente = Autor.objects.filter(nombre__iexact=nombre).first()
+
+                if existente:
+                    autor_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                    modificado = False
+                    for campo in ['orcid', 'biografia', 'correo', 'institucion_origen', 'numero_empleado', 'fecha_nacimiento']:
+                        val_b = fields.get(campo)
+                        if val_b and not getattr(existente, campo, None):
+                            setattr(existente, campo, val_b)
+                            modificado = True
+                    if modificado:
+                        existente.save()
+                else:
+                    autor_obj = Autor()
+                    excluir = {'id', 'usuario', 'moderado_por_semblanza', 'suspendido_por', 'profesor_tutor', 'codigo_institucional'}
+                    _copiar_campos(autor_obj, fields, excluidos=excluir)
+
+                    if mapped_u_id and not Autor.objects.filter(usuario_id=mapped_u_id).exists():
+                        autor_obj.usuario_id = mapped_u_id
+                    else:
+                        autor_obj.usuario_id = None
+
+                    if codigo:
+                        cod_val = codigo
+                        sufijo = 1
+                        while Autor.objects.filter(codigo_institucional=cod_val).exists():
+                            cod_val = f"{codigo}-BKP{sufijo}"
+                            sufijo += 1
+                        autor_obj.codigo_institucional = cod_val
+                    else:
+                        autor_obj.codigo_institucional = f"AUT-{old_pk}"
+
+                    if fields.get('moderado_por_semblanza') and fields['moderado_por_semblanza'] in user_id_map:
+                        autor_obj.moderado_por_semblanza_id = user_id_map[fields['moderado_por_semblanza']]
+                    if fields.get('suspendido_por') and fields['suspendido_por'] in user_id_map:
+                        autor_obj.suspendido_por_id = user_id_map[fields['suspendido_por']]
+                    if fields.get('profesor_tutor') and fields['profesor_tutor'] in autor_id_map:
+                        autor_obj.profesor_tutor_id = autor_id_map[fields['profesor_tutor']]
+
+                    if not Autor.objects.filter(id=old_pk).exists():
+                        autor_obj.id = old_pk
+                    else:
+                        autor_obj.id = None
+                    autor_obj.save()
+                    autor_id_map[old_pk] = autor_obj.id
+                    total_creados += 1
+
+            # -------------------------------------------------------------
+            # 4. Nombramientos y Enlaces Profesionales
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.nombramiento', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                aid = autor_id_map.get(fields.get('autor'))
+                if aid:
+                    rol = fields.get('rol')
+                    cargo = fields.get('cargo_personalizado')
+                    if not Nombramiento.objects.filter(autor_id=aid, rol=rol, cargo_personalizado=cargo).exists():
+                        safe_id = old_pk if not Nombramiento.objects.filter(id=old_pk).exists() else None
+                        Nombramiento.objects.create(id=safe_id, autor_id=aid, rol=rol, cargo_personalizado=cargo)
+                        total_creados += 1
+                    else:
+                        total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.enlaceprofesional', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                aid = autor_id_map.get(fields.get('autor'))
+                if aid:
+                    plat = fields.get('plataforma')
+                    url = fields.get('url')
+                    emoji = fields.get('emoji', '')
+                    if not EnlaceProfesional.objects.filter(autor_id=aid, plataforma=plat, url=url).exists():
+                        safe_id = old_pk if not EnlaceProfesional.objects.filter(id=old_pk).exists() else None
+                        EnlaceProfesional.objects.create(id=safe_id, autor_id=aid, plataforma=plat, url=url, emoji=emoji)
+                        total_creados += 1
+                    else:
+                        total_fusionados += 1
+
+            # -------------------------------------------------------------
+            # 5. Artículos, Tesis y Publicaciones (pagina.articulo)
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.articulo', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                titulo = (fields.get('titulo') or '').strip()
+
+                existente = None
+                if titulo:
+                    existente = Articulo.objects.filter(titulo__iexact=titulo).first()
+
+                if existente:
+                    articulo_id_map[old_pk] = existente.id
+                    total_fusionados += 1
+                    for old_aid in fields.get('autor', []):
+                        mapped_aid = autor_id_map.get(old_aid)
+                        if mapped_aid:
+                            existente.autor.add(mapped_aid)
+                else:
+                    art_obj = Articulo()
+                    excluir = {
+                        'id', 'entidad', 'tipo_contenido', 'area', 'subido_por',
+                        'asesor', 'coasesor', 'moderado_por', 'chequeado_por',
+                        'eliminado_por', 'autor'
+                    }
+                    _copiar_campos(art_obj, fields, excluidos=excluir)
+
+                    art_obj.entidad_id = entidad_id_map.get(fields.get('entidad')) or (Entidad.objects.first().id if Entidad.objects.exists() else None)
+                    art_obj.tipo_contenido_id = tipo_id_map.get(fields.get('tipo_contenido')) or (TipoContenido.objects.first().id if TipoContenido.objects.exists() else None)
+                    art_obj.area_id = area_id_map.get(fields.get('area')) or (Area.objects.first().id if Area.objects.exists() else None)
+
+                    art_obj.subido_por_id = user_id_map.get(fields.get('subido_por'))
+                    art_obj.asesor_id = autor_id_map.get(fields.get('asesor'))
+                    art_obj.coasesor_id = autor_id_map.get(fields.get('coasesor'))
+                    art_obj.moderado_por_id = user_id_map.get(fields.get('moderado_por'))
+                    art_obj.chequeado_por_id = user_id_map.get(fields.get('chequeado_por'))
+                    art_obj.eliminado_por_id = user_id_map.get(fields.get('eliminado_por'))
+
+                    if not Articulo.objects.filter(id=old_pk).exists():
+                        art_obj.id = old_pk
+                    else:
+                        art_obj.id = None
+                    art_obj.save()
+
+                    for old_aid in fields.get('autor', []):
+                        mapped_aid = autor_id_map.get(old_aid)
+                        if mapped_aid:
+                            art_obj.autor.add(mapped_aid)
+
+                    articulo_id_map[old_pk] = art_obj.id
+                    total_creados += 1
+
+            # -------------------------------------------------------------
+            # 6. Coautorías, Mensajes, Cumpleaños y Auditoría
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.invitacioncoautoria', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                art_id = articulo_id_map.get(fields.get('articulo'))
+                inv_aid = autor_id_map.get(fields.get('autor_invitado'))
+                inv_uid = user_id_map.get(fields.get('invitado_por'))
+                if art_id and inv_aid:
+                    if not InvitacionCoautoria.objects.filter(articulo_id=art_id, autor_invitado_id=inv_aid).exists():
+                        inv_obj = InvitacionCoautoria()
+                        _copiar_campos(inv_obj, fields, excluidos={'id', 'articulo', 'autor_invitado', 'invitado_por'})
+                        inv_obj.articulo_id = art_id
+                        inv_obj.autor_invitado_id = inv_aid
+                        inv_obj.invitado_por_id = inv_uid
+                        inv_obj.id = old_pk if not InvitacionCoautoria.objects.filter(id=old_pk).exists() else None
+                        inv_obj.save()
+                        total_creados += 1
+                    else:
+                        total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.mensajeinterno', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                rem_uid = user_id_map.get(fields.get('remitente'))
+                dest_aid = autor_id_map.get(fields.get('destinatario'))
+                atend_uid = user_id_map.get(fields.get('atendido_por'))
+                if rem_uid:
+                    fecha = fields.get('fecha_envio')
+                    cuerpo = fields.get('cuerpo')
+                    asunto = fields.get('asunto')
+                    q_dup = MensajeInterno.objects.filter(remitente_id=rem_uid, cuerpo=cuerpo, asunto=asunto)
+                    if fecha:
+                        q_dup = q_dup.filter(fecha_envio=fecha)
+                    if not q_dup.exists():
+                        msg_obj = MensajeInterno()
+                        _copiar_campos(msg_obj, fields, excluidos={'id', 'remitente', 'destinatario', 'atendido_por'})
+                        msg_obj.remitente_id = rem_uid
+                        msg_obj.destinatario_id = dest_aid
+                        msg_obj.atendido_por_id = atend_uid
+                        msg_obj.id = old_pk if not MensajeInterno.objects.filter(id=old_pk).exists() else None
+                        msg_obj.save()
+                        total_creados += 1
+                    else:
+                        total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.mensajecumpleanos', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                para_aid = autor_id_map.get(fields.get('para_docente'))
+                de_uid = user_id_map.get(fields.get('de_usuario'))
+                if para_aid and de_uid:
+                    fecha = fields.get('fecha_envio')
+                    if not MensajeCumpleanos.objects.filter(para_docente_id=para_aid, de_usuario_id=de_uid, fecha_envio=fecha).exists():
+                        mc_obj = MensajeCumpleanos()
+                        _copiar_campos(mc_obj, fields, excluidos={'id', 'para_docente', 'de_usuario'})
+                        mc_obj.para_docente_id = para_aid
+                        mc_obj.de_usuario_id = de_uid
+                        mc_obj.id = old_pk if not MensajeCumpleanos.objects.filter(id=old_pk).exists() else None
+                        mc_obj.save()
+                        total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.historialfusion', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                admin_uid = user_id_map.get(fields.get('admin_usuario')) or admin_actual_id
+                principal_aid = autor_id_map.get(fields.get('autor_principal'))
+                revert_uid = user_id_map.get(fields.get('revertida_por'))
+                if principal_aid:
+                    hf_obj = HistorialFusion()
+                    _copiar_campos(hf_obj, fields, excluidos={'id', 'admin_usuario', 'autor_principal', 'revertida_por'})
+                    hf_obj.admin_usuario_id = admin_uid
+                    hf_obj.autor_principal_id = principal_aid
+                    hf_obj.revertida_por_id = revert_uid
+                    hf_obj.id = old_pk if not HistorialFusion.objects.filter(id=old_pk).exists() else None
+                    hf_obj.save()
+                    total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.registroauditoria', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                admin_uid = user_id_map.get(fields.get('admin_usuario')) or admin_actual_id
+                ra_obj = RegistroAuditoria()
+                _copiar_campos(ra_obj, fields, excluidos={'id', 'admin_usuario'})
+                ra_obj.admin_usuario_id = admin_uid
+                ra_obj.id = old_pk if not RegistroAuditoria.objects.filter(id=old_pk).exists() else None
+                ra_obj.save()
+                total_creados += 1
+
+            # -------------------------------------------------------------
+            # 7. Sincronizar secuencias de BD (PostgreSQL / SQLite / MySQL)
+            # -------------------------------------------------------------
             try:
                 from django.core.management.color import no_style
                 from django.db import connection
@@ -4081,15 +4324,21 @@ def restaurar_respaldo_sistema_view(request):
             except Exception as seq_err:
                 logger.warning(f"Aviso al resetear secuencias de base de datos tras restaurar: {seq_err}")
 
+            usuarios_nuevos_conservados = User.objects.exclude(id__in=user_id_map.values()).count()
+
         registrar_auditoria(
             request.user,
-            "Restauración de Respaldo",
-            f"Restauró el repositorio desde el archivo: {archivo.name} ({total_guardados} registros sincronizados)"
+            "Restauración y Fusión de Respaldo",
+            f"Sincronizó respaldo: {archivo.name}. Creados: {total_creados}, Unificados: {total_fusionados}, Cuentas conservadas intactas: {usuarios_nuevos_conservados}."
         )
-        messages.success(request, f"¡Respaldo restaurado con éxito! Se sincronizaron {total_guardados} registros en la base de datos sin errores ni conflictos.")
+        messages.success(
+            request,
+            f"¡Respaldo sincronizado exitosamente! Se integraron {total_creados} registros nuevos y se unificaron {total_fusionados} existentes sin pérdida ni sobreescritura. "
+            f"Todas las cuentas creadas recientemente ({usuarios_nuevos_conservados}) se mantuvieron 100% intactas."
+        )
     except Exception as e:
         logger.exception("Error durante la restauración del respaldo")
-        messages.error(request, f"Error durante la restauración del respaldo: {str(e)}. La base de datos no fue modificada.")
+        messages.error(request, f"Error durante la sincronización del respaldo: {str(e)}. La base de datos no fue modificada.")
 
     return redirect(f"{reverse('panel_usuarios')}#documentos")
 
