@@ -1138,9 +1138,13 @@ def verificar_codigo_registro_view(request, user_id):
         return redirect('login')
 
     segundos_restantes = 0
+    segundos_espera_desbloqueo = 300
     if autor.codigo_verificacion_expira:
         diff = (autor.codigo_verificacion_expira - timezone.now()).total_seconds()
         segundos_restantes = max(0, int(diff))
+        # El código es válido por 15 min (900s). Los primeros 5 min corresponden a diff de 900 a 600.
+        # Si diff <= 600, ya transcurrieron 5 min completos y el código de respaldo se desbloquea.
+        segundos_espera_desbloqueo = max(0, int(diff - 600))
 
     if request.method == 'POST':
         codigo_ingresado = request.POST.get('codigo', '').strip()
@@ -1150,6 +1154,7 @@ def verificar_codigo_registro_view(request, user_id):
             return render(request, 'verificar_codigo.html', {
                 'usuario': user,
                 'segundos_restantes': 0,
+                'segundos_espera_desbloqueo': 0,
                 'codigo_demo': autor.codigo_verificacion,
             })
 
@@ -1158,6 +1163,7 @@ def verificar_codigo_registro_view(request, user_id):
             return render(request, 'verificar_codigo.html', {
                 'usuario': user,
                 'segundos_restantes': segundos_restantes,
+                'segundos_espera_desbloqueo': segundos_espera_desbloqueo,
                 'codigo_demo': autor.codigo_verificacion,
             })
 
@@ -1208,6 +1214,7 @@ def verificar_codigo_registro_view(request, user_id):
     return render(request, 'verificar_codigo.html', {
         'usuario': user,
         'segundos_restantes': segundos_restantes,
+        'segundos_espera_desbloqueo': segundos_espera_desbloqueo,
         'codigo_demo': autor.codigo_verificacion,
     })
 

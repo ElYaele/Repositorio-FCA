@@ -137,11 +137,38 @@
             </div>
 
             {% if codigo_demo %}
-            <div class="alert alert-warning border-0 small rounded-3 py-2 px-3 mb-3 text-start d-flex align-items-center gap-2">
-                <i class="fas fa-shield-alt text-warning fa-lg"></i>
-                <div>
-                    <div><strong>Código de Verificación:</strong> <code class="fw-bold fs-6 text-dark bg-white px-2 py-1 rounded border">{{ codigo_demo }}</code></div>
-                    <div class="text-muted" style="font-size: 0.72rem;">(Disponible en pantalla para demostración académica y respaldo por si el servidor SMTP tarda)</div>
+            <!-- BLOQUE CONDICIONAL: SE HABILITA ÚNICAMENTE TRAS 5 MINUTOS -->
+            <div id="contenedorCodigoRespaldo" class="mb-4">
+                <!-- 1. Estado en Espera (Durante los primeros 5 minutos) -->
+                <div id="bloqueEsperaRespaldo" class="alert alert-light border rounded-3 p-3 text-start small d-flex align-items-center gap-3 text-muted shadow-xs">
+                    <div class="spinner-border spinner-border-sm text-secondary flex-shrink-0" role="status"></div>
+                    <div>
+                        <div class="fw-bold text-dark">¿Demoras con tu correo institucional?</div>
+                        <div style="font-size: 0.8rem;">
+                            Por seguridad, la clave de respaldo se habilitará en pantalla en: 
+                            <strong id="contadorDesbloqueo" class="text-primary fw-bold">05:00</strong> si el mensaje tarda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Estado Desbloqueado (Tras transcurrir 5 minutos) -->
+                <div id="bloqueCodigoDesbloqueado" class="alert alert-warning border border-warning rounded-3 p-3 text-start shadow-xs d-none">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-shield-alt text-warning fa-lg"></i>
+                            <strong class="text-dark">Código de Respaldo Institucional:</strong>
+                        </div>
+                        <span class="badge bg-warning text-dark px-2 py-1 small">Habilitado (+5 min)</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <code class="fw-bold fs-4 text-dark bg-white px-3 py-1 rounded border shadow-xs" style="letter-spacing: 5px;">{{ codigo_demo }}</code>
+                        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold shadow-xs" onclick="autocompletarCodigo('{{ codigo_demo }}')">
+                            <i class="fas fa-paste me-1"></i>Pegar aquí
+                        </button>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.75rem;">
+                        Han transcurrido más de 5 minutos desde tu registro. Puedes utilizar este código de seguridad para verificar tu cuenta sin esperar más.
+                    </p>
                 </div>
             </div>
             {% endif %}
@@ -207,13 +234,10 @@
         if (inputCodigo) {
             inputCodigo.addEventListener('input', function(e) {
                 this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
-                if (this.value.length === 6) {
-                    // Auto-submit opcional o foco al botón
-                }
             });
         }
 
-        // Temporizador de 15 minutos (o tiempo restante si el backend provee segundos)
+        // Temporizador de 15 minutos general de expiración
         const segundosRestantesBackend = {{ segundos_restantes|default:900 }};
         let tiempoRestante = segundosRestantesBackend > 0 ? segundosRestantesBackend : 900;
         const timerElement = document.getElementById('countdownTimer');
@@ -240,7 +264,45 @@
         }
 
         actualizarContador();
-        const intervalo = setInterval(actualizarContador, 1000);
+        setInterval(actualizarContador, 1000);
+
+        // Temporizador para desbloquear el código de respaldo tras 5 minutos (300 segundos)
+        const segundosEsperaInicial = {{ segundos_espera_desbloqueo|default:300 }};
+        let segundosParaDesbloquear = segundosEsperaInicial;
+
+        const bloqueEspera = document.getElementById('bloqueEsperaRespaldo');
+        const bloqueDesbloqueado = document.getElementById('bloqueCodigoDesbloqueado');
+        const contadorDesbloqueo = document.getElementById('contadorDesbloqueo');
+
+        function actualizarDesbloqueo() {
+            if (!bloqueEspera || !bloqueDesbloqueado) return;
+
+            if (segundosParaDesbloquear <= 0) {
+                bloqueEspera.classList.add('d-none');
+                bloqueDesbloqueado.classList.remove('d-none');
+                return;
+            }
+
+            const m = Math.floor(segundosParaDesbloquear / 60);
+            const s = segundosParaDesbloquear % 60;
+            if (contadorDesbloqueo) {
+                contadorDesbloqueo.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+
+            segundosParaDesbloquear--;
+            setTimeout(actualizarDesbloqueo, 1000);
+        }
+
+        if (bloqueEspera) {
+            actualizarDesbloqueo();
+        }
+
+        window.autocompletarCodigo = function(cod) {
+            if (inputCodigo) {
+                inputCodigo.value = cod;
+                inputCodigo.focus();
+            }
+        };
     </script>
 </body>
 </html>
