@@ -1,5 +1,9 @@
 import os
 import logging
+import threading
+import json
+import urllib.request
+import urllib.error
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.models import User
@@ -76,39 +80,83 @@ def generar_html_base(titulo_cabecera, subtitulo, contenido_cuerpo_html, boton_t
     """
 
 
-def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo):
+def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, asincrono=True):
     """
     Envía un correo electrónico multipart (texto + HTML) de manera segura.
-    Si el servidor SMTP no está disponible o falla, registra el evento sin interrumpir la ejecución.
+    Soporta:
+    1. Brevo REST API (HTTPS / Puerto 443) si está configurado BREVO_API_KEY (ideal para Render Free Tier).
+    2. Django SMTP estándar (Gmail, Outlook, etc.) con timeout seguro.
+    3. Envío asíncrono en hilo secundario (daemon thread) para que NUNCA congele la vista web ni cause timeout en Gunicorn.
     """
     if not destinatario:
         return False
 
-    remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
+    def _ejecutar_envio():
+        # 1. Intentar envío por API HTTP (Brevo) si existe API Key (pasa por puerto 443 en Render Free)
+        brevo_api_key = os.getenv('BREVO_API_KEY', '').strip()
+        if brevo_api_key:
+            try:
+                remitente_correo = os.getenv('EMAIL_HOST_USER', 'pruebarepsoitoriofca@gmail.com')
+                to_list = [{"email": d.strip()} for d in (destinatario if isinstance(destinatario, list) else [destinatario]) if d.strip()]
+                payload = {
+                    "sender": {"name": "Repositorio FCA UABC", "email": remitente_correo},
+                    "to": to_list,
+                    "subject": asunto,
+                    "htmlContent": html_cuerpo,
+                    "textContent": texto_plano
+                }
+                req = urllib.request.Request(
+                    "https://api.brevo.com/v3/smtp/email",
+                    data=json.dumps(payload).encode('utf-8'),
+                    headers={
+                        "accept": "application/json",
+                        "api-key": brevo_api_key,
+                        "content-type": "application/json"
+                    },
+                    method='POST'
+                )
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    if response.status in (200, 201):
+                        logger.info(f"[BREVO API HTTPS] Correo enviado exitosamente a {destinatario}: {asunto}")
+                        return True
+            except Exception as e_api:
+                logger.warning(f"[BREVO API HTTPS] Error al enviar vía API HTTP: {e_api}. Intentando SMTP estándar...")
 
-    try:
-        # Fallback a console backend si no hay contraseña SMTP configurada
+        # 2. Envío por SMTP estándar de Django
+        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
         password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
         if not password and getattr(settings, 'EMAIL_BACKEND', '') == 'django.core.mail.backends.smtp.EmailBackend':
             from django.core.mail.backends.console import EmailBackend as ConsoleBackend
             backend = ConsoleBackend()
+            logger.warning(
+                f"[MODO CONSOLA] EMAIL_HOST_PASSWORD no está configurado (¿falta agregar las variables en el Dashboard de Render?). "
+                f"El correo para {destinatario} con asunto '{asunto}' se imprimirá en los logs de la consola en lugar de enviarse por Gmail."
+            )
         else:
             backend = None
 
-        msg = EmailMultiAlternatives(
-            subject=asunto,
-            body=texto_plano,
-            from_email=remitente,
-            to=[destinatario] if isinstance(destinatario, str) else destinatario,
-            connection=backend
-        )
-        msg.attach_alternative(html_cuerpo, "text/html")
-        msg.send(fail_silently=False)
-        logger.info(f"Correo enviado exitosamente a {destinatario}: {asunto}")
+        try:
+            msg = EmailMultiAlternatives(
+                subject=asunto,
+                body=texto_plano,
+                from_email=remitente,
+                to=[destinatario] if isinstance(destinatario, str) else destinatario,
+                connection=backend
+            )
+            msg.attach_alternative(html_cuerpo, "text/html")
+            msg.send(fail_silently=False)
+            logger.info(f"[SMTP] Correo enviado exitosamente a {destinatario}: {asunto}")
+            return True
+        except Exception as e:
+            logger.warning(f"[SMTP] Aviso al enviar correo a {destinatario} ({asunto}): {e}")
+            return False
+
+    if asincrono:
+        hilo = threading.Thread(target=_ejecutar_envio, daemon=True)
+        hilo.start()
         return True
-    except Exception as e:
-        logger.warning(f"Aviso al enviar correo a {destinatario} ({asunto}): {e}")
-        return False
+    else:
+        return _ejecutar_envio()
 
 
 def notificar_solicitud_registro_usuario(usuario, nombre_completo, tipo_perfil_nombre):

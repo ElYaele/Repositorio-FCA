@@ -404,7 +404,7 @@
                         <div class="d-flex align-items-center mb-1 flex-wrap gap-2">
                             <h4 class="mb-0 fw-bold text-dark">{{ usuario_consultado.username }}</h4>
                             {% if usuario_consultado.autor and usuario_consultado.autor.rol_facultad == 'INV_IND' %}
-                                <span class="badge rounded-pill px-3 shadow-xs" style="background-color: #6f42c1; color: white;"><i class="fas fa-user-graduate me-1"></i>Investigador Independiente</span>
+                                <span class="badge rounded-pill px-3 shadow-xs" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Inv. / Consultor sin Adscripción Fija</span>
                             {% elif usuario_consultado.autor and usuario_consultado.autor.es_externo %}
                                 <span class="badge bg-info text-dark rounded-pill px-3 shadow-xs"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
                             {% elif usuario_consultado.autor and usuario_consultado.autor.es_profesor %}

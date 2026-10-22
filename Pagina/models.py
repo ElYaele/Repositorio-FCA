@@ -27,7 +27,7 @@ ROL_DOCENTE_OPCIONES = [
     ('SINODAL', 'Sinodal / Comité de Titulación'),
     ('VINC', 'Coordinador de Vinculación y Prácticas'),
     ('RESP_LAB', 'Responsable de Laboratorio / Cómputo'),
-    ('INV_IND', 'Investigador Independiente'),
+    ('INV_IND', 'Investigador / Consultor sin Adscripción Fija'),
     ('EXT', 'Colaborador Externo'),
     ('AUX_INV', 'Auxiliar de Investigación FCA'),
     ('DEP_TEC', 'Operador Técnico / Depurador de Contenidos'),

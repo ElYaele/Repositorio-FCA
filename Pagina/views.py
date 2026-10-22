@@ -305,7 +305,11 @@ def obtener_o_sincronizar_universidades():
                 nombre__iexact=nom,
                 defaults={'nombre': nom, 'siglas': sig}
             )
-    return Universidad.objects.all().order_by('nombre')
+    # Se excluyen las entradas internas del sistema (FCA UABC, tutores, cómputo, soporte)
+    # que no son instituciones reales para colaboradores externos o independientes.
+    return Universidad.objects.exclude(
+        nombre__istartswith='FCA '
+    ).order_by('nombre')
 
 
 # ==============================================================================
@@ -1145,14 +1149,16 @@ def verificar_codigo_registro_view(request, user_id):
             messages.error(request, 'El código de verificación ha expirado (límite de 15 minutos). Por favor solicita uno nuevo haciendo clic en «Reenviar Código».')
             return render(request, 'verificar_codigo.html', {
                 'usuario': user,
-                'segundos_restantes': 0
+                'segundos_restantes': 0,
+                'codigo_demo': autor.codigo_verificacion,
             })
 
         if not autor.codigo_verificacion or codigo_ingresado != autor.codigo_verificacion:
             messages.error(request, 'El código ingresado es incorrecto. Por favor verifica el código de 6 dígitos enviado a tu correo.')
             return render(request, 'verificar_codigo.html', {
                 'usuario': user,
-                'segundos_restantes': segundos_restantes
+                'segundos_restantes': segundos_restantes,
+                'codigo_demo': autor.codigo_verificacion,
             })
 
         # Código válido: marcar correo autenticado y cambiar a estado 'pendiente' para moderación del Super Admin
@@ -1201,7 +1207,8 @@ def verificar_codigo_registro_view(request, user_id):
 
     return render(request, 'verificar_codigo.html', {
         'usuario': user,
-        'segundos_restantes': segundos_restantes
+        'segundos_restantes': segundos_restantes,
+        'codigo_demo': autor.codigo_verificacion,
     })
 
 
@@ -3694,7 +3701,7 @@ def exportar_respaldo_sistema_view(request):
     modelos = [
         User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
         Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
-        HistorialFusion, RegistroAuditoria
+        MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria
     ]
 
     todos_objetos = []
@@ -3728,7 +3735,10 @@ def exportar_respaldo_sistema_view(request):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def restaurar_respaldo_sistema_view(request):
-    """Lee y restaura los datos del archivo .json cargado por el superusuario ('Poner backup aquí')."""
+    """
+    Lee y restaura de forma limpia y atómica los datos del archivo .json cargado por el superusuario ('Poner backup aquí').
+    Garantiza que no ocurran conflictos de clave duplicada (UNIQUE constraints) con cuentas o datos creados posteriormente.
+    """
     if request.method != 'POST':
         messages.warning(request, "Método no permitido para restauración.")
         return redirect(f"{reverse('panel_usuarios')}#documentos")
@@ -3757,51 +3767,164 @@ def restaurar_respaldo_sistema_view(request):
             messages.error(request, "El archivo no contiene un formato de respaldo compatible de Django / FCA.")
             return redirect(f"{reverse('panel_usuarios')}#documentos")
 
+    if not fixtures:
+        messages.warning(request, "El archivo de respaldo está vacío (0 registros). No se realizaron cambios.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     try:
         with transaction.atomic():
-            # 1. Mapear IDs de usuarios existentes o incluidos en el archivo
-            user_ids_existentes = set(User.objects.values_list('id', flat=True))
+            admin_actual = request.user
+            admin_actual_id = admin_actual.id
+            admin_username_lower = admin_actual.username.lower()
+
+            # 1. Identificar usuarios presentes en el archivo de respaldo
+            fixture_users = [item for item in fixtures if item.get('model') == 'auth.user']
+            backup_usernames = {
+                item.get('fields', {}).get('username', '').lower(): item.get('pk')
+                for item in fixture_users if 'username' in item.get('fields', {})
+            }
+
+            # 2. Si el admin actual viene en el backup pero con un ID numérico diferente,
+            # remapeamos ese ID en los fixtures para evitar choques de integridad y conservar su sesión viva.
+            id_mapeo_admin = {}
+            if admin_username_lower in backup_usernames:
+                backup_admin_pk = backup_usernames[admin_username_lower]
+                if backup_admin_pk != admin_actual_id:
+                    id_mapeo_admin[backup_admin_pk] = admin_actual_id
+
+            if id_mapeo_admin:
+                fk_user_fields_map = [
+                    'usuario', 'subido_por', 'moderado_por', 'chequeado_por',
+                    'suspendido_por', 'admin_usuario', 'revertida_por',
+                    'moderado_por_semblanza', 'usuario_responsable', 'de_usuario',
+                    'remitente', 'destinatario'
+                ]
+                for item in fixtures:
+                    if item.get('model') == 'auth.user' and item.get('pk') in id_mapeo_admin:
+                        item['pk'] = id_mapeo_admin[item.get('pk')]
+                    fields = item.get('fields', {})
+                    for fk_name in fk_user_fields_map:
+                        if fk_name in fields and fields[fk_name] in id_mapeo_admin:
+                            fields[fk_name] = id_mapeo_admin[fields[fk_name]]
+
+            # 3. Vaciado limpio de tablas del repositorio antes de inyectar el snapshot.
+            # Esto previene CUALQUIER colisión de:
+            # - UNIQUE constraint en username o email de User
+            # - UNIQUE constraint en OneToOneField Autor.usuario
+            # - UNIQUE constraint en Autor.codigo_institucional
+            # - UNIQUE constraint en Universidad.nombre
+            InvitacionCoautoria.objects.all().delete()
+            Articulo.objects.all().delete()
+            EnlaceProfesional.objects.all().delete()
+            Nombramiento.objects.all().delete()
+            HistorialFusion.objects.all().delete()
+            MensajeInterno.objects.all().delete()
+            MensajeCumpleanos.objects.all().delete()
+            Autor.objects.all().delete()
+            RegistroAuditoria.objects.all().delete()
+            Universidad.objects.all().delete()
+            TipoContenido.objects.all().delete()
+            Area.objects.all().delete()
+            Entidad.objects.all().delete()
+
+            # Eliminar usuarios creados a posteriori que no sean el administrador actual
+            User.objects.exclude(id=admin_actual_id).delete()
+
+            # 4. Sanitizar FKs a User para IDs que no existan en el snapshot
+            user_ids_disponibles = {admin_actual_id}
             for item in fixtures:
                 if item.get('model') == 'auth.user':
-                    user_ids_existentes.add(item.get('pk'))
+                    user_ids_disponibles.add(item.get('pk'))
 
-            # 2. Pre-sanitizar campos FK a User para evitar que serializers.deserialize falle con DoesNotExist
             fk_user_fields = [
                 'usuario', 'subido_por', 'moderado_por', 'chequeado_por',
                 'suspendido_por', 'admin_usuario', 'revertida_por',
-                'moderado_por_semblanza', 'usuario_responsable', 'de_usuario'
+                'moderado_por_semblanza', 'usuario_responsable', 'de_usuario',
+                'remitente', 'destinatario'
             ]
             for item in fixtures:
                 fields = item.get('fields', {})
                 for fk_name in fk_user_fields:
-                    if fk_name in fields and fields[fk_name] and fields[fk_name] not in user_ids_existentes:
+                    if fk_name in fields and fields[fk_name] and fields[fk_name] not in user_ids_disponibles:
                         fields[fk_name] = None
 
-            deserializados = list(serializers.deserialize('json', json.dumps(fixtures)))
+            # 5. Deserializar los registros del JSON y ordenarlos por dependencias de modelos
+            MODEL_ORDER = {
+                'auth.user': 1,
+                'pagina.entidad': 2,
+                'pagina.area': 2,
+                'pagina.tipocontenido': 2,
+                'pagina.universidad': 2,
+                'pagina.autor': 3,
+                'pagina.nombramiento': 4,
+                'pagina.enlaceprofesional': 4,
+                'pagina.articulo': 5,
+                'pagina.invitacioncoautoria': 6,
+                'pagina.historialfusion': 6,
+                'pagina.mensajeinterno': 6,
+                'pagina.mensajecumpleanos': 6,
+                'pagina.registroauditoria': 6,
+            }
 
-            # 3. Guardar primero los objetos User (sin sobreescribir ni desconfigurar a Yaele si ya existe)
-            for obj in deserializados:
-                if isinstance(obj.object, User):
-                    if obj.object.username.lower() == 'yaele' and User.objects.filter(username__iexact='yaele').exists():
-                        continue
+            from django.db import connection
+            is_mysql = connection.vendor == 'mysql'
+            is_sqlite = connection.vendor == 'sqlite'
+            with connection.cursor() as cursor:
+                if is_mysql:
+                    cursor.execute("SET FOREIGN_KEY_CHECKS=0;")
+                elif is_sqlite:
+                    cursor.execute("PRAGMA foreign_keys = OFF;")
+
+            try:
+                deserializados = list(serializers.deserialize('json', json.dumps(fixtures)))
+                deserializados.sort(key=lambda o: MODEL_ORDER.get(getattr(o.object._meta, 'label_lower', ''), 99))
+
+                total_guardados = 0
+                for obj in deserializados:
+                    if isinstance(obj.object, User):
+                        if obj.object.id == admin_actual_id or obj.object.username.lower() == admin_username_lower:
+                            # Mantener intacta la sesión del administrador
+                            admin_user = User.objects.get(id=admin_actual_id)
+                            admin_user.is_active = True
+                            admin_user.is_staff = True
+                            admin_user.is_superuser = True
+                            admin_user.save()
+                            total_guardados += 1
+                            continue
                     obj.save()
-
-            # 4. Guardar todos los demás registros
-            total_guardados = 0
-            for obj in deserializados:
-                if isinstance(obj.object, User):
                     total_guardados += 1
-                    continue
-                obj.save()
-                total_guardados += 1
+            finally:
+                with connection.cursor() as cursor:
+                    if is_mysql:
+                        cursor.execute("SET FOREIGN_KEY_CHECKS=1;")
+                    elif is_sqlite:
+                        cursor.execute("PRAGMA foreign_keys = ON;")
+
+            # 6. Resetear las secuencias de auto-increment en la base de datos (PostgreSQL / SQLite / MySQL)
+            try:
+                from django.core.management.color import no_style
+                from django.db import connection
+                modelos_secuencia = [
+                    User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
+                    Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
+                    MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria
+                ]
+                sequence_sql = connection.ops.sequence_reset_sql(no_style(), modelos_secuencia)
+                if sequence_sql:
+                    with connection.cursor() as cursor:
+                        for sql in sequence_sql:
+                            cursor.execute(sql)
+            except Exception as seq_err:
+                logger.warning(f"Aviso al resetear secuencias de base de datos tras restaurar: {seq_err}")
 
         registrar_auditoria(
             request.user,
             "Restauración de Respaldo",
             f"Restauró el repositorio desde el archivo: {archivo.name} ({total_guardados} registros sincronizados)"
         )
-        messages.success(request, f"¡Respaldo restaurado con éxito! Se sincronizaron {total_guardados} registros en la base de datos sin errores.")
+        messages.success(request, f"¡Respaldo restaurado con éxito! Se sincronizaron {total_guardados} registros en la base de datos sin errores ni conflictos.")
     except Exception as e:
+        logger.exception("Error durante la restauración del respaldo")
         messages.error(request, f"Error durante la restauración del respaldo: {str(e)}. La base de datos no fue modificada.")
 
     return redirect(f"{reverse('panel_usuarios')}#documentos")

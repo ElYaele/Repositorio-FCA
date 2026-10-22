@@ -2096,7 +2096,7 @@
                                         {% elif u.autor and u.autor.es_soporte %}
                                             <span class="badge" style="background-color: #1e293b; color: white; border: 1px solid #dd971a;"><i class="fas fa-headset me-1 text-warning"></i>Soporte Técnico (Aspirante)</span>
                                         {% elif u.autor and u.autor.rol_facultad == 'INV_IND' or 'independiente' in u.autor.institucion_origen|lower %}
-                                            <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-user-graduate me-1"></i>Investigador Independiente</span>
+                                            <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Inv. / Consultor sin Adscripción Fija</span>
                                         {% elif u.autor and u.autor.es_externo or u.autor.rol_facultad == 'EXT' or u.autor.institucion_origen != 'UABC' %}
                                             <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
                                         {% elif u.autor and u.autor.es_profesor %}
@@ -2569,7 +2569,7 @@
                                             {% elif u.autor and u.autor.es_soporte %}
                                                 <span class="badge" style="background-color: #1e293b; color: white; border: 1px solid #dd971a;"><i class="fas fa-headset me-1 text-warning"></i>Soporte (Modo Lector)</span>
                                             {% elif u.autor and u.autor.rol_facultad == 'INV_IND' or 'independiente' in u.autor.institucion_origen|lower %}
-                                                <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-user-graduate me-1"></i>Independiente</span>
+                                                <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Sin Adscripción Fija</span>
                                             {% elif u.autor and u.autor.es_externo or u.autor.rol_facultad == 'EXT' or u.autor.institucion_origen != 'UABC' %}
                                                 <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Externo</span>
                                             {% elif u.autor and u.autor.es_profesor %}

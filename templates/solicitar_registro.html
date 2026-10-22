@@ -453,13 +453,13 @@
 
                         <hr class="my-2">
 
-                        <!-- 3. Investigador Independiente (PÚRPURA) -->
+                        <!-- 3. Investigador / Consultor sin Adscripción Fija (PÚRPURA) -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="tipo_personal" id="rolIndependiente" value="independiente">
                             <label class="form-check-label fw-bold" for="rolIndependiente" style="color: #6f42c1 !important;">
-                                <i class="fas fa-user-graduate me-1"></i>Investigador Independiente
+                                <i class="fas fa-flask me-1"></i>Investigador / Consultor sin Adscripción Fija
                             </label>
-                            <div class="text-muted small">Investigador o consultor autónomo sin adscripción fija. Podrás ingresar tu universidad de procedencia o referencia académica.</div>
+                            <div class="text-muted small">Investigador, analista o consultor cuya actividad no está vinculada a una sola institución educativa. Incluye profesionales de empresas, medios, ONGs, organismos públicos o ejercicio libre. No se requiere grado universitario formal.</div>
                         </div>
 
                         <hr class="my-2">
@@ -539,10 +539,10 @@
                         </div>
                     </div>
 
-                    <!-- MÓDULO CONDICIONAL: UNIVERSIDAD DE PROCEDENCIA (EXTERNO E INDEPENDIENTE) -->
+                    <!-- MÓDULO CONDICIONAL: INSTITUCIÓN/ORGANIZACIÓN (EXTERNO E INDEPENDIENTE) -->
                     <div id="contenedor-datos-externo" class="bloque-externo">
                         <h6 class="fw-bold text-primary mb-2" id="titulo-bloque-institucion">
-                            <i class="fas fa-university me-1"></i>Universidad o Institución de Procedencia
+                            <i class="fas fa-university me-1" id="icono-bloque-institucion"></i><span id="texto-titulo-bloque">Universidad o Institución de Procedencia</span>
                         </h6>
 
                         <div class="mb-2">
@@ -557,9 +557,9 @@
                         </div>
 
                         <div class="mb-1">
-                            <label class="form-label small fw-bold text-muted mb-1">Siglas Oficiales *</label>
+                            <label class="form-label small fw-bold text-muted mb-1">Siglas u Abreviatura <span id="label-siglas-requerido">*</span></label>
                             <input type="text" name="institucion_siglas" id="input_institucion_siglas" class="form-control form-control-sm text-uppercase" placeholder="Ej. UANL, UNAM, IPN" maxlength="15" autocomplete="off">
-                            <small class="text-muted" style="font-size: 0.74rem;">Si seleccionas una registrada, las siglas se completarán solas.</small>
+                            <small class="text-muted" style="font-size: 0.74rem;" id="subtexto-siglas">Si seleccionas una registrada, las siglas se completarán solas.</small>
                         </div>
                     </div>
                 </div>
@@ -980,18 +980,29 @@
                 if (rol === 'externo') {
                     $('#contenedor-datos-externo').slideDown(250);
                     $('#contenedor-datos-auxiliar').slideUp(200);
-                    $('#titulo-bloque-institucion').html('<i class="fas fa-university me-1"></i>Universidad o Institución de Procedencia');
+                    $('#icono-bloque-institucion').attr('class', 'fas fa-university me-1');
+                    $('#texto-titulo-bloque').text('Universidad o Institución de Procedencia');
                     $('#label-institucion-nombre').text('Nombre Oficial de la Institución *');
+                    $('#input_institucion_nombre').attr('placeholder', 'Buscar o escribir nombre de la universidad...');
                     $('#subtexto-institucion').text('Escribe para buscar tu institución adscrita o registrar una nueva.');
+                    $('#label-siglas-requerido').text('*');
+                    $('#input_institucion_siglas').attr('placeholder', 'Ej. UANL, UNAM, IPN');
+                    $('#subtexto-siglas').text('Si seleccionas una registrada, las siglas se completarán solas.');
                     $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Institucional *');
                     $('#correoInput').attr('placeholder', 'ejemplo@universidad.edu.mx');
                     $('#grupo_empleado_fca').slideUp(200);
                 } else if (rol === 'independiente') {
                     $('#contenedor-datos-externo').slideDown(250);
                     $('#contenedor-datos-auxiliar').slideUp(200);
-                    $('#titulo-bloque-institucion').html('<i class="fas fa-graduation-cap me-1"></i>Universidad o Institución de Referencia / Formación');
-                    $('#label-institucion-nombre').text('Universidad o Institución de Procedencia / Egreso *');
-                    $('#subtexto-institucion').text('Indica tu universidad de formación académica o de referencia (no implica relación laboral o adscripción exclusiva).');
+                    // Cambia a modo "organización libre" — NO implica universidad
+                    $('#icono-bloque-institucion').attr('class', 'fas fa-building me-1');
+                    $('#texto-titulo-bloque').text('Organización o Referencia de Actividad');
+                    $('#label-institucion-nombre').text('Nombre de la Organización o Actividad *');
+                    $('#input_institucion_nombre').attr('placeholder', 'Ej. Televisa, Deloitte, IMSS, Freelance / Independiente...');
+                    $('#subtexto-institucion').html('Escribe el nombre de tu empresa, organismo, medio o coloca <strong>"Freelance / Independiente"</strong> si ejerces de forma libre. <em>No se requiere institución académica.</em>');
+                    $('#label-siglas-requerido').text('(opcional)');
+                    $('#input_institucion_siglas').attr('placeholder', 'Ej. TVZ, DEL, IMSS (opc.)');
+                    $('#subtexto-siglas').text('Abreviatura de tu organización, si aplica. Puedes dejar en blanco.');
                     $('#labelCorreo').html('<i class="fas fa-envelope me-2 text-muted"></i>Correo Electrónico de Contacto *');
                     $('#correoInput').attr('placeholder', 'tu_correo@ejemplo.com o correo académico');
                     $('#grupo_empleado_fca').slideUp(200);
