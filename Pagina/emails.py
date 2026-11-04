@@ -80,18 +80,103 @@ def generar_html_base(titulo_cabecera, subtitulo, contenido_cuerpo_html, boton_t
     """
 
 
-def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, asincrono=True):
+def obtener_config_envio_correo():
+    """
+    Obtiene las credenciales dinámicas de la base de datos (ConfiguracionSistema)
+    o retorna None si no están disponibles para usar el fallback de settings/env.
+    """
+    try:
+        from Pagina.models import ConfiguracionSistema
+        config = ConfiguracionSistema.get_solo()
+        if config and config.email_host_user:
+            return config
+    except Exception:
+        pass
+    return None
+
+def probar_conexion_smtp(destinatario_prueba, host=None, port=None, username=None, password=None, use_tls=True, use_ssl=False, remitente_nombre="Repositorio FCA UABC"):
+    """
+    Envía un correo de prueba sincrónico para verificar la validez de las credenciales de Gmail/SMTP.
+    Devuelve (True, "Mensaje de éxito") o (False, "Detalle del error").
+    """
+    from datetime import datetime
+    from django.core.mail import get_connection
+    try:
+        puerto_num = int(port or 587)
+        # Salvaguarda: TLS y SSL son mutuamente excluyentes en Django
+        if use_tls and use_ssl:
+            if puerto_num == 465:
+                use_tls = False
+            else:
+                use_ssl = False
+
+        conn = get_connection(
+            backend='django.core.mail.backends.smtp.EmailBackend',
+            host=host or 'smtp.gmail.com',
+            port=puerto_num,
+            username=username,
+            password=password,
+            use_tls=use_tls,
+            use_ssl=use_ssl,
+            timeout=8
+        )
+        asunto = "✅ Prueba de Conexión Exitosa - Repositorio FCA UABC"
+        texto = f"¡Hola!\n\nEste correo confirma que la configuración de envío automático de Gmail ha sido configurada con éxito en el Repositorio Institucional FCA UABC.\n\nRemitente activo: {username}\nFecha y hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n\nNo es necesario responder a este mensaje."
+        html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #00723F; margin-bottom: 4px;">Universidad Autónoma de Baja California</h2>
+                <p style="color: #64748b; font-size: 14px; margin: 0;">Facultad de Contaduría y Administración &bull; Repositorio Institucional</p>
+            </div>
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 18px; margin-bottom: 20px; text-align: center;">
+                <h3 style="color: #065f46; margin: 0 0 6px 0;">¡Conexión y Envío Exitosos!</h3>
+                <p style="color: #047857; font-size: 14px; margin: 0;">El correo automático de Gmail se encuentra activo y listo para emitir notificaciones y códigos de verificación.</p>
+            </div>
+            <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+                <strong>Detalles de la conexión:</strong><br>
+                &bull; <strong>Remitente configurado:</strong> {username}<br>
+                &bull; <strong>Nombre de visualización:</strong> {remitente_nombre}<br>
+                &bull; <strong>Servidor / Puerto:</strong> {host}:{port}<br>
+                &bull; <strong>Seguridad:</strong> {'TLS (587)' if use_tls else ('SSL (465)' if use_ssl else 'Estándar')}
+            </p>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+            <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
+                Este es un mensaje de prueba generado por el Super Administrador desde el panel de Configuración y Soporte.
+            </p>
+        </div>
+        """
+        msg = EmailMultiAlternatives(
+            subject=asunto,
+            body=texto,
+            from_email=f"{remitente_nombre} <{username}>",
+            to=[destinatario_prueba],
+            connection=conn
+        )
+        msg.attach_alternative(html, "text/html")
+        msg.send(fail_silently=False)
+        return True, f"Correo de prueba enviado con éxito a {destinatario_prueba}."
+    except Exception as e:
+        error_str = str(e)
+        if "Username and Password not accepted" in error_str or "535" in error_str:
+            error_str = "Google rechazó las credenciales (Error 535). Asegúrate de usar una 'Contraseña de Aplicación' de 16 caracteres de Google y tener activada la Verificación en 2 Pasos en la cuenta de Gmail."
+        elif "Connection refused" in error_str or "timed out" in error_str:
+            error_str = f"No se pudo conectar al servidor {host}:{port}. Verifica tu conexión o el puerto SMTP."
+        return False, f"Fallo al enviar correo: {error_str}"
+
+def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, asincrono=True, reply_to=None):
     """
     Envía un correo electrónico multipart (texto + HTML) de manera segura.
     Soporta:
-    1. Brevo REST API (HTTPS / Puerto 443) si está configurado BREVO_API_KEY (ideal para Render Free Tier).
-    2. Django SMTP estándar (Gmail, Outlook, etc.) con timeout seguro.
-    3. Envío asíncrono en hilo secundario (daemon thread) para que NUNCA congele la vista web ni cause timeout en Gunicorn.
+    1. Brevo REST API (HTTPS / Puerto 443) si está configurado BREVO_API_KEY.
+    2. Configuración dinámica en BD (ConfiguracionSistema) o Django SMTP estándar con timeout seguro.
+    3. Envío asíncrono en hilo secundario (daemon thread).
     """
     if not destinatario:
         return False
 
     def _ejecutar_envio():
+        config_db = obtener_config_envio_correo()
+
         # 1. Intentar envío por API HTTP (Brevo) si existe API Key (pasa por puerto 443 en Render Free)
         brevo_api_key = (
             os.getenv('BREVO_API_KEY') or 
@@ -103,15 +188,18 @@ def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, 
 
         if brevo_api_key:
             try:
-                remitente_correo = os.getenv('EMAIL_HOST_USER', 'pruebarepsoitoriofca@gmail.com').strip()
+                remitente_correo = (config_db.email_host_user if config_db and config_db.email_host_user else os.getenv('EMAIL_HOST_USER', 'pruebarepsoitoriofca@gmail.com')).strip()
+                remitente_nombre = (config_db.email_remitente_nombre if config_db and config_db.email_remitente_nombre else "Repositorio FCA UABC").strip()
                 to_list = [{"email": d.strip()} for d in (destinatario if isinstance(destinatario, list) else [destinatario]) if d.strip()]
                 payload = {
-                    "sender": {"name": "Repositorio FCA UABC", "email": remitente_correo},
+                    "sender": {"name": remitente_nombre, "email": remitente_correo},
                     "to": to_list,
                     "subject": asunto,
                     "htmlContent": html_cuerpo,
                     "textContent": texto_plano
                 }
+                if reply_to:
+                    payload["replyTo"] = {"email": reply_to.strip()}
                 req = urllib.request.Request(
                     "https://api.brevo.com/v3/smtp/email",
                     data=json.dumps(payload).encode('utf-8'),
@@ -135,25 +223,53 @@ def enviar_correo_institucional(destinatario, asunto, texto_plano, html_cuerpo, 
             except Exception as e_api:
                 logger.warning(f"[BREVO API HTTPS] Error general al enviar vía API HTTP: {e_api}. Intentando SMTP estándar...")
 
-        # 2. Envío por SMTP estándar de Django
-        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
-        password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
-        if not password and getattr(settings, 'EMAIL_BACKEND', '') == 'django.core.mail.backends.smtp.EmailBackend':
-            from django.core.mail.backends.console import EmailBackend as ConsoleBackend
-            backend = ConsoleBackend()
-            logger.warning(
-                f"[MODO CONSOLA] EMAIL_HOST_PASSWORD no está configurado (¿falta agregar las variables en el Dashboard de Render?). "
-                f"El correo para {destinatario} con asunto '{asunto}' se imprimirá en los logs de la consola en lugar de enviarse por Gmail."
+        # 2. Envío por SMTP estándar (Usando credenciales de la BD si están disponibles)
+        if config_db and config_db.email_host_user and config_db.email_host_password:
+            remitente = f"{config_db.email_remitente_nombre} <{config_db.email_host_user}>"
+            from django.core.mail import get_connection
+            puerto_db = int(config_db.email_port or 587)
+            use_tls_db = config_db.email_use_tls
+            use_ssl_db = config_db.email_use_ssl
+            if use_tls_db and use_ssl_db:
+                if puerto_db == 465:
+                    use_tls_db = False
+                else:
+                    use_ssl_db = False
+
+            backend = get_connection(
+                backend='django.core.mail.backends.smtp.EmailBackend',
+                host=config_db.email_host or 'smtp.gmail.com',
+                port=puerto_db,
+                username=config_db.email_host_user,
+                password=config_db.email_host_password,
+                use_tls=use_tls_db,
+                use_ssl=use_ssl_db,
+                timeout=getattr(settings, 'EMAIL_TIMEOUT', 6)
             )
         else:
-            backend = None
+            remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Repositorio FCA UABC <notificaciones.fca.uabc@gmail.com>')
+            password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+            if not password and getattr(settings, 'EMAIL_BACKEND', '') == 'django.core.mail.backends.smtp.EmailBackend':
+                from django.core.mail.backends.console import EmailBackend as ConsoleBackend
+                backend = ConsoleBackend()
+                logger.warning(
+                    f"[MODO CONSOLA] EMAIL_HOST_PASSWORD no está configurado (¿falta agregar las variables en el Dashboard de Render?). "
+                    f"El correo para {destinatario} con asunto '{asunto}' se imprimirá en los logs de la consola en lugar de enviarse por Gmail."
+                )
+            else:
+                backend = None
 
         try:
+            reply_to_list = None
+            if reply_to:
+                reply_to_list = [reply_to] if isinstance(reply_to, str) else reply_to
+
             msg = EmailMultiAlternatives(
                 subject=asunto,
                 body=texto_plano,
                 from_email=remitente,
                 to=[destinatario] if isinstance(destinatario, str) else destinatario,
+                reply_to=reply_to_list,
                 connection=backend
             )
             msg.attach_alternative(html_cuerpo, "text/html")
@@ -496,7 +612,7 @@ def notificar_alerta_cambio_password(usuario):
     </div>
 
     <p style="font-size: 13px; color: #b91c1c; font-weight: 600;">
-        ¿No fuiste tú? Si no reconoces esta acción, por favor comunícate de inmediato con la Mesa de Ayuda y Soporte Técnico de la FCA para proteger tu cuenta.
+        ¿No fuiste tú? Si no reconoces esta acción, por favor comunícate de inmediato con el Área de Ayuda y Soporte Técnico de la FCA para proteger tu cuenta.
     </p>
     """
 
@@ -705,3 +821,212 @@ def notificar_nuevo_mensaje_interno(mensaje):
 
     return enviar_correo_institucional(destinatario, asunto, texto_plano, generar_html_base(asunto, subtitulo, contenido_html, "Ir a Mensajería", "http://127.0.0.1:8000/mensajeria/"))
 
+
+
+def notificar_nuevo_mensaje_contacto_soporte(contacto):
+    """
+    Envía una alerta inmediata al buzón del equipo de soporte con los datos
+    y el mensaje de la consulta recibida desde /contacto/.
+    Permite a soporte responder directamente al solicitante gracias al encabezado Reply-To.
+    """
+    config = obtener_config_envio_correo()
+    destinatario = (config.soporte_email or 'soporte.fca@uabc.edu.mx').strip() if config else 'soporte.fca@uabc.edu.mx'
+    
+    asunto = f"[Contacto FCA - Folio {contacto.folio}] {contacto.asunto}"
+    subtitulo = "Nueva consulta recibida desde el portal institucional"
+
+    fecha_fmt = contacto.fecha_creacion.strftime('%d/%m/%Y a las %H:%M hrs') if hasattr(contacto, 'fecha_creacion') and contacto.fecha_creacion else "Hoy"
+
+    contenido_html = f"""
+    <p>Se ha recibido una nueva solicitud de contacto a través del portal institucional del <strong>Repositorio FCA</strong>:</p>
+
+    <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px 20px; margin: 20px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 140px;"><strong>Folio:</strong></td>
+                <td style="padding: 6px 0;"><span style="background-color: #dd971a; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">{contacto.folio}</span></td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Nombre:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b; font-weight: bold;">{contacto.nombre}</td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Correo solicitante:</strong></td>
+                <td style="padding: 6px 0;"><a href="mailto:{contacto.email}" style="color: #006633; font-weight: bold; text-decoration: none;">{contacto.email}</a></td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Teléfono:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b;">{contacto.telefono or 'No proporcionado'}</td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Institución/Empresa:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b;">{contacto.organizacion or 'No especificada'}</td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Asunto:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b; font-weight: bold;">{contacto.asunto}</td>
+            </tr>
+            <tr>
+                <td style="padding: 6px 0; color: #64748b;"><strong>Fecha:</strong></td>
+                <td style="padding: 6px 0; color: #64748b;">{fecha_fmt}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #006633; margin-bottom: 8px;">
+            Mensaje o Pregunta del Solicitante:
+        </div>
+        <div style="background-color: #f8fafc; border-left: 4px solid #006633; padding: 16px 20px; border-radius: 4px; font-size: 14px; color: #334155; line-height: 1.6; white-space: pre-wrap;">{contacto.mensaje}</div>
+    </div>
+
+    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px 16px; margin: 20px 0; font-size: 13px; color: #166534;">
+        💡 <strong>Respuesta rápida:</strong> Puedes hacer clic directamente en <em>"Responder"</em> en tu cliente de correo para escribirle de inmediato a <strong>{contacto.nombre}</strong> ({contacto.email}).
+    </div>
+    """
+
+    texto_plano = (
+        f"NUEVO MENSAJE DE CONTACTO FCA\n"
+        f"Folio: {contacto.folio}\n"
+        f"Nombre: {contacto.nombre}\n"
+        f"Correo: {contacto.email}\n"
+        f"Teléfono: {contacto.telefono or 'N/A'}\n"
+        f"Organización: {contacto.organizacion or 'N/A'}\n"
+        f"Asunto: {contacto.asunto}\n\n"
+        f"Mensaje:\n{contacto.mensaje}\n"
+    )
+
+    url_panel = "http://127.0.0.1:8000/configuracion-soporte/#seccion-contacto-web"
+    html_final = generar_html_base(asunto, subtitulo, contenido_html, "Ver en Panel de Soporte", url_panel)
+    return enviar_correo_institucional(destinatario, asunto, texto_plano, html_final, reply_to=contacto.email)
+
+
+def notificar_acuse_recibo_contacto_usuario(contacto):
+    """
+    Envía un acuse de recibo formal al solicitante confirmando que su consulta
+    ha sido registrada con éxito y proporcionándole su folio de seguimiento.
+    """
+    config = obtener_config_envio_correo()
+    soporte_email = (config.soporte_email or 'soporte.fca@uabc.edu.mx').strip() if config else 'soporte.fca@uabc.edu.mx'
+    tiempo_resp = (config.soporte_tiempo_respuesta or 'Menos de 24 horas hábiles').strip() if config else 'Menos de 24 horas hábiles'
+
+    asunto = f"Acuse de Recibo: Tu consulta en el Repositorio FCA [{contacto.folio}]"
+    subtitulo = "Confirmación de Recepción &bull; Facultad de Contaduría y Administración"
+
+    contenido_html = f"""
+    <p>Estimado(a) <strong>{contacto.nombre}</strong>,</p>
+    <p>Hemos recibido correctamente tu mensaje a través del formulario de contacto del <strong>Repositorio Institucional de la Facultad de Contaduría y Administración (UABC)</strong>.</p>
+
+    <div style="text-align: center; margin: 25px 0;">
+        <div style="display: inline-block; background-color: #f8fafc; border: 2px dashed #006633; border-radius: 8px; padding: 14px 28px;">
+            <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 4px;">Tu Folio de Atención</div>
+            <div style="font-size: 20px; font-weight: 800; color: #006633; letter-spacing: 1px;">{contacto.folio}</div>
+        </div>
+    </div>
+
+    <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px 20px; margin: 20px 0;">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #dd971a; margin-bottom: 10px;">Resumen de tu solicitud:</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+                <td style="padding: 5px 0; color: #64748b; width: 120px;"><strong>Asunto:</strong></td>
+                <td style="padding: 5px 0; color: #1e293b;">{contacto.asunto}</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px 0; color: #64748b;"><strong>Mensaje:</strong></td>
+                <td style="padding: 5px 0; color: #334155; font-style: italic;">"{contacto.mensaje[:220]}{'...' if len(contacto.mensaje) > 220 else ''}"</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px 0; color: #64748b;"><strong>Tiempo de respuesta:</strong></td>
+                <td style="padding: 5px 0; color: #166534; font-weight: bold;">{tiempo_resp}</td>
+            </tr>
+        </table>
+    </div>
+
+    <p>Nuestro equipo de soporte institucional revisará tu solicitud a la brevedad y te responderá a esta misma dirección de correo (<strong>{contacto.email}</strong>).</p>
+
+    <p style="font-size: 13px; color: #64748b; margin-top: 25px;">
+        Si requieres aportar información adicional o dar seguimiento, puedes responder directamente a este correo o escribir a <a href="mailto:{soporte_email}" style="color: #006633; font-weight: bold;">{soporte_email}</a> citando tu número de folio.
+    </p>
+    """
+
+    texto_plano = (
+        f"Hola {contacto.nombre},\n\n"
+        f"Hemos recibido tu mensaje en el Repositorio Institucional FCA (UABC).\n\n"
+        f"Folio de atención: {contacto.folio}\n"
+        f"Asunto: {contacto.asunto}\n"
+        f"Tiempo estimado de respuesta: {tiempo_resp}\n\n"
+        f"Te responderemos a la brevedad a través de este correo.\n"
+    )
+
+    html_final = generar_html_base(asunto, subtitulo, contenido_html)
+    return enviar_correo_institucional(contacto.email, asunto, texto_plano, html_final, reply_to=soporte_email)
+
+
+def notificar_resolucion_contacto_usuario(contacto, mensaje_opcional=None):
+    """
+    Envía un correo formal al solicitante informándole que su consulta ha sido
+    resuelta por el equipo de soporte, incluyendo la respuesta oficial de soporte
+    si se proporcionó.
+    """
+    config = obtener_config_envio_correo()
+    soporte_email = (config.soporte_email or 'soporte.fca@uabc.edu.mx').strip() if config else 'soporte.fca@uabc.edu.mx'
+
+    asunto = f"Consulta Resuelta: [Folio {contacto.folio}] {contacto.asunto}"
+    subtitulo = "Soporte Institucional &bull; Facultad de Contaduría y Administración"
+
+    respuesta_final = (mensaje_opcional or contacto.respuesta_soporte or '').strip()
+
+    bloque_respuesta = ""
+    if respuesta_final:
+        bloque_respuesta = f"""
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; border-radius: 8px; padding: 18px 20px; margin: 25px 0;">
+            <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #15803d; margin-bottom: 8px;">
+                Respuesta del Equipo de Soporte FCA:
+            </div>
+            <div style="font-size: 14px; color: #166534; line-height: 1.6; white-space: pre-wrap;">{respuesta_final}</div>
+        </div>
+        """
+
+    contenido_html = f"""
+    <p>Estimado(a) <strong>{contacto.nombre}</strong>,</p>
+    <p>Te informamos que tu consulta con folio institucional <strong>{contacto.folio}</strong> ha sido atendida y marcada como <strong>Resuelta</strong> por el equipo de Soporte de la Facultad de Contaduría y Administración (UABC).</p>
+
+    <div style="text-align: center; margin: 25px 0;">
+        <div style="display: inline-block; background-color: #f0fdf4; border: 2px solid #16a34a; border-radius: 8px; padding: 12px 26px;">
+            <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #15803d; margin-bottom: 3px;">Estado del Ticket</div>
+            <div style="font-size: 18px; font-weight: 800; color: #166534; letter-spacing: 1px;">✓ RESUELTO &bull; {contacto.folio}</div>
+        </div>
+    </div>
+
+    {bloque_respuesta}
+
+    <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 8px;">Resumen de tu solicitud original:</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr>
+                <td style="padding: 4px 0; color: #64748b; width: 110px;"><strong>Asunto:</strong></td>
+                <td style="padding: 4px 0; color: #1e293b;">{contacto.asunto}</td>
+            </tr>
+            <tr>
+                <td style="padding: 4px 0; color: #64748b;"><strong>Mensaje:</strong></td>
+                <td style="padding: 4px 0; color: #475569; font-style: italic;">"{contacto.mensaje}"</td>
+            </tr>
+        </table>
+    </div>
+
+    <p style="font-size: 13px; color: #64748b; margin-top: 25px;">
+        Agradecemos tu comunicación. Si consideras que tu solicitud aún requiere asistencia adicional o tienes nuevas dudas, puedes responder directamente a este correo o escribir a <a href="mailto:{soporte_email}" style="color: #006633; font-weight: bold;">{soporte_email}</a> citando tu número de folio.
+    </p>
+    """
+
+    texto_plano = (
+        f"Hola {contacto.nombre},\n\n"
+        f"Tu consulta con folio institucional {contacto.folio} ha sido atendida y marcada como RESUELTA por el equipo de Soporte FCA.\n\n"
+        f"Asunto: {contacto.asunto}\n"
+    )
+    if respuesta_final:
+        texto_plano += f"\nRespuesta de soporte:\n{respuesta_final}\n\n"
+    texto_plano += f"Si requieres más información, responde a este correo o escribe a {soporte_email}.\n"
+
+    html_final = generar_html_base(asunto, subtitulo, contenido_html)
+    return enviar_correo_institucional(contacto.email, asunto, texto_plano, html_final, reply_to=soporte_email)

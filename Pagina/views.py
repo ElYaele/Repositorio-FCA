@@ -30,7 +30,9 @@ from django.db import transaction
 from .models import (
     Articulo, Entidad, Area, TipoContenido, Autor, MensajeCumpleanos,
     Nombramiento, EnlaceProfesional, RegistroAuditoria, Universidad,
-    InvitacionCoautoria, MensajeInterno, ROL_DOCENTE_OPCIONES, HistorialFusion
+    InvitacionCoautoria, MensajeInterno, ROL_DOCENTE_OPCIONES, HistorialFusion,
+    ConfiguracionSistema, PreguntaFrecuenteSoporte, EventoFCA, EnlaceRapidoPortal,
+    RedSocialFooter, EnlacePiePagina, MensajeContacto
 )
 import random
 from .forms import ArticuloForm
@@ -49,11 +51,19 @@ from .emails import (
     notificar_invitacion_coautoria,
     notificar_respuesta_coautoria,
     notificar_nuevo_mensaje_interno,
+    notificar_nuevo_mensaje_contacto_soporte,
+    notificar_acuse_recibo_contacto_usuario,
+    notificar_resolucion_contacto_usuario,
+    probar_conexion_smtp,
 )
 
 
 def es_superusuario(user):
-    return user.is_authenticated and user.is_superuser
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return bool(user.is_staff and user.is_active and hasattr(user, 'autor') and getattr(user.autor, 'es_soporte', False))
 
 
 def es_superusuario_principal(user):
@@ -371,6 +381,12 @@ class HomePageView(TemplateView):
                     break
         context['tendencias_top'] = tendencias[:5]
 
+        # <--- EVENTOS Y ENLACES DINÁMICOS DEL PORTAL (GESTIONADOS POR SOPORTE) --->
+        eventos_qs = EventoFCA.objects.filter(activo=True).order_by('orden', 'fecha', 'id')
+        eventos_activos = [e for e in eventos_qs if not (e.es_pasado and not e.mostrar_si_paso)]
+        context['eventos_fca'] = eventos_activos
+        context['enlaces_rapidos'] = EnlaceRapidoPortal.objects.filter(activo=True).order_by('orden', 'id')
+
         return context
 
 
@@ -686,7 +702,15 @@ class BusquedaResultadosView(ListView):
                             Q(isbn_issn__icontains=v) |
                             Q(entidad__nombre__icontains=v) |
                             Q(autor__institucion_origen__icontains=v) |
-                            Q(autor__codigo_institucional__icontains=v)
+                            Q(autor__codigo_institucional__icontains=v) |
+                            Q(numero_registro__icontains=v) |
+                            Q(tipo_proteccion__icontains=v) |
+                            Q(rama_propiedad__icontains=v) |
+                            Q(titular_propiedad__icontains=v) |
+                            Q(tipo_desarrollo__icontains=v) |
+                            Q(institucion_receptora__icontains=v) |
+                            Q(titulo_original__icontains=v) |
+                            Q(obra_receptora__icontains=v)
                         )
                         if v.isdigit() and len(v) == 4:
                             cond |= Q(año_produccion=int(v))
@@ -958,7 +982,7 @@ def solicitar_registro_view(request):
             institucion_final = "FCA UABC - Soporte y Administración"
         elif tipo_personal == 'independiente':
             rol_facultad_asignar = 'INV_IND'
-            tipo_perfil_nombre = 'Investigador Independiente'
+            tipo_perfil_nombre = 'Investigador'
         elif tipo_personal == 'externo':
             rol_facultad_asignar = 'EXT'
             tipo_perfil_nombre = 'Investigador Colaborador Externo'
@@ -993,11 +1017,11 @@ def solicitar_registro_view(request):
 
             if tipo_personal == 'independiente':
                 if sig_uni:
-                    institucion_final = f"Investigador Independiente ({sig_uni})"
+                    institucion_final = f"Investigador ({sig_uni})"
                 elif nom_uni:
-                    institucion_final = f"Investigador Independiente ({nom_uni})"
+                    institucion_final = f"Investigador ({nom_uni})"
                 else:
-                    institucion_final = "Investigador Independiente"
+                    institucion_final = "Investigador"
             else:
                 if inst_sel != 'nueva' and inst_sel:
                     institucion_final = inst_sel
@@ -1196,7 +1220,7 @@ def verificar_codigo_registro_view(request, user_id):
         elif autor.es_soporte:
             tipo_perfil_nombre = 'Soporte Técnico / Administración'
         elif autor.rol_facultad == 'INV_IND':
-            tipo_perfil_nombre = 'Investigador Independiente'
+            tipo_perfil_nombre = 'Investigador'
         elif autor.es_externo:
             tipo_perfil_nombre = 'Investigador Colaborador Externo'
         else:
@@ -1291,8 +1315,22 @@ def recuperar_password_view(request):
 
         autor = getattr(usuario, 'autor', None)
         if not autor:
-            messages.error(request, 'La cuenta no tiene un perfil institucional asociado.')
-            return render(request, 'recuperar_password.html', {'paso': 1})
+            if usuario.is_staff or usuario.is_superuser:
+                autor, _ = Autor.objects.get_or_create(
+                    usuario=usuario,
+                    defaults={
+                        'nombre': usuario.get_full_name() or usuario.username,
+                        'nombres': usuario.first_name or usuario.username,
+                        'correo': usuario.email,
+                        'institucion_origen': 'Facultad de ContadurÃ­a y AdministraciÃ³n - UABC',
+                        'es_profesor': True,
+                        'estado_cuenta': 'activa',
+                        'correo_verificado': True,
+                    }
+                )
+            else:
+                messages.error(request, 'La cuenta no tiene un perfil institucional asociado.')
+                return render(request, 'recuperar_password.html', {'paso': 1})
 
         codigo_rec = f"{random.randint(100000, 999999)}"
         autor.codigo_recuperacion = codigo_rec
@@ -2024,7 +2062,7 @@ def mensajeria_view(request):
 @login_required
 def soporte_institucional_view(request):
     """
-    Mesa de Ayuda y Canal Dedicado de Soporte Institucional FCA.
+    Área de Ayuda y Canal Dedicado de Soporte Institucional FCA.
     - Para docentes: Canal directo y confidencial con el equipo de Super Administradores.
     - Para superadministradores: Bandeja centralizada de atención y resolución de tickets.
     """
@@ -2032,6 +2070,45 @@ def soporte_institucional_view(request):
     es_admin = request.user.is_superuser
     ticket_autor_id = request.GET.get('ticket_autor')
     filtro_estado = request.GET.get('estado')
+    vista = request.GET.get('vista', 'docentes')
+
+    # Contadores de Mensajes de Contacto Web
+    contactos_nuevos_count = MensajeContacto.objects.filter(estado='nuevo').count()
+    contactos_total_count = MensajeContacto.objects.count()
+    contactos_en_proceso_count = MensajeContacto.objects.filter(estado='en_proceso').count()
+    contactos_resueltos_count = MensajeContacto.objects.filter(estado='resuelto').count()
+
+    contactos_list = []
+    contacto_activo = None
+    filtro_contacto = request.GET.get('estado', 'todos')
+    q_search_contacto = request.GET.get('q', '').strip()
+
+    if es_admin and vista == 'contacto_web':
+        contactos_qs = MensajeContacto.objects.all().order_by('-fecha_creacion')
+
+        if q_search_contacto:
+            contactos_qs = contactos_qs.filter(
+                Q(folio__icontains=q_search_contacto) |
+                Q(nombre__icontains=q_search_contacto) |
+                Q(email__icontains=q_search_contacto) |
+                Q(asunto__icontains=q_search_contacto) |
+                Q(organizacion__icontains=q_search_contacto)
+            )
+
+        if filtro_contacto == 'nuevo':
+            contactos_qs = contactos_qs.filter(estado='nuevo')
+        elif filtro_contacto == 'en_proceso':
+            contactos_qs = contactos_qs.filter(estado='en_proceso')
+        elif filtro_contacto == 'resuelto':
+            contactos_qs = contactos_qs.filter(estado='resuelto')
+
+        contactos_list = list(contactos_qs)
+
+        contacto_id = request.GET.get('contacto_id')
+        if contacto_id:
+            contacto_activo = MensajeContacto.objects.filter(id=contacto_id).first()
+        if not contacto_activo and contactos_list:
+            contacto_activo = contactos_list[0]
 
     soporte_tickets_admin = []
     ticket_activo = {
@@ -2158,7 +2235,7 @@ def soporte_institucional_view(request):
             ticket_activo['subtitulo'] = f"No hay solicitudes de soporte con estado '{nombre_filtro}' actualmente."
     else:
         # DOCENTE REGULAR: Su propio canal de soporte con la administración
-        ticket_activo['titulo'] = "Mesa de Ayuda & Soporte Institucional"
+        ticket_activo['titulo'] = "Área de Ayuda & Soporte Institucional"
         ticket_activo['subtitulo'] = "Canal directo con el equipo de Super Administradores FCA UABC"
 
         mensajes_soporte = MensajeInterno.objects.filter(
@@ -2180,6 +2257,10 @@ def soporte_institucional_view(request):
             ticket_activo['estado_soporte'] = ult.estado_soporte
             ticket_activo['atendido_por'] = ult.atendido_por
 
+    asegurar_configuracion_inicial()
+    config_sistema = ConfiguracionSistema.get_solo()
+    preguntas_frecuentes = PreguntaFrecuenteSoporte.objects.filter(activo=True).order_by('orden', 'id')
+
     context = {
         'mi_autor': mi_autor,
         'es_admin': es_admin,
@@ -2190,6 +2271,18 @@ def soporte_institucional_view(request):
         'conteo_abiertos': conteo_abiertos if es_admin else 0,
         'conteo_proceso': conteo_proceso if es_admin else 0,
         'conteo_resueltos': conteo_resueltos if es_admin else 0,
+        'config_sistema': config_sistema,
+        'preguntas_frecuentes': preguntas_frecuentes,
+        # Variables de Contacto Web (/contacto/)
+        'vista': vista,
+        'contactos_nuevos_count': contactos_nuevos_count,
+        'contactos_total_count': contactos_total_count,
+        'contactos_en_proceso_count': contactos_en_proceso_count,
+        'contactos_resueltos_count': contactos_resueltos_count,
+        'contactos_list': contactos_list,
+        'contacto_activo': contacto_activo,
+        'filtro_contacto': filtro_contacto,
+        'q_search_contacto': q_search_contacto,
     }
     return render(request, 'soporte.html', context)
 
@@ -3232,9 +3325,14 @@ def panel_usuarios_view(request):
     q_docs = request.GET.get('q_docs', '').strip()
     q_semb = request.GET.get('q_semb', '').strip()
     q_autores = request.GET.get('q_autores', '').strip()
+    filtro_cuenta_autor = request.GET.get('filtro_cuenta_autor', '').strip()
+    estado_docs = request.GET.get('estado_docs', '').strip()
+    estado_semb = request.GET.get('estado_semb', '').strip()
+    area_docs = request.GET.get('area_docs', '').strip()
+    tipo_docs = request.GET.get('tipo_docs', '').strip()
 
     # Documentos activos (excluyendo papelera de reciclaje)
-    todos_documentos_qs = Articulo.objects.filter(en_papelera=False).order_by('-created_at')
+    base_docs_qs = Articulo.objects.filter(en_papelera=False)
     documentos_pendientes_qs = Articulo.objects.filter(estado='pendiente', en_papelera=False).order_by('-created_at')
     subidas_automaticas_qs = Articulo.objects.filter(es_subida_automatica=True, en_papelera=False).order_by('-created_at')
 
@@ -3255,13 +3353,44 @@ def panel_usuarios_view(request):
             Q(area__nombre__icontains=q_docs) |
             Q(tipo_contenido__nombre__icontains=q_docs)
         )
-        todos_documentos_qs = todos_documentos_qs.filter(filtro_docs).distinct()
+        base_docs_qs = base_docs_qs.filter(filtro_docs).distinct()
         documentos_pendientes_qs = documentos_pendientes_qs.filter(filtro_docs).distinct()
         subidas_automaticas_qs = subidas_automaticas_qs.filter(filtro_docs).distinct()
         documentos_papelera_qs = documentos_papelera_qs.filter(filtro_docs).distinct()
 
+    # Métricas Globales de Documentos (Calculadas sobre base_docs_qs para reflejar siempre totales fieles en las burbujas)
+    total_docs_global = base_docs_qs.count()
+    total_docs_aprobados_global = base_docs_qs.filter(estado='aprobado').count()
+    total_docs_pendientes_global = base_docs_qs.filter(estado='pendiente').count()
+    total_docs_rechazados_global = base_docs_qs.filter(estado='rechazado').count()
+    total_docs_confianza_global = base_docs_qs.filter(es_subida_automatica=True).count()
+    total_docs_por_checar_global = base_docs_qs.filter(es_subida_automatica=True, chequeado_por_moderador=False).count()
+    total_docs_checadas_global = base_docs_qs.filter(es_subida_automatica=True, chequeado_por_moderador=True).count()
+
+    # Queryset específico para la tabla paginada según el filtro de estado seleccionado
+    todos_documentos_qs = base_docs_qs.order_by('-created_at')
+    if estado_docs == 'aprobado':
+        todos_documentos_qs = todos_documentos_qs.filter(estado='aprobado')
+    elif estado_docs == 'pendiente':
+        todos_documentos_qs = todos_documentos_qs.filter(estado='pendiente')
+    elif estado_docs == 'rechazado':
+        todos_documentos_qs = todos_documentos_qs.filter(estado='rechazado')
+    elif estado_docs == 'automatico':
+        todos_documentos_qs = todos_documentos_qs.filter(es_subida_automatica=True)
+    elif estado_docs == 'por_checar':
+        todos_documentos_qs = todos_documentos_qs.filter(es_subida_automatica=True, chequeado_por_moderador=False)
+    elif estado_docs == 'checado':
+        todos_documentos_qs = todos_documentos_qs.filter(es_subida_automatica=True, chequeado_por_moderador=True)
+    elif estado_docs == 'papelera':
+        todos_documentos_qs = documentos_papelera_qs
+
+    if area_docs:
+        todos_documentos_qs = todos_documentos_qs.filter(area_id=area_docs)
+    if tipo_docs:
+        todos_documentos_qs = todos_documentos_qs.filter(tipo_contenido_id=tipo_docs)
+
     paginator_docs = Paginator(todos_documentos_qs, 20)
-    page_docs = request.GET.get('page_docs')
+    page_docs = request.GET.get('page_docs') or request.GET.get('page')
     todos_documentos = paginator_docs.get_page(page_docs)
 
     # Detección inteligente de duplicados (Idea 3)
@@ -3305,14 +3434,24 @@ def panel_usuarios_view(request):
         autor__is_trusted_publisher=False
     ).count()
 
-    todas_semblanzas_qs = Autor.objects.filter(usuario__isnull=False, es_profesor=True).exclude(estado_semblanza='borrador').order_by('nombre')
+    base_sem_qs = Autor.objects.filter(usuario__isnull=False, es_profesor=True).exclude(estado_semblanza='borrador')
     if q_semb:
-        todas_semblanzas_qs = todas_semblanzas_qs.filter(
+        base_sem_qs = base_sem_qs.filter(
             Q(nombre__icontains=q_semb) |
             Q(codigo_institucional__icontains=q_semb) |
             Q(correo__icontains=q_semb) |
             Q(usuario__username__icontains=q_semb)
         ).distinct()
+
+    # Métricas Globales de Semblanzas (Claustro) sobre base_sem_qs antes de filtrar por estado
+    total_sem_global = base_sem_qs.count()
+    total_sem_aprobadas_global = base_sem_qs.filter(estado_semblanza='aprobado').count()
+    total_sem_pendientes_global = base_sem_qs.filter(estado_semblanza='pendiente').count()
+    total_sem_rechazadas_global = base_sem_qs.filter(estado_semblanza='rechazado').count()
+
+    todas_semblanzas_qs = base_sem_qs.order_by('nombre')
+    if estado_semb in ['aprobado', 'pendiente', 'rechazado']:
+        todas_semblanzas_qs = todas_semblanzas_qs.filter(estado_semblanza=estado_semb)
 
     paginator_semb = Paginator(todas_semblanzas_qs, 15)
     page_semb = request.GET.get('page_semb')
@@ -3328,41 +3467,72 @@ def panel_usuarios_view(request):
         autores_catalogo_qs = autores_catalogo_qs.filter(
             Q(nombre__icontains=q_autores) |
             Q(codigo_institucional__icontains=q_autores) |
-            Q(orcid__icontains=q_autores) |
             Q(institucion_origen__icontains=q_autores) |
             Q(usuario__username__icontains=q_autores)
         ).distinct()
+
+    # Totales globales de autores para los badges y filtros
+    total_autores_catalogo = Autor.objects.count()
+    total_autores_con_cuenta = Autor.objects.filter(usuario__isnull=False).count()
+    total_autores_sin_cuenta = Autor.objects.filter(usuario__isnull=True).count()
+
+    if filtro_cuenta_autor == 'con_cuenta':
+        autores_catalogo_qs = autores_catalogo_qs.filter(usuario__isnull=False)
+    elif filtro_cuenta_autor == 'sin_cuenta':
+        autores_catalogo_qs = autores_catalogo_qs.filter(usuario__isnull=True)
 
     paginator_autores = Paginator(autores_catalogo_qs, 20)
     page_autores = request.GET.get('page_autores')
     autores_catalogo = paginator_autores.get_page(page_autores)
 
-    # Solicitudes pendientes de registro (tanto autenticadas como pendientes de código OTP)
+    # Solicitudes pendientes de registro generales (se excluyen cuentas de soporte)
     pendientes = User.objects.filter(
         is_active=False
     ).filter(
         Q(autor__estado_cuenta__in=['pendiente', 'pendiente_verificacion']) | Q(autor__isnull=True)
-    ).order_by('-date_joined')
+    ).exclude(autor__es_soporte=True).order_by('-date_joined')
 
     # Cuentas suspendidas o dadas de baja por el usuario
     suspendidas = User.objects.filter(
         autor__estado_cuenta__in=['suspendida', 'baja_voluntaria']
     ).order_by('-autor__fecha_suspension')
 
-    # Administrativos y Docentes activos
+    # Administrativos, Docentes y Técnicos activos (excluyendo cuentas de soporte que van a su pestaña propia)
     administrativos = User.objects.filter(
         is_superuser=False,
         is_staff=True,
         is_active=True
     ).filter(
         Q(autor__estado_cuenta='activa') | Q(autor__isnull=True)
-    ).order_by('username')
+    ).exclude(autor__es_soporte=True).order_by('-autor__es_profesor', 'autor__nombre', 'username')
+
+    usuarios_estandar = administrativos.filter(Q(autor__is_trusted_publisher=False) | Q(autor__isnull=True))
+    usuarios_confianza = administrativos.filter(autor__is_trusted_publisher=True)
+    total_usuarios_estandar = usuarios_estandar.count()
+    total_usuarios_confianza = usuarios_confianza.count()
+    usuarios_candidatos = administrativos.filter(id__in=ids_candidatos_confianza)
 
     # Superusuarios activos
     superusuarios = User.objects.filter(
         is_superuser=True,
         is_active=True
     ).order_by('username')
+
+    # Cuentas de soporte: pendientes o desactivadas (en espera de doble validación o aprobación del Admin Inicial)
+    soporte_pendientes = User.objects.filter(
+        autor__es_soporte=True,
+        is_active=False
+    ).select_related('autor', 'autor__aprobado_por_soporte_1', 'autor__aprobado_por_soporte_2').order_by('-date_joined')
+
+    # Cuentas de soporte: activas con facultades operativas o modo lectura
+    soporte_activos = User.objects.filter(
+        autor__es_soporte=True,
+        is_active=True,
+        is_superuser=False
+    ).select_related('autor').order_by('username')
+
+    total_soporte_total = User.objects.filter(Q(is_superuser=True) | Q(autor__es_soporte=True), is_active=True).distinct().count()
+    total_soporte_pendientes = soporte_pendientes.count()
 
     # Autores huérfanos para diagnóstico y modal de limpieza
     limite_15m = timezone.now() - timedelta(minutes=15)
@@ -3436,18 +3606,42 @@ def panel_usuarios_view(request):
     porcentaje_doi = int((total_con_doi_metric / total_obras_aprobadas_metric * 100)) if total_obras_aprobadas_metric > 0 else 0
     total_docentes_con_obras = Autor.objects.filter(documentos__estado='aprobado', documentos__en_papelera=False).distinct().count()
 
+    ultimo_doc_id = Articulo.objects.order_by('-id').values_list('id', flat=True).first() or 0
+
+    # Métricas de Personal y Roles de la plantilla (todos los usuarios no-superadmin)
+    total_personal_activo = administrativos.count()
+    total_users_docentes = administrativos.filter(autor__es_profesor=True, autor__es_externo=False, autor__es_auxiliar=False).exclude(autor__rol_facultad='INV_IND').count()
+    total_users_auxiliares = administrativos.filter(autor__es_auxiliar=True).count()
+    total_users_externos = administrativos.filter(autor__es_externo=True).count()
+    total_users_investigadores = administrativos.filter(Q(autor__rol_facultad='INV_IND') | Q(autor__institucion_origen__icontains='independiente')).count()
+    total_users_tecnicos = administrativos.filter(autor__es_operador_tecnico=True).count()
+    total_users_soporte = administrativos.filter(autor__es_soporte=True).count()
+    total_users_admins = administrativos.filter(
+        autor__es_profesor=False, autor__es_auxiliar=False, autor__es_externo=False,
+        autor__es_operador_tecnico=False, autor__es_soporte=False
+    ).exclude(autor__rol_facultad='INV_IND').exclude(autor__institucion_origen__icontains='independiente').count()
+    total_solicitudes_pendientes = pendientes.count()
+    ultimo_user_id = User.objects.order_by('-id').values_list('id', flat=True).first() or 0
+
     context = {
         'pendientes': pendientes,
         'suspendidas': suspendidas,
         'administrativos': administrativos,
         'superusuarios': superusuarios,
+        'soporte_pendientes': soporte_pendientes,
+        'soporte_activos': soporte_activos,
+        'total_soporte_total': total_soporte_total,
+        'total_soporte_pendientes': total_soporte_pendientes,
         'todos_documentos': todos_documentos,
         'documentos_pendientes': documentos_pendientes,
         'subidas_automaticas': subidas_automaticas,
         'semblanzas_pendientes': Autor.objects.filter(usuario__isnull=False, estado_semblanza='pendiente'),
         'todas_semblanzas': todas_semblanzas,
         'autores_catalogo': autores_catalogo,
-        'total_autores_catalogo': Autor.objects.count(),
+        'total_autores_catalogo': total_autores_catalogo,
+        'total_autores_con_cuenta': total_autores_con_cuenta,
+        'total_autores_sin_cuenta': total_autores_sin_cuenta,
+        'filtro_cuenta_autor': filtro_cuenta_autor,
         'todos_los_autores_simple': Autor.objects.order_by('nombre'),
         'total_huerfanos': total_huerfanos,
         'total_huerfanos_inactivos': total_huerfanos_inactivos,
@@ -3461,6 +3655,10 @@ def panel_usuarios_view(request):
         'q_docs': q_docs,
         'q_semb': q_semb,
         'q_autores': q_autores,
+        'estado_docs': estado_docs,
+        'estado_semb': estado_semb,
+        'area_docs': area_docs,
+        'tipo_docs': tipo_docs,
         'areas_catalogo': Area.objects.all().order_by('nombre'),
         'tipos_catalogo': TipoContenido.objects.all().order_by('nombre'),
         'ids_candidatos_confianza': ids_candidatos_confianza,
@@ -3486,8 +3684,159 @@ def panel_usuarios_view(request):
         'metric_total_con_doi': total_con_doi_metric,
         'metric_porcentaje_doi': porcentaje_doi,
         'metric_docentes_activos': total_docentes_con_obras,
+        # Variables globales añadidas para visualización fiel y sincronización
+        'total_docs_global': total_docs_global,
+        'total_docs_aprobados_global': total_docs_aprobados_global,
+        'total_docs_pendientes_global': total_docs_pendientes_global,
+        'total_docs_rechazados_global': total_docs_rechazados_global,
+        'total_docs_confianza_global': total_docs_confianza_global,
+        'total_docs_por_checar_global': total_docs_por_checar_global,
+        'total_docs_checadas_global': total_docs_checadas_global,
+        'total_sem_global': total_sem_global,
+        'total_sem_aprobadas_global': total_sem_aprobadas_global,
+        'total_sem_pendientes_global': total_sem_pendientes_global,
+        'total_sem_rechazadas_global': total_sem_rechazadas_global,
+        'total_personal_activo': total_personal_activo,
+        'total_usuarios_estandar': total_usuarios_estandar,
+        'total_usuarios_confianza': total_usuarios_confianza,
+        'usuarios_estandar': usuarios_estandar,
+        'usuarios_confianza': usuarios_confianza,
+        'usuarios_candidatos': usuarios_candidatos,
+        'total_users_docentes': total_users_docentes,
+        'total_users_auxiliares': total_users_auxiliares,
+        'total_users_externos': total_users_externos,
+        'total_users_investigadores': total_users_investigadores,
+        'total_users_tecnicos': total_users_tecnicos,
+        'total_users_soporte': total_users_soporte,
+        'total_users_admins': total_users_admins,
+        'total_solicitudes_pendientes': total_solicitudes_pendientes,
+        'ultimo_doc_id': ultimo_doc_id,
+        'ultimo_user_id': ultimo_user_id,
     }
     return render(request, 'panel_usuarios.html', context)
+
+
+@user_passes_test(es_superusuario, login_url='/login/')
+def sync_panel_usuarios_ajax_view(request):
+    """
+    Endpoint reactivo para el panel de usuarios y moderación.
+    Devuelve los contadores globales en tiempo real y detecta nuevas obras, solicitudes o semblanzas
+    sin requerir recargar la página.
+    """
+    try:
+        last_doc_id = int(request.GET.get('last_doc_id', 0) or 0)
+    except (ValueError, TypeError):
+        last_doc_id = 0
+
+    try:
+        last_user_id = int(request.GET.get('last_user_id', 0) or 0)
+    except (ValueError, TypeError):
+        last_user_id = 0
+
+    # Contadores Documentos
+    docs_aprobados = Articulo.objects.filter(en_papelera=False, estado='aprobado').count()
+    docs_pendientes = Articulo.objects.filter(en_papelera=False, estado='pendiente').count()
+    docs_rechazados = Articulo.objects.filter(en_papelera=False, estado='rechazado').count()
+    docs_confianza = Articulo.objects.filter(en_papelera=False, es_subida_automatica=True).count()
+    docs_por_checar = Articulo.objects.filter(en_papelera=False, es_subida_automatica=True, chequeado_por_moderador=False).count()
+    docs_checadas = Articulo.objects.filter(en_papelera=False, es_subida_automatica=True, chequeado_por_moderador=True).count()
+    docs_papelera = Articulo.objects.filter(en_papelera=True).count()
+    docs_total = Articulo.objects.filter(en_papelera=False).count()
+
+    # Contadores Semblanzas
+    sem_aprobadas = Autor.objects.filter(usuario__isnull=False, es_profesor=True, estado_semblanza='aprobado').count()
+    sem_pendientes = Autor.objects.filter(usuario__isnull=False, es_profesor=True, estado_semblanza='pendiente').count()
+    sem_rechazadas = Autor.objects.filter(usuario__isnull=False, es_profesor=True, estado_semblanza='rechazado').count()
+    sem_total = Autor.objects.filter(usuario__isnull=False, es_profesor=True).exclude(estado_semblanza='borrador').count()
+
+    # Contadores Usuarios
+    users_pendientes = User.objects.filter(is_active=False).filter(
+        Q(autor__estado_cuenta__in=['pendiente', 'pendiente_verificacion']) | Q(autor__isnull=True)
+    ).exclude(autor__es_soporte=True).count()
+    users_activos = User.objects.filter(is_active=True).count()
+    users_personal_qs = User.objects.filter(is_active=True, is_staff=True, is_superuser=False).filter(
+        Q(autor__estado_cuenta='activa') | Q(autor__isnull=True)
+    ).exclude(autor__es_soporte=True)
+    users_total_personal = users_personal_qs.count()
+    users_estandar = users_personal_qs.filter(Q(autor__is_trusted_publisher=False) | Q(autor__isnull=True)).count()
+    users_confianza = users_personal_qs.filter(autor__is_trusted_publisher=True).count()
+    users_docentes = users_personal_qs.filter(autor__es_profesor=True, autor__es_externo=False, autor__es_auxiliar=False).exclude(autor__rol_facultad='INV_IND').count()
+    users_auxiliares = users_personal_qs.filter(autor__es_auxiliar=True).count()
+    users_externos = users_personal_qs.filter(autor__es_externo=True).count()
+    users_investigadores = users_personal_qs.filter(Q(autor__rol_facultad='INV_IND') | Q(autor__institucion_origen__icontains='independiente')).count()
+    users_tecnicos = users_personal_qs.filter(autor__es_operador_tecnico=True).count()
+    total_soporte_total = User.objects.filter(Q(is_superuser=True) | Q(autor__es_soporte=True), is_active=True).distinct().count()
+    users_soporte_activos = total_soporte_total
+    users_soporte_pendientes = User.objects.filter(is_active=False, autor__es_soporte=True).count()
+    users_supers = User.objects.filter(is_superuser=True, is_active=True).count()
+    users_admins = users_personal_qs.filter(
+        autor__es_profesor=False, autor__es_auxiliar=False, autor__es_externo=False,
+        autor__es_operador_tecnico=False, autor__es_soporte=False
+    ).exclude(autor__rol_facultad='INV_IND').exclude(autor__institucion_origen__icontains='independiente').count()
+
+    # Novedades detectadas desde last_doc_id
+    max_doc_id = Articulo.objects.order_by('-id').values_list('id', flat=True).first() or 0
+    nuevos_docs = []
+    if last_doc_id > 0 and max_doc_id > last_doc_id:
+        docs_qs = Articulo.objects.filter(id__gt=last_doc_id, en_papelera=False).order_by('-id')[:5]
+        for d in docs_qs:
+            nuevos_docs.append({
+                'id': d.id,
+                'titulo': d.titulo[:60] + ('...' if len(d.titulo) > 60 else ''),
+                'estado': d.estado,
+                'subido_por': d.subido_por.username if d.subido_por else 'Anónimo'
+            })
+
+    # Novedades detectadas desde last_user_id
+    max_user_id = User.objects.order_by('-id').values_list('id', flat=True).first() or 0
+    nuevos_users = []
+    if last_user_id > 0 and max_user_id > last_user_id:
+        users_qs = User.objects.filter(id__gt=last_user_id).order_by('-id')[:5]
+        for u in users_qs:
+            nuevos_users.append({
+                'id': u.id,
+                'username': u.username,
+                'nombre': u.get_full_name() or u.username
+            })
+
+    return JsonResponse({
+        'success': True,
+        'max_doc_id': max_doc_id,
+        'max_user_id': max_user_id,
+        'kpis': {
+            'docs_total': docs_total,
+            'docs_aprobados': docs_aprobados,
+            'docs_pendientes': docs_pendientes,
+            'docs_rechazados': docs_rechazados,
+            'docs_confianza': docs_confianza,
+            'docs_por_checar': docs_por_checar,
+            'docs_checadas': docs_checadas,
+            'docs_papelera': docs_papelera,
+            'sem_total': sem_total,
+            'sem_aprobadas': sem_aprobadas,
+            'sem_pendientes': sem_pendientes,
+            'sem_rechazadas': sem_rechazadas,
+            'users_activos': users_activos,
+            'users_estandar': users_estandar,
+            'users_total_personal': users_total_personal,
+            'users_confianza': users_confianza,
+            'users_pendientes': users_pendientes,
+            'users_docentes': users_docentes,
+            'users_auxiliares': users_auxiliares,
+            'users_externos': users_externos,
+            'users_investigadores': users_investigadores,
+            'users_tecnicos': users_tecnicos,
+            'users_soporte': users_soporte_activos,
+            'total_soporte_total': total_soporte_total,
+            'total_soporte_pendientes': users_soporte_pendientes,
+            'users_admins': users_admins,
+            'autores_total': Autor.objects.count(),
+            'autores_con_cuenta': Autor.objects.filter(usuario__isnull=False).count(),
+            'autores_sin_cuenta': Autor.objects.filter(usuario__isnull=True).count(),
+        },
+        'nuevos_docs': nuevos_docs,
+        'nuevos_users': nuevos_users,
+    })
 
 
 
@@ -3738,7 +4087,13 @@ def exportar_documentos_excel_view(request):
                 Q(titulo__icontains=q_search) |
                 Q(autor__nombre__icontains=q_search) |
                 Q(subido_por__username__icontains=q_search) |
-                Q(palabras_clave__icontains=q_search)
+                Q(palabras_clave__icontains=q_search) |
+                Q(numero_registro__icontains=q_search) |
+                Q(tipo_proteccion__icontains=q_search) |
+                Q(rama_propiedad__icontains=q_search) |
+                Q(titular_propiedad__icontains=q_search) |
+                Q(tipo_desarrollo__icontains=q_search) |
+                Q(institucion_receptora__icontains=q_search)
             ).distinct()
 
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
@@ -3754,6 +4109,13 @@ def exportar_documentos_excel_view(request):
         'Autores Acreditados',
         'Año de Producción',
         'Estado Editorial',
+        'Modalidad / Protección',
+        'No. Registro / Folio Oficial',
+        'Rama / Clasificación',
+        'Titular Patrimonial',
+        'Rol de Participación',
+        'Tipo de Desarrollo / Mecanismo',
+        'Entidad Receptora',
         'DOI / Enlace',
         'ISBN / ISSN',
         'Revista / Editorial',
@@ -3774,6 +4136,13 @@ def exportar_documentos_excel_view(request):
             autores_txt or 'Sin autor',
             doc.año_produccion or '',
             doc.get_estado_display() if hasattr(doc, 'get_estado_display') else doc.estado,
+            doc.tipo_proteccion or '',
+            doc.numero_registro or '',
+            doc.rama_propiedad or '',
+            doc.titular_propiedad or '',
+            doc.rol_participacion or '',
+            doc.tipo_desarrollo or doc.tipo_transferencia or '',
+            doc.institucion_receptora or '',
             doc.doi_enlace or '',
             doc.isbn_issn or '',
             doc.revista or doc.editorial or '',
@@ -3876,7 +4245,9 @@ def exportar_respaldo_sistema_view(request):
     modelos = [
         User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
         Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
-        MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria
+        MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria,
+        ConfiguracionSistema, PreguntaFrecuenteSoporte, EventoFCA, EnlaceRapidoPortal,
+        RedSocialFooter, EnlacePiePagina, MensajeContacto
     ]
 
     todos_objetos = []
@@ -4546,6 +4917,104 @@ def restaurar_respaldo_sistema_view(request):
                 total_creados += 1
 
             # -------------------------------------------------------------
+            # 6b. Configuración de Sistema, Soporte, FAQ, Eventos, Enlaces y Footer
+            # -------------------------------------------------------------
+            for item in fixtures_por_modelo.get('pagina.configuracionsistema', []):
+                fields = item.get('fields', {})
+                config_existente = ConfiguracionSistema.objects.first()
+                if config_existente:
+                    _copiar_campos(config_existente, fields, excluidos={'id'})
+                    config_existente.save()
+                    total_fusionados += 1
+                else:
+                    conf_obj = ConfiguracionSistema()
+                    _copiar_campos(conf_obj, fields, excluidos={'id'})
+                    conf_obj.save()
+                    total_creados += 1
+
+            for item in fixtures_por_modelo.get('pagina.preguntafrecuentesoporte', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                preg = fields.get('pregunta', '').strip()
+                if preg and not PreguntaFrecuenteSoporte.objects.filter(pregunta__iexact=preg).exists():
+                    p_obj = PreguntaFrecuenteSoporte()
+                    _copiar_campos(p_obj, fields, excluidos={'id'})
+                    p_obj.id = old_pk if not PreguntaFrecuenteSoporte.objects.filter(id=old_pk).exists() else None
+                    p_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.eventofca', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                tit = fields.get('titulo', '').strip()
+                f_ev = fields.get('fecha_evento')
+                if tit and not EventoFCA.objects.filter(titulo__iexact=tit, fecha_evento=f_ev).exists():
+                    ev_obj = EventoFCA()
+                    _copiar_campos(ev_obj, fields, excluidos={'id'})
+                    ev_obj.id = old_pk if not EventoFCA.objects.filter(id=old_pk).exists() else None
+                    ev_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.enlacerapidoportal', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                tit = fields.get('titulo', '').strip()
+                if tit and not EnlaceRapidoPortal.objects.filter(titulo__iexact=tit).exists():
+                    en_obj = EnlaceRapidoPortal()
+                    _copiar_campos(en_obj, fields, excluidos={'id'})
+                    en_obj.id = old_pk if not EnlaceRapidoPortal.objects.filter(id=old_pk).exists() else None
+                    en_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.redsocialfooter', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                red = fields.get('nombre_red', '').strip()
+                if red and not RedSocialFooter.objects.filter(nombre_red__iexact=red).exists():
+                    rs_obj = RedSocialFooter()
+                    _copiar_campos(rs_obj, fields, excluidos={'id'})
+                    rs_obj.id = old_pk if not RedSocialFooter.objects.filter(id=old_pk).exists() else None
+                    rs_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.enlacepiepagina', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                tit = fields.get('titulo', '').strip()
+                sec = fields.get('seccion_columna', '')
+                if tit and not EnlacePiePagina.objects.filter(titulo__iexact=tit, seccion_columna=sec).exists():
+                    ep_obj = EnlacePiePagina()
+                    _copiar_campos(ep_obj, fields, excluidos={'id'})
+                    ep_obj.id = old_pk if not EnlacePiePagina.objects.filter(id=old_pk).exists() else None
+                    ep_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            for item in fixtures_por_modelo.get('pagina.mensajecontacto', []):
+                old_pk = item['pk']
+                fields = item.get('fields', {})
+                fol = fields.get('folio', '').strip()
+                if fol and not MensajeContacto.objects.filter(folio=fol).exists():
+                    mc_obj = MensajeContacto()
+                    _copiar_campos(mc_obj, fields, excluidos={'id', 'atendido_por'})
+                    if fields.get('atendido_por') and fields['atendido_por'] in user_id_map:
+                        mc_obj.atendido_por_id = user_id_map[fields['atendido_por']]
+                    mc_obj.id = old_pk if not MensajeContacto.objects.filter(id=old_pk).exists() else None
+                    mc_obj.save()
+                    total_creados += 1
+                else:
+                    total_fusionados += 1
+
+            # -------------------------------------------------------------
             # 7. Sincronizar secuencias de BD (PostgreSQL / SQLite / MySQL)
             # -------------------------------------------------------------
             try:
@@ -4554,7 +5023,9 @@ def restaurar_respaldo_sistema_view(request):
                 modelos_secuencia = [
                     User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
                     Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
-                    MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria
+                    MensajeInterno, MensajeCumpleanos, HistorialFusion, RegistroAuditoria,
+                    ConfiguracionSistema, PreguntaFrecuenteSoporte, EventoFCA, EnlaceRapidoPortal,
+                    RedSocialFooter, EnlacePiePagina, MensajeContacto
                 ]
                 sequence_sql = connection.ops.sequence_reset_sql(no_style(), modelos_secuencia)
                 if sequence_sql:
@@ -4646,6 +5117,171 @@ def rechazar_usuario_view(request, user_id):
     registrar_auditoria(request.user, "Rechazo de Solicitud de Usuario", f"Rechazó la solicitud de: {nombre_usr}")
     messages.warning(request, f'La solicitud de registro de "{nombre_usr}" ha sido rechazada y eliminada.')
     return redirect('panel_usuarios')
+
+
+@user_passes_test(es_superusuario, login_url='/login/')
+def aprobar_cuenta_soporte_view(request, user_id):
+    """
+    Aprobación de cuentas de soporte técnico:
+    - Admin Inicial (Yaele / id=1): Aprobación directa en 1 clic SIN contraseña.
+    - Soporte Secundario: Requiere 2 firmas con contraseña institucional obligatoria (2 validaciones independientes).
+    - Inician siempre en Modo Lectura (is_staff=True, is_superuser=False).
+    """
+    if request.method != 'POST':
+        return redirect('panel_usuarios')
+
+    target_user = get_object_or_404(User, id=user_id)
+    target_autor = getattr(target_user, 'autor', None)
+    if not target_autor or not target_autor.es_soporte:
+        messages.error(request, 'El usuario seleccionado no pertenece al perfil de Soporte Técnico.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    es_admin_inicial = es_superusuario_principal(request.user)
+
+    # Caso 1: Administrador Inicial aprueba con 1 solo clic SIN contraseña
+    if es_admin_inicial:
+        target_user.is_active = True
+        target_user.is_staff = True
+        target_user.is_superuser = True
+        target_user.save()
+        target_autor.estado_cuenta = 'activa'
+        target_autor.correo_verificado = True
+        target_autor.codigo_verificacion = None
+        target_autor.codigo_verificacion_expira = None
+        target_autor.aprobado_por_soporte_1 = request.user
+        target_autor.fecha_aprobacion_soporte_1 = timezone.now()
+        target_autor.aprobado_por_soporte_2 = request.user
+        target_autor.fecha_aprobacion_soporte_2 = timezone.now()
+        target_autor.save()
+        registrar_auditoria(
+            request.user,
+            "Aprobación Directa de Cuenta de Soporte",
+            f"El Administrador Inicial {request.user.username} aprobó y activó directamente la cuenta de soporte de {target_user.username} en Modo Lectura."
+        )
+        try:
+            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Modo Lector)')
+        except Exception:
+            pass
+        messages.success(request, f'¡Cuenta de soporte de "{target_user.username}" activada con facultades completas de administración institucional!')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    # Caso 2: Soporte Secundario requiere confirmación con contraseña y 2 firmas distintas
+    password_confirmacion = request.POST.get('password_confirmacion', '').strip()
+    if not password_confirmacion:
+        messages.error(request, 'Debes ingresar tu contraseña actual para autorizar la cuenta de soporte.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    if not request.user.check_password(password_confirmacion):
+        messages.error(request, 'Contraseña incorrecta. Se requiere verificar tu identidad institucional para validar personal de soporte.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    if target_user == request.user:
+        messages.error(request, 'No puedes autorizar tu propia cuenta.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    # Evaluar si es la primera o la segunda firma
+    if not target_autor.aprobado_por_soporte_1:
+        target_autor.aprobado_por_soporte_1 = request.user
+        target_autor.fecha_aprobacion_soporte_1 = timezone.now()
+        target_autor.save()
+        registrar_auditoria(
+            request.user,
+            "Primera Aprobación de Cuenta de Soporte (1/2)",
+            f"El integrante de soporte {request.user.username} validó con contraseña la 1.ª firma requerida para {target_user.username}."
+        )
+        messages.info(request, f'1.ª Aprobación registrada (1/2) para "{target_user.username}". Se requiere la validación de un segundo integrante de soporte con su contraseña para la activación final.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    elif target_autor.aprobado_por_soporte_1 == request.user:
+        messages.warning(request, f'Ya registraste tu aprobación para "{target_user.username}". Se requiere que otro integrante diferente de soporte ingrese su contraseña para completar la doble validación (1/2).')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    else:
+        # Segunda firma por un usuario de soporte diferente
+        target_autor.aprobado_por_soporte_2 = request.user
+        target_autor.fecha_aprobacion_soporte_2 = timezone.now()
+        target_autor.estado_cuenta = 'activa'
+        target_autor.correo_verificado = True
+        target_autor.codigo_verificacion = None
+        target_autor.codigo_verificacion_expira = None
+        target_autor.save()
+
+        target_user.is_active = True
+        target_user.is_staff = True
+        target_user.is_superuser = True
+        target_user.save()
+
+        firmante_1_nom = target_autor.aprobado_por_soporte_1.username
+        registrar_auditoria(
+            request.user,
+            "Segunda Aprobación y Activación de Soporte (2/2)",
+            f"El integrante de soporte {request.user.username} otorgó la 2.ª firma requerida. Cuenta de soporte {target_user.username} activada en Modo Lectura tras doble autorización institucional (firmantes: @{firmante_1_nom} y @{request.user.username})."
+        )
+        try:
+            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Modo Lector)')
+        except Exception:
+            pass
+        messages.success(request, f'¡Doble autorización institucional completada (2/2)! La cuenta de soporte de "{target_user.username}" ha sido activada con facultades completas de administración institucional.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+
+@user_passes_test(es_superusuario, login_url='/login/')
+def rechazar_cuenta_soporte_view(request, user_id):
+    """Rechaza y elimina una solicitud de cuenta de soporte."""
+    if request.method != 'POST':
+        return redirect('panel_usuarios')
+
+    target_user = get_object_or_404(User, id=user_id)
+    if target_user.id == 1 or target_user.username.lower() == 'yaele':
+        messages.error(request, 'No puedes rechazar al Administrador Principal.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    if not es_superusuario_principal(request.user):
+        password_confirmacion = request.POST.get('password_confirmacion', '').strip()
+        if not request.user.check_password(password_confirmacion):
+            messages.error(request, 'Contraseña incorrecta. Se requiere verificar tu identidad institucional.')
+            return redirect(reverse('panel_usuarios') + '#supers')
+
+    nombre_usr = target_user.username
+    if hasattr(target_user, 'autor') and target_user.autor:
+        target_user.autor.delete()
+    target_user.delete()
+    registrar_auditoria(request.user, "Rechazo de Cuenta de Soporte", f"Se rechazó y eliminó la solicitud de cuenta de soporte: {nombre_usr}")
+    messages.warning(request, f'La solicitud de cuenta de soporte "{nombre_usr}" ha sido rechazada y eliminada.')
+    return redirect(reverse('panel_usuarios') + '#supers')
+
+
+@user_passes_test(es_superusuario, login_url='/login/')
+def desactivar_cuenta_soporte_view(request, user_id):
+    """Coloca una cuenta de soporte activa en estado desactivado y resetea sus firmas."""
+    if request.method != 'POST':
+        return redirect('panel_usuarios')
+
+    target_user = get_object_or_404(User, id=user_id)
+    if target_user == request.user or target_user.id == 1 or target_user.username.lower() == 'yaele':
+        messages.error(request, 'No puedes desactivar al Administrador Principal o a ti mismo.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    if not es_superusuario_principal(request.user):
+        password_confirmacion = request.POST.get('password_confirmacion', '').strip()
+        if not request.user.check_password(password_confirmacion):
+            messages.error(request, 'Contraseña incorrecta. Se requiere verificar tu identidad para desactivar personal de soporte.')
+            return redirect(reverse('panel_usuarios') + '#supers')
+
+    target_user.is_active = False
+    target_user.is_superuser = False
+    target_user.save()
+    if hasattr(target_user, 'autor') and target_user.autor:
+        target_user.autor.estado_cuenta = 'desactivada'
+        target_user.autor.aprobado_por_soporte_1 = None
+        target_user.autor.fecha_aprobacion_soporte_1 = None
+        target_user.autor.aprobado_por_soporte_2 = None
+        target_user.autor.fecha_aprobacion_soporte_2 = None
+        target_user.autor.save()
+
+    registrar_auditoria(request.user, "Desactivación de Cuenta de Soporte", f"La cuenta de soporte de {target_user.username} fue desactivada.")
+    messages.warning(request, f'La cuenta de soporte "{target_user.username}" ha sido desactivada y enviada a la sección de Soporte Desactivado.')
+    return redirect(reverse('panel_usuarios') + '#supers')
 
 
 @user_passes_test(es_superusuario, login_url='/login/')
@@ -4858,7 +5494,7 @@ def solicitar_reactivacion_view(request):
         autor.contacto_reactivacion = contacto or usuario.email
         autor.save()
 
-        # Generar ticket en la Mesa de Ayuda / Soporte Interno
+        # Generar ticket en el Área de Ayuda / Soporte Interno
         tipo_baja = "Baja Voluntaria por el Usuario" if autor.estado_cuenta == 'baja_voluntaria' else "Suspensión Administrativa"
         cuerpo_ticket = (
             f"El usuario @{usuario.username} ({autor.nombre or usuario.username}) ha solicitado formalmente la REACTIVACIÓN de su cuenta.\n\n"
@@ -5104,11 +5740,11 @@ def cambiar_rol_usuario_view(request, user_id):
             autor.rol_facultad = 'INV_IND'
             if institucion_externa:
                 if "independiente" not in institucion_externa.lower():
-                    autor.institucion_origen = f"Investigador Independiente ({institucion_externa})"
+                    autor.institucion_origen = f"Investigador ({institucion_externa})"
                 else:
                     autor.institucion_origen = institucion_externa
             else:
-                autor.institucion_origen = "Investigador Independiente"
+                autor.institucion_origen = "Investigador"
             Nombramiento.objects.get_or_create(autor=autor, rol='INV_IND')
         elif nuevo_rol == 'auxiliar':
             usuario.is_superuser = False
@@ -5302,8 +5938,8 @@ def crear_autor_rapido_view(request):
         # Procedencia
         es_externo = False
         rol_facultad = 'OTRO'
-        if tipo_procedencia == 'Independiente':
-            institucion = 'Investigador Independiente'
+        if tipo_procedencia in ['Independiente', 'Investigador']:
+            institucion = 'Investigador'
             rol_facultad = 'INV_IND'
             es_externo = False
             tipo_key = 'independiente'
@@ -5342,7 +5978,7 @@ def crear_autor_rapido_view(request):
                 'nombre_con_titulo': autor_existente.nombre_con_titulo,
                 'institucion': autor_existente.institucion_origen,
                 'codigo': autor_existente.codigo_institucional,
-                'tipo': 'independiente' if (autor_existente.rol_facultad == 'INV_IND' or 'independiente' in (autor_existente.institucion_origen or '').lower()) else ('externo' if autor_existente.es_externo else 'uabc'),
+                'tipo': 'independiente' if (autor_existente.rol_facultad == 'INV_IND' or 'independiente' in (autor_existente.institucion_origen or '').lower() or getattr(autor_existente, 'obtener_prefijo_codigo_institucional', '') == 'INV') else ('externo' if autor_existente.es_externo else 'uabc'),
                 'ya_existia': True
             })
 
@@ -5369,6 +6005,99 @@ def crear_autor_rapido_view(request):
         })
     return JsonResponse({'success': False}, status=405)
 
+
+@login_required
+def buscar_autores_live_ajax_view(request):
+    """
+    Búsqueda en tiempo real de autores en la base de datos para prevenir duplicados
+    incluso si otro usuario acaba de registrar un autor en otra sesión simultánea.
+    """
+    q = request.GET.get('q', '').strip()
+    if not q or len(q) < 2:
+        return JsonResponse({'autores': []})
+
+    autores = Autor.objects.filter(
+        Q(nombre__icontains=q) |
+        Q(nombres__icontains=q) |
+        Q(apellido_paterno__icontains=q) |
+        Q(apellido_materno__icontains=q) |
+        Q(codigo_institucional__icontains=q)
+    ).order_by('nombre')[:15]
+
+    data = []
+    for a in autores:
+        tipo = 'independiente' if (a.rol_facultad == 'INV_IND' or 'independiente' in (a.institucion_origen or '').lower()) else ('externo' if a.es_externo else 'uabc')
+        data.append({
+            'id': a.id,
+            'nombre': a.nombre,
+            'nombre_con_titulo': a.nombre_con_titulo,
+            'institucion': a.institucion_origen,
+            'codigo': a.codigo_institucional or '',
+            'tipo': tipo
+        })
+    return JsonResponse({'autores': data})
+
+
+@login_required
+def verificar_titulo_duplicado_ajax_view(request):
+    """
+    Verifica en tiempo real si ya existe una obra con un título idéntico o muy similar
+    en el catálogo institucional para prevenir registros duplicados.
+    """
+    titulo = request.GET.get('titulo', '').strip()
+    articulo_id = request.GET.get('articulo_id', None)
+
+    if not titulo or len(titulo) < 5:
+        return JsonResponse({'duplicado': False})
+
+    qs = Articulo.objects.all()
+    if articulo_id:
+        try:
+            qs = qs.exclude(id=int(articulo_id))
+        except (ValueError, TypeError):
+            pass
+
+    # Coincidencia exacta
+    exacto = qs.filter(titulo__iexact=titulo).first()
+    if exacto:
+        primer_autor = exacto.autor.first()
+        autor_nom = getattr(primer_autor, 'nombre', 'Sin autor')
+        ano_prod = getattr(exacto, 'año_produccion', '')
+        tipo_nom = exacto.tipo_contenido.nombre if exacto.tipo_contenido else ''
+        return JsonResponse({
+            'duplicado': True,
+            'exacto': True,
+            'id': exacto.id,
+            'titulo': exacto.titulo,
+            'ano': ano_prod,
+            'tipo': tipo_nom,
+            'autor': autor_nom
+        })
+
+    # Coincidencia similar (longitud >= 10 caracteres)
+    if len(titulo) >= 10:
+        similar = qs.filter(titulo__icontains=titulo).first()
+        if not similar and len(titulo) >= 15:
+            for art in qs.only('id', 'titulo', 'tipo_contenido').order_by('-id')[:200]:
+                if len(art.titulo) >= 15 and art.titulo.lower() in titulo.lower():
+                    similar = art
+                    break
+        if similar:
+            primer_autor = similar.autor.first()
+            autor_nom = getattr(primer_autor, 'nombre', 'Sin autor')
+            ano_prod = getattr(similar, 'año_produccion', '')
+            tipo_nom = similar.tipo_contenido.nombre if similar.tipo_contenido else ''
+            return JsonResponse({
+                'duplicado': True,
+                'exacto': False,
+                'id': similar.id,
+                'titulo': similar.titulo,
+                'ano': ano_prod,
+                'tipo': tipo_nom,
+                'autor': autor_nom
+            })
+
+    return JsonResponse({'duplicado': False})
 
 
 @user_passes_test(es_superusuario, login_url='/login/')
@@ -5596,3 +6325,1015 @@ def bitacora_usuario_ajax_view(request, user_id):
         'total_obras': len(lista_obras),
         'obras': lista_obras
     })
+
+
+# ==============================================================================
+# MÓDULO DE CONFIGURACIÓN DEL SISTEMA Y GESTIÓN DE SOPORTE PARA DOCENTES
+# ==============================================================================
+
+def asegurar_configuracion_inicial():
+    """
+    Garantiza que exista el registro singleton de configuración del sistema
+    y si no hay preguntas frecuentes de soporte, crea las 3 iniciales por defecto.
+    """
+    config = ConfiguracionSistema.get_solo()
+    env_pass = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+    if not config.email_host_password and env_pass:
+        config.email_host_password = env_pass
+        config.save()
+
+    if PreguntaFrecuenteSoporte.objects.count() == 0:
+        PreguntaFrecuenteSoporte.objects.create(
+            pregunta="¿Cómo registrar un coautor externo?",
+            respuesta="En la pantalla de subida de obra o coautorías, escribe el nombre completo y la universidad correspondiente para darlo de alta en la red interinstitucional.",
+            orden=1,
+            activo=True
+        )
+        PreguntaFrecuenteSoporte.objects.create(
+            pregunta="¿Qué formatos de archivo puedo subir al repositorio y a mensajería?",
+            respuesta='<p class="mb-2"><strong>• Publicaciones y Trabajos:</strong> El repositorio acepta <strong>únicamente documentos en formato PDF</strong> con un límite máximo institucional de <strong>20 MB</strong> por obra.</p><p class="mb-2"><strong>• Claustro Docente:</strong> Se admiten documentos curriculares en <strong>PDF</strong> y fotografías en formato de imagen (JPG, PNG).</p><p class="mb-0"><strong>• Mensajería Académica y Soporte FCA:</strong> En estos canales sí puedes intercambiar libremente documentos de trabajo (.docx, .pptx, .xlsx, imágenes y PDFs) entre colegas o con soporte para revisión previa.</p>',
+            orden=2,
+            activo=True
+        )
+        PreguntaFrecuenteSoporte.objects.create(
+            pregunta="¿Cómo corregir o actualizar mis datos oficiales de docente?",
+            respuesta="Tu semblanza y redes de contacto las puedes editar desde <em>Mi Panel</em>. Si requieres corregir datos institucionales como tu <strong>nombre completo, título o grado académico (Dr., Mtro., Lic.), nombramiento o número de empleado</strong>, solicítalo aquí a Soporte FCA y un Super Administrador realizará la modificación directamente en tu ficha.",
+            orden=3,
+            activo=True
+        )
+    return config
+
+
+@login_required
+def configuracion_soporte_view(request):
+    """
+    Panel central de Configuración y Soporte para Super Administradores.
+    Permite:
+    1. Configurar credenciales de Gmail/SMTP para el envío automático sin tocar código.
+    2. Modificar datos de contacto institucional de soporte (correo, teléfono, ubicación, horarios).
+    3. Gestionar y personalizar preguntas frecuentes (FAQ) y mensaje de bienvenida a docentes.
+    """
+    if not (request.user.is_superuser or (request.user.is_staff and hasattr(request.user, 'autor') and request.user.autor.es_soporte)):
+        messages.error(request, 'Acceso restringido al personal de soporte y administración institucional.')
+        return redirect('Home')
+
+    asegurar_configuracion_inicial()
+    config = ConfiguracionSistema.get_solo()
+
+    if request.method == 'POST':
+        tipo_form = request.POST.get('tipo_form')
+        if tipo_form == 'correo':
+            email_user = request.POST.get('email_host_user', '').strip()
+            email_pass = request.POST.get('email_host_password', '').strip()
+            remitente_nombre = request.POST.get('email_remitente_nombre', '').strip() or 'Repositorio FCA UABC'
+            smtp_host = request.POST.get('email_host', '').strip() or 'smtp.gmail.com'
+            smtp_port = request.POST.get('email_port', '587').strip()
+            protocolo = request.POST.get('protocolo_seguridad')
+            if protocolo == 'tls':
+                use_tls = True
+                use_ssl = False
+            elif protocolo == 'ssl':
+                use_tls = False
+                use_ssl = True
+            elif protocolo == 'none':
+                use_tls = False
+                use_ssl = False
+            else:
+                use_tls = request.POST.get('email_use_tls') in ['1', 'true', 'on']
+                use_ssl = request.POST.get('email_use_ssl') in ['1', 'true', 'on']
+
+            if email_user:
+                config.email_host_user = email_user
+            if email_pass:  # Solo actualiza si no se dejó en blanco
+                config.email_host_password = email_pass
+            config.email_remitente_nombre = remitente_nombre
+            config.email_host = smtp_host
+            try:
+                config.email_port = int(smtp_port)
+            except ValueError:
+                config.email_port = 587
+
+            if use_tls and use_ssl:
+                if config.email_port == 465:
+                    use_tls = False
+                else:
+                    use_ssl = False
+
+            config.email_use_tls = use_tls
+            config.email_use_ssl = use_ssl
+            config.save()
+            messages.success(request, '¡Configuración de correo automático guardada exitosamente!')
+            return redirect('configuracion_soporte')
+
+        elif tipo_form == 'soporte':
+            config.soporte_email = request.POST.get('soporte_email', '').strip() or 'soporte.fca@uabc.edu.mx'
+            config.soporte_telefono = request.POST.get('soporte_telefono', '').strip() or 'Ext. Coordinación de Posgrado'
+            config.soporte_ubicacion = request.POST.get('soporte_ubicacion', '').strip() or 'Edificio FCA Campus Tijuana'
+            config.soporte_tiempo_respuesta = request.POST.get('soporte_tiempo_respuesta', '').strip() or 'Menos de 24 hrs hábiles'
+
+            config.soporte_bienvenida_titulo = request.POST.get('soporte_bienvenida_titulo', '').strip() or '¡Hola! Te damos la bienvenida al Área de Ayuda y Soporte FCA.'
+            config.soporte_bienvenida_cuerpo = request.POST.get('soporte_bienvenida_cuerpo', '').strip()
+            config.soporte_facultad_1 = request.POST.get('soporte_facultad_1', '').strip()
+            config.soporte_facultad_2 = request.POST.get('soporte_facultad_2', '').strip()
+            config.soporte_facultad_3 = request.POST.get('soporte_facultad_3', '').strip()
+            config.soporte_aviso_final = request.POST.get('soporte_aviso_final', '').strip()
+
+            config.save()
+            messages.success(request, '¡Información institucional de soporte para docentes actualizada correctamente!')
+            return redirect(f"{reverse('configuracion_soporte')}#seccion-soporte")
+
+        elif tipo_form == 'portal_footer':
+            if 'footer_telefono_universitario' in request.POST:
+                config.footer_telefono_universitario = request.POST.get('footer_telefono_universitario', '').strip()
+            if 'footer_telefono_directo' in request.POST:
+                config.footer_telefono_directo = request.POST.get('footer_telefono_directo', '').strip()
+            if 'footer_direccion' in request.POST:
+                config.footer_direccion = request.POST.get('footer_direccion', '').strip()
+
+            config.save()
+            messages.success(request, '¡Teléfonos y dirección del campus actualizados exitosamente!')
+            return redirect(f"{reverse('configuracion_soporte')}#subtab-contacto")
+
+        elif tipo_form == 'contacto_pagina':
+            config.contacto_banner_badge = request.POST.get('contacto_banner_badge', '').strip() or 'Atención y Vinculación Institucional'
+            config.contacto_banner_titulo = request.POST.get('contacto_banner_titulo', '').strip() or 'Contacto Institucional FCA'
+            config.contacto_banner_subtitulo = request.POST.get('contacto_banner_subtitulo', '').strip() or 'Comunícate directamente con la Facultad de Contaduría y Administración. Nuestro equipo de soporte institucional atenderá tu consulta a la brevedad.'
+            config.contacto_form_titulo = request.POST.get('contacto_form_titulo', '').strip() or 'Envíanos un mensaje'
+            config.contacto_form_subtitulo = request.POST.get('contacto_form_subtitulo', '').strip() or 'Llena los campos a continuación y te responderemos a tu correo electrónico institucional o personal.'
+            config.contacto_horario_atencion = request.POST.get('contacto_horario_atencion', '').strip() or 'Lunes a Viernes de 8:00 AM a 8:00 PM'
+            config.contacto_docente_titulo = request.POST.get('contacto_docente_titulo', '').strip() or '¿Perteneces al Claustro Docente e Investigadores?'
+            config.contacto_docente_descripcion = request.POST.get('contacto_docente_descripcion', '').strip() or 'Si eres profesor o investigador de la FCA, inicia sesión con tus credenciales para acceder al Canal Exclusivo de Soporte Interno, auditar tus obras en catálogo o comunicarte con colegas.'
+
+            if 'soporte_email' in request.POST:
+                config.soporte_email = request.POST.get('soporte_email', '').strip() or 'soporte.fca@uabc.edu.mx'
+            if 'footer_telefono_universitario' in request.POST:
+                config.footer_telefono_universitario = request.POST.get('footer_telefono_universitario', '').strip()
+            if 'footer_telefono_directo' in request.POST:
+                config.footer_telefono_directo = request.POST.get('footer_telefono_directo', '').strip()
+            if 'footer_direccion' in request.POST:
+                config.footer_direccion = request.POST.get('footer_direccion', '').strip()
+            if 'soporte_tiempo_respuesta' in request.POST:
+                config.soporte_tiempo_respuesta = request.POST.get('soporte_tiempo_respuesta', '').strip() or 'Menos de 24 hrs hábiles'
+
+            config.save()
+            messages.success(request, '¡Configuración de la página de Contacto (/contacto/) actualizada correctamente!')
+            return redirect(f"{reverse('configuracion_soporte')}#tab-contacto")
+
+    faqs = PreguntaFrecuenteSoporte.objects.all().order_by('orden', 'id')
+    eventos = EventoFCA.objects.all().order_by('orden', 'fecha', 'id')
+    enlaces_rapidos = EnlaceRapidoPortal.objects.all().order_by('orden', 'id')
+    redes_footer = RedSocialFooter.objects.all().order_by('orden', 'id')
+    enlaces_footer = EnlacePiePagina.objects.all().order_by('columna', 'orden', 'id')
+    mensajes_contacto = MensajeContacto.objects.all().order_by('-fecha_creacion')[:100]
+    contactos_nuevos_count = MensajeContacto.objects.filter(estado='nuevo').count()
+
+    context = {
+        'config': config,
+        'faqs': faqs,
+        'eventos': eventos,
+        'enlaces_rapidos': enlaces_rapidos,
+        'redes_footer': redes_footer,
+        'enlaces_footer': enlaces_footer,
+        'mensajes_contacto': mensajes_contacto,
+        'contactos_nuevos_count': contactos_nuevos_count,
+    }
+    return render(request, 'configuracion_soporte.html', context)
+
+
+@login_required
+def probar_email_soporte_ajax(request):
+    """
+    Endpoint AJAX para verificar la conexión SMTP con Gmail en tiempo real.
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
+
+    config = ConfiguracionSistema.get_solo()
+    email_destino = request.POST.get('email_destino', '').strip()
+    if not email_destino:
+        return JsonResponse({'ok': False, 'error': 'Debes ingresar un correo de destino para enviar la prueba.'})
+
+    # Permite probar con los datos enviados en el formulario o los guardados en BD o .env
+    username = request.POST.get('email_host_user', '').strip() or config.email_host_user or os.getenv('EMAIL_HOST_USER', '')
+    password = request.POST.get('email_host_password', '').strip() or config.email_host_password or os.getenv('EMAIL_HOST_PASSWORD', '')
+    remitente_nombre = request.POST.get('email_remitente_nombre', '').strip() or config.email_remitente_nombre
+    host = request.POST.get('email_host', '').strip() or config.email_host
+    port_str = request.POST.get('email_port', '').strip() or str(config.email_port)
+
+    protocolo = request.POST.get('protocolo_seguridad')
+    if protocolo == 'tls':
+        use_tls = True
+        use_ssl = False
+    elif protocolo == 'ssl':
+        use_tls = False
+        use_ssl = True
+    elif protocolo == 'none':
+        use_tls = False
+        use_ssl = False
+    else:
+        use_tls = request.POST.get('email_use_tls') in ['1', 'true', 'on'] if 'email_use_tls' in request.POST else config.email_use_tls
+        use_ssl = request.POST.get('email_use_ssl') in ['1', 'true', 'on'] if 'email_use_ssl' in request.POST else config.email_use_ssl
+        if use_tls and use_ssl:
+            if port_str == '465':
+                use_tls = False
+            else:
+                use_ssl = False
+
+    try:
+        port = int(port_str)
+    except ValueError:
+        port = 587
+
+    if not username:
+        return JsonResponse({'ok': False, 'error': 'Debes especificar un correo remitente de Gmail o institucional.'})
+    if not password:
+        return JsonResponse({'ok': False, 'error': 'Debes ingresar o tener guardada la Contraseña de Aplicación de 16 caracteres de Google.'})
+
+    ok, mensaje = probar_conexion_smtp(
+        destinatario_prueba=email_destino,
+        host=host,
+        port=port,
+        username=username,
+        password=password,
+        use_tls=use_tls,
+        use_ssl=use_ssl,
+        remitente_nombre=remitente_nombre
+    )
+
+    return JsonResponse({'ok': ok, 'mensaje': mensaje if ok else None, 'error': None if ok else mensaje})
+
+
+@login_required
+def crear_faq_soporte_view(request):
+    """
+    Crea una nueva pregunta frecuente para el canal de soporte de docentes.
+    """
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+    pregunta = request.POST.get('pregunta', '').strip()
+    respuesta = request.POST.get('respuesta', '').strip()
+    orden_str = request.POST.get('orden', '0').strip()
+    try:
+        orden = int(orden_str)
+    except ValueError:
+        orden = 0
+    if pregunta and respuesta:
+        PreguntaFrecuenteSoporte.objects.create(
+            pregunta=pregunta,
+            respuesta=respuesta,
+            orden=orden,
+            activo=True
+        )
+        messages.success(request, 'Pregunta frecuente agregada exitosamente.')
+    else:
+        messages.error(request, 'La pregunta y la respuesta son obligatorias.')
+    return redirect('configuracion_soporte')
+
+
+@login_required
+def editar_faq_soporte_view(request, faq_id):
+    """
+    Edita una pregunta frecuente existente.
+    """
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+    faq = get_object_or_404(PreguntaFrecuenteSoporte, id=faq_id)
+    pregunta = request.POST.get('pregunta', '').strip()
+    respuesta = request.POST.get('respuesta', '').strip()
+    orden_str = request.POST.get('orden', '0').strip()
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+    try:
+        orden = int(orden_str)
+    except ValueError:
+        orden = 0
+    if pregunta and respuesta:
+        faq.pregunta = pregunta
+        faq.respuesta = respuesta
+        faq.orden = orden
+        faq.activo = activo
+        faq.save()
+        messages.success(request, 'Pregunta frecuente actualizada correctamente.')
+    else:
+        messages.error(request, 'La pregunta y la respuesta no pueden quedar vacías.')
+    return redirect('configuracion_soporte')
+
+
+@login_required
+def eliminar_faq_soporte_view(request, faq_id):
+    """
+    Elimina una pregunta frecuente.
+    """
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+    faq = get_object_or_404(PreguntaFrecuenteSoporte, id=faq_id)
+    faq.delete()
+    messages.success(request, 'Pregunta frecuente eliminada.')
+    return redirect('configuracion_soporte')
+
+
+@login_required
+def toggle_faq_soporte_view(request, faq_id):
+    """
+    Alterna la visibilidad (activo/oculto) de una pregunta frecuente.
+    """
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+    faq = get_object_or_404(PreguntaFrecuenteSoporte, id=faq_id)
+    faq.activo = not faq.activo
+    faq.save()
+    estado = "visible para los docentes" if faq.activo else "oculta"
+    messages.info(request, f'La pregunta ahora está {estado}.')
+    return redirect('configuracion_soporte')
+
+
+# =========================================================================
+# GESTIÓN DE PRÓXIMOS EVENTOS FCA (PORTAL PRINCIPAL)
+# =========================================================================
+
+@login_required
+def crear_evento_fca_view(request):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    titulo = request.POST.get('titulo', '').strip()
+    fecha_str = request.POST.get('fecha', '').strip()
+    horario = request.POST.get('horario', '').strip() or '10:00 AM'
+    lugar = request.POST.get('lugar', '').strip() or 'FCA Campus Tijuana'
+    imagen_url = request.POST.get('imagen_url', '').strip()
+    enlace = request.POST.get('enlace', '').strip()
+    mostrar_si_paso = request.POST.get('mostrar_si_paso') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if titulo and fecha_str:
+        from datetime import datetime
+        try:
+            fecha_val = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, 'Formato de fecha inválido. Utiliza el selector de fecha.')
+            return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+        evento = EventoFCA(
+            titulo=titulo,
+            fecha=fecha_val,
+            horario=horario,
+            lugar=lugar,
+            imagen_url=imagen_url,
+            enlace=enlace,
+            orden=orden,
+            mostrar_si_paso=mostrar_si_paso,
+            activo=activo
+        )
+        if 'imagen' in request.FILES:
+            evento.imagen = request.FILES['imagen']
+        evento.save()
+        messages.success(request, f'Evento "{titulo}" publicado exitosamente.')
+    else:
+        messages.error(request, 'Debes ingresar al menos el título y la fecha del evento.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+
+@login_required
+def editar_evento_fca_view(request, evento_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    evento = get_object_or_404(EventoFCA, id=evento_id)
+    titulo = request.POST.get('titulo', '').strip()
+    fecha_str = request.POST.get('fecha', '').strip()
+    horario = request.POST.get('horario', '').strip()
+    lugar = request.POST.get('lugar', '').strip()
+    imagen_url = request.POST.get('imagen_url', '').strip()
+    enlace = request.POST.get('enlace', '').strip()
+    mostrar_si_paso = request.POST.get('mostrar_si_paso') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if titulo and fecha_str:
+        from datetime import datetime
+        try:
+            fecha_val = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, 'Formato de fecha inválido.')
+            return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+        evento.titulo = titulo
+        evento.fecha = fecha_val
+        evento.horario = horario or '10:00 AM'
+        evento.lugar = lugar or 'FCA Campus Tijuana'
+        if imagen_url:
+            evento.imagen_url = imagen_url
+        evento.enlace = enlace
+        evento.orden = orden
+        evento.mostrar_si_paso = mostrar_si_paso
+        evento.activo = activo
+
+        if 'imagen' in request.FILES:
+            evento.imagen = request.FILES['imagen']
+
+        evento.save()
+        messages.success(request, f'Evento "{titulo}" actualizado correctamente.')
+    else:
+        messages.error(request, 'El título y la fecha no pueden quedar vacíos.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+
+@login_required
+def eliminar_evento_fca_view(request, evento_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    evento = get_object_or_404(EventoFCA, id=evento_id)
+    titulo = evento.titulo
+    evento.delete()
+    messages.success(request, f'Evento "{titulo}" eliminado correctamente.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+
+@login_required
+def toggle_evento_fca_view(request, evento_id):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    evento = get_object_or_404(EventoFCA, id=evento_id)
+    evento.activo = not evento.activo
+    evento.save()
+    estado = "visible" if evento.activo else "oculto"
+    messages.success(request, f'El evento "{evento.titulo}" ahora está {estado}.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-eventos")
+
+
+# =========================================================================
+# GESTIÓN DE ENLACES RÁPIDOS E INDEXADORES (PORTAL PRINCIPAL)
+# =========================================================================
+
+@login_required
+def crear_enlace_rapido_view(request):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    titulo = request.POST.get('titulo', '').strip()
+    url = request.POST.get('url', '').strip()
+    icono = request.POST.get('icono', '').strip() or 'fas fa-link'
+    color = request.POST.get('color', '').strip() or '#006633'
+    abrir_nueva = request.POST.get('abrir_en_nueva_pestana') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if titulo and url:
+        EnlaceRapidoPortal.objects.create(
+            titulo=titulo,
+            url=url,
+            icono=icono,
+            color=color,
+            abrir_en_nueva_pestana=abrir_nueva,
+            orden=orden,
+            activo=activo
+        )
+        messages.success(request, f'Enlace rápido "{titulo}" creado exitosamente.')
+    else:
+        messages.error(request, 'Debes ingresar el título y la URL de destino.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-enlaces")
+
+
+@login_required
+def editar_enlace_rapido_view(request, enlace_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlaceRapidoPortal, id=enlace_id)
+    titulo = request.POST.get('titulo', '').strip()
+    url = request.POST.get('url', '').strip()
+    icono = request.POST.get('icono', '').strip() or 'fas fa-link'
+    color = request.POST.get('color', '').strip() or '#006633'
+    abrir_nueva = request.POST.get('abrir_en_nueva_pestana') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if titulo and url:
+        enlace.titulo = titulo
+        enlace.url = url
+        enlace.icono = icono
+        enlace.color = color
+        enlace.abrir_en_nueva_pestana = abrir_nueva
+        enlace.orden = orden
+        enlace.activo = activo
+        enlace.save()
+        messages.success(request, f'Enlace rápido "{titulo}" actualizado correctamente.')
+    else:
+        messages.error(request, 'El título y la URL no pueden quedar vacíos.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-enlaces")
+
+
+@login_required
+def eliminar_enlace_rapido_view(request, enlace_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlaceRapidoPortal, id=enlace_id)
+    titulo = enlace.titulo
+    enlace.delete()
+    messages.success(request, f'Enlace rápido "{titulo}" eliminado.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-enlaces")
+
+
+@login_required
+def toggle_enlace_rapido_view(request, enlace_id):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlaceRapidoPortal, id=enlace_id)
+    enlace.activo = not enlace.activo
+    enlace.save()
+    estado = "visible" if enlace.activo else "oculto"
+    messages.success(request, f'El enlace "{enlace.titulo}" ahora está {estado}.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-enlaces")
+
+
+# ==============================================================================
+# GESTIÓN DINÁMICA DE REDES SOCIALES Y PIE DE PÁGINA (FOOTER)
+# ==============================================================================
+
+@login_required
+def crear_red_social_view(request):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    nombre = request.POST.get('nombre', '').strip()
+    url = request.POST.get('url', '').strip()
+    icono = request.POST.get('icono', '').strip() or 'fab fa-globe'
+    color = request.POST.get('color', '').strip() or '#006633'
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+    usar_imagen = request.POST.get('usar_imagen') in ['1', 'true', 'on']
+    filtro_blanco = request.POST.get('filtro_blanco') in ['1', 'true', 'on']
+    icono_imagen = request.FILES.get('icono_imagen')
+
+    if icono_imagen:
+        usar_imagen = True
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if nombre and url:
+        RedSocialFooter.objects.create(
+            nombre=nombre,
+            url=url,
+            icono=icono,
+            color=color,
+            icono_imagen=icono_imagen,
+            usar_imagen=usar_imagen,
+            filtro_blanco=filtro_blanco,
+            orden=orden,
+            activo=activo
+        )
+        messages.success(request, f'Red social "{nombre}" añadida correctamente al pie de página.')
+    else:
+        messages.error(request, 'Debes ingresar el nombre de la red y la URL del perfil.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def editar_red_social_view(request, red_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    red = get_object_or_404(RedSocialFooter, id=red_id)
+    nombre = request.POST.get('nombre', '').strip()
+    url = request.POST.get('url', '').strip()
+    icono = request.POST.get('icono', '').strip() or red.icono
+    color = request.POST.get('color', '').strip() or red.color
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+    usar_imagen = request.POST.get('usar_imagen') in ['1', 'true', 'on']
+    filtro_blanco = request.POST.get('filtro_blanco') in ['1', 'true', 'on']
+
+    if 'icono_imagen' in request.FILES:
+        red.icono_imagen = request.FILES['icono_imagen']
+        red.usar_imagen = True
+    else:
+        red.usar_imagen = usar_imagen
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = red.orden
+
+    if nombre and url:
+        red.nombre = nombre
+        red.url = url
+        red.icono = icono
+        red.color = color
+        red.filtro_blanco = filtro_blanco
+        red.orden = orden
+        red.activo = activo
+        red.save()
+        messages.success(request, f'Red social "{nombre}" actualizada correctamente.')
+    else:
+        messages.error(request, 'El nombre y la URL no pueden quedar vacíos.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def eliminar_red_social_view(request, red_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    red = get_object_or_404(RedSocialFooter, id=red_id)
+    nombre = red.nombre
+    red.delete()
+    messages.success(request, f'Red social "{nombre}" eliminada del pie de página.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def toggle_red_social_view(request, red_id):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    red = get_object_or_404(RedSocialFooter, id=red_id)
+    red.activo = not red.activo
+    red.save()
+    estado = "visible" if red.activo else "oculta"
+    messages.success(request, f'La red "{red.nombre}" ahora está {estado}.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def reordenar_red_social_view(request, red_id, direccion):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    red = get_object_or_404(RedSocialFooter, id=red_id)
+    redes = list(RedSocialFooter.objects.all().order_by('orden', 'id'))
+    try:
+        idx = redes.index(red)
+        if direccion == 'arriba' and idx > 0:
+            otro = redes[idx - 1]
+            red.orden, otro.orden = otro.orden, red.orden
+            if red.orden == otro.orden:
+                otro.orden += 1
+            red.save()
+            otro.save()
+            messages.success(request, f'Posición de "{red.nombre}" cambiada.')
+        elif direccion == 'abajo' and idx < len(redes) - 1:
+            otro = redes[idx + 1]
+            red.orden, otro.orden = otro.orden, red.orden
+            if red.orden == otro.orden:
+                red.orden += 1
+            red.save()
+            otro.save()
+            messages.success(request, f'Posición de "{red.nombre}" cambiada.')
+    except ValueError:
+        pass
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def crear_enlace_footer_view(request):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    columna = request.POST.get('columna', 'FCA').strip().upper()
+    titulo = request.POST.get('titulo', '').strip()
+    url = request.POST.get('url', '').strip()
+    es_boton = request.POST.get('es_boton') in ['1', 'true', 'on']
+    abrir_nueva = request.POST.get('abrir_en_nueva_pestana') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = 0
+
+    if titulo and url:
+        EnlacePiePagina.objects.create(
+            columna=columna,
+            titulo=titulo,
+            url=url,
+            es_boton=es_boton,
+            abrir_en_nueva_pestana=abrir_nueva,
+            orden=orden,
+            activo=activo
+        )
+        tipo_str = "Botón destacado" if es_boton else "Enlace"
+        messages.success(request, f'{tipo_str} "{titulo}" añadido a la columna {columna}.')
+    else:
+        messages.error(request, 'Debes ingresar el texto del enlace y su URL.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def editar_enlace_footer_view(request, enlace_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlacePiePagina, id=enlace_id)
+    columna = request.POST.get('columna', enlace.columna).strip().upper()
+    titulo = request.POST.get('titulo', '').strip()
+    url = request.POST.get('url', '').strip()
+    es_boton = request.POST.get('es_boton') in ['1', 'true', 'on']
+    abrir_nueva = request.POST.get('abrir_en_nueva_pestana') in ['1', 'true', 'on']
+    activo = request.POST.get('activo') in ['1', 'true', 'on']
+
+    try:
+        orden = int(request.POST.get('orden', 0))
+    except ValueError:
+        orden = enlace.orden
+
+    if titulo and url:
+        enlace.columna = columna
+        enlace.titulo = titulo
+        enlace.url = url
+        enlace.es_boton = es_boton
+        enlace.abrir_en_nueva_pestana = abrir_nueva
+        enlace.orden = orden
+        enlace.activo = activo
+        enlace.save()
+        messages.success(request, f'Enlace "{titulo}" actualizado correctamente.')
+    else:
+        messages.error(request, 'El texto y la URL no pueden quedar vacíos.')
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def eliminar_enlace_footer_view(request, enlace_id):
+    if not request.user.is_superuser or request.method != 'POST':
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlacePiePagina, id=enlace_id)
+    titulo = enlace.titulo
+    enlace.delete()
+    messages.success(request, f'Enlace "{titulo}" eliminado del pie de página.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def toggle_enlace_footer_view(request, enlace_id):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlacePiePagina, id=enlace_id)
+    enlace.activo = not enlace.activo
+    enlace.save()
+    estado = "visible" if enlace.activo else "oculto"
+    messages.success(request, f'El enlace "{enlace.titulo}" ahora está {estado}.')
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def reordenar_enlace_footer_view(request, enlace_id, direccion):
+    if not request.user.is_superuser:
+        return redirect('configuracion_soporte')
+
+    enlace = get_object_or_404(EnlacePiePagina, id=enlace_id)
+    hermanos = list(EnlacePiePagina.objects.filter(columna=enlace.columna).order_by('orden', 'id'))
+    try:
+        idx = hermanos.index(enlace)
+        if direccion == 'arriba' and idx > 0:
+            otro = hermanos[idx - 1]
+            enlace.orden, otro.orden = otro.orden, enlace.orden
+            if enlace.orden == otro.orden:
+                otro.orden += 1
+            enlace.save()
+            otro.save()
+            messages.success(request, f'Posición de "{enlace.titulo}" cambiada.')
+        elif direccion == 'abajo' and idx < len(hermanos) - 1:
+            otro = hermanos[idx + 1]
+            enlace.orden, otro.orden = otro.orden, enlace.orden
+            if enlace.orden == otro.orden:
+                enlace.orden += 1
+            enlace.save()
+            otro.save()
+            messages.success(request, f'Posición de "{enlace.titulo}" cambiada.')
+    except ValueError:
+        pass
+
+    return redirect(f"{reverse('configuracion_soporte')}#seccion-portal")
+
+
+@login_required
+def reordenar_footer_dragdrop_ajax(request):
+    """
+    Endpoint AJAX para guardar el acomodo realizado con el ratón (Drag & Drop)
+    tanto para las redes sociales como para los enlaces de las columnas del pie de página.
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
+
+    try:
+        import json
+        data = json.loads(request.body.decode('utf-8'))
+        tipo = data.get('tipo')
+        items = data.get('items', [])
+
+        if tipo == 'redes':
+            for item in items:
+                red_id = item.get('id')
+                nuevo_orden = int(item.get('orden', 0))
+                RedSocialFooter.objects.filter(id=red_id).update(orden=nuevo_orden)
+            return JsonResponse({'ok': True, 'mensaje': 'Acomodo de redes sociales guardado exitosamente.'})
+
+        elif tipo == 'enlaces':
+            for item in items:
+                enlace_id = item.get('id')
+                columna = item.get('columna')
+                nuevo_orden = int(item.get('orden', 0))
+                update_fields = {'orden': nuevo_orden}
+                if columna:
+                    update_fields['columna'] = columna.upper()
+                EnlacePiePagina.objects.filter(id=enlace_id).update(**update_fields)
+            return JsonResponse({'ok': True, 'mensaje': 'Acomodo de enlaces guardado exitosamente.'})
+
+        return JsonResponse({'ok': False, 'error': 'Tipo de elemento no reconocido'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+# =========================================================================
+# MÓDULO DE CONTACTO INSTITUCIONAL PÚBLICO
+# =========================================================================
+
+def contacto_view(request):
+    """
+    Página institucional de Contacto del Repositorio FCA.
+    Permite a visitantes, docentes, estudiantes y externos enviar consultas
+    y recibir un acuse de recibo automático con folio de seguimiento institucional.
+    """
+    asegurar_configuracion_inicial()
+    config_sistema = ConfiguracionSistema.get_solo()
+    folio_generado = None
+    enviado_exitoso = False
+
+    datos_form = {
+        'nombre': '',
+        'email': '',
+        'telefono': '',
+        'organizacion': '',
+        'asunto': '',
+        'mensaje': '',
+    }
+
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        email = request.POST.get('email', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        organizacion = request.POST.get('organizacion', '').strip()
+        asunto = request.POST.get('asunto', '').strip()
+        mensaje = request.POST.get('mensaje', '').strip()
+
+        datos_form.update({
+            'nombre': nombre,
+            'email': email,
+            'telefono': telefono,
+            'organizacion': organizacion,
+            'asunto': asunto,
+            'mensaje': mensaje,
+        })
+
+        errores = []
+        if not nombre:
+            errores.append("Por favor ingresa tu nombre completo.")
+        if not email or '@' not in email:
+            errores.append("Por favor ingresa un correo electrónico válido.")
+        if not asunto:
+            errores.append("Por favor especifica el asunto o motivo de tu consulta.")
+        if not mensaje:
+            errores.append("Por favor escribe tu duda o mensaje en el campo correspondiente.")
+
+        if errores:
+            for err in errores:
+                messages.error(request, err)
+        else:
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0].strip()
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+
+            contacto = MensajeContacto.objects.create(
+                nombre=nombre,
+                email=email,
+                telefono=telefono,
+                organizacion=organizacion,
+                asunto=asunto,
+                mensaje=mensaje,
+                ip_origen=ip,
+            )
+
+            # Notificar por correo (hilos asíncronos seguros)
+            try:
+                notificar_nuevo_mensaje_contacto_soporte(contacto)
+            except Exception as e_sop:
+                logger.warning(f"Error al enviar notificación a soporte: {e_sop}")
+
+            try:
+                notificar_acuse_recibo_contacto_usuario(contacto)
+            except Exception as e_usr:
+                logger.warning(f"Error al enviar acuse de recibo al usuario: {e_usr}")
+
+            folio_generado = contacto.folio
+            enviado_exitoso = True
+            messages.success(request, f"¡Tu mensaje ha sido enviado correctamente! Folio de atención: {contacto.folio}. Hemos enviado un acuse de recibo a tu correo.")
+
+    return render(request, 'contacto.html', {
+        'config_sistema': config_sistema,
+        'datos_form': datos_form,
+        'folio_generado': folio_generado,
+        'enviado_exitoso': enviado_exitoso,
+    })
+
+
+@login_required
+def cambiar_estado_contacto_view(request, contacto_id):
+    """
+    Permite al Super Administrador gestionar los mensajes de contacto:
+    cambiar su estado (nuevo, en_proceso, resuelto), guardar respuesta oficial y notificar por correo al solicitante al resolver.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, 'Acceso no autorizado.')
+        return redirect('catalogo_general')
+
+    contacto = get_object_or_404(MensajeContacto, id=contacto_id)
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        next_url = request.POST.get('next')
+
+        if accion == 'eliminar':
+            folio = contacto.folio
+            contacto.delete()
+            messages.success(request, f'El mensaje con folio {folio} fue eliminado exitosamente.')
+            if next_url:
+                return redirect(next_url)
+            return redirect(f"{reverse('soporte_institucional')}?vista=contacto_web")
+
+        nuevo_estado = request.POST.get('estado', 'resuelto').strip().lower()
+        if nuevo_estado in ['nuevo', 'en_proceso', 'resuelto']:
+            contacto.estado = nuevo_estado
+            contacto.atendido_por = request.user
+
+            notas = request.POST.get('notas_soporte', '').strip()
+            if notas:
+                contacto.notas_soporte = notas
+
+            respuesta = request.POST.get('respuesta_soporte', '').strip()
+            if respuesta:
+                contacto.respuesta_soporte = respuesta
+
+            enviar_correo = request.POST.get('enviar_correo') in ['1', 'true', 'on', 'si']
+
+            if nuevo_estado == 'resuelto':
+                contacto.fecha_resolucion = timezone.now()
+                # Enviar correo de resolución si está activo (por defecto sí para resuelto)
+                if enviar_correo or 'enviar_correo' not in request.POST:
+                    try:
+                        notificar_resolucion_contacto_usuario(contacto, mensaje_opcional=respuesta)
+                        messages.success(request, f'¡Consulta {contacto.folio} marcada como RESUELTA! Se ha enviado el correo de resolución a {contacto.email}.')
+                    except Exception as e_res:
+                        logger.warning(f"Error al enviar correo de resolución a {contacto.email}: {e_res}")
+                        messages.warning(request, f'Consulta marcada como RESUELTA, pero hubo un detalle al enviar el correo: {e_res}')
+                else:
+                    messages.success(request, f'Consulta {contacto.folio} actualizada a: RESUELTO.')
+            else:
+                messages.success(request, f'Estado del folio {contacto.folio} actualizado a: {contacto.get_estado_display()}.')
+
+            contacto.save()
+
+        if next_url:
+            return redirect(next_url)
+        return redirect(f"{reverse('soporte_institucional')}?vista=contacto_web&contacto_id={contacto.id}")
+
+    return redirect(f"{reverse('soporte_institucional')}?vista=contacto_web")

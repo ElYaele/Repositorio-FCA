@@ -111,7 +111,7 @@ class Autor(models.Model):
 
     # --- DATOS OFICIALES PÚBLICOS (Los que lee el claustro) ---
     foto_perfil = models.ImageField(upload_to='profesores/', blank=True, null=True,
-                                    verbose_name="Foto Oficial (Claustro Docente)")
+                                    verbose_name="Foto Oficial (Claustro Docente e Investigadores)")
     biografia = models.TextField(blank=True, null=True, verbose_name="Semblanza Académica / Biografía (Resumen)")
     biografia_extendida = models.TextField(blank=True, null=True, verbose_name="Biografía Detallada Completa")
     reconocimiento_pdf = models.FileField(upload_to='reconocimientos/', blank=True, null=True,
@@ -311,6 +311,32 @@ class Autor(models.Model):
         default=False,
         verbose_name="¿Es Personal de Soporte Técnico / Administración?"
     )
+    aprobado_por_soporte_1 = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cuentas_soporte_avaladas_1',
+        verbose_name="Primera firma de aprobación de soporte"
+    )
+    fecha_aprobacion_soporte_1 = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de primera aprobación de soporte"
+    )
+    aprobado_por_soporte_2 = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cuentas_soporte_avaladas_2',
+        verbose_name="Segunda firma de aprobación de soporte"
+    )
+    fecha_aprobacion_soporte_2 = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de segunda aprobación de soporte"
+    )
 
     @property
     def esta_suspendido_vigente(self):
@@ -332,7 +358,7 @@ class Autor(models.Model):
     @property
     def nombre_con_titulo(self):
         """
-        Devuelve el nombre con el grado o título académico para presentación en el Claustro Docente.
+        Devuelve el nombre con el grado o título académico para presentación en el Claustro Docente e Investigadores.
         Ej: 'Dr. Pugberto Almaeda Canino López'
         """
         if self.titulo_academico:
@@ -345,7 +371,7 @@ class Autor(models.Model):
     @property
     def foto_claustro_url(self):
         """
-        Retorna la URL de la fotografía oficial aceptada del claustro docente si existe.
+        Retorna la URL de la fotografía oficial aceptada del claustro docente e investigadores si existe.
         """
         if self.foto_perfil and hasattr(self.foto_perfil, 'url'):
             try:
@@ -438,7 +464,7 @@ class Autor(models.Model):
         - Siglas de la universidad (ej. 'UNAM', 'IPN', 'ITCG'): Para docentes de otras universidades.
         """
         import re
-        if self.rol_facultad == 'INV_IND' or 'independiente' in (self.institucion_origen or '').lower():
+        if self.rol_facultad == 'INV_IND' or 'independiente' in (self.institucion_origen or '').lower() or (self.institucion_origen or '').lower().startswith('investigador'):
             return 'INV'
         inst = (self.institucion_origen or '').strip()
         if not inst or inst.upper() == 'UABC' or not self.es_externo:
@@ -475,6 +501,17 @@ class Autor(models.Model):
                 candidato = f"{prefijo}-{siguiente_num + offset}"
                 offset += 1
             self.codigo_institucional = candidato
+        elif '-' in self.codigo_institucional:
+            # Sincronizar prefijo si el rol o procedencia institucional cambió (ej. FCA-1212 -> INV-1212)
+            prefijo_actual, num_actual = self.codigo_institucional.split('-', 1)
+            if prefijo == 'INV' and prefijo_actual != 'INV':
+                candidato = f"INV-{num_actual}"
+                if not Autor.objects.filter(codigo_institucional=candidato).exclude(pk=self.pk).exists():
+                    self.codigo_institucional = candidato
+            elif prefijo == 'FCA' and prefijo_actual != 'FCA' and not self.es_externo and self.rol_facultad != 'INV_IND':
+                candidato = f"FCA-{num_actual}"
+                if not Autor.objects.filter(codigo_institucional=candidato).exclude(pk=self.pk).exists():
+                    self.codigo_institucional = candidato
 
         super().save(*args, **kwargs)
 
@@ -589,6 +626,40 @@ class Articulo(models.Model):
     volumen_numero = models.CharField(max_length=50, blank=True, null=True, verbose_name="Volumen / Número")
     paginas = models.CharField(max_length=50, blank=True, null=True, verbose_name="Páginas (ej. 15-30)")
     doi_enlace = models.CharField(max_length=255, blank=True, null=True, verbose_name="DOI o Enlace persistente")
+
+    # -------------------------------------------------------------
+    # CAMPOS RIZOMA / CONAHCYT - PRODUCCIÓN TECNOLÓGICA & ESPECIALIZADA
+    # -------------------------------------------------------------
+    # A. Propiedad Intelectual (INDAUTOR / IMPI)
+    tipo_proteccion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Tipo de Protección (INDAUTOR/IMPI)")
+    numero_registro = models.CharField(max_length=100, blank=True, null=True, verbose_name="Número de Registro o Solicitud")
+    rama_propiedad = models.CharField(max_length=120, blank=True, null=True, verbose_name="Rama / Categoría de la Obra")
+    titular_propiedad = models.CharField(max_length=255, blank=True, null=True, default="Universidad Autónoma de Baja California", verbose_name="Titular de los Derechos")
+    rol_participacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Rol de Participación")
+    ambito_solicitud = models.CharField(max_length=50, blank=True, null=True, default="México", verbose_name="Ámbito de Solicitud (México/Internacional/Ambas)")
+    fecha_expedicion_solicitud = models.DateField(blank=True, null=True, verbose_name="Fecha de Expedición o Presentación")
+    estado_propiedad = models.CharField(max_length=80, blank=True, null=True, verbose_name="Estado de la Solicitud / Registro")
+    solicitud_internacional_numero = models.CharField(max_length=100, blank=True, null=True, verbose_name="Número de Solicitud Internacional (PCT)")
+    publicacion_internacional_numero = models.CharField(max_length=100, blank=True, null=True, verbose_name="Número de Publicación Internacional")
+
+    # B. Desarrollo Tecnológico e Innovación
+    tipo_desarrollo = models.CharField(max_length=100, blank=True, null=True, verbose_name="Tipo de Desarrollo")
+    problema_atiende = models.TextField(blank=True, null=True, verbose_name="Problema o Necesidad que Atiende")
+    beneficiarios_impacto = models.TextField(blank=True, null=True, verbose_name="Población o Sector Beneficiado / Impacto")
+
+    # C. Transferencia Tecnológica
+    institucion_receptora = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución o Empresa Receptora")
+    tipo_transferencia = models.CharField(max_length=120, blank=True, null=True, verbose_name="Modalidad de Transferencia")
+
+    # D. Traducciones Científicas
+    idioma_original = models.CharField(max_length=80, blank=True, null=True, verbose_name="Idioma de la Obra Original")
+    titulo_original = models.CharField(max_length=255, blank=True, null=True, verbose_name="Título de la Obra Original")
+    autor_original = models.CharField(max_length=255, blank=True, null=True, verbose_name="Autor(es) de la Obra Original")
+
+    # E. Antología / Dossier / Prólogo / Informes
+    nombre_compilador_coordinador = models.CharField(max_length=255, blank=True, null=True, verbose_name="Compilador / Coordinador de la Obra")
+    obra_receptora = models.CharField(max_length=255, blank=True, null=True, verbose_name="Libro o Publicación Donde se Incluye")
+    proyecto_origen = models.CharField(max_length=255, blank=True, null=True, verbose_name="Proyecto o Institución Financiadora")
 
     pdf = models.FileField(upload_to='pdfs/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -775,4 +846,472 @@ class HistorialFusion(models.Model):
             return json.loads(self.datos_duplicados_json)
         except Exception:
             return []
-
+
+
+class ConfiguracionSistema(models.Model):
+    """
+    Configuración central y dinámica del sistema (Singleton).
+    Permite modificar las credenciales de correo automático y los datos
+    de soporte para docentes sin tocar el código fuente.
+    """
+    # 1. Configuración de Correo Automático (Gmail / SMTP)
+    email_host_user = models.EmailField(
+        default='pruebarepsoitoriofca@gmail.com',
+        max_length=254,
+        verbose_name="Correo Remitente (Gmail/Institucional)",
+        help_text="Correo desde el cual se enviarán notificaciones, verificaciones y códigos"
+    )
+    email_host_password = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Contraseña de Aplicación (Google App Password)",
+        help_text="Contraseña de 16 caracteres generada en Google Account > Seguridad"
+    )
+    email_remitente_nombre = models.CharField(
+        max_length=150,
+        default='Repositorio FCA UABC',
+        verbose_name="Nombre del Remitente"
+    )
+    email_host = models.CharField(
+        max_length=100,
+        default='smtp.gmail.com',
+        verbose_name="Servidor SMTP"
+    )
+    email_port = models.IntegerField(
+        default=587,
+        verbose_name="Puerto SMTP"
+    )
+    email_use_tls = models.BooleanField(
+        default=True,
+        verbose_name="Usar TLS"
+    )
+    email_use_ssl = models.BooleanField(
+        default=False,
+        verbose_name="Usar SSL"
+    )
+
+    # 2. Configuración de Canales y Contacto Institucional de Soporte
+    soporte_email = models.CharField(
+        max_length=150,
+        default='soporte.fca@uabc.edu.mx',
+        verbose_name="Correo de Contacto Institucional"
+    )
+    soporte_telefono = models.CharField(
+        max_length=150,
+        default='Ext. Coordinación de Posgrado',
+        verbose_name="Teléfono o Extensión"
+    )
+    soporte_ubicacion = models.CharField(
+        max_length=200,
+        default='Edificio FCA Campus Tijuana',
+        verbose_name="Ubicación Física"
+    )
+    soporte_tiempo_respuesta = models.CharField(
+        max_length=100,
+        default='Menos de 24 hrs hábiles',
+        verbose_name="Tiempo Estimado de Respuesta"
+    )
+
+    # 3. Mensaje Oficial de Bienvenida en el Área de Ayuda
+    soporte_bienvenida_titulo = models.CharField(
+        max_length=200,
+        default='¡Hola! Te damos la bienvenida al Área de Ayuda y Soporte FCA.',
+        verbose_name="Título de Bienvenida"
+    )
+    soporte_bienvenida_cuerpo = models.TextField(
+        default='Este canal es atendido directamente por el equipo de Super Administradores (Soporte) de la facultad. A través de este espacio contamos con facultades administrativas completas para:',
+        verbose_name="Cuerpo del Mensaje de Bienvenida"
+    )
+    soporte_facultad_1 = models.CharField(
+        max_length=255,
+        default='Ver, auditar y validar tus publicaciones o trabajos académicos en PDF.',
+        verbose_name="Punto destacado 1"
+    )
+    soporte_facultad_2 = models.CharField(
+        max_length=255,
+        default='Modificar y corregir datos de tu ficha docente (nombre oficial, título/grado académico como Dr. o Mtro., nombramiento, universidad de procedencia o número de empleado).',
+        verbose_name="Punto destacado 2"
+    )
+    soporte_facultad_3 = models.CharField(
+        max_length=255,
+        default='Gestionar incidencias con invitaciones de coautoría, cuentas de usuario o permisos en la plataforma.',
+        verbose_name="Punto destacado 3"
+    )
+    soporte_aviso_final = models.TextField(
+        default='Puedes escribirnos con total confianza tu duda o solicitud a continuación. Si necesitas compartirnos un borrador o comprobante, también puedes adjuntarlo libremente aquí. Con gusto te atenderemos.',
+        verbose_name="Aviso Final de Bienvenida"
+    )
+
+    # 4. Redes Sociales Institucionales (Pie de página)
+    footer_facebook = models.CharField(
+        max_length=255,
+        default='https://www.facebook.com/fcatijuana',
+        blank=True,
+        verbose_name="Enlace de Facebook"
+    )
+    footer_instagram = models.CharField(
+        max_length=255,
+        default='https://www.instagram.com/fca.tij.uabc/',
+        blank=True,
+        verbose_name="Enlace de Instagram"
+    )
+    footer_tiktok = models.CharField(
+        max_length=255,
+        default='https://www.tiktok.com/@fca.tij',
+        blank=True,
+        verbose_name="Enlace de TikTok"
+    )
+    footer_youtube = models.CharField(
+        max_length=255,
+        default='https://www.youtube.com/@FCATijuanaOficial',
+        blank=True,
+        verbose_name="Enlace de YouTube"
+    )
+    footer_linkedin = models.CharField(
+        max_length=255,
+        default='https://www.linkedin.com/in/fcatijuana',
+        blank=True,
+        verbose_name="Enlace de LinkedIn"
+    )
+
+    # 5. Teléfonos y Ubicación del Pie de Página
+    footer_telefono_universitario = models.CharField(
+        max_length=100,
+        default='+52 (664) 979-7500',
+        blank=True,
+        verbose_name="Línea Universitaria"
+    )
+    footer_telefono_directo = models.CharField(
+        max_length=100,
+        default='+52 (664) 683-3174',
+        blank=True,
+        verbose_name="Línea Directa de la Facultad"
+    )
+    footer_direccion = models.CharField(
+        max_length=255,
+        default='Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427',
+        blank=True,
+        verbose_name="Dirección Institucional"
+    )
+
+    # 6. Enlaces Institucionales del Pie de Página
+    footer_link_fca_inicio = models.CharField(
+        max_length=255,
+        default='https://fca.tij.uabc.mx/',
+        blank=True,
+        verbose_name="FCA - Inicio"
+    )
+    footer_link_fca_acerca = models.CharField(
+        max_length=255,
+        default='https://fca.tij.uabc.mx/acerca-de',
+        blank=True,
+        verbose_name="FCA - Nuestra Facultad"
+    )
+    footer_link_estudiantes_ticket = models.CharField(
+        max_length=255,
+        default='https://fca.tij.uabc.mx/ticketayuda',
+        blank=True,
+        verbose_name="Estudiantes - Ticket de ayuda (odoo)"
+    )
+    footer_link_estudiantes_calendario = models.CharField(
+        max_length=255,
+        default='https://drive.google.com/file/d/1KZwB3fAkZ_88xWOL-iM0gBYVRuFws4oo/view',
+        blank=True,
+        verbose_name="Estudiantes - Calendario escolar"
+    )
+    footer_link_docentes_aviso = models.CharField(
+        max_length=255,
+        default='https://fca.tij.uabc.mx/docentes-infogral',
+        blank=True,
+        verbose_name="Docentes - Consultar aviso"
+    )
+    footer_link_institucional_plan = models.CharField(
+        max_length=255,
+        default='https://fca.tij.uabc.mx/plandedesarrollo',
+        blank=True,
+        verbose_name="Institucional - Plan de desarrollo 2023-2027"
+    )
+    footer_link_institucional_paz = models.CharField(
+        max_length=255,
+        default='https://www.uabc.mx/wp-content/uploads/bsk-pdf-manager/2023/10/Programa-Institucional-para-la-Cultura-de-Paz-UABC_.pdf',
+        blank=True,
+        verbose_name="Institucional - Programa para la cultura de paz"
+    )
+
+    # 7. Personalización de la Página de Contacto (/contacto/)
+    contacto_banner_badge = models.CharField(
+        max_length=150,
+        default='Atención y Vinculación Institucional',
+        blank=True,
+        verbose_name="Insignia del Banner de Contacto"
+    )
+    contacto_banner_titulo = models.CharField(
+        max_length=200,
+        default='Contacto Institucional FCA',
+        blank=True,
+        verbose_name="Título del Banner de Contacto"
+    )
+    contacto_banner_subtitulo = models.TextField(
+        default='Comunícate directamente con la Facultad de Contaduría y Administración. Nuestro equipo de soporte institucional atenderá tu consulta a la brevedad.',
+        blank=True,
+        verbose_name="Descripción del Banner de Contacto"
+    )
+    contacto_form_titulo = models.CharField(
+        max_length=150,
+        default='Envíanos un mensaje',
+        blank=True,
+        verbose_name="Título del Formulario de Contacto"
+    )
+    contacto_form_subtitulo = models.CharField(
+        max_length=255,
+        default='Llena los campos a continuación y te responderemos a tu correo electrónico institucional o personal.',
+        blank=True,
+        verbose_name="Subtítulo del Formulario"
+    )
+    contacto_horario_atencion = models.CharField(
+        max_length=150,
+        default='Lunes a Viernes de 8:00 AM a 8:00 PM',
+        blank=True,
+        verbose_name="Horario de Atención"
+    )
+    contacto_docente_titulo = models.CharField(
+        max_length=150,
+        default='¿Perteneces al Claustro Docente e Investigadores?',
+        blank=True,
+        verbose_name="Título Tarjeta Docente"
+    )
+    contacto_docente_descripcion = models.TextField(
+        default='Si eres profesor o investigador de la FCA, inicia sesión con tus credenciales para acceder al Canal Exclusivo de Soporte Interno, auditar tus obras en catálogo o comunicarte con colegas.',
+        blank=True,
+        verbose_name="Descripción Tarjeta Docente"
+    )
+
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Actualización")
+
+    class Meta:
+        verbose_name = "Configuración del Sistema"
+        verbose_name_plural = "Configuraciones del Sistema"
+
+    def __str__(self):
+        return f"Configuración General FCA ({self.email_host_user})"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(id=1)
+        return obj
+
+
+class PreguntaFrecuenteSoporte(models.Model):
+    """
+    Preguntas frecuentes que se muestran dinámicamente en el panel de soporte para docentes.
+    El superadministrador puede añadir, modificar, reordenar o eliminar preguntas.
+    """
+    pregunta = models.CharField(max_length=255, verbose_name="Pregunta Frecuente")
+    respuesta = models.TextField(verbose_name="Respuesta Detallada (admite formato de texto y HTML simple)")
+    orden = models.IntegerField(default=0, verbose_name="Orden de Aparición")
+    activo = models.BooleanField(default=True, verbose_name="¿Visible para Docentes?")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['orden', 'id']
+        verbose_name = "Pregunta Frecuente de Soporte"
+        verbose_name_plural = "Preguntas Frecuentes de Soporte"
+
+    def __str__(self):
+        return f"{self.orden}. {self.pregunta}"
+
+
+
+
+class EventoFCA(models.Model):
+    """
+    Eventos institucionales que se muestran en la página principal ('Próximos Eventos FCA').
+    Permite a Soporte añadir fotos, fechas, horarios, ubicaciones y enlaces.
+    """
+    titulo = models.CharField(max_length=200, verbose_name="Título del Evento")
+    fecha = models.DateField(verbose_name="Fecha del Evento")
+    horario = models.CharField(max_length=100, default="10:00 AM", verbose_name="Horario (ej: 10:00 AM - 1:00 PM)")
+    lugar = models.CharField(max_length=150, default="FCA Campus Tijuana", verbose_name="Lugar del Evento")
+    imagen = models.ImageField(upload_to='eventos_fca/', blank=True, null=True, verbose_name="Fotografía o Cartel")
+    imagen_url = models.CharField(max_length=500, blank=True, default='', verbose_name="URL de Imagen Externa (Opcional)")
+    enlace = models.CharField(max_length=500, blank=True, default='', verbose_name="Enlace de Información o Registro")
+    orden = models.IntegerField(default=0, verbose_name="Orden de Visualización")
+    activo = models.BooleanField(default=True, verbose_name="¿Visible para el Público?")
+    mostrar_si_paso = models.BooleanField(default=True, verbose_name="¿Mostrar en gris cuando ya concluyó?")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['orden', 'fecha', 'id']
+        verbose_name = "Próximo Evento FCA"
+        verbose_name_plural = "Próximos Eventos FCA"
+
+    def __str__(self):
+        return f"{self.titulo} ({self.fecha})"
+
+    @property
+    def es_pasado(self):
+        if self.fecha:
+            from django.utils import timezone
+            return self.fecha < timezone.now().date()
+        return False
+
+    @property
+    def dia_str(self):
+        return f"{self.fecha.day:02d}" if self.fecha else "01"
+
+    @property
+    def mes_str(self):
+        if not self.fecha:
+            return "ENE"
+        meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+        return meses[self.fecha.month - 1]
+
+    @property
+    def url_imagen(self):
+        if self.imagen:
+            try:
+                return self.imagen.url
+            except Exception:
+                pass
+        if self.imagen_url:
+            return self.imagen_url
+        return '/static/images/campus_fca.jpg'
+
+
+class EnlaceRapidoPortal(models.Model):
+    """
+    Accesos directos que aparecen en la sección 'Enlaces Rápidos e Indexadores' de la página principal.
+    Permite modificar enlaces a Gaceta, Sorteos, Fundación, Bibliotecas, o añadir nuevos.
+    """
+    titulo = models.CharField(max_length=60, verbose_name="Título (ej: GACETA)")
+    url = models.CharField(max_length=500, verbose_name="URL de Destino")
+    icono = models.CharField(max_length=80, default="fas fa-link", verbose_name="Clase de Icono FontAwesome (ej: fas fa-newspaper)")
+    color = models.CharField(max_length=30, default="#006633", verbose_name="Color del Icono o Texto")
+    abrir_en_nueva_pestana = models.BooleanField(default=True, verbose_name="¿Abrir en pestaña nueva?")
+    orden = models.IntegerField(default=0, verbose_name="Orden de Aparición")
+    activo = models.BooleanField(default=True, verbose_name="¿Activo?")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['orden', 'id']
+        verbose_name = "Enlace Rápido del Portal"
+        verbose_name_plural = "Enlaces Rápidos del Portal"
+
+    def __str__(self):
+        return f"{self.orden}. {self.titulo} -> {self.url}"
+
+
+class RedSocialFooter(models.Model):
+    """
+    Iconos y accesos a redes sociales oficiales que aparecen en el pie de página (footer)
+    Permite ordenarlas libremente, activar/desactivar o añadir nuevas plataformas.
+    """
+    nombre = models.CharField(max_length=60, verbose_name="Nombre de la Red (ej: Facebook)")
+    url = models.CharField(max_length=500, verbose_name="URL del Perfil")
+    icono = models.CharField(max_length=80, default="fab fa-globe", verbose_name="Icono FontAwesome (ej: fab fa-facebook-f)")
+    color = models.CharField(max_length=30, default="#006633", verbose_name="Color Distintivo")
+    icono_imagen = models.ImageField(upload_to='redes_sociales_footer/', blank=True, null=True, verbose_name="Logotipo o Imagen Personalizada")
+    usar_imagen = models.BooleanField(default=False, verbose_name="¿Usar imagen personalizada en vez de icono?")
+    filtro_blanco = models.BooleanField(default=False, verbose_name="¿Adaptar a color blanco monocromático institucional?")
+    orden = models.IntegerField(default=0, verbose_name="Orden de Aparición")
+    activo = models.BooleanField(default=True, verbose_name="¿Activo?")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['orden', 'id']
+        verbose_name = "Red Social del Footer"
+        verbose_name_plural = "Redes Sociales del Footer"
+
+    def __str__(self):
+        return f"{self.orden}. {self.nombre} ({self.url})"
+
+
+class EnlacePiePagina(models.Model):
+    """
+    Enlaces y botones de navegación institucional organizados por columnas en el pie de página.
+    Permite a Soporte añadir, mover o eliminar enlaces sin tocar el código.
+    """
+    COLUMNA_CHOICES = [
+        ('FCA', 'FCA'),
+        ('ESTUDIANTES', 'Estudiantes'),
+        ('DOCENTES', 'Docentes'),
+        ('INSTITUCIONAL', 'Institucional'),
+    ]
+
+    columna = models.CharField(max_length=40, default='FCA', verbose_name="Columna del Footer")
+    titulo = models.CharField(max_length=120, verbose_name="Texto del Enlace o Botón")
+    url = models.CharField(max_length=500, verbose_name="URL de Destino")
+    es_boton = models.BooleanField(default=False, verbose_name="¿Estilo Botón Destacado?")
+    abrir_en_nueva_pestana = models.BooleanField(default=True, verbose_name="¿Abrir en pestaña nueva?")
+    orden = models.IntegerField(default=0, verbose_name="Orden en la Columna")
+    activo = models.BooleanField(default=True, verbose_name="¿Activo?")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['columna', 'orden', 'id']
+        verbose_name = "Enlace de Pie de Página"
+        verbose_name_plural = "Enlaces de Pie de Página"
+
+    def __str__(self):
+        return f"[{self.columna}] {self.orden}. {self.titulo} -> {self.url}"
+
+
+class MensajeContacto(models.Model):
+    """
+    Mensajes de contacto recibidos desde el formulario institucional /contacto/.
+    Permite registrar y auditar solicitudes de visitantes, estudiantes, docentes y externos,
+    asignando folios únicos y permitiendo su seguimiento desde el panel de soporte.
+    """
+    ESTADO_CHOICES = [
+        ('nuevo', 'Nuevo'),
+        ('en_proceso', 'En proceso'),
+        ('resuelto', 'Resuelto'),
+    ]
+
+    folio = models.CharField(max_length=30, unique=True, editable=False, verbose_name="Folio de Seguimiento")
+    nombre = models.CharField(max_length=150, verbose_name="Nombre Completo")
+    email = models.EmailField(verbose_name="Correo Electrónico")
+    telefono = models.CharField(max_length=35, blank=True, verbose_name="Teléfono")
+    organizacion = models.CharField(max_length=150, blank=True, verbose_name="Institución / Empresa / Escuela")
+    asunto = models.CharField(max_length=200, verbose_name="Asunto")
+    mensaje = models.TextField(verbose_name="Mensaje o Pregunta")
+    
+    # Seguimiento interno de soporte
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='nuevo', verbose_name="Estado de Atención")
+    atendido_por = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='contactos_atendidos', verbose_name="Atendido por"
+    )
+    notas_soporte = models.TextField(blank=True, verbose_name="Notas internas de soporte")
+    respuesta_soporte = models.TextField(blank=True, verbose_name="Respuesta enviada al solicitante")
+    fecha_resolucion = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Resolución")
+    
+    # Auditoría
+    ip_origen = models.GenericIPAddressField(null=True, blank=True, verbose_name="IP de Origen")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Recepción")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
+
+    class Meta:
+        ordering = ['-fecha_creacion']
+        verbose_name = "Mensaje de Contacto Web"
+        verbose_name_plural = "Mensajes de Contacto Web"
+
+    def __str__(self):
+        return f"[{self.folio}] {self.nombre} - {self.asunto} ({self.get_estado_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.folio:
+            import datetime, uuid
+            ahora = datetime.datetime.now()
+            sufijo = uuid.uuid4().hex[:4].upper()
+            self.folio = f"FCA-CNT-{ahora.strftime('%Y%m')}-{sufijo}"
+            while MensajeContacto.objects.filter(folio=self.folio).exists():
+                sufijo = uuid.uuid4().hex[:4].upper()
+                self.folio = f"FCA-CNT-{ahora.strftime('%Y%m')}-{sufijo}"
+        super().save(*args, **kwargs)

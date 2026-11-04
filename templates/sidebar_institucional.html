@@ -12,7 +12,7 @@
         --birthday-pink: #ff4081;
     }
     body.sidebar-expanded {
-        --sidebar-width: 225px;
+        --sidebar-width: 250px;
     }
     {% if request.resolver_match.url_name not in 'mi_panel,panel_usuarios,ver_subidas_usuario' %}
     body.has-sima-sidebar {
@@ -88,14 +88,21 @@
         flex-shrink: 0;
     }
     .sima-nav-item .nav-label {
-        margin-left: 14px;
-        font-size: 0.88rem;
+        margin-left: 12px;
+        font-size: 0.85rem;
         font-weight: 600;
         display: none;
         color: #ffffff;
     }
     body.sidebar-expanded .sima-nav-item .nav-label {
         display: inline-block;
+    }
+    body.sidebar-expanded .sima-nav-item .nav-label-multiline {
+        display: inline-flex !important;
+        flex-direction: column;
+        justify-content: center;
+        white-space: normal;
+        line-height: 1.15;
     }
     .sima-nav-item:hover {
         background-color: rgba(255, 255, 255, 0.15) !important;
@@ -186,10 +193,13 @@
         {% endif %}
     </a>
 
-    <!-- 5. Claustro Docente -->
-    <a href="{% url 'directorio_profesores' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'directorio_profesores' %}active{% endif %}" title="Claustro Docente FCA">
+    <!-- 5. Claustro Docente e Investigadores -->
+    <a href="{% url 'directorio_profesores' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'directorio_profesores' %}active{% endif %}" title="Claustro Docente e Investigadores FCA">
         <i class="fas fa-chalkboard-teacher nav-icon"></i>
-        <span class="nav-label">Claustro Docente</span>
+        <span class="nav-label nav-label-multiline">
+            <span style="font-size: 0.82rem; font-weight: 600;">Claustro Docente</span>
+            <span style="font-size: 0.72rem; font-weight: 500; opacity: 0.9;">e Investigadores</span>
+        </span>
         {% if cumpleaneros_hoy %}
             <span class="birthday-badge-dot" title="¡Hay docentes de cumpleaños hoy!">🎂</span>
         {% endif %}
@@ -213,12 +223,18 @@
             <i class="fas fa-tasks nav-icon"></i>
             <span class="nav-label">Moderación</span>
         </a>
+
+        <!-- 9. Configuración y Soporte (Superuser) -->
+        <a href="{% url 'configuracion_soporte' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'configuracion_soporte' %}active{% endif %}" title="Configuración del Correo y Soporte">
+            <i class="fas fa-tools nav-icon"></i>
+            <span class="nav-label">Configuración y Soporte</span>
+        </a>
     {% endif %}
 
     <!-- SECCIÓN INFERIOR: ASISTENCIA INSTITUCIONAL Y CERRAR SESIÓN -->
     <div class="mt-auto mb-3 w-100">
         <!-- Soporte Institucional -->
-        <a href="{% url 'soporte_institucional' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'soporte_institucional' %}active{% endif %}" title="Mesa de Ayuda y Soporte Institucional FCA">
+        <a href="{% url 'soporte_institucional' %}" class="sima-nav-item {% if request.resolver_match.url_name == 'soporte_institucional' %}active{% endif %}" title="Área de Ayuda y Soporte Institucional FCA">
             <i class="fas fa-headset nav-icon text-warning"></i>
             <span class="nav-label text-warning">Soporte FCA</span>
             {% if soporte_pendientes_count > 0 %}

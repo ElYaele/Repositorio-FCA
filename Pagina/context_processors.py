@@ -117,7 +117,7 @@ def obtener_tema_rol(user):
         if autor.rol_facultad == 'INV_IND' or 'independiente' in inst:
             return {
                 'clave': 'morado',
-                'nombre_rol': 'Investigador Independiente',
+                'nombre_rol': 'Investigador',
                 'primary': '#6f42c1',
                 'primary_dark': '#59359a',
                 'primary_light': '#8b5cf6',
@@ -126,9 +126,9 @@ def obtener_tema_rol(user):
                 'accent_dark': '#7e22ce',
                 'accent_soft': 'rgba(192, 132, 252, 0.25)',
                 'tag_color': '#e9d5ff',
-                'tag_text': 'INDEPENDIENTE',
+                'tag_text': 'INVESTIGADOR',
                 'badge_style': 'background-color: #6f42c1; color: #ffffff;',
-                'badge_text': 'Investigador Independiente',
+                'badge_text': 'Investigador',
                 'badge_icon': 'fas fa-user-graduate',
                 'topbar_badge': 'bg-purple text-white',
             }
@@ -247,6 +247,18 @@ def notificaciones_institucionales(request):
         'tema_rol': obtener_tema_rol(getattr(request, 'user', None)),
         'es_superadmin_principal': es_super_principal,
     }
+
+    # Configuración global institucional y pie de página (visible tanto para docentes autenticados como para alumnos y público general)
+    try:
+        from .models import ConfiguracionSistema, RedSocialFooter, EnlacePiePagina
+        context['config_sistema'] = ConfiguracionSistema.get_solo()
+        context['redes_sociales_footer'] = RedSocialFooter.objects.filter(activo=True).order_by('orden', 'id')
+        context['enlaces_pie_fca'] = EnlacePiePagina.objects.filter(columna='FCA', activo=True).order_by('orden', 'id')
+        context['enlaces_pie_estudiantes'] = EnlacePiePagina.objects.filter(columna='ESTUDIANTES', activo=True).order_by('orden', 'id')
+        context['enlaces_pie_docentes'] = EnlacePiePagina.objects.filter(columna='DOCENTES', activo=True).order_by('orden', 'id')
+        context['enlaces_pie_institucional'] = EnlacePiePagina.objects.filter(columna='INSTITUCIONAL', activo=True).order_by('orden', 'id')
+    except Exception:
+        pass
 
     # Docentes de cumpleaños hoy
     try:

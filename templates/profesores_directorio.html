@@ -781,7 +781,7 @@
                 </span>
                 <span class="text-white-50 small" id="bannerSubtitulo">&bull; Facultad de Contaduría y Administración</span>
             </div>
-            <h2 class="fw-bold mb-2" id="bannerTitulo">Claustro Docente FCA UABC</h2>
+            <h2 class="fw-bold mb-2" id="bannerTitulo">Claustro Docente e Investigadores FCA UABC</h2>
             <p class="mb-0 text-white-50" id="bannerDescripcion" style="max-width: 840px; line-height: 1.5;">
                 Conoce a los profesores e investigadores que integran la FCA UABC, sus líneas de investigación, semblanzas detalladas, enlaces profesionales y producción académica publicada.
             </p>
@@ -1915,7 +1915,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <span class="fs-4">🔬</span>
                         <div>
-                            <strong style="color: #7c3aed; font-size: 1.05rem;">Investigadores Independientes y Externos</strong>
+                            <strong style="color: #7c3aed; font-size: 1.05rem;">Investigadores</strong>
                             <span class="badge rounded-pill px-2 py-1 ms-2 small" style="background: #7c3aed;">{{ profesores_investigadores|length }} investigador{{ profesores_investigadores|length|pluralize:"es" }}</span>
                         </div>
                     </div>
@@ -1931,8 +1931,8 @@
                         <div class="prof-card card-birthday-cupcake theme-{{ prof.color_cumpleanos|default:'rosa' }}">
                             <div class="cupcake-frosting-section">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
-                                    <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="color: #7c3aed !important; max-width: 100%;" title="{{ prof.institucion_origen|default:'Investigador Independiente' }}">
-                                        <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador Independiente" }}
+                                    <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="color: #7c3aed !important; max-width: 100%;" title="{{ prof.institucion_origen|default:'Investigador' }}">
+                                        <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador" }}
                                     </span>
                                     <span class="cupcake-badge ms-auto flex-shrink-0"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
                                 </div>
@@ -1956,7 +1956,7 @@
                                             </span>
                                         {% empty %}
                                             <span class="badge text-white px-2 py-1 small" style="background: #7c3aed;">
-                                                {{ prof.get_rol_facultad_display|default:"Investigador Independiente" }}
+                                                {{ prof.get_rol_facultad_display|default:"Investigador" }}
                                             </span>
                                         {% endfor %}
                                     </div>
@@ -2017,8 +2017,8 @@
                     <div class="prof-card prof-card-investigadores">
                         <div>
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
-                                <span class="badge border small text-truncate" style="max-width: 100%; background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;" title="{{ prof.institucion_origen|default:'Investigador Independiente' }}">
-                                    <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador Independiente" }}
+                                <span class="badge border small text-truncate" style="max-width: 100%; background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe;" title="{{ prof.institucion_origen|default:'Investigador' }}">
+                                    <i class="fas fa-flask me-1"></i>{{ prof.institucion_origen|default:"Investigador" }}
                                 </span>
                                 {% if prof.medalla_productividad %}
                                     <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs ms-auto flex-shrink-0" style="font-size: 0.72rem;" title="{{ prof.medalla_productividad.descripcion }}">
@@ -2046,7 +2046,7 @@
                                         </span>
                                     {% empty %}
                                         <span class="badge text-white px-2 py-1 small" style="background: #7c3aed;">
-                                            {{ prof.get_rol_facultad_display|default:"Investigador Independiente" }}
+                                            {{ prof.get_rol_facultad_display|default:"Investigador" }}
                                         </span>
                                     {% endfor %}
                                 </div>
@@ -2126,12 +2126,12 @@
                                                 </span>
                                             {% empty %}
                                                 <span class="badge text-white px-2 py-1 small" style="background: #7c3aed;">
-                                                    {{ prof.get_rol_facultad_display|default:"Investigador Independiente" }}
+                                                    {{ prof.get_rol_facultad_display|default:"Investigador" }}
                                                 </span>
                                             {% endfor %}
                                         </div>
 
-                                        <p class="text-muted small mb-1"><i class="fas fa-flask me-1" style="color: #7c3aed;"></i><strong>Adscripción:</strong> {{ prof.institucion_origen|default:"Investigador Independiente" }}</p>
+                                        <p class="text-muted small mb-1"><i class="fas fa-flask me-1" style="color: #7c3aed;"></i><strong>Adscripción:</strong> {{ prof.institucion_origen|default:"Investigador" }}</p>
                                         {% if prof.correo %}<p class="text-muted small mb-0"><i class="fas fa-envelope me-1 text-primary"></i><strong>Correo:</strong> {{ prof.correo }}</p>{% endif %}
                                     </div>
                                 </div>
@@ -2351,7 +2351,7 @@
             {% empty %}
                 <div class="col-12 text-center py-5 text-muted bg-white rounded-4 shadow-sm border p-4">
                     <i class="fas fa-microscope fa-3x mb-3 text-secondary opacity-50"></i>
-                    <p class="mb-0">Aún no hay investigadores independientes o externos registrados en el claustro.</p>
+                    <p class="mb-0">Aún no hay investigadores registrados en el claustro.</p>
                 </div>
             {% endfor %}
         </div>
@@ -2390,7 +2390,7 @@
                 if (bBadgeIcon) bBadgeIcon.className = 'fas fa-graduation-cap me-1';
                 if (bBadgeText) bBadgeText.textContent = 'Cuerpo Académico UABC';
                 if (bSubtitulo) bSubtitulo.innerHTML = '&bull; Facultad de Contaduría y Administración';
-                if (bTitulo) bTitulo.textContent = 'Claustro Docente FCA UABC';
+                if (bTitulo) bTitulo.textContent = 'Claustro Docente e Investigadores FCA UABC';
                 if (bDesc) bDesc.textContent = 'Conoce a los profesores e investigadores de tiempo completo y asignatura adscritos a la Facultad de Contaduría y Administración de la UABC, sus líneas de investigación, semblanzas y producción científica.';
             } else if (tipo === 'externos') {
                 banner.classList.add('header-banner-externos');
@@ -2410,10 +2410,10 @@
                     bBadge.style.color = '#7c3aed';
                 }
                 if (bBadgeIcon) bBadgeIcon.className = 'fas fa-microscope me-1';
-                if (bBadgeText) bBadgeText.textContent = 'Investigadores Independientes';
+                if (bBadgeText) bBadgeText.textContent = 'Investigadores';
                 if (bSubtitulo) bSubtitulo.innerHTML = '&bull; Red Científica Externa';
-                if (bTitulo) bTitulo.textContent = 'Investigadores Independientes y Externos';
-                if (bDesc) bDesc.textContent = 'Especialistas, consultores científicos e investigadores independientes no adscritos a una sola universidad que colaboran en proyectos de investigación abierta y publican en el repositorio de la FCA.';
+                if (bTitulo) bTitulo.textContent = 'Investigadores';
+                if (bDesc) bDesc.textContent = 'Especialistas, consultores científicos e investigadores no adscritos a una sola universidad que colaboran en proyectos de investigación abierta y publican en el repositorio de la FCA.';
             } else if (tipo === 'todos') {
                 banner.classList.add('header-banner-todos');
                 if (bBadge) {
@@ -2424,7 +2424,7 @@
                 if (bBadgeText) bBadgeText.textContent = 'Directorio Global Académico';
                 if (bSubtitulo) bSubtitulo.innerHTML = '&bull; FCA UABC, Red Universitaria e Investigadores';
                 if (bTitulo) bTitulo.textContent = 'Claustro Completo y Red Científica';
-                if (bDesc) bDesc.textContent = 'Explora la totalidad de docentes de la FCA UABC, académicos de universidades colaboradoras e investigadores independientes registrados en el repositorio institucional.';
+                if (bDesc) bDesc.textContent = 'Explora la totalidad de docentes de la FCA UABC, académicos de universidades colaboradoras e investigadores registrados en el repositorio institucional.';
             }
         }
 

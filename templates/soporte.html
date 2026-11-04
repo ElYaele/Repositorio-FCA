@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesa de Ayuda & Soporte Institucional - Repositorio FCA UABC</title>
+    <title>Área de Ayuda & Soporte Institucional - Repositorio FCA UABC</title>
     <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -505,10 +505,22 @@
                 <span class="fw-bold" style="color: var(--uabc-green); font-size: 1.05rem;">FCA REPOSITORIO</span>
             </a>
             <span class="badge bg-warning bg-opacity-20 text-dark border border-warning fw-bold">
-                <i class="fas fa-headset me-1 text-warning"></i>Mesa de Ayuda & Soporte FCA
+                <i class="fas fa-headset me-1 text-warning"></i>Área de Ayuda & Soporte FCA
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            {% if es_admin %}
+                <a href="{% url 'soporte_institucional' %}?vista=contacto_web" 
+                   class="btn btn-sm {% if vista == 'contacto_web' %}btn-success text-white shadow-xs{% else %}btn-outline-success{% endif %} rounded-pill px-3 fw-bold position-relative"
+                   title="Consultas provenientes del botón institucional 'Contacto'">
+                    <i class="fas fa-inbox me-1"></i>Contacto Web
+                    {% if contactos_nuevos_count > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-1.5" style="font-size: 0.72rem;">
+                            {{ contactos_nuevos_count }} nuevo{{ contactos_nuevos_count|pluralize }}
+                        </span>
+                    {% endif %}
+                </a>
+            {% endif %}
             <a href="{% url 'mensajeria' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
                 <i class="fas fa-comments me-1"></i>Mensajes entre Colegas
             </a>
@@ -526,46 +538,140 @@
         <!-- ============================================================= -->
         <aside class="helpdesk-sidebar">
             {% if es_admin %}
-                <!-- MODO SUPERADMIN: BANDEJA DE TICKETS -->
-                <div class="helpdesk-sidebar-header">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-ticket-alt text-warning me-1"></i>Cola de Soporte</h6>
-                            <small class="text-muted">Consultas de docentes y autores</small>
+                <!-- SWITCHER TICKETS DOCENTES vs MENSAJES CONTACTO WEB -->
+                <div class="p-2 border-bottom bg-light">
+                    <div class="btn-group w-100 shadow-2xs" role="group">
+                        <a href="{% url 'soporte_institucional' %}" class="btn btn-sm {% if vista != 'contacto_web' %}btn-primary text-white fw-bold shadow-xs{% else %}btn-outline-secondary bg-white text-dark{% endif %} py-1.5" style="font-size: 0.8rem;">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Docentes ({{ total_tickets }})
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?vista=contacto_web" class="btn btn-sm {% if vista == 'contacto_web' %}btn-success text-white fw-bold shadow-xs{% else %}btn-outline-secondary bg-white text-dark{% endif %} py-1.5 position-relative" style="font-size: 0.8rem;">
+                            <i class="fas fa-inbox me-1"></i>Contáctanos
+                            {% if contactos_nuevos_count > 0 %}
+                                <span class="badge bg-danger rounded-pill ms-1">{{ contactos_nuevos_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+
+                {% if vista == 'contacto_web' %}
+                    <!-- MODO CONTACTO WEB: LISTA DE MENSAJES RECIBIDOS -->
+                    <div class="helpdesk-sidebar-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0"><i class="fas fa-inbox text-success me-1"></i>Mensajes Contáctanos</h6>
+                                <small class="text-muted">Formulario público /contacto/</small>
+                            </div>
+                            <span class="badge bg-success text-white fw-bold rounded-pill px-2.5 py-1">
+                                {{ contactos_list|length }}
+                            </span>
                         </div>
-                        <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-1">
-                            {{ total_tickets }} docente{{ total_tickets|pluralize }}
-                        </span>
                     </div>
-                </div>
 
-                <!-- Filtros de Estado para Superadmin -->
-                <div class="filter-pills-support">
-                    <a href="{% url 'soporte_institucional' %}" class="pill-ticket-status {% if filtro_estado == 'todos' %}active{% endif %}">
-                        Todos <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill ms-1">{{ total_tickets }}</span>
-                    </a>
-                    <a href="{% url 'soporte_institucional' %}?estado=abierto" class="pill-ticket-status {% if filtro_estado == 'abierto' %}active{% endif %}">
-                        Abiertos {% if conteo_abiertos > 0 %}<span class="badge bg-warning text-dark rounded-pill ms-1">{{ conteo_abiertos }}</span>{% endif %}
-                    </a>
-                    <a href="{% url 'soporte_institucional' %}?estado=en_proceso" class="pill-ticket-status {% if filtro_estado == 'en_proceso' %}active{% endif %}">
-                        En Atención {% if conteo_proceso > 0 %}<span class="badge bg-primary text-white rounded-pill ms-1">{{ conteo_proceso }}</span>{% endif %}
-                    </a>
-                    <a href="{% url 'soporte_institucional' %}?estado=resuelto" class="pill-ticket-status {% if filtro_estado == 'resuelto' %}active{% endif %}">
-                        Resueltos {% if conteo_resueltos > 0 %}<span class="badge bg-success text-white rounded-pill ms-1">{{ conteo_resueltos }}</span>{% endif %}
-                    </a>
-                </div>
-
-                <!-- Buscador de Tickets -->
-                <div class="p-2 border-bottom">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="filtroTicketsAdmin" class="form-control bg-light border-start-0" placeholder="Buscar por docente...">
+                    <!-- Filtros de Contacto Web -->
+                    <div class="filter-pills-support">
+                        <a href="{% url 'soporte_institucional' %}?vista=contacto_web&estado=todos" class="pill-ticket-status {% if filtro_contacto == 'todos' %}active{% endif %}">
+                            Todos <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill ms-1">{{ contactos_total_count }}</span>
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?vista=contacto_web&estado=nuevo" class="pill-ticket-status {% if filtro_contacto == 'nuevo' %}active{% endif %}">
+                            Nuevos {% if contactos_nuevos_count > 0 %}<span class="badge bg-danger text-white rounded-pill ms-1">{{ contactos_nuevos_count }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?vista=contacto_web&estado=en_proceso" class="pill-ticket-status {% if filtro_contacto == 'en_proceso' %}active{% endif %}">
+                            En Atención {% if contactos_en_proceso_count > 0 %}<span class="badge bg-primary text-white rounded-pill ms-1">{{ contactos_en_proceso_count }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?vista=contacto_web&estado=resuelto" class="pill-ticket-status {% if filtro_contacto == 'resuelto' %}active{% endif %}">
+                            Resueltos {% if contactos_resueltos_count > 0 %}<span class="badge bg-success text-white rounded-pill ms-1">{{ contactos_resueltos_count }}</span>{% endif %}
+                        </a>
                     </div>
-                </div>
 
-                <!-- Lista de Tickets -->
-                <div class="tickets-scroll-area" id="listaTicketsAdmin">
-                    {% for t in soporte_tickets_admin %}
+                    <!-- Buscador de Contactos -->
+                    <div class="p-2 border-bottom">
+                        <form method="GET" action="{% url 'soporte_institucional' %}">
+                            <input type="hidden" name="vista" value="contacto_web">
+                            {% if filtro_contacto %}<input type="hidden" name="estado" value="{{ filtro_contacto }}">{% endif %}
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" name="q" value="{{ q_search_contacto }}" class="form-control bg-light border-start-0" placeholder="Buscar folio, nombre, correo...">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de Mensajes de Contacto -->
+                    <div class="tickets-scroll-area">
+                        {% for c in contactos_list %}
+                            <a href="{% url 'soporte_institucional' %}?vista=contacto_web&contacto_id={{ c.id }}{% if filtro_contacto %}&estado={{ filtro_contacto }}{% endif %}{% if q_search_contacto %}&q={{ q_search_contacto }}{% endif %}"
+                               class="ticket-item {% if contacto_activo.id == c.id %}active{% endif %} {% if c.estado == 'nuevo' %}border-start border-4 border-danger{% endif %}">
+                                <div class="ticket-avatar" style="background: {% if c.estado == 'nuevo' %}#dc2626{% elif c.estado == 'en_proceso' %}#0284c7{% else %}#16a34a{% endif %}; color: #ffffff; font-weight: bold; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    {{ c.nombre|slice:":1"|upper }}
+                                </div>
+                                <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.88rem;">{{ c.nombre }}</div>
+                                        <span class="text-muted" style="font-size: 0.70rem;">{{ c.fecha_creacion|date:"d/m H:i" }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1.5 mb-1">
+                                        <span class="badge bg-light text-dark border font-monospace px-1.5" style="font-size: 0.68rem;">{{ c.folio }}</span>
+                                        {% if c.estado == 'nuevo' %}
+                                            <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">Nuevo</span>
+                                        {% elif c.estado == 'en_proceso' %}
+                                            <span class="badge bg-primary text-white rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">En Atención</span>
+                                        {% elif c.estado == 'resuelto' %}
+                                            <span class="badge bg-success rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">Resuelto</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted text-truncate" style="font-size: 0.78rem;">
+                                        <strong>{{ c.asunto }}:</strong> {{ c.mensaje|truncatechars:40 }}
+                                    </div>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <div class="p-4 text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-2 text-secondary opacity-50"></i>
+                                <h6 class="fw-bold">No hay consultas de contacto</h6>
+                                <p class="small mb-0">No se encontraron mensajes con el filtro seleccionado.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- MODO SUPERADMIN: BANDEJA DE TICKETS DOCENTES -->
+                    <div class="helpdesk-sidebar-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0"><i class="fas fa-ticket-alt text-warning me-1"></i>Cola de Soporte</h6>
+                                <small class="text-muted">Consultas de docentes y autores</small>
+                            </div>
+                            <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-1">
+                                {{ total_tickets }} docente{{ total_tickets|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Filtros de Estado para Superadmin -->
+                    <div class="filter-pills-support">
+                        <a href="{% url 'soporte_institucional' %}" class="pill-ticket-status {% if filtro_estado == 'todos' %}active{% endif %}">
+                            Todos <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill ms-1">{{ total_tickets }}</span>
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?estado=abierto" class="pill-ticket-status {% if filtro_estado == 'abierto' %}active{% endif %}">
+                            Abiertos {% if conteo_abiertos > 0 %}<span class="badge bg-warning text-dark rounded-pill ms-1">{{ conteo_abiertos }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?estado=en_proceso" class="pill-ticket-status {% if filtro_estado == 'en_proceso' %}active{% endif %}">
+                            En Atención {% if conteo_proceso > 0 %}<span class="badge bg-primary text-white rounded-pill ms-1">{{ conteo_proceso }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'soporte_institucional' %}?estado=resuelto" class="pill-ticket-status {% if filtro_estado == 'resuelto' %}active{% endif %}">
+                            Resueltos {% if conteo_resueltos > 0 %}<span class="badge bg-success text-white rounded-pill ms-1">{{ conteo_resueltos }}</span>{% endif %}
+                        </a>
+                    </div>
+
+                    <!-- Buscador de Tickets -->
+                    <div class="p-2 border-bottom">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="filtroTicketsAdmin" class="form-control bg-light border-start-0" placeholder="Buscar por docente...">
+                        </div>
+                    </div>
+
+                    <!-- Lista de Tickets -->
+                    <div class="tickets-scroll-area" id="listaTicketsAdmin">
+                        {% for t in soporte_tickets_admin %}
                         <a href="{% url 'soporte_institucional' %}?ticket_autor={% if t.autor %}{{ t.autor.id }}{% else %}{{ t.usuario.id }}{% endif %}{% if filtro_estado != 'todos' %}&estado={{ filtro_estado }}{% endif %}"
                            class="ticket-item row-ticket-admin {% if ticket_activo.usuario.id == t.usuario.id %}active{% endif %}"
                            data-search="{{ t.usuario.get_full_name }} {{ t.usuario.username }} {{ t.autor.nombre|default:'' }}">
@@ -618,15 +724,16 @@
                         </div>
                     {% endfor %}
                 </div>
+                {% endif %}
             {% else %}
-                <!-- MODO DOCENTE: RESUMEN DE MESA DE AYUDA, ESTADO DEL TICKET Y FAQ -->
+                <!-- MODO DOCENTE: RESUMEN DE ÁREA DE AYUDA, ESTADO DEL TICKET Y FAQ -->
                 <div class="helpdesk-sidebar-header">
                     <div class="d-flex align-items-center gap-2 mb-1">
                         <div class="bg-warning text-dark p-2 rounded-3" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
                             <i class="fas fa-headset fs-5"></i>
                         </div>
                         <div>
-                            <h6 class="fw-bold text-dark mb-0">Mesa de Ayuda FCA</h6>
+                            <h6 class="fw-bold text-dark mb-0">Área de Ayuda FCA</h6>
                             <small class="text-muted">Atención Oficial & Soporte</small>
                         </div>
                     </div>
@@ -656,7 +763,7 @@
                                 {% endif %}
                             </p>
                             <div class="p-2 rounded bg-light small text-muted border">
-                                <i class="fas fa-shield-alt text-success me-1"></i>Tiempo estimado de respuesta: <strong>Menos de 24 hrs hábiles</strong>.
+                                <i class="fas fa-shield-alt text-success me-1"></i>Tiempo estimado de respuesta: <strong>{{ config_sistema.soporte_tiempo_respuesta|default:"Menos de 24 hrs hábiles" }}</strong>.
                             </div>
                         </div>
                     </div>
@@ -664,60 +771,54 @@
                     <!-- Canales de Contacto Directo -->
                     <div class="card border-0 shadow-sm rounded-3 mb-3 bg-light">
                         <div class="card-body p-3">
-                            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.85rem;"><i class="fas fa-university text-success me-1"></i>Contacto Institucional FCA</h6>
-                            <div class="small text-muted mb-1">
-                                <i class="fas fa-envelope text-secondary me-2"></i>soporte.fca@uabc.edu.mx
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.85rem;"><i class="fas fa-university text-success me-1"></i>Contacto Institucional FCA</h6>
+                                {% if es_admin %}
+                                    <a href="{% url 'configuracion_soporte' %}#seccion-soporte" class="badge bg-white text-secondary border text-decoration-none shadow-2xs" title="Editar Canales de Contacto">
+                                        <i class="fas fa-edit me-1 text-warning"></i>Editar
+                                    </a>
+                                {% endif %}
                             </div>
-                            <div class="small text-muted mb-1">
-                                <i class="fas fa-phone-alt text-secondary me-2"></i>Ext. Coordinación de Posgrado
+                            <div class="small text-muted mb-1 text-truncate" title="{{ config_sistema.soporte_email|default:'soporte.fca@uabc.edu.mx' }}">
+                                <i class="fas fa-envelope text-secondary me-2"></i>{{ config_sistema.soporte_email|default:"soporte.fca@uabc.edu.mx" }}
                             </div>
-                            <div class="small text-muted">
-                                <i class="fas fa-map-marker-alt text-secondary me-2"></i>Edificio FCA Campus Tijuana
+                            <div class="small text-muted mb-1" title="{{ config_sistema.soporte_telefono|default:'Ext. Coordinación de Posgrado' }}">
+                                <i class="fas fa-phone-alt text-secondary me-2"></i>{{ config_sistema.soporte_telefono|default:"Ext. Coordinación de Posgrado" }}
+                            </div>
+                            <div class="small text-muted" title="{{ config_sistema.soporte_ubicacion|default:'Edificio FCA Campus Tijuana' }}">
+                                <i class="fas fa-map-marker-alt text-secondary me-2"></i>{{ config_sistema.soporte_ubicacion|default:"Edificio FCA Campus Tijuana" }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Preguntas Frecuentes Rápidas -->
-                    <h6 class="fw-bold text-dark mb-2 px-1" style="font-size: 0.85rem;"><i class="fas fa-question-circle text-warning me-1"></i>Ayuda Frecuente</h6>
+                    <div class="d-flex align-items-center justify-content-between px-1 mb-2">
+                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.85rem;"><i class="fas fa-question-circle text-warning me-1"></i>Ayuda Frecuente</h6>
+                        {% if es_admin %}
+                            <a href="{% url 'configuracion_soporte' %}#seccion-faqs" class="badge bg-light text-secondary border text-decoration-none shadow-2xs" title="Administrar Preguntas Frecuentes">
+                                <i class="fas fa-cogs me-1 text-primary"></i>Gestionar
+                            </a>
+                        {% endif %}
+                    </div>
                     <div class="accordion accordion-flush" id="faqAccordion">
-                        <div class="accordion-item border-0 mb-1 rounded overflow-hidden">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-3 small bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                    ¿Cómo registrar un coautor externo?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body p-3 small text-secondary">
-                                    En la pantalla de subida de obra o coautorías, escribe el nombre completo y la universidad correspondiente para darlo de alta en la red interinstitucional.
+                        {% for faq in preguntas_frecuentes %}
+                            <div class="accordion-item border-0 mb-1 rounded overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-2 px-3 small bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ faq.id }}">
+                                        {{ faq.pregunta }}
+                                    </button>
+                                </h2>
+                                <div id="faq{{ faq.id }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body p-3 small text-secondary">
+                                        {{ faq.respuesta|safe }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item border-0 mb-1 rounded overflow-hidden">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-3 small bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                    ¿Qué formatos de archivo puedo subir al repositorio y a mensajería?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body p-3 small text-secondary">
-                                    <p class="mb-2"><strong>&bull; Publicaciones y Trabajos:</strong> El repositorio acepta <strong>únicamente documentos en formato PDF</strong> con un límite máximo institucional de <strong>20 MB</strong> por obra.</p>
-                                    <p class="mb-2"><strong>&bull; Claustro Docente:</strong> Se admiten documentos curriculares en <strong>PDF</strong> y fotografías en formato de imagen (JPG, PNG).</p>
-                                    <p class="mb-0"><strong>&bull; Mensajería Académica y Soporte FCA:</strong> En estos canales sí puedes intercambiar libremente documentos de trabajo (.docx, .pptx, .xlsx, imágenes y PDFs) entre colegas o con soporte para revisión previa.</p>
-                                </div>
+                        {% empty %}
+                            <div class="p-3 text-center text-muted small bg-light rounded">
+                                <i class="fas fa-info-circle me-1"></i>No hay preguntas frecuentes registradas.
                             </div>
-                        </div>
-                        <div class="accordion-item border-0 rounded overflow-hidden">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-3 small bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                    ¿Cómo corregir o actualizar mis datos oficiales de docente?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body p-3 small text-secondary">
-                                    Tu semblanza y redes de contacto las puedes editar desde <em>Mi Panel</em>. Si requieres corregir datos institucionales como tu <strong>nombre completo, título o grado académico (Dr., Mtro., Lic.), nombramiento o número de empleado</strong>, solicítalo aquí a Soporte FCA y un Super Administrador realizará la modificación directamente en tu ficha.
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             {% endif %}
@@ -727,6 +828,217 @@
         <!-- ÁREA PRINCIPAL: HILO DE ATENCIÓN DE SOPORTE -->
         <!-- ============================================================= -->
         <main class="helpdesk-main-area">
+            {% if es_admin and vista == 'contacto_web' %}
+                <!-- ========================================================= -->
+                <!-- MODO CONTACTO WEB: DETALLE Y GESTIÓN CON RESPUESTA POR CORREO -->
+                <!-- ========================================================= -->
+                <div class="helpdesk-top-banner">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ticket-avatar shadow-sm" style="background: {% if contacto_activo.estado == 'nuevo' %}#dc2626{% elif contacto_activo.estado == 'en_proceso' %}#0284c7{% else %}#16a34a{% endif %}; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: bold; font-size: 1.25rem;">
+                            {% if contacto_activo %}{{ contacto_activo.nombre|slice:":1"|upper }}{% else %}<i class="fas fa-inbox text-white fs-5"></i>{% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                                <span>{% if contacto_activo %}{{ contacto_activo.asunto }}{% else %}Buzón de Mensajes de Contáctanos{% endif %}</span>
+                                {% if contacto_activo %}
+                                    <span class="badge bg-secondary font-monospace px-2 py-0.5" style="font-size: 0.74rem;">{{ contacto_activo.folio }}</span>
+                                    {% if contacto_activo.estado == 'nuevo' %}
+                                        <span class="badge bg-danger rounded-pill px-2.5 py-1" style="font-size: 0.74rem;">Nuevo / Pendiente</span>
+                                    {% elif contacto_activo.estado == 'en_proceso' %}
+                                        <span class="badge bg-primary text-white rounded-pill px-2.5 py-1" style="font-size: 0.74rem;">En Atención</span>
+                                    {% elif contacto_activo.estado == 'resuelto' %}
+                                        <span class="badge bg-success text-white rounded-pill px-2.5 py-1" style="font-size: 0.74rem;"><i class="fas fa-check-circle me-1"></i>Resuelto</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small d-flex flex-wrap align-items-center gap-2" style="font-size: 0.8rem;">
+                                {% if contacto_activo %}
+                                    <span><strong>{{ contacto_activo.nombre }}</strong> &bull; <a href="mailto:{{ contacto_activo.email }}" class="text-success text-decoration-none fw-semibold">{{ contacto_activo.email }}</a></span>
+                                    {% if contacto_activo.telefono %}<span>&bull; Tel: <strong>{{ contacto_activo.telefono }}</strong></span>{% endif %}
+                                    {% if contacto_activo.organizacion %}<span>&bull; {{ contacto_activo.organizacion }}</span>{% endif %}
+                                {% else %}
+                                    <span>Selecciona un mensaje del menú lateral para revisarlo y gestionarlo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if contacto_activo %}
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="mailto:{{ contacto_activo.email }}?subject=Re:%20[Folio%20{{ contacto_activo.folio }}]%20{{ contacto_activo.asunto }}" class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-xs fw-bold">
+                            <i class="fas fa-reply me-1"></i>Responder vía Email
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 shadow-xs" data-bs-toggle="modal" data-bs-target="#modalEliminarContactoHelpdesk">
+                            <i class="fas fa-trash-alt me-1"></i>Eliminar
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- CONTENIDO DEL MENSAJE DE CONTACTO -->
+                <div class="messages-scroll-pane p-4" style="background-color: #f8fafc; overflow-y: auto;">
+                    {% if contacto_activo %}
+                        <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+                            <!-- TARJETA 1: DETALLES DE LA CONSULTA -->
+                            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: #ffffff; border: 1px solid #e2e8f0 !important;">
+                                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning bg-opacity-20 text-dark border border-warning fw-bold px-2.5 py-1">
+                                            <i class="fas fa-inbox me-1 text-warning"></i>Mensaje Recibido desde /contacto/
+                                        </span>
+                                        <span class="text-muted small">&bull; {{ contacto_activo.fecha_creacion|date:"l d de F de Y a las H:i:s" }} hrs</span>
+                                    </div>
+                                    {% if contacto_activo.ip_origen %}
+                                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.72rem;">IP: {{ contacto_activo.ip_origen }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row g-3 mb-3 pb-3 border-bottom">
+                                        <div class="col-md-6">
+                                            <label class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Nombre del Solicitante</label>
+                                            <div class="fw-bold text-dark fs-6">{{ contacto_activo.nombre }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Correo Electrónico</label>
+                                            <div>
+                                                <a href="mailto:{{ contacto_activo.email }}" class="text-success fw-bold text-decoration-none">
+                                                    <i class="fas fa-envelope me-1"></i>{{ contacto_activo.email }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Teléfono de Contacto</label>
+                                            <div class="text-dark">{{ contacto_activo.telefono|default:'No proporcionado' }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Institución o Dependencia</label>
+                                            <div class="text-dark">{{ contacto_activo.organizacion|default:'No especificada' }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Asunto Registrado</label>
+                                        <h5 class="fw-bold text-dark mb-2">{{ contacto_activo.asunto }}</h5>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.7rem;">Mensaje o Pregunta Completa</label>
+                                        <div class="p-3.5 rounded-3 bg-light border text-dark" style="font-size: 0.95rem; line-height: 1.65; white-space: pre-wrap; border-left: 4px solid var(--uabc-green) !important;">{{ contacto_activo.mensaje }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- HISTORIAL SI YA FUE RESUELTO -->
+                            {% if contacto_activo.estado == 'resuelto' and contacto_activo.respuesta_soporte %}
+                                <div class="alert alert-success border-success border-opacity-25 rounded-4 shadow-sm p-3.5 mb-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="fw-bold text-success fs-6">
+                                            <i class="fas fa-check-circle me-1"></i>Respuesta enviada el {{ contacto_activo.fecha_resolucion|date:"d/m/Y H:i" }}
+                                        </div>
+                                        {% if contacto_activo.atendido_por %}
+                                        <span class="small text-muted">Atendido por: <strong>{{ contacto_activo.atendido_por.get_full_name|default:contacto_activo.atendido_por.username }}</strong></span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-dark small" style="white-space: pre-wrap; line-height: 1.6;">{{ contacto_activo.respuesta_soporte }}</div>
+                                </div>
+                            {% endif %}
+
+                            <!-- TARJETA 2: GESTIÓN DE RESOLUCIÓN Y ENVÍO DE CORREO -->
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="background: #ffffff; border: 1.5px solid #cbd5e1 !important;">
+                                <div class="card-header bg-light py-3 border-bottom d-flex align-items-center justify-content-between">
+                                    <div class="fw-bold text-dark">
+                                        <i class="fas fa-edit text-success me-2"></i>Gestión de Estado y Respuesta Oficial de Soporte
+                                    </div>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2.5 py-1">Folio: {{ contacto_activo.folio }}</span>
+                                </div>
+                                <div class="card-body p-4">
+                                    <form method="POST" action="{% url 'cambiar_estado_contacto' contacto_activo.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold text-dark small mb-1">
+                                                Mensaje de Respuesta Oficial <span class="text-muted fw-normal">(Opcional &bull; Se enviará por correo al marcar como Resuelto)</span>
+                                            </label>
+                                            <textarea name="respuesta_soporte" rows="4" class="form-control rounded-3" placeholder="Escribe aquí la respuesta o resolución oficial que se enviará automáticamente al correo de {{ contacto_activo.nombre }} ({{ contacto_activo.email }})...">{{ contacto_activo.respuesta_soporte }}</textarea>
+                                            <div class="form-text small" style="font-size: 0.78rem;">
+                                                <i class="fas fa-info-circle text-primary me-1"></i>Si resuelves la consulta, este texto se incluirá en el correo formal que recibirá el solicitante con su folio institucional.
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 align-items-center mb-4">
+                                            <div class="col-md-5">
+                                                <label class="form-label fw-bold text-dark small mb-1">Estado de la Consulta</label>
+                                                <select name="estado" class="form-select form-select-sm rounded-3">
+                                                    <option value="nuevo" {% if contacto_activo.estado == 'nuevo' %}selected{% endif %}>Nuevo / Pendiente</option>
+                                                    <option value="en_proceso" {% if contacto_activo.estado == 'en_proceso' %}selected{% endif %}>En Atención</option>
+                                                    <option value="resuelto" {% if contacto_activo.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-7 pt-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="enviar_correo" value="1" id="checkEnviarResuelto" checked>
+                                                    <label class="form-check-label small fw-semibold text-dark" for="checkEnviarResuelto">
+                                                        Enviar correo automático con acuse de resolución al solicitante
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
+                                            <div class="text-muted small">
+                                                <i class="fas fa-user-shield me-1 text-success"></i>Atendiendo: <strong>{{ request.user.username }}</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" name="estado" value="en_proceso" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                                    <i class="fas fa-spinner me-1"></i>Poner En Atención
+                                                </button>
+                                                <button type="submit" name="estado" value="resuelto" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                                    <i class="fas fa-check-circle me-1"></i>Marcar como Resuelto y Enviar Correo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Eliminar Contacto -->
+                        <div class="modal fade" id="modalEliminarContactoHelpdesk" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                    <div class="modal-header bg-danger text-white py-3">
+                                        <h5 class="modal-title fw-bold mb-0"><i class="fas fa-trash-alt me-2"></i>Eliminar Consulta de Contacto</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4 text-center">
+                                        <i class="fas fa-exclamation-triangle text-danger fs-1 mb-3"></i>
+                                        <h6 class="fw-bold text-dark">¿Eliminar definitivamente este mensaje?</h6>
+                                        <p class="text-muted small mb-0">
+                                            Se eliminará la consulta con folio <strong>{{ contacto_activo.folio }}</strong> de <strong>{{ contacto_activo.nombre }}</strong>. Esta acción no se puede revertir.
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer bg-light py-2.5">
+                                        <form method="POST" action="{% url 'cambiar_estado_contacto' contacto_activo.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar">
+                                            <input type="hidden" name="next" value="{% url 'soporte_institucional' %}?vista=contacto_web">
+                                            <button type="button" class="btn btn-light border btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold">Sí, Eliminar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 my-auto text-muted">
+                            <i class="fas fa-inbox fa-3x text-success opacity-40 mb-3"></i>
+                            <h5 class="fw-bold text-dark">No hay consultas de contacto seleccionadas</h5>
+                            <p class="small text-muted mb-3">Selecciona un mensaje del menú lateral para ver los detalles y resolverlo.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
             <!-- CABECERA DEL HILO DE SOPORTE -->
             <div class="helpdesk-top-banner">
                 <div class="d-flex align-items-center gap-3">
@@ -857,17 +1169,17 @@
                                 <span>Soporte Institucional FCA &bull; Super Administrador</span>
                             </div>
                             <div class="text-dark" style="font-size: 0.92rem; line-height: 1.55;">
-                                <p class="mb-2"><strong>¡Hola! Te damos la bienvenida a la Mesa de Ayuda y Soporte FCA.</strong></p>
+                                <p class="mb-2"><strong>{{ config_sistema.soporte_bienvenida_titulo|default:"¡Hola! Te damos la bienvenida al Área de Ayuda y Soporte FCA." }}</strong></p>
                                 <p class="mb-2 text-secondary">
-                                    Este canal es atendido directamente por el equipo de <strong>Super Administradores (Soporte)</strong> de la facultad. A través de este espacio contamos con facultades administrativas completas para:
+                                    {{ config_sistema.soporte_bienvenida_cuerpo|default:"Este canal es atendido directamente por el equipo de Super Administradores (Soporte) de la facultad. A través de este espacio contamos con facultades administrativas completas para:" }}
                                 </p>
                                 <ul class="mb-2 ps-3 text-secondary" style="font-size: 0.88rem;">
-                                    <li><strong>Ver, auditar y validar</strong> tus publicaciones o trabajos académicos en PDF.</li>
-                                    <li><strong>Modificar y corregir</strong> datos de tu ficha docente (nombre oficial, título/grado académico como Dr. o Mtro., nombramiento, universidad de procedencia o número de empleado).</li>
-                                    <li><strong>Gestionar incidencias</strong> con invitaciones de coautoría, cuentas de usuario o permisos en la plataforma.</li>
+                                    {% if config_sistema.soporte_facultad_1 %}<li>{{ config_sistema.soporte_facultad_1 }}</li>{% endif %}
+                                    {% if config_sistema.soporte_facultad_2 %}<li>{{ config_sistema.soporte_facultad_2 }}</li>{% endif %}
+                                    {% if config_sistema.soporte_facultad_3 %}<li>{{ config_sistema.soporte_facultad_3 }}</li>{% endif %}
                                 </ul>
                                 <p class="mb-0 text-secondary">
-                                    Puedes escribirnos con total confianza tu duda o solicitud a continuación. Si necesitas compartirnos un borrador o comprobante, también puedes adjuntarlo libremente aquí. Con gusto te atenderemos.
+                                    {{ config_sistema.soporte_aviso_final|default:"Puedes escribirnos con total confianza tu duda o solicitud a continuación. Si necesitas compartirnos un borrador o comprobante, también puedes adjuntarlo libremente aquí. Con gusto te atenderemos." }}
                                 </p>
                             </div>
                             <div class="ticket-msg-footer">
@@ -1136,6 +1448,7 @@
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
+            {% endif %}
             {% endif %}
         </main>
     </div>
@@ -1424,7 +1737,7 @@
                                 }
                             }
                         } else if (data.error) {
-                            alert(data.error);
+                            mostrarAlertaSoporte(data.error);
                         }
                     })
                     .catch(err => {
@@ -1469,7 +1782,9 @@
                 });
             }
 
+            {% if vista != 'contacto_web' %}
             setInterval(checarMensajesSoporteNuevos, 3500);
+            {% endif %}
 
             // Buscador de Tickets (Admin)
             const filtroTicketsAdmin = document.getElementById('filtroTicketsAdmin');
@@ -1496,6 +1811,36 @@
                 textarea.focus();
             }
         }
+
+        // Modal de Alerta Personalizado (Reemplazo moderno de alert())
+        function mostrarAlertaSoporte(msg) {
+            const el = document.getElementById('modalAlertaSoporte');
+            const msgEl = document.getElementById('alertaSoporteMensaje');
+            if (el && msgEl) {
+                msgEl.textContent = msg;
+                const m = bootstrap.Modal.getOrCreateInstance(el);
+                m.show();
+            }
+        }
     </script>
+    <!-- Modal de Alerta Personalizado Soporte -->
+    <div class="modal fade" id="modalAlertaSoporte" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-center p-3">
+                <div class="modal-body pt-4 pb-2">
+                    <div class="mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 68px; height: 68px; background-color: #fee2e2; color: #dc2626;">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Aviso de Soporte</h5>
+                    <p id="alertaSoporteMensaje" class="small text-secondary mb-0"></p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-2 pb-2">
+                    <button type="button" class="btn btn-uabc-green rounded-pill px-4 fw-bold shadow-xs" data-bs-dismiss="modal">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

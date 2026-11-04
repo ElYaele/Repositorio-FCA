@@ -425,6 +425,120 @@
             border-bottom: 4px solid var(--primary-color);
         }
 
+        /* ============================================================
+           CARRUSEL INTELIGENTE DE ENLACES RÁPIDOS E INDEXADORES
+           (HASTA 8 EN LÍNEA HORIZONTAL, FLECHAS Y GIRO CONTINUO SI SON MÁS)
+           ============================================================ */
+        .quick-links-carousel-wrapper {
+            position: relative;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        .quick-links-track-container {
+            overflow: hidden;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .quick-links-track {
+            display: flex;
+            gap: 16px;
+            transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+            width: 100%;
+        }
+
+        .quick-links-track.is-centered {
+            justify-content: center !important;
+        }
+
+        .quick-links-slide {
+            flex: 0 0 calc(12.5% - 14px); /* 8 tarjetas por fila en escritorio */
+            max-width: calc(12.5% - 14px);
+            min-width: 120px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* Dimensiones estéticas proporcionadas cuando hay hasta 8 enlaces */
+        .quick-links-track.count-1 .quick-links-slide { flex: 0 0 190px; max-width: 200px; }
+        .quick-links-track.count-2 .quick-links-slide { flex: 0 0 180px; max-width: 190px; }
+        .quick-links-track.count-3 .quick-links-slide { flex: 0 0 175px; max-width: 185px; }
+        .quick-links-track.count-4 .quick-links-slide { flex: 0 0 170px; max-width: 180px; }
+        .quick-links-track.count-5 .quick-links-slide { flex: 0 0 165px; max-width: 175px; }
+        .quick-links-track.count-6 .quick-links-slide { flex: 0 0 calc(16.666% - 14px); max-width: calc(16.666% - 14px); min-width: 135px; }
+        .quick-links-track.count-7 .quick-links-slide { flex: 0 0 calc(14.285% - 14px); max-width: calc(14.285% - 14px); min-width: 125px; }
+        .quick-links-track.count-8 .quick-links-slide { flex: 0 0 calc(12.5% - 14px); max-width: calc(12.5% - 14px); min-width: 118px; }
+
+        .quick-links-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #006633;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            display: none; /* Se activa dinámicamente si hay más de 8 o si desborda */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 12;
+            transition: all 0.25s ease;
+        }
+
+        .quick-links-nav-btn:hover {
+            background: #dd971a;
+            color: #ffffff;
+            border-color: #dd971a;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .quick-links-nav-btn.prev-btn {
+            left: -18px;
+        }
+
+        .quick-links-nav-btn.next-btn {
+            right: -18px;
+        }
+
+        @media (max-width: 1199px) {
+            .quick-links-slide {
+                flex: 0 0 calc(20% - 13px);
+                max-width: calc(20% - 13px);
+                min-width: 115px;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .quick-links-slide {
+                flex: 0 0 calc(25% - 12px);
+                max-width: calc(25% - 12px);
+                min-width: 110px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .quick-links-slide {
+                flex: 0 0 calc(33.333% - 11px);
+                max-width: calc(33.333% - 11px);
+                min-width: 105px;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .quick-links-slide {
+                flex: 0 0 calc(50% - 10px);
+                max-width: calc(50% - 10px);
+                min-width: 100px;
+            }
+            .quick-links-nav-btn.prev-btn { left: -8px; }
+            .quick-links-nav-btn.next-btn { right: -8px; }
+        }
+
         .hover-lift {
             height: 100%;
         }
@@ -435,43 +549,247 @@
         }
 
         .icon-wrapper {
-            width: 65px;
-            height: 65px;
+            width: 60px;
+            height: 60px;
             background-color: #e8f5e9;
             border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: background-color 0.3s ease;
-        }
-
-        .icon-wrapper i {
-            color: var(--primary-color);
-            font-size: 26px;
-            transition: color 0.3s ease;
-        }
-
-        .icon-wrapper svg {
-            width: 32px;
-            height: 32px;
-            stroke: var(--primary-color);
-            transition: stroke 0.3s ease;
+            justify-content: center;
+            transition: all 0.3s ease;
         }
 
         .hover-lift:hover .icon-wrapper {
             background-color: var(--primary-color) !important;
-        }
-
-        .hover-lift:hover .icon-wrapper svg {
-            stroke: #ffffff !important;
-        }
-
-        .hover-lift:hover .icon-wrapper i {
-            color: #ffffff !important;
+            color: white !important;
+            transform: scale(1.1);
         }
 
         .hover-lift:hover .link-label {
             color: var(--secondary-color) !important;
+        }
+
+        /* ============================================================
+           CARRUSEL INTELIGENTE MULTITARJETA (HASTA 5 TARJETAS Y AUTO-ALINEACIÓN)
+           ============================================================ */
+        .events-carousel-wrapper {
+            position: relative;
+            padding: 0 10px;
+            width: 100%;
+        }
+
+        .events-track-container {
+            overflow: hidden;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .events-track {
+            display: flex;
+            gap: 16px;
+            transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+            width: 100%;
+        }
+
+        /* Centrado inteligente cuando hay menos tarjetas que la capacidad */
+        .events-track.is-centered {
+            justify-content: center !important;
+        }
+
+        /* Tamaño base por defecto (5 tarjetas por vista en pantallas >= 1200px) */
+        .events-slide {
+            flex: 0 0 calc(20% - 13px);
+            max-width: calc(20% - 13px);
+            min-width: calc(20% - 13px);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* Adaptación estética según el número total de eventos: */
+        /* CASO 1: Exactamente 1 evento -> Tarjeta destacada y centrada */
+        .events-track.count-1 {
+            justify-content: center;
+        }
+        .events-track.count-1 .events-slide {
+            flex: 0 0 380px;
+            max-width: 100%;
+            min-width: 280px;
+        }
+
+        /* CASO 2: Exactamente 2 eventos -> Dos tarjetas equilibradas al centro */
+        .events-track.count-2 {
+            justify-content: center;
+            gap: 24px;
+        }
+        .events-track.count-2 .events-slide {
+            flex: 0 0 340px;
+            max-width: calc(50% - 15px);
+            min-width: 260px;
+        }
+
+        /* CASO 3: Exactamente 3 eventos -> Tres tarjetas centradas simétricamente */
+        .events-track.count-3 {
+            justify-content: center;
+            gap: 20px;
+        }
+        .events-track.count-3 .events-slide {
+            flex: 0 0 300px;
+            max-width: calc(33.333% - 14px);
+            min-width: 250px;
+        }
+
+        /* CASO 4: Exactamente 4 eventos -> Cuatro tarjetas centradas */
+        .events-track.count-4 {
+            justify-content: center;
+            gap: 18px;
+        }
+        .events-track.count-4 .events-slide {
+            flex: 0 0 calc(25% - 14px);
+            max-width: calc(25% - 14px);
+            min-width: 230px;
+        }
+
+        /* CASO 5: Exactamente 5 eventos -> Cinco tarjetas llenando todo el ancho */
+        .events-track.count-5 {
+            justify-content: center;
+            gap: 16px;
+        }
+        .events-track.count-5 .events-slide {
+            flex: 0 0 calc(20% - 13px);
+            max-width: calc(20% - 13px);
+            min-width: calc(20% - 13px);
+        }
+
+        /* Breakpoints responsivos */
+        @media (max-width: 1199px) {
+            .events-slide {
+                flex: 0 0 calc(25% - 12px);
+                max-width: calc(25% - 12px);
+                min-width: calc(25% - 12px);
+            }
+            .events-track.count-4 .events-slide {
+                flex: 0 0 calc(25% - 12px);
+                max-width: calc(25% - 12px);
+            }
+            .events-track.count-3 .events-slide {
+                flex: 0 0 calc(33.333% - 14px);
+                max-width: calc(33.333% - 14px);
+            }
+            .events-track.count-2 .events-slide {
+                flex: 0 0 320px;
+                max-width: calc(50% - 15px);
+            }
+        }
+
+        @media (max-width: 991px) {
+            .events-slide {
+                flex: 0 0 calc(33.333% - 12px);
+                max-width: calc(33.333% - 12px);
+                min-width: calc(33.333% - 12px);
+            }
+            .events-track.count-3 .events-slide {
+                flex: 0 0 calc(33.333% - 12px);
+                max-width: calc(33.333% - 12px);
+            }
+            .events-track.count-2 .events-slide {
+                flex: 0 0 calc(50% - 12px);
+                max-width: calc(50% - 12px);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .events-slide,
+            .events-track.count-3 .events-slide,
+            .events-track.count-4 .events-slide,
+            .events-track.count-5 .events-slide {
+                flex: 0 0 calc(50% - 10px);
+                max-width: calc(50% - 10px);
+                min-width: calc(50% - 10px);
+            }
+        }
+
+        @media (max-width: 575px) {
+            .events-slide,
+            .events-track.count-1 .events-slide,
+            .events-track.count-2 .events-slide,
+            .events-track.count-3 .events-slide,
+            .events-track.count-4 .events-slide,
+            .events-track.count-5 .events-slide {
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+            }
+            .events-nav-btn.prev-btn {
+                left: -10px;
+            }
+            .events-nav-btn.next-btn {
+                right: -10px;
+            }
+        }
+
+        .events-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #006633;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 15;
+            transition: all 0.25s ease;
+        }
+
+        .events-nav-btn:hover {
+            background: #dd971a;
+            color: #ffffff;
+            border-color: #dd971a;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .events-nav-btn.prev-btn {
+            left: -22px;
+        }
+
+        .events-nav-btn.next-btn {
+            right: -22px;
+        }
+
+        /* Estilo para eventos ya concluidos (en gris) */
+        .event-card-past {
+            opacity: 0.82;
+            filter: grayscale(85%);
+            transition: all 0.3s ease;
+        }
+
+        .event-card-past:hover {
+            opacity: 1;
+            filter: grayscale(20%);
+        }
+
+        .event-past-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            z-index: 5;
+        }
+
+        .event-past-badge .badge {
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
+            font-size: 0.72rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .event-card {
@@ -528,19 +846,26 @@
         }
 
         .event-card .card-body {
-            padding: 1.25rem;
+            padding: 1.1rem 1rem;
         }
 
         .event-card .card-title {
             color: var(--primary-color);
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.35;
+            margin-bottom: 0.6rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.7rem;
         }
 
         .event-card .card-text {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.84rem;
+            line-height: 1.45;
         }
 
         .footer {
@@ -648,7 +973,7 @@
                             <a class="nav-link" href="https://fca.tij.uabc.mx/en" target="_blank">Acerca de</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://fca.tij.uabc.mx/contactus" target="_blank">Contacto</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'contacto' %}active font-weight-bold text-warning{% endif %}" href="{% url 'contacto' %}">Contacto</a>
                         </li>
 
                         {% if user.is_authenticated and upload_url %}
@@ -803,7 +1128,7 @@
                     <a href="{% url 'directorio_profesores' %}" class="stat-card-link">
                         <div class="stat-item">
                             <h3><i class="fas fa-chalkboard-teacher text-primary mr-1"></i> Claustro FCA</h3>
-                            <p>Directorio de Investigadores</p>
+                            <p>Claustro Docente e Investigadores</p>
                         </div>
                     </a>
                 </div>
@@ -1053,10 +1378,16 @@
                                     <a href="{% url 'resultado_busqueda' %}?q=Proyecto"><i class="fas fa-chevron-right text-success mr-1"></i> Proyecto / Reporte Técnico</a>
                                 </li>
                                 <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Propiedad+Intelectual"><i class="fas fa-chevron-right text-success mr-1"></i> Propiedad Intelectual (INDAUTOR / IMPI)</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Desarrollo+Tecnológico"><i class="fas fa-chevron-right text-success mr-1"></i> Desarrollo Tecnológico / Software</a>
+                                </li>
+                                <li>
                                     <a href="{% url 'universidades_colaboradoras' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Ver Universidades Aliadas</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'directorio_profesores' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Consultar Claustro Docente</a>
+                                    <a href="{% url 'directorio_profesores' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Consultar Claustro Docente e Investigadores</a>
                                 </li>
                             </ul>
                         </div>
@@ -1106,7 +1437,7 @@
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Clasifica los recursos de acuerdo con su formato académico o naturaleza editorial (artículos científicos, tesis de grado, libros completos, ponencias, etc.).</p>
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">Clasifica los recursos de acuerdo con su formato académico, marco CONAHCYT / RIZOMA o registro oficial de propiedad intelectual (artículos científicos, tesis de grado, libros, ponencias, software INDAUTOR, patentes IMPI, desarrollo tecnológico, etc.).</p>
                 </div>
                 <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Entendido</button></div>
             </div>
@@ -1188,150 +1519,122 @@
         </div>
     </div>
 
-    <!-- SECCIÓN: ENLACES RÁPIDOS -->
+    <!-- SECCIÓN: ENLACES RÁPIDOS E INDEXADORES DINÁMICOS (CARRUSEL INTELIGENTE) -->
     <div class="quick-links-section py-5">
         <div class="container">
             <h2 class="text-center mb-5 font-weight-bold" style="color: var(--primary-color); font-size: 2.2rem;">Enlaces Rápidos e Indexadores</h2>
-            <div class="row justify-content-center">
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="https://gaceta.uabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                                <path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path>
-                            </svg>
+            
+            <div class="quick-links-carousel-wrapper position-relative">
+                <button type="button" class="quick-links-nav-btn prev-btn" id="quickLinksPrevBtn" aria-label="Anterior" title="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="quick-links-track-container" id="quickLinksTrackContainer">
+                    <div class="quick-links-track {% if enlaces_rapidos|length <= 8 %}is-centered count-{{ enlaces_rapidos|length }}{% else %}count-many{% endif %}" id="quickLinksTrack">
+                        {% for link in enlaces_rapidos %}
+                        <div class="quick-links-slide">
+                            <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %} class="d-block p-3 p-md-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center h-100">
+                                <div class="icon-wrapper mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; border-radius: 50%; background: rgba(0, 102, 51, 0.08); color: {{ link.color|default:'var(--primary-color)' }}; font-size: 1.5rem;">
+                                    <i class="{{ link.icono }}"></i>
+                                </div>
+                                <div class="link-label" style="color: var(--primary-color); font-size: 0.92rem; font-weight: 700; text-transform: uppercase;">{{ link.titulo }}</div>
+                            </a>
                         </div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">GACETA</div>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="https://sorteosuabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>
-                            </svg>
+                        {% empty %}
+                        <div class="w-100 text-center text-muted py-4">
+                            <p>No hay enlaces rápidos configurados.</p>
                         </div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">SORTEOS</div>
-                    </a>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="https://fundacionuabc.org/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">FUNDACIÓN</div>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="https://bibliotecas.uabc.mx/" target="_blank" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">BIBLIOTECA</div>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="{% url 'directorio_profesores' %}" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto"><i class="fas fa-chalkboard-teacher"></i></div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">PROFESORES</div>
-                    </a>
-                </div>
-                <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
-                    <a href="{% url 'universidades_colaboradoras' %}" class="d-block p-4 bg-white rounded-lg shadow-sm hover-lift text-decoration-none text-center">
-                        <div class="icon-wrapper mb-3 mx-auto"><i class="fas fa-university"></i></div>
-                        <div class="link-label" style="color: var(--primary-color); font-size: 0.95rem; font-weight: 700;">RED ALIADA</div>
-                    </a>
-                </div>
+
+                <button type="button" class="quick-links-nav-btn next-btn" id="quickLinksNextBtn" aria-label="Siguiente" title="Siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- SECCIÓN: PRÓXIMOS EVENTOS FCA -->
+    <!-- SECCIÓN: PRÓXIMOS EVENTOS FCA (CARRUSEL INTERACTIVO) -->
     <div class="events-calendar py-5" style="background: linear-gradient(rgba(44, 82, 52, 0.9), rgba(44, 82, 52, 0.9)), url('{% static 'images/Próximos Eventos FCA.png' %}'); background-size: cover; background-position: center;">
         <div class="container">
             <div class="section-header text-center mb-5">
                 <h2 class="text-white display-4 font-weight-bold">Próximos Eventos FCA</h2>
                 <div class="underline mx-auto" style="width: 100px; height: 4px; background-color: var(--secondary-color);"></div>
             </div>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
-                        <div class="card event-card h-100">
-                            <div class="event-image-wrapper">
-                                <img src="{% static 'images/campus_fca.jpg' %}" alt="Aniversario FCA" class="card-img-top">
-                                <div class="event-date">
-                                    <span class="day">23</span>
-                                    <span class="month">SEP</span>
+
+            <!-- CONTENEDOR DEL CARRUSEL DE EVENTOS -->
+            <div class="events-carousel-wrapper">
+                <button type="button" class="events-nav-btn prev-btn" id="eventsPrevBtn" aria-label="Evento anterior" title="Evento anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <div class="events-track-container" id="eventsTrackContainer">
+                    <div class="events-track {% if eventos_fca|length == 1 %}count-1 is-centered{% elif eventos_fca|length == 2 %}count-2 is-centered{% elif eventos_fca|length == 3 %}count-3 is-centered{% elif eventos_fca|length == 4 %}count-4 is-centered{% elif eventos_fca|length == 5 %}count-5 is-centered{% else %}count-carousel{% endif %}" id="eventsTrack">
+                        {% for evento in eventos_fca %}
+                        <div class="events-slide">
+                            <a href="{{ evento.enlace|default:'javascript:void(0);' }}" {% if evento.enlace and evento.enlace != '#' %}target="_blank"{% endif %} class="text-decoration-none event-card-link">
+                                <div class="card event-card h-100 {% if evento.es_pasado %}event-card-past{% endif %}">
+                                    <div class="event-image-wrapper">
+                                        <img src="{{ evento.url_imagen }}" alt="{{ evento.titulo }}" class="card-img-top">
+                                        <div class="event-date {% if evento.es_pasado %}bg-secondary{% endif %}">
+                                            <span class="day">{{ evento.dia_str }}</span>
+                                            <span class="month">{{ evento.mes_str }}</span>
+                                        </div>
+                                        {% if evento.es_pasado %}
+                                        <div class="event-past-badge">
+                                            <span class="badge"><i class="fas fa-check-circle mr-1"></i>Concluido</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body d-flex flex-column justify-content-between">
+                                        <h5 class="card-title" title="{{ evento.titulo }}">{{ evento.titulo }}</h5>
+                                        <p class="card-text mb-0">
+                                            <i class="fas fa-clock mr-2 text-success"></i>{{ evento.horario }}<br>
+                                            <i class="fas fa-map-marker-alt mr-2 text-danger"></i>{{ evento.lugar }}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Aniversario de la FCA Tijuana</h5>
-                                <p class="card-text">
-                                    <i class="fas fa-clock mr-2"></i>10:00 AM<br>
-                                    <i class="fas fa-map-marker-alt mr-2"></i>FCA
-                                </p>
-                            </div>
+                            </a>
                         </div>
-                    </a>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
-                        <div class="card event-card h-100">
-                            <div class="event-image-wrapper">
-                                <img src="{% static 'images/show.jpg' %}" alt="Show de Talentos" class="card-img-top">
-                                <div class="event-date">
-                                    <span class="day">25</span>
-                                    <span class="month">SEP</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Show De Talentos</h5>
-                                <p class="card-text">
-                                    <i class="fas fa-clock mr-2"></i>2:00 PM<br>
-                                    <i class="fas fa-map-marker-alt mr-2"></i>Explanada FCA
-                                </p>
-                            </div>
+                        {% empty %}
+                        <div class="w-100 text-center py-5 text-white">
+                            <i class="fas fa-calendar-times fa-3x mb-3 text-white-50"></i>
+                            <h5>No hay próximos eventos programados por el momento.</h5>
                         </div>
-                    </a>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <a href="https://www.facebook.com/fcatijuana" target="_blank" class="text-decoration-none event-card-link">
-                        <div class="card event-card h-100">
-                            <div class="event-image-wrapper">
-                                <img src="{% static 'images/conferencia.jpg' %}" alt="Conferencia" class="card-img-top">
-                                <div class="event-date">
-                                    <span class="day">19</span>
-                                    <span class="month">SEP</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Conferencias Académicas</h5>
-                                <p class="card-text">
-                                    <i class="fas fa-clock mr-2"></i>8:00 AM<br>
-                                    <i class="fas fa-map-marker-alt mr-2"></i>Sala Audiovisual FCA
-                                </p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+
+                <button type="button" class="events-nav-btn next-btn" id="eventsNextBtn" aria-label="Siguiente evento" title="Siguiente evento">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- PIE DE PÁGINA INSTITUCIONAL FCA -->
+    <!-- PIE DE PÁGINA INSTITUCIONAL FCA DINÁMICO -->
     <footer class="footer">
         <div class="container">
-            <div class="row align-items-start">
+                        <div class="row align-items-start">
                 <!-- COLUMNA 1: FCA -->
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
                     <div class="footer-col-title">FCA</div>
                     <ul>
-                        <li><a href="https://fca.tij.uabc.mx/" target="_blank">Inicio</a></li>
-                        <li><a href="https://fca.tij.uabc.mx/acerca-de" target="_blank">Nuestra facultad</a></li>
+                        {% if enlaces_pie_fca %}
+                            {% for link in enlaces_pie_fca %}
+                                <li>
+                                    {% if link.es_boton %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %} class="btn btn-sm btn-outline-warning text-nowrap rounded-pill py-0 px-2.5 fw-bold my-1" style="font-size: 0.8rem; border-color: #dd971a; color: #ffd54f;">{{ link.titulo }}</a>
+                                    {% else %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a href="{{ config_sistema.footer_link_fca_inicio|default:'https://fca.tij.uabc.mx/' }}" target="_blank">Inicio</a></li>
+                            <li><a href="{{ config_sistema.footer_link_fca_acerca|default:'https://fca.tij.uabc.mx/acerca-de' }}" target="_blank">Nuestra facultad</a></li>
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -1339,8 +1642,20 @@
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <div class="footer-col-title">Estudiantes</div>
                     <ul>
-                        <li><a href="https://fca.tij.uabc.mx/ticketayuda" target="_blank">Ticket de ayuda (odoo)</a></li>
-                        <li><a href="https://drive.google.com/file/d/1KZwB3fAkZ_88xWOL-iM0gBYVRuFws4oo/view" target="_blank">Calendario escolar</a></li>
+                        {% if enlaces_pie_estudiantes %}
+                            {% for link in enlaces_pie_estudiantes %}
+                                <li>
+                                    {% if link.es_boton %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %} class="btn btn-sm btn-outline-warning text-nowrap rounded-pill py-0 px-2.5 fw-bold my-1" style="font-size: 0.8rem; border-color: #dd971a; color: #ffd54f;">{{ link.titulo }}</a>
+                                    {% else %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a href="{{ config_sistema.footer_link_estudiantes_ticket|default:'https://fca.tij.uabc.mx/ticketayuda' }}" target="_blank">Ticket de ayuda (odoo)</a></li>
+                            <li><a href="{{ config_sistema.footer_link_estudiantes_calendario|default:'https://drive.google.com/file/d/1KZwB3fAkZ_88xWOL-iM0gBYVRuFws4oo/view' }}" target="_blank">Calendario escolar</a></li>
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -1348,7 +1663,19 @@
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
                     <div class="footer-col-title">Docentes</div>
                     <ul>
-                        <li><a href="https://fca.tij.uabc.mx/docentes-infogral" target="_blank">Consultar aviso</a></li>
+                        {% if enlaces_pie_docentes %}
+                            {% for link in enlaces_pie_docentes %}
+                                <li>
+                                    {% if link.es_boton %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %} class="btn btn-sm btn-outline-warning text-nowrap rounded-pill py-0 px-2.5 fw-bold my-1" style="font-size: 0.8rem; border-color: #dd971a; color: #ffd54f;">{{ link.titulo }}</a>
+                                    {% else %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a href="{{ config_sistema.footer_link_docentes_aviso|default:'https://fca.tij.uabc.mx/docentes-infogral' }}" target="_blank">Consultar aviso</a></li>
+                        {% endif %}
                     </ul>
                 </div>
 
@@ -1356,19 +1683,53 @@
                 <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
                     <div class="footer-col-title">Institucional</div>
                     <ul>
-                        <li><a href="https://fca.tij.uabc.mx/plandedesarrollo" target="_blank">Plan de desarrollo 2023-2027</a></li>
-                        <li><a href="https://www.uabc.mx/wp-content/uploads/bsk-pdf-manager/2023/10/Programa-Institucional-para-la-Cultura-de-Paz-UABC_.pdf" target="_blank">Programa para la cultura de paz</a></li>
+                        {% if enlaces_pie_institucional %}
+                            {% for link in enlaces_pie_institucional %}
+                                <li>
+                                    {% if link.es_boton %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %} class="btn btn-sm btn-outline-warning text-nowrap rounded-pill py-0 px-2.5 fw-bold my-1" style="font-size: 0.8rem; border-color: #dd971a; color: #ffd54f;">{{ link.titulo }}</a>
+                                    {% else %}
+                                    <a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a href="{{ config_sistema.footer_link_institucional_plan|default:'https://fca.tij.uabc.mx/plandedesarrollo' }}" target="_blank">Plan de desarrollo 2023-2027</a></li>
+                            <li><a href="{{ config_sistema.footer_link_institucional_paz|default:'https://www.uabc.mx/wp-content/uploads/bsk-pdf-manager/2023/10/Programa-Institucional-para-la-Cultura-de-Paz-UABC_.pdf' }}" target="_blank">Programa para la cultura de paz</a></li>
+                        {% endif %}
                     </ul>
                 </div>
 
                 <!-- COLUMNA 5: REDES SOCIALES -->
                 <div class="col-lg-2 col-md-6 col-12 mb-4 text-lg-right text-md-left">
                     <div class="footer-social-icons d-inline-flex justify-content-lg-end">
-                        <a href="https://www.facebook.com/fcatijuana" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/fca.tij.uabc/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.tiktok.com/@fca.tij" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
-                        <a href="https://www.youtube.com/@FCATijuanaOficial" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://www.linkedin.com/in/fcatijuana" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        {% if redes_sociales_footer %}
+                            {% for red in redes_sociales_footer %}
+                            <a href="{{ red.url }}" target="_blank" title="{{ red.nombre }}" class="footer-social-link">
+                                {% if red.usar_imagen and red.icono_imagen %}
+                                    <img src="{{ red.icono_imagen.url }}" alt="{{ red.nombre }}" style="width: 24px; height: 24px; object-fit: contain; vertical-align: middle; display: inline-block; border-radius: 4px; {% if red.filtro_blanco %}filter: brightness(0) invert(1);{% endif %}">
+                                {% else %}
+                                    <i class="{{ red.icono }}"></i>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            {% if config_sistema.footer_facebook %}
+                            <a href="{{ config_sistema.footer_facebook }}" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                            {% if config_sistema.footer_instagram %}
+                            <a href="{{ config_sistema.footer_instagram }}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            {% endif %}
+                            {% if config_sistema.footer_tiktok %}
+                            <a href="{{ config_sistema.footer_tiktok }}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                            {% endif %}
+                            {% if config_sistema.footer_youtube %}
+                            <a href="{{ config_sistema.footer_youtube }}" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+                            {% endif %}
+                            {% if config_sistema.footer_linkedin %}
+                            <a href="{{ config_sistema.footer_linkedin }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -1390,7 +1751,7 @@
                             </div>
                             <div class="text-white-50 small mt-1">
                                 <strong class="text-white">UABC - Campus Tijuana</strong><br>
-                                Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427
+                                {{ config_sistema.footer_direccion|default:'Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427' }}
                             </div>
                         </div>
                     </div>
@@ -1398,12 +1759,12 @@
 
                 <div class="col-lg-3 col-sm-6 mb-2 mb-lg-0 text-lg-right">
                     <div class="text-white-50 small">Línea Universitaria</div>
-                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">+52 (664) 979-7500</div>
+                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">{{ config_sistema.footer_telefono_universitario|default:'+52 (664) 979-7500' }}</div>
                 </div>
 
                 <div class="col-lg-3 col-sm-6 text-lg-right">
                     <div class="text-white-50 small">Línea Directa de la Facultad</div>
-                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">+52 (664) 683-3174</div>
+                    <div class="text-white font-weight-bold" style="font-size: 0.98rem;">{{ config_sistema.footer_telefono_directo|default:'+52 (664) 683-3174' }}</div>
                 </div>
             </div>
 
@@ -1435,5 +1796,321 @@
             }
         }
     </script>
+
+    <!-- Script del Carrusel de Próximos Eventos FCA (Inteligente y Adaptativo) -->
+    <script>
+        (function() {
+            function initEventsCarousel() {
+                const track = document.getElementById('eventsTrack');
+                const container = document.getElementById('eventsTrackContainer');
+                const prevBtn = document.getElementById('eventsPrevBtn');
+                const nextBtn = document.getElementById('eventsNextBtn');
+
+                if (!track || !container || !prevBtn || !nextBtn) return;
+
+                const slides = track.querySelectorAll('.events-slide');
+                if (slides.length === 0) return;
+
+                let currentIndex = 0;
+                let autoPlayTimer = null;
+
+                function getVisibleCount() {
+                    const width = window.innerWidth;
+                    if (width >= 1200) return 5;
+                    if (width >= 992) return 4;
+                    if (width >= 768) return 3;
+                    if (width >= 576) return 2;
+                    return 1;
+                }
+
+                function getMaxIndex() {
+                    const visible = getVisibleCount();
+                    return Math.max(0, slides.length - visible);
+                }
+
+                function updateCarousel() {
+                    const visible = getVisibleCount();
+                    const maxIndex = getMaxIndex();
+
+                    if (currentIndex > maxIndex) currentIndex = maxIndex;
+                    if (currentIndex < 0) currentIndex = 0;
+
+                    // Si todas las tarjetas caben simultáneamente en pantalla:
+                    if (slides.length <= visible) {
+                        track.classList.add('is-centered');
+                        track.style.transform = 'translateX(0)';
+                        prevBtn.style.display = 'none';
+                        nextBtn.style.display = 'none';
+                        stopAutoPlay();
+                        return;
+                    }
+
+                    // Si hay más tarjetas que las visibles en la pantalla actual:
+                    track.classList.remove('is-centered');
+                    prevBtn.style.display = 'flex';
+                    nextBtn.style.display = 'flex';
+
+                    const slideWidth = slides[0].getBoundingClientRect().width;
+                    const trackStyle = window.getComputedStyle(track);
+                    const gap = parseFloat(trackStyle.gap) || 16;
+                    const shift = currentIndex * (slideWidth + gap);
+                    track.style.transform = `translateX(-${shift}px)`;
+                }
+
+                function nextSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex >= maxIndex) {
+                        currentIndex = 0;
+                    } else {
+                        currentIndex++;
+                    }
+                    updateCarousel();
+                }
+
+                function prevSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex <= 0) {
+                        currentIndex = maxIndex;
+                    } else {
+                        currentIndex--;
+                    }
+                    updateCarousel();
+                }
+
+                nextBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    nextSlide();
+                    resetAutoPlay();
+                });
+
+                prevBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    prevSlide();
+                    resetAutoPlay();
+                });
+
+                // Soporte para gestos táctiles (Swipe en móviles y tablets)
+                let touchStartX = 0;
+                let touchEndX = 0;
+
+                container.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    stopAutoPlay();
+                }, { passive: true });
+
+                container.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                    startAutoPlay();
+                }, { passive: true });
+
+                function handleSwipe() {
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 40) {
+                        if (diff > 0) {
+                            nextSlide();
+                        } else {
+                            prevSlide();
+                        }
+                    }
+                }
+
+                function startAutoPlay() {
+                    if (slides.length > getVisibleCount() && !autoPlayTimer) {
+                        autoPlayTimer = setInterval(nextSlide, 5000);
+                    }
+                }
+
+                function stopAutoPlay() {
+                    if (autoPlayTimer) {
+                        clearInterval(autoPlayTimer);
+                        autoPlayTimer = null;
+                    }
+                }
+
+                function resetAutoPlay() {
+                    stopAutoPlay();
+                    startAutoPlay();
+                }
+
+                container.addEventListener('mouseenter', stopAutoPlay);
+                container.addEventListener('mouseleave', startAutoPlay);
+                prevBtn.addEventListener('mouseenter', stopAutoPlay);
+                prevBtn.addEventListener('mouseleave', startAutoPlay);
+                nextBtn.addEventListener('mouseenter', stopAutoPlay);
+                nextBtn.addEventListener('mouseleave', startAutoPlay);
+
+                window.addEventListener('resize', function() {
+                    updateCarousel();
+                    resetAutoPlay();
+                });
+
+                updateCarousel();
+                startAutoPlay();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initEventsCarousel);
+            } else {
+                initEventsCarousel();
+            }
+        })();
+    </script>
+    <!-- Script del Carrusel de Enlaces Rápidos (Activo cuando hay más de 8 o desborde) -->
+    <script>
+        (function() {
+            function initQuickLinksCarousel() {
+                const track = document.getElementById('quickLinksTrack');
+                const container = document.getElementById('quickLinksTrackContainer');
+                const prevBtn = document.getElementById('quickLinksPrevBtn');
+                const nextBtn = document.getElementById('quickLinksNextBtn');
+
+                if (!track || !container || !prevBtn || !nextBtn) return;
+
+                const slides = track.querySelectorAll('.quick-links-slide');
+                if (slides.length === 0) return;
+
+                let currentIndex = 0;
+                let autoPlayTimer = null;
+
+                function getVisibleCount() {
+                    const width = window.innerWidth;
+                    if (width >= 1200) return 8; // En pantalla grande caben hasta 8 en una línea sin flechas
+                    if (width >= 992) return 5;
+                    if (width >= 768) return 4;
+                    if (width >= 576) return 3;
+                    return 2;
+                }
+
+                function getMaxIndex() {
+                    const visible = getVisibleCount();
+                    return Math.max(0, slides.length - visible);
+                }
+
+                function updateCarousel() {
+                    const visible = getVisibleCount();
+                    const maxIndex = getMaxIndex();
+
+                    if (currentIndex > maxIndex) currentIndex = maxIndex;
+                    if (currentIndex < 0) currentIndex = 0;
+
+                    // Si la cantidad total es <= visible (por ejemplo <= 8 en desktop):
+                    // Se centran las tarjetas y NO se muestran las flechas
+                    if (slides.length <= visible) {
+                        track.classList.add('is-centered');
+                        track.style.transform = 'translateX(0)';
+                        prevBtn.style.display = 'none';
+                        nextBtn.style.display = 'none';
+                        stopAutoPlay();
+                        return;
+                    }
+
+                    // Si son MÁS de 8 (o más que las que caben en la pantalla actual):
+                    // Se muestran las flechas y se activa el giro y desplazamiento
+                    track.classList.remove('is-centered');
+                    prevBtn.style.display = 'flex';
+                    nextBtn.style.display = 'flex';
+
+                    const slideWidth = slides[0].getBoundingClientRect().width;
+                    const trackStyle = window.getComputedStyle(track);
+                    const gap = parseFloat(trackStyle.gap) || 16;
+                    const shift = currentIndex * (slideWidth + gap);
+                    track.style.transform = `translateX(-${shift}px)`;
+                }
+
+                function nextSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex >= maxIndex) {
+                        currentIndex = 0; // Gira al inicio
+                    } else {
+                        currentIndex++;
+                    }
+                    updateCarousel();
+                }
+
+                function prevSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex <= 0) {
+                        currentIndex = maxIndex; // Gira al final
+                    } else {
+                        currentIndex--;
+                    }
+                    updateCarousel();
+                }
+
+                nextBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    nextSlide();
+                    resetAutoPlay();
+                });
+
+                prevBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    prevSlide();
+                    resetAutoPlay();
+                });
+
+                // Gestos táctiles / Swipe en móviles
+                let touchStartX = 0;
+                let touchEndX = 0;
+
+                container.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    stopAutoPlay();
+                }, { passive: true });
+
+                container.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 35) {
+                        if (diff > 0) nextSlide();
+                        else prevSlide();
+                    }
+                    startAutoPlay();
+                }, { passive: true });
+
+                function startAutoPlay() {
+                    // Si son más de 8 o desbordan la pantalla, giran automáticamente cada 5 segundos
+                    if (slides.length > getVisibleCount() && !autoPlayTimer) {
+                        autoPlayTimer = setInterval(nextSlide, 5000);
+                    }
+                }
+
+                function stopAutoPlay() {
+                    if (autoPlayTimer) {
+                        clearInterval(autoPlayTimer);
+                        autoPlayTimer = null;
+                    }
+                }
+
+                function resetAutoPlay() {
+                    stopAutoPlay();
+                    startAutoPlay();
+                }
+
+                container.addEventListener('mouseenter', stopAutoPlay);
+                container.addEventListener('mouseleave', startAutoPlay);
+                prevBtn.addEventListener('mouseenter', stopAutoPlay);
+                prevBtn.addEventListener('mouseleave', startAutoPlay);
+                nextBtn.addEventListener('mouseenter', stopAutoPlay);
+                nextBtn.addEventListener('mouseleave', startAutoPlay);
+
+                window.addEventListener('resize', function() {
+                    updateCarousel();
+                    resetAutoPlay();
+                });
+
+                updateCarousel();
+                startAutoPlay();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initQuickLinksCarousel);
+            } else {
+                initQuickLinksCarousel();
+            }
+        })();
+    </script>
+
 </body>
 </html>

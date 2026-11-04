@@ -24,6 +24,9 @@ from .views import (
     restablecer_password_usuario_view,
     aprobar_usuario_view,
     rechazar_usuario_view,
+    aprobar_cuenta_soporte_view,
+    rechazar_cuenta_soporte_view,
+    desactivar_cuenta_soporte_view,
     toggle_estado_usuario_view,
     toggle_superuser_view,
     eliminar_usuario_view,
@@ -65,11 +68,42 @@ from .views import (
     impersonar_usuario_view,
     dejar_impersonacion_view,
     bitacora_usuario_ajax_view,
+    sync_panel_usuarios_ajax_view,
+    buscar_autores_live_ajax_view,
+    verificar_titulo_duplicado_ajax_view,
+    configuracion_soporte_view,
+    probar_email_soporte_ajax,
+    crear_faq_soporte_view,
+    editar_faq_soporte_view,
+    eliminar_faq_soporte_view,
+    toggle_faq_soporte_view,
+    crear_evento_fca_view,
+    editar_evento_fca_view,
+    eliminar_evento_fca_view,
+    toggle_evento_fca_view,
+    crear_enlace_rapido_view,
+    editar_enlace_rapido_view,
+    eliminar_enlace_rapido_view,
+    toggle_enlace_rapido_view,
+    crear_red_social_view,
+    editar_red_social_view,
+    eliminar_red_social_view,
+    toggle_red_social_view,
+    reordenar_red_social_view,
+    crear_enlace_footer_view,
+    editar_enlace_footer_view,
+    eliminar_enlace_footer_view,
+    toggle_enlace_footer_view,
+    reordenar_enlace_footer_view,
+    reordenar_footer_dragdrop_ajax,
+    contacto_view,
+    cambiar_estado_contacto_view,
 )
 
 urlpatterns = [
     path("", HomePageView.as_view(), name='Home'),
     path('busqueda/', BusquedaResultadosView.as_view(), name='resultado_busqueda'),
+    path('contacto/', contacto_view, name='contacto'),
     path('upload/', ArticuloCreateView.as_view(), name='upload_document'),
     path('documento/editar/<int:pk>/', ArticuloDocenteEditarView.as_view(), name='editar_documento'),
 
@@ -103,9 +137,45 @@ urlpatterns = [
     path('mensajeria/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido'),
     path('mensajeria/obtener-nuevos/', obtener_mensajes_nuevos_ajax_view, name='obtener_mensajes_nuevos_ajax'),
 
-    # Módulo Dedicado de Soporte Institucional y Mesa de Ayuda
+    # Módulo Dedicado de Soporte Institucional y Área de Ayuda
     path('soporte/', soporte_institucional_view, name='soporte_institucional'),
     path('soporte/estado/<int:ticket_autor_id>/', cambiar_estado_soporte_view, name='cambiar_estado_soporte'),
+
+    # Módulo de Configuración del Sistema y Soporte (Super Administrador)
+    path('configuracion-soporte/', configuracion_soporte_view, name='configuracion_soporte'),
+    path('configuracion-soporte/probar-email/', probar_email_soporte_ajax, name='probar_email_soporte_ajax'),
+    path('configuracion-soporte/faq/crear/', crear_faq_soporte_view, name='crear_faq_soporte'),
+    path('configuracion-soporte/faq/editar/<int:faq_id>/', editar_faq_soporte_view, name='editar_faq_soporte'),
+    path('configuracion-soporte/faq/eliminar/<int:faq_id>/', eliminar_faq_soporte_view, name='eliminar_faq_soporte'),
+    path('configuracion-soporte/faq/toggle/<int:faq_id>/', toggle_faq_soporte_view, name='toggle_faq_soporte'),
+
+    # Rutas para Próximos Eventos FCA
+    path('configuracion-soporte/evento/crear/', crear_evento_fca_view, name='crear_evento_fca'),
+    path('configuracion-soporte/evento/editar/<int:evento_id>/', editar_evento_fca_view, name='editar_evento_fca'),
+    path('configuracion-soporte/evento/eliminar/<int:evento_id>/', eliminar_evento_fca_view, name='eliminar_evento_fca'),
+    path('configuracion-soporte/evento/toggle/<int:evento_id>/', toggle_evento_fca_view, name='toggle_evento_fca'),
+
+    # Rutas para Enlaces Rápidos e Indexadores
+    path('configuracion-soporte/enlace/crear/', crear_enlace_rapido_view, name='crear_enlace_rapido'),
+    path('configuracion-soporte/enlace/editar/<int:enlace_id>/', editar_enlace_rapido_view, name='editar_enlace_rapido'),
+    path('configuracion-soporte/enlace/eliminar/<int:enlace_id>/', eliminar_enlace_rapido_view, name='eliminar_enlace_rapido'),
+    path('configuracion-soporte/enlace/toggle/<int:enlace_id>/', toggle_enlace_rapido_view, name='toggle_enlace_rapido'),
+
+    # Rutas para Redes Sociales y Enlaces del Pie de Página (Footer)
+    path('configuracion-soporte/red-social/crear/', crear_red_social_view, name='crear_red_social'),
+    path('configuracion-soporte/red-social/editar/<int:red_id>/', editar_red_social_view, name='editar_red_social'),
+    path('configuracion-soporte/red-social/eliminar/<int:red_id>/', eliminar_red_social_view, name='eliminar_red_social'),
+    path('configuracion-soporte/red-social/toggle/<int:red_id>/', toggle_red_social_view, name='toggle_red_social'),
+    path('configuracion-soporte/red-social/reordenar/<int:red_id>/<str:direccion>/', reordenar_red_social_view, name='reordenar_red_social'),
+
+    path('configuracion-soporte/enlace-footer/crear/', crear_enlace_footer_view, name='crear_enlace_footer'),
+    path('configuracion-soporte/enlace-footer/editar/<int:enlace_id>/', editar_enlace_footer_view, name='editar_enlace_footer'),
+    path('configuracion-soporte/enlace-footer/eliminar/<int:enlace_id>/', eliminar_enlace_footer_view, name='eliminar_enlace_footer'),
+    path('configuracion-soporte/enlace-footer/toggle/<int:enlace_id>/', toggle_enlace_footer_view, name='toggle_enlace_footer'),
+    path('configuracion-soporte/enlace-footer/reordenar/<int:enlace_id>/<str:direccion>/', reordenar_enlace_footer_view, name='reordenar_enlace_footer'),
+    path('configuracion-soporte/footer/guardar-orden-dragdrop/', reordenar_footer_dragdrop_ajax, name='reordenar_footer_dragdrop_ajax'),
+    path('configuracion-soporte/contacto/<int:contacto_id>/', cambiar_estado_contacto_view, name='cambiar_estado_contacto'),
+
 
     # Directorio de profesores y cumpleaños
     path('profesores/', directorio_profesores_view, name='directorio_profesores'),
@@ -127,6 +197,9 @@ urlpatterns = [
     path('gestion-usuarios/editar-ficha/<int:user_id>/', editar_ficha_usuario_admin_view, name='editar_ficha_usuario_admin'),
     path('gestion-usuarios/aprobar/<int:user_id>/', aprobar_usuario_view, name='aprobar_usuario'),
     path('gestion-usuarios/rechazar/<int:user_id>/', rechazar_usuario_view, name='rechazar_usuario'),
+    path('gestion-usuarios/aprobar-soporte/<int:user_id>/', aprobar_cuenta_soporte_view, name='aprobar_cuenta_soporte'),
+    path('gestion-usuarios/rechazar-soporte/<int:user_id>/', rechazar_cuenta_soporte_view, name='rechazar_cuenta_soporte'),
+    path('gestion-usuarios/desactivar-soporte/<int:user_id>/', desactivar_cuenta_soporte_view, name='desactivar_cuenta_soporte'),
     path('gestion-usuarios/suspender/<int:user_id>/', suspender_usuario_view, name='suspender_usuario'),
     path('gestion-usuarios/reactivar/<int:user_id>/', reactivar_usuario_view, name='reactivar_usuario'),
     path('gestion-usuarios/toggle-trusted/<int:user_id>/', toggle_trusted_publisher_view, name='toggle_trusted_publisher'),
@@ -158,4 +231,9 @@ urlpatterns = [
 
     # API para autores
     path('ajax/crear-autor-rapido/', crear_autor_rapido_view, name='crear_autor_rapido'),
-]
+    path('ajax/buscar-autores-live/', buscar_autores_live_ajax_view, name='buscar_autores_live_ajax'),
+    path('ajax/verificar-titulo-duplicado/', verificar_titulo_duplicado_ajax_view, name='verificar_titulo_duplicado_ajax'),
+
+    # Sincronización reactiva del panel de usuarios
+    path('gestion-usuarios/sync-ajax/', sync_panel_usuarios_ajax_view, name='sync_panel_usuarios_ajax'),
+]

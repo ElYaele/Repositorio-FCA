@@ -509,6 +509,33 @@
             border-color: #9e9e9e;
             cursor: not-allowed;
         }
+    
+        /* --- ESTILOS VISUALES PARA FASE A: PROGRESO Y VALIDACIÓN EN VIVO (IDEAS 9 Y 10) --- */
+        .campo-valido-check {
+            border-color: #16a34a !important;
+            background-color: #f0fdf4 !important;
+        }
+        .campo-valido-check:focus {
+            border-color: #16a34a !important;
+            box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.2) !important;
+        }
+        .paso-item.completado {
+            color: #006633 !important;
+        }
+        .paso-item.completado i {
+            color: #16a34a !important;
+        }
+        .badge-animado-listo {
+            animation: pulseVerde 2s infinite;
+            background-color: #15803d !important;
+            color: #ffffff !important;
+            border: 1px solid #86efac;
+        }
+        @keyframes pulseVerde {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -573,6 +600,31 @@
 
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            <!-- ============================================================== -->
+            <!-- BARRA DE PROGRESO DE COMPLETITUD DEL FORMULARIO (FASE A - IDEA 9) -->
+            <!-- ============================================================== -->
+            <div id="contenedor-barra-progreso" class="mb-4 p-3 bg-white rounded-4 shadow-sm border" style="border-color: #e2e8f0; position: sticky; top: 15px; z-index: 100;">
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                    <span class="small font-weight-bold text-dark d-flex align-items-center">
+                        <i class="fas fa-tasks mr-2 text-success" style="font-size: 1.1rem;"></i>
+                        <span>Progreso de Captura del Documento:</span>
+                    </span>
+                    <span id="badge-porcentaje-progreso" class="badge badge-pill badge-secondary px-3 py-1 shadow-xs" style="font-size: 0.8rem; font-weight: 700; transition: all 0.3s ease;">
+                        0% Completado
+                    </span>
+                </div>
+                <div class="progress mb-2" style="height: 10px; border-radius: 8px; background-color: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
+                    <div id="barra-progreso-llenado" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); background-color: #006633 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-1" style="font-size: 0.72rem; gap: 8px;">
+                    <span id="paso-progreso-1" class="paso-item text-muted font-weight-bold"><i class="far fa-circle mr-1 paso-ico"></i>1. Tipo de obra</span>
+                    <span id="paso-progreso-2" class="paso-item text-muted font-weight-bold"><i class="far fa-circle mr-1 paso-ico"></i>2. Archivo PDF</span>
+                    <span id="paso-progreso-3" class="paso-item text-muted font-weight-bold"><i class="far fa-circle mr-1 paso-ico"></i>3. Autores</span>
+                    <span id="paso-progreso-4" class="paso-item text-muted font-weight-bold"><i class="far fa-circle mr-1 paso-ico"></i>4. Info. General</span>
+                    <span id="paso-progreso-5" class="paso-item text-muted font-weight-bold"><i class="far fa-circle mr-1 paso-ico"></i>5. Datos Específicos</span>
+                </div>
+            </div>
+
 
             <div class="mb-4">
                 <div class="section-title">
@@ -582,6 +634,7 @@
                 <div class="row g-3">
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Artículo de Revista">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">Arbitrada / ISSN</span>
                             <span class="btn-card-info" data-info-tipo="Artículo de Revista" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
@@ -593,6 +646,7 @@
 
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Tesis">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d;">Grado Académico</span>
                             <span class="btn-card-info" data-info-tipo="Tesis" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
@@ -604,6 +658,7 @@
 
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Libro">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;">Monografía / ISBN</span>
                             <span class="btn-card-info" data-info-tipo="Libro" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
@@ -615,6 +670,7 @@
 
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Capítulo de Libro">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #fce7f3; color: #be185d; border: 1px solid #fbcfe8;">Obra Colectiva</span>
                             <span class="btn-card-info" data-info-tipo="Capítulo de Libro" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
@@ -626,6 +682,7 @@
 
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Ponencia / Memoria">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe;">Memoria / Evento</span>
                             <span class="btn-card-info" data-info-tipo="Ponencia / Memoria" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
@@ -637,12 +694,145 @@
 
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card-selector" data-tipo="Reporte de Investigación">
+                            <span class="badge" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;">Investigación</span>
                             <span class="btn-card-info" data-info-tipo="Reporte de Investigación" title="Ver descripción de esta categoría">
                                 <i class="fas fa-info"></i>
                             </span>
                             <div class="card-icon-circle"><i class="fas fa-microscope"></i></div>
                             <div class="card-title-text">Proyecto / Reporte Técnico</div>
                             <div class="card-desc-text">Informe técnico o proyecto de investigación</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTÓN INTERACTIVO PARA EXPANDIR MÁS TIPOS DE RECURSOS (SKETCH PÁGINA 9) -->
+                <div class="text-center my-3">
+                    <button type="button" class="btn btn-outline-success font-weight-bold shadow-sm" id="btn-toggle-mas-recursos" style="border-radius: 25px; padding: 10px 26px; font-size: 0.93rem; border-width: 2px; transition: all 0.25s ease;">
+                        <i class="fas fa-plus-circle mr-2" id="icono-toggle-recursos"></i>
+                        <span id="texto-toggle-recursos">Ver más tipos de recursos (Tecnológica, Propiedad Intelectual y Especializados)</span>
+                    </button>
+                </div>
+
+                <!-- CONTENEDOR DESPLEGABLE CON LOS TIPOS 7 A 13 (CONAHCYT / RIZOMA) -->
+                <div id="contenedor-mas-recursos" style="display: none;">
+                    <div class="alert alert-light border-success p-2 px-3 mb-3 text-center small text-muted font-weight-bold" style="border-radius: 10px; background-color: #f0fdf4;">
+                        <i class="fas fa-certificate text-success mr-1"></i> Catálogo Oficial SECIHTI / CONAHCYT / RIZOMA (SNII) y Registro de Propiedad Intelectual
+                    </div>
+                    <div class="row g-3">
+                        <!-- 7. PROPIEDAD INTELECTUAL -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Propiedad Intelectual">
+                                <span class="badge badge-warning" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d;">INDAUTOR / IMPI</span>
+                                <span class="btn-card-info" data-info-tipo="Propiedad Intelectual" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-award"></i></div>
+                                <div class="card-title-text">Propiedad Intelectual</div>
+                                <div class="card-desc-text">INDAUTOR (Software), Patente IMPI o Modelo</div>
+                            </div>
+                        </div>
+
+                        <!-- 8. DESARROLLO TECNOLÓGICO E INNOVACIÓN -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Desarrollo Tecnológico e Innovación">
+                                <span class="badge badge-info" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">Tecnología</span>
+                                <span class="btn-card-info" data-info-tipo="Desarrollo Tecnológico e Innovación" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-laptop-code"></i></div>
+                                <div class="card-title-text">Desarrollo Tecnológico</div>
+                                <div class="card-desc-text">Software, prototipo, planta piloto o innovación</div>
+                            </div>
+                        </div>
+
+                        <!-- 9. TRANSFERENCIA TECNOLÓGICA -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Transferencia Tecnológica">
+                                <span class="badge badge-success" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">Vinculación</span>
+                                <span class="btn-card-info" data-info-tipo="Transferencia Tecnológica" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-handshake"></i></div>
+                                <div class="card-title-text">Transferencia Tecnológica</div>
+                                <div class="card-desc-text">Licenciamiento, cesión o explotación formal</div>
+                            </div>
+                        </div>
+
+                        <!-- 10. TRADUCCIÓN CIENTÍFICA -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Traducción Científica">
+                                <span class="badge badge-secondary" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Humanista</span>
+                                <span class="btn-card-info" data-info-tipo="Traducción Científica" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-language"></i></div>
+                                <div class="card-title-text">Traducción Científica</div>
+                                <div class="card-desc-text">Traducción especializada de libro o artículo</div>
+                            </div>
+                        </div>
+
+                        <!-- 11. INFORME TÉCNICO -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Informe Técnico">
+                                <span class="badge badge-secondary" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Dictamen</span>
+                                <span class="btn-card-info" data-info-tipo="Informe Técnico" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-clipboard-check"></i></div>
+                                <div class="card-title-text">Informe Técnico</div>
+                                <div class="card-desc-text">Consultoría, asesoría o dictamen pericial</div>
+                            </div>
+                        </div>
+
+                        <!-- 12. DOSSIER / ANTOLOGÍA -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Dossier / Antología">
+                                <span class="badge badge-secondary" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Compilación</span>
+                                <span class="btn-card-info" data-info-tipo="Dossier / Antología" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-layer-group"></i></div>
+                                <div class="card-title-text">Dossier / Antología</div>
+                                <div class="card-desc-text">Compilación temática de textos o documentos</div>
+                            </div>
+                        </div>
+
+                        <!-- 13. PRÓLOGO / ESTUDIO INTRODUCTORIO -->
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card-selector" data-tipo="Prólogo / Estudio Introductorio">
+                                <span class="badge badge-secondary" style="position: absolute; top: 10px; left: 10px; font-size: 0.65rem; font-weight: 700; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Preliminar</span>
+                                <span class="btn-card-info" data-info-tipo="Prólogo / Estudio Introductorio" title="Ver descripción oficial de esta categoría">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <div class="card-icon-circle"><i class="fas fa-feather-alt"></i></div>
+                                <div class="card-title-text">Prólogo / Estudio Introductorio</div>
+                                <div class="card-desc-text">Prefacio, prólogo académico o estudio crítico</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAJA DINÁMICA DE EXPLICACIÓN Y COMPROBANTE OFICIAL (SKETCH PÁGINA 9) -->
+                <div id="caja-explicacion-recurso" class="card shadow-sm mb-4 border-success" style="display: none; border-radius: 12px; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-left: 5px solid var(--primary-color) !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+                            <div class="d-flex align-items-center mb-1">
+                                <div class="mr-2" style="width: 34px; height: 34px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <h6 class="mb-0 font-weight-bold text-success" id="exp-titulo-recurso">Tipo de Recurso Seleccionado</h6>
+                            </div>
+                            <span class="badge badge-success px-2 py-1" id="exp-categoria-pill" style="font-size: 0.78rem;">Producción Tecnológica</span>
+                        </div>
+                        <p class="text-dark small mb-2" id="exp-descripcion-corta" style="line-height: 1.5;"></p>
+                        <div class="p-2 px-3 rounded" style="background-color: #e8f5e9; border: 1px dashed #81c784;">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-file-pdf text-danger mt-1 mr-2" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <strong class="text-dark small" style="display: block;">Documento comprobatorio requerido para este recurso (PDF a subir):</strong>
+                                    <span class="text-muted small" id="exp-comprobante-texto">Comprobante oficial...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -768,7 +958,7 @@
                                         <button type="button" class="btn btn-filter-author active" data-filter="all">Todos</button>
                                         <button type="button" class="btn btn-filter-author btn-filter-uabc" data-filter="uabc">UABC</button>
                                         <button type="button" class="btn btn-filter-author btn-filter-ext" data-filter="externo">Externos</button>
-                                        <button type="button" class="btn btn-filter-author btn-filter-ind" data-filter="independiente">Independientes</button>
+                                        <button type="button" class="btn btn-filter-author btn-filter-ind" data-filter="independiente">Investigadores</button>
                                     </div>
                                 </div>
                                 <input type="text" id="filter-author" class="form-control form-control-sm mb-2" placeholder="Buscar por nombre, sigla o universidad...">
@@ -804,7 +994,7 @@
                                                 </div>
                                                 <small class="author-sub-meta text-muted d-block text-truncate">
                                                     {% if autor.rol_facultad == 'INV_IND' or 'independiente' in autor.institucion_origen|lower or autor.obtener_prefijo_codigo_institucional == 'INV' %}
-                                                        Investigador Independiente
+                                                        {{ autor.institucion_origen|default:"Investigador" }}
                                                     {% elif autor.es_externo %}
                                                         {{ autor.institucion_origen }}
                                                     {% else %}
@@ -864,6 +1054,26 @@
                             <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Escribe el título completo y oficial de la obra o investigación tal como fue publicada."></i>
                         </label>
                         <input type="text" name="titulo" id="id_titulo" class="form-control" value="{% if form.titulo.value %}{{ form.titulo.value }}{% elif form.instance.titulo %}{{ form.instance.titulo }}{% endif %}" required placeholder="Título completo de la obra o investigación">
+                        <!-- ALERTA DE DETECCIÓN DE TÍTULO DUPLICADO EN TIEMPO REAL (IDEA 3) -->
+                        <div id="alerta-titulo-duplicado" class="alert mt-2 mb-2 p-3 shadow-xs" style="display: none; border-radius: 10px; border-left: 5px solid #f59e0b; background-color: #fffbeb;">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-exclamation-triangle text-warning mr-3 mt-1" style="font-size: 1.25rem;"></i>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-1">
+                                        <strong id="duplicado-header-texto" class="text-dark font-weight-bold" style="font-size: 0.85rem;">
+                                            ⚠️ Posible obra duplicada en el repositorio
+                                        </strong>
+                                        <span id="duplicado-badge-tipo" class="badge badge-warning px-2 py-1 font-weight-bold" style="font-size: 0.7rem;">Coincidencia</span>
+                                    </div>
+                                    <p id="duplicado-detalle-texto" class="mb-1 text-secondary" style="font-size: 0.8rem; line-height: 1.4;">
+                                        Ya existe una obra registrada con un título idéntico o muy similar: <strong id="duplicado-titulo-existente" class="text-dark font-italic"></strong> (<span id="duplicado-meta-existente"></span>).
+                                    </p>
+                                    <small class="text-muted d-block font-italic" style="font-size: 0.72rem;">
+                                        💡 Si estás registrando una nueva edición, tomo, traducción o una contribución diferente, puedes continuar normalmente.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -944,8 +1154,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_palabras_clave">
-                                    Palabras Clave
-                                    <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Términos clave que facilitan la catalogación. Escribe y pulsa Enter o coma para crear etiquetas."></i>
+                                    Palabras Clave *
+                                    <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Términos clave que facilitan la catalogación (Obligatorio al menos una palabra clave. Escribe y pulsa Enter o coma)."></i>
                                 </label>
                                 <!-- Input real oculto sincronizado con Django -->
                                 <input type="hidden" name="palabras_clave" id="id_palabras_clave" value="{% if form.palabras_clave.value %}{{ form.palabras_clave.value }}{% elif form.instance.palabras_clave %}{{ form.instance.palabras_clave }}{% endif %}">
@@ -962,10 +1172,10 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_idioma">
-                                    Idioma
+                                    Idioma *
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Idioma principal en el que está redactado el texto completo del documento."></i>
                                 </label>
-                                <input type="text" name="idioma" id="id_idioma" class="form-control" list="idiomas-list"
+                                <input type="text" name="idioma" id="id_idioma" class="form-control" list="idiomas-list" required
                                        value="{% if es_edicion %}{% if form.idioma.value %}{{ form.idioma.value }}{% elif form.instance.idioma %}{{ form.instance.idioma }}{% endif %}{% elif request.POST.idioma %}{{ request.POST.idioma }}{% endif %}"
                                        placeholder="Ej. Español, Inglés, Francés...">
 
@@ -989,8 +1199,8 @@
                         <div class="col-md-8">
                             <div class="form-group">
                                 <label for="id_revista_art">
-                                    Nombre de la Revista Académica
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial y completo de la revista científica o arbitrada donde se publicó."></i>
+                                    Nombre de la Revista Académica *
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial y completo de la revista científica o arbitrada donde se publicó (Obligatorio)."></i>
                                 </label>
                                 <input type="text" name="revista" id="id_revista_art" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. Revista Iberoamericana de Contaduría y Administración">
                             </div>
@@ -998,8 +1208,8 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_issn_art">
-                                    Código ISSN
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número internacional normalizado de publicaciones seriadas (formato XXXX-XXXX)."></i>
+                                    Código ISSN *
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número internacional normalizado de publicaciones seriadas en formato XXXX-XXXX (Obligatorio)."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_issn_art" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 2448-8984">
                             </div>
@@ -1009,8 +1219,8 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_volumen_art">
-                                    Volumen / Número
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Volumen, fascículo o número correspondiente a la edición de la revista."></i>
+                                    Volumen / Número <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Volumen, fascículo o número correspondiente a la edición de la revista (Opcional)."></i>
                                 </label>
                                 <input type="text" name="volumen_numero" id="id_volumen_art" class="form-control" value="{% if form.volumen_numero.value %}{{ form.volumen_numero.value }}{% elif form.instance.volumen_numero %}{{ form.instance.volumen_numero }}{% endif %}" placeholder="Ej. Vol. 12, No. 3">
                             </div>
@@ -1018,8 +1228,8 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_paginas_art">
-                                    Rango de Páginas
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Página inicial y final que ocupa el artículo dentro de la publicación."></i>
+                                    Rango de Páginas <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Página inicial y final que ocupa el artículo dentro de la publicación (Opcional)."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_paginas_art" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 15-32">
                             </div>
@@ -1027,8 +1237,8 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_doi_art">
-                                    Enlace DOI / Permanente
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Identificador de objeto digital (DOI) o enlace web directo al artículo oficial."></i>
+                                    Enlace DOI / Permanente <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Identificador de objeto digital (DOI) o enlace web directo al artículo oficial (Opcional)."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_doi_art" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://doi.org/10.1234/...">
                             </div>
@@ -1189,28 +1399,592 @@
                     </div>
                 </div>
 
-                <!-- 5 Y 6. BLOQUE ESPECÍFICO: PONENCIA / REPORTE TÉCNICO -->
-                <div id="bloque-otro" class="bloque-dinamico">
+                <!-- 5. BLOQUE ESPECÍFICO: PONENCIA / CONGRESO -->
+                <div id="bloque-ponencia" class="bloque-dinamico">
                     <h6 class="font-weight-bold text-success mb-3">
-                        <i class="fas fa-microphone-alt mr-1"></i> Datos del Evento Académico o Reporte Técnico
+                        <i class="fas fa-microphone-alt mr-1"></i> Datos de la Ponencia y Evento Académico
                     </h6>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="id_revista_otro">
-                                    Nombre del Congreso / Foro / Institución
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial del evento, congreso o institución que recibió el reporte."></i>
+                                <label for="id_ponencia_nombre">
+                                    Nombre del Congreso, Coloquio o Evento Académico
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial del evento o simposio donde se presentó la ponencia o cartel."></i>
                                 </label>
-                                <input type="text" name="revista" id="id_revista_otro" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. Congreso Internacional FCA 2026">
+                                <input type="text" name="revista" id="id_ponencia_nombre" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. XXXII Congreso Internacional de Contaduría y Administración FCA">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="id_doi_otro">
-                                    Enlace Web / Repositorio / DOI
-                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web oficial donde se encuentra publicada la memoria o reporte técnico."></i>
+                                <label for="id_ponencia_sede">
+                                    Institución Organizadora o Sede del Evento
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Universidad, facultad, asociación o entidad que organizó el congreso."></i>
                                 </label>
-                                <input type="text" name="doi_enlace" id="id_doi_otro" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="https://...">
+                                <input type="text" name="editorial" id="id_ponencia_sede" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Universidad Autónoma de Baja California (UABC)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_ponencia_modalidad">
+                                    Modalidad de Participación
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Formato en el que se expuso o evaluó la contribución."></i>
+                                </label>
+                                <select name="rol_participacion" id="id_ponencia_modalidad" class="form-control">
+                                    <option value="">Selecciona la modalidad...</option>
+                                    <option value="Ponencia Oral en Mesa de Trabajo">Ponencia Oral en Mesa de Trabajo</option>
+                                    <option value="Conferencia Magistral / Plenaria">Conferencia Magistral / Plenaria</option>
+                                    <option value="Presentación de Cartel / Póster Científico">Presentación de Cartel / Póster Científico</option>
+                                    <option value="Ponencia Virtual / Remota">Ponencia Virtual / Remota</option>
+                                    <option value="Tallerista / Panelista Invitado">Tallerista / Panelista Invitado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_ponencia_isbn">
+                                    ISBN / ISSN de las Memorias (Si aplica)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Registro oficial de la memoria publicada con registro ISBN o ISSN."></i>
+                                </label>
+                                <input type="text" name="isbn_issn" id="id_ponencia_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-123-4">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_ponencia_paginas">
+                                    Páginas en la Memoria (ej. 45-58)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas dentro de la publicación o memorias del evento."></i>
+                                </label>
+                                <input type="text" name="paginas" id="id_ponencia_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 45-58">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="id_ponencia_doi">
+                                    Enlace Web Oficial / Memorias en Línea / DOI (Opcional)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web oficial donde se encuentra publicada la memoria o programa del evento."></i>
+                                </label>
+                                <input type="text" name="doi_enlace" id="id_ponencia_doi" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://congreso.uabc.mx/memorias/2026/ponencia-42.pdf">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. BLOQUE ESPECÍFICO: PROYECTO / REPORTE TÉCNICO DE INVESTIGACIÓN -->
+                <div id="bloque-reporte-investigacion" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-microscope mr-1"></i> Datos del Proyecto / Reporte Técnico de Investigación
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_rep_proyecto_origen">
+                                    Clave o Código del Proyecto de Investigación
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave oficial de registro del proyecto ante Conahcyt, UABC u organismo financiador."></i>
+                                </label>
+                                <input type="text" name="proyecto_origen" id="id_rep_proyecto_origen" class="form-control" value="{% if form.proyecto_origen.value %}{{ form.proyecto_origen.value }}{% elif form.instance.proyecto_origen %}{{ form.instance.proyecto_origen }}{% endif %}" placeholder="Ej. UABC-FCA-2026-018 o CONAHCYT-CF-2023-1452">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_rep_financiador">
+                                    Entidad u Organismo Financiador / Convocante
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Institución que otorgó el financiamiento o emitió la convocatoria de investigación."></i>
+                                </label>
+                                <input type="text" name="institucion_receptora" id="id_rep_financiador" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Coordinación General de Investigación UABC / Conahcyt / PRODEP">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_rep_etapa">
+                                    Tipo o Etapa del Reporte Técnico
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Indica si corresponde a avance periódico, resultados intermedios o informe final."></i>
+                                </label>
+                                <select name="tipo_desarrollo" id="id_rep_etapa" class="form-control">
+                                    <option value="">Selecciona la etapa del reporte...</option>
+                                    <option value="Informe Técnico Final de Resultados">Informe Técnico Final de Resultados</option>
+                                    <option value="Informe de Avance Anual / Semestral">Informe de Avance Anual / Semestral</option>
+                                    <option value="Reporte de Conclusión y Entrega de Metas">Reporte de Conclusión y Entrega de Metas</option>
+                                    <option value="Reporte Técnico de Diagnóstico Inicial">Reporte Técnico de Diagnóstico Inicial</option>
+                                    <option value="Memoria Técnica de Proyecto Financiado">Memoria Técnica de Proyecto Financiado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_rep_enlace">
+                                    Enlace al Repositorio del Proyecto o DOI (Opcional)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web del sistema de seguimiento de proyectos o repositorio de entregables."></i>
+                                </label>
+                                <input type="text" name="doi_enlace" id="id_rep_enlace" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://investigacion.uabc.mx/proyectos/fca-2026-018">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- 7. BLOQUE ESPECÍFICO: PROPIEDAD INTELECTUAL (INDAUTOR / IMPI) -->
+                <div id="bloque-propiedad-intelectual" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-award mr-1"></i> Datos Oficiales de Propiedad Intelectual (INDAUTOR / IMPI)
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_tipo_proteccion">
+                                    Tipo de Protección / Modalidad
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Selecciona si es Registro de Derechos de Autor (INDAUTOR), Patente, Modelo de Utilidad o Diseño Industrial (IMPI)."></i>
+                                </label>
+                                <select name="tipo_proteccion" id="id_tipo_proteccion" class="form-control">
+                                    <option value="">-- Seleccionar Modalidad --</option>
+                                    <option value="Derechos de Autor (INDAUTOR)" {% if form.tipo_proteccion.value == "Derechos de Autor (INDAUTOR)" or form.instance.tipo_proteccion == "Derechos de Autor (INDAUTOR)" %}selected{% endif %}>Derechos de Autor (INDAUTOR)</option>
+                                    <option value="Patente de Invención (IMPI)" {% if form.tipo_proteccion.value == "Patente de Invención (IMPI)" or form.instance.tipo_proteccion == "Patente de Invención (IMPI)" %}selected{% endif %}>Patente de Invención (IMPI)</option>
+                                    <option value="Modelo de Utilidad (IMPI)" {% if form.tipo_proteccion.value == "Modelo de Utilidad (IMPI)" or form.instance.tipo_proteccion == "Modelo de Utilidad (IMPI)" %}selected{% endif %}>Modelo de Utilidad (IMPI)</option>
+                                    <option value="Diseño Industrial (IMPI)" {% if form.tipo_proteccion.value == "Diseño Industrial (IMPI)" or form.instance.tipo_proteccion == "Diseño Industrial (IMPI)" %}selected{% endif %}>Diseño Industrial (IMPI)</option>
+                                    <option value="Secreto Industrial / Esquema de Trazado" {% if form.tipo_proteccion.value == "Secreto Industrial / Esquema de Trazado" or form.instance.tipo_proteccion == "Secreto Industrial / Esquema de Trazado" %}selected{% endif %}>Secreto Industrial / Esquema de Trazado</option>
+                                    <option value="Variedad Vegetal (SNICS)" {% if form.tipo_proteccion.value == "Variedad Vegetal (SNICS)" or form.instance.tipo_proteccion == "Variedad Vegetal (SNICS)" %}selected{% endif %}>Variedad Vegetal (SNICS)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_numero_registro">
+                                    Número de Registro / Certificado Oficial
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número oficial expedido en el certificado de registro INDAUTOR o título IMPI."></i>
+                                </label>
+                                <input type="text" name="numero_registro" id="id_numero_registro" class="form-control" value="{% if form.numero_registro.value %}{{ form.numero_registro.value }}{% elif form.instance.numero_registro %}{{ form.instance.numero_registro }}{% endif %}" placeholder="Ej. 03-2026-062510384900-01 o MX/a/2026/001234">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_rama_propiedad">
+                                    Rama de la Obra / Clasificación Técnica
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rama legal de la obra según el certificado INDAUTOR (ej. Programas de Computación (Software), Base de Datos, Literaria) o clasificación CIP en patentes."></i>
+                                </label>
+                                <input type="text" name="rama_propiedad" id="id_rama_propiedad" class="form-control" value="{% if form.rama_propiedad.value %}{{ form.rama_propiedad.value }}{% elif form.instance.rama_propiedad %}{{ form.instance.rama_propiedad }}{% endif %}" placeholder="Ej. Programas de Computación (Software), Base de Datos, Literaria">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_titular_propiedad">
+                                    Titular de los Derechos Patrimoniales
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Entidad titular de los derechos patrimoniales (usualmente la Universidad Autónoma de Baja California - UABC)."></i>
+                                </label>
+                                <input type="text" name="titular_propiedad" id="id_titular_propiedad" class="form-control" value="{% if form.titular_propiedad.value %}{{ form.titular_propiedad.value }}{% elif form.instance.titular_propiedad %}{{ form.instance.titular_propiedad }}{% else %}Universidad Autónoma de Baja California (UABC){% endif %}" placeholder="Ej. Universidad Autónoma de Baja California (UABC)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_rol_participacion">
+                                    Rol de Participación
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Tu función o papel en la autoría o desarrollo del recurso."></i>
+                                </label>
+                                <select name="rol_participacion" id="id_rol_participacion" class="form-control">
+                                    <option value="">-- Seleccionar Rol --</option>
+                                    <option value="Autor Principal / Desarrollador Líder" {% if form.rol_participacion.value == "Autor Principal / Desarrollador Líder" or form.instance.rol_participacion == "Autor Principal / Desarrollador Líder" %}selected{% endif %}>Autor Principal / Desarrollador Líder</option>
+                                    <option value="Coautor / Colaborador" {% if form.rol_participacion.value == "Coautor / Colaborador" or form.instance.rol_participacion == "Coautor / Colaborador" %}selected{% endif %}>Coautor / Colaborador</option>
+                                    <option value="Inventor Principal" {% if form.rol_participacion.value == "Inventor Principal" or form.instance.rol_participacion == "Inventor Principal" %}selected{% endif %}>Inventor Principal</option>
+                                    <option value="Coinventor" {% if form.rol_participacion.value == "Coinventor" or form.instance.rol_participacion == "Coinventor" %}selected{% endif %}>Coinventor</option>
+                                    <option value="Titular / Solicitante" {% if form.rol_participacion.value == "Titular / Solicitante" or form.instance.rol_participacion == "Titular / Solicitante" %}selected{% endif %}>Titular / Solicitante</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_estado_propiedad">
+                                    Estado del Registro / Trámite
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Situación actual de la protección ante la autoridad oficial."></i>
+                                </label>
+                                <select name="estado_propiedad" id="id_estado_propiedad" class="form-control">
+                                    <option value="Otorgado / Concedido (Certificado Emitido)" {% if form.estado_propiedad.value == "Otorgado / Concedido (Certificado Emitido)" or form.instance.estado_propiedad == "Otorgado / Concedido (Certificado Emitido)" or not form.instance.estado_propiedad %}selected{% endif %}>Otorgado / Concedido (Certificado Emitido)</option>
+                                    <option value="En Examen de Fondo / En Trámite" {% if form.estado_propiedad.value == "En Examen de Fondo / En Trámite" or form.instance.estado_propiedad == "En Examen de Fondo / En Trámite" %}selected{% endif %}>En Examen de Fondo / En Trámite</option>
+                                    <option value="Solicitud Ingresada / Radicada" {% if form.estado_propiedad.value == "Solicitud Ingresada / Radicada" or form.instance.estado_propiedad == "Solicitud Ingresada / Radicada" %}selected{% endif %}>Solicitud Ingresada / Radicada</option>
+                                    <option value="Publicada en Gaceta de la Propiedad" {% if form.estado_propiedad.value == "Publicada en Gaceta de la Propiedad" or form.instance.estado_propiedad == "Publicada en Gaceta de la Propiedad" %}selected{% endif %}>Publicada en Gaceta de la Propiedad</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_fecha_expedicion_solicitud">
+                                    Fecha de Expedición u Otorgamiento
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Fecha en que la autoridad emitió el certificado o se radicó la solicitud."></i>
+                                </label>
+                                <input type="date" name="fecha_expedicion_solicitud" id="id_fecha_expedicion_solicitud" class="form-control" value="{% if form.fecha_expedicion_solicitud.value %}{{ form.fecha_expedicion_solicitud.value }}{% elif form.instance.fecha_expedicion_solicitud %}{{ form.instance.fecha_expedicion_solicitud|date:'Y-m-d' }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_ambito_solicitud">
+                                    Ámbito de Protección
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nivel geográfico de cobertura: Nacional (México) o Internacional (vía PCT / OMPI)."></i>
+                                </label>
+                                <select name="ambito_solicitud" id="id_ambito_solicitud" class="form-control">
+                                    <option value="Nacional (México)" {% if form.ambito_solicitud.value == "Nacional (México)" or form.instance.ambito_solicitud == "Nacional (México)" or not form.instance.ambito_solicitud %}selected{% endif %}>Nacional (México)</option>
+                                    <option value="Internacional (Vía PCT / OMPI-WIPO)" {% if form.ambito_solicitud.value == "Internacional (Vía PCT / OMPI-WIPO)" or form.instance.ambito_solicitud == "Internacional (Vía PCT / OMPI-WIPO)" %}selected{% endif %}>Internacional (Vía PCT / OMPI-WIPO)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_doi_pi">
+                                    Enlace Oficial / Gaceta IMPI / Repositorio (Opcional)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web de consulta pública en SIGA-IMPI, INDAUTOR o repositorio institucional."></i>
+                                </label>
+                                <input type="text" name="doi_enlace" id="id_doi_pi" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://siga.impi.gob.mx/... o enlace oficial">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-BLOQUE CONDICIONAL: ÁMBITO INTERNACIONAL PCT -->
+                    <div id="sub-bloque-pct" class="p-3 bg-white rounded border border-warning mb-2" style="display: none;">
+                        <h6 class="font-weight-bold text-dark small mb-2">
+                            <i class="fas fa-globe-americas text-warning mr-1"></i> Datos de Solicitud Internacional (Tratado de Cooperación en materia de Patentes - PCT)
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="id_solicitud_internacional_numero" class="small">Número de Solicitud Internacional (PCT)</label>
+                                    <input type="text" name="solicitud_internacional_numero" id="id_solicitud_internacional_numero" class="form-control" value="{% if form.solicitud_internacional_numero.value %}{{ form.solicitud_internacional_numero.value }}{% elif form.instance.solicitud_internacional_numero %}{{ form.instance.solicitud_internacional_numero }}{% endif %}" placeholder="Ej. PCT/IB2026/050123">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label for="id_publicacion_internacional_numero" class="small">Número de Publicación Internacional (WO)</label>
+                                    <input type="text" name="publicacion_internacional_numero" id="id_publicacion_internacional_numero" class="form-control" value="{% if form.publicacion_internacional_numero.value %}{{ form.publicacion_internacional_numero.value }}{% elif form.instance.publicacion_internacional_numero %}{{ form.instance.publicacion_internacional_numero }}{% endif %}" placeholder="Ej. WO 2026/123456 A1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. BLOQUE ESPECÍFICO: DESARROLLO TECNOLÓGICO E INNOVACIÓN -->
+                <div id="bloque-desarrollo-tecnologico" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-laptop-code mr-1"></i> Datos del Desarrollo Tecnológico, Prototipo o Software
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_tipo_desarrollo">
+                                    Tipo de Desarrollo Tecnológico
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Naturaleza del desarrollo según catálogo CONAHCYT."></i>
+                                </label>
+                                <select name="tipo_desarrollo" id="id_tipo_desarrollo" class="form-control">
+                                    <option value="">-- Seleccionar Tipo --</option>
+                                    <option value="Software o Aplicativo Web / Móvil" {% if form.tipo_desarrollo.value == "Software o Aplicativo Web / Móvil" or form.instance.tipo_desarrollo == "Software o Aplicativo Web / Móvil" %}selected{% endif %}>Software o Aplicativo Web / Móvil</option>
+                                    <option value="Algoritmo / Modelo Computacional / IA" {% if form.tipo_desarrollo.value == "Algoritmo / Modelo Computacional / IA" or form.instance.tipo_desarrollo == "Algoritmo / Modelo Computacional / IA" %}selected{% endif %}>Algoritmo / Modelo Computacional / IA</option>
+                                    <option value="Prototipo Funcional o Industrial" {% if form.tipo_desarrollo.value == "Prototipo Funcional o Industrial" or form.instance.tipo_desarrollo == "Prototipo Funcional o Industrial" %}selected{% endif %}>Prototipo Funcional o Industrial</option>
+                                    <option value="Planta Piloto / Laboratorio Experimental" {% if form.tipo_desarrollo.value == "Planta Piloto / Laboratorio Experimental" or form.instance.tipo_desarrollo == "Planta Piloto / Laboratorio Experimental" %}selected{% endif %}>Planta Piloto / Laboratorio Experimental</option>
+                                    <option value="Norma Técnica / Metodología Estandarizada" {% if form.tipo_desarrollo.value == "Norma Técnica / Metodología Estandarizada" or form.instance.tipo_desarrollo == "Norma Técnica / Metodología Estandarizada" %}selected{% endif %}>Norma Técnica / Metodología Estandarizada</option>
+                                    <option value="Base de Datos Especializada" {% if form.tipo_desarrollo.value == "Base de Datos Especializada" or form.instance.tipo_desarrollo == "Base de Datos Especializada" %}selected{% endif %}>Base de Datos Especializada</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_doi_desarrollo">
+                                    Enlace al Repositorio o Demostración Web
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace al repositorio de código (GitHub, GitLab), sitio oficial o demo en producción."></i>
+                                </label>
+                                <input type="text" name="doi_enlace" id="id_doi_desarrollo" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://github.com/... o https://sistema.uabc.mx">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_problema_atiende">
+                                    Problema o Necesidad Práctica que Atiende
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Describe brevemente el problema de la industria, sociedad o academia que resuelve este desarrollo."></i>
+                                </label>
+                                <textarea name="problema_atiende" id="id_problema_atiende" class="form-control" rows="2" placeholder="Ej. Automatización del control administrativo y optimización de tiempos en procesos contables...">{% if form.problema_atiende.value %}{{ form.problema_atiende.value }}{% elif form.instance.problema_atiende %}{{ form.instance.problema_atiende }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_beneficiarios_impacto">
+                                    Población Beneficiaria, Sector o Impacto Alcanzado
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Usuarios directos, empresas, organismos públicos o comunidad universitaria beneficiada."></i>
+                                </label>
+                                <textarea name="beneficiarios_impacto" id="id_beneficiarios_impacto" class="form-control" rows="2" placeholder="Ej. Dirigido a estudiantes y docentes de la FCA, así como a pequeñas y medianas empresas de Baja California...">{% if form.beneficiarios_impacto.value %}{{ form.beneficiarios_impacto.value }}{% elif form.instance.beneficiarios_impacto %}{{ form.instance.beneficiarios_impacto }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. BLOQUE ESPECÍFICO: TRANSFERENCIA TECNOLÓGICA -->
+                <div id="bloque-transferencia-tecnologica" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-handshake mr-1"></i> Datos del Convenio o Contrato de Transferencia Tecnológica
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_institucion_receptora">
+                                    Institución, Entidad u Organización Receptora
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre de la empresa, institución gubernamental u organismo que recibió o explota la tecnología."></i>
+                                </label>
+                                <input type="text" name="institucion_receptora" id="id_institucion_receptora" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Cámara Nacional de Comercio, Gobierno del Estado de B.C., Pyme Regional">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_tipo_transferencia">
+                                    Mecanismo o Tipo de Transferencia
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Instrumento legal mediante el cual se formalizó la transferencia."></i>
+                                </label>
+                                <select name="tipo_transferencia" id="id_tipo_transferencia" class="form-control">
+                                    <option value="">-- Seleccionar Mecanismo --</option>
+                                    <option value="Convenio de Licenciamiento de Uso o Explotación" {% if form.tipo_transferencia.value == "Convenio de Licenciamiento de Uso o Explotación" or form.instance.tipo_transferencia == "Convenio de Licenciamiento de Uso o Explotación" %}selected{% endif %}>Convenio de Licenciamiento de Uso o Explotación</option>
+                                    <option value="Contrato de Cesión de Derechos Patrimoniales" {% if form.tipo_transferencia.value == "Contrato de Cesión de Derechos Patrimoniales" or form.instance.tipo_transferencia == "Contrato de Cesión de Derechos Patrimoniales" %}selected{% endif %}>Contrato de Cesión de Derechos Patrimoniales</option>
+                                    <option value="Contrato de Asistencia Técnica o Consultoría" {% if form.tipo_transferencia.value == "Contrato de Asistencia Técnica o Consultoría" or form.instance.tipo_transferencia == "Contrato de Asistencia Técnica o Consultoría" %}selected{% endif %}>Contrato de Asistencia Técnica o Consultoría</option>
+                                    <option value="Incubación de Empresa / Spin-off Universitario" {% if form.tipo_transferencia.value == "Incubación de Empresa / Spin-off Universitario" or form.instance.tipo_transferencia == "Incubación de Empresa / Spin-off Universitario" %}selected{% endif %}>Incubación de Empresa / Spin-off Universitario</option>
+                                    <option value="Convenio de Colaboración y Co-desarrollo" {% if form.tipo_transferencia.value == "Convenio de Colaboración y Co-desarrollo" or form.instance.tipo_transferencia == "Convenio de Colaboración y Co-desarrollo" %}selected{% endif %}>Convenio de Colaboración y Co-desarrollo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="id_doi_transferencia">
+                                    Número o Folio del Convenio / Enlace de Respaldo
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número de folio del convenio institucional o enlace de respaldo."></i>
+                                </label>
+                                <input type="text" name="doi_enlace" id="id_doi_transferencia" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. UABC-CONV-2026/045 o https://...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. BLOQUE ESPECÍFICO: TRADUCCIÓN CIENTÍFICA -->
+                <div id="bloque-traduccion" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-language mr-1"></i> Datos de la Traducción Científica o Especializada
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_idioma_original">
+                                    Idioma Original de la Obra
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Idioma en el que fue escrita originalmente la publicación."></i>
+                                </label>
+                                <input type="text" name="idioma_original" id="id_idioma_original" class="form-control" value="{% if form.idioma_original.value %}{{ form.idioma_original.value }}{% elif form.instance.idioma_original %}{{ form.instance.idioma_original }}{% endif %}" placeholder="Ej. Inglés, Francés, Alemán">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="id_titulo_original">
+                                    Título de la Obra Original
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Título de la obra tal como fue publicada en su idioma de origen."></i>
+                                </label>
+                                <input type="text" name="titulo_original" id="id_titulo_original" class="form-control" value="{% if form.titulo_original.value %}{{ form.titulo_original.value }}{% elif form.instance.titulo_original %}{{ form.instance.titulo_original }}{% endif %}" placeholder="Ej. Corporate Governance and Financial Economics">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_autor_original">
+                                    Autor(es) Original(es)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombres de los autores que crearon la obra en su versión original."></i>
+                                </label>
+                                <input type="text" name="autor_original" id="id_autor_original" class="form-control" value="{% if form.autor_original.value %}{{ form.autor_original.value }}{% elif form.instance.autor_original %}{{ form.instance.autor_original }}{% endif %}" placeholder="Ej. Robert C. Higgins">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_editorial_traduccion">
+                                    Casa Editorial / Revista Publicadora
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial o medio que publicó la traducción autorizada."></i>
+                                </label>
+                                <input type="text" name="editorial" id="id_editorial_traduccion" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC, McGraw-Hill">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 11. BLOQUE ESPECÍFICO: INFORME TÉCNICO Y DICTAMEN PERICIAL -->
+                <div id="bloque-informe-tecnico" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-file-contract mr-1"></i> Datos Específicos del Informe Técnico / Dictamen Pericial
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_it_institucion_receptora">
+                                    Entidad u Organismo Solicitante / Contratante
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Dependencia gubernamental, tribunal, empresa privada o institución solicitante."></i>
+                                </label>
+                                <input type="text" name="institucion_receptora" id="id_it_institucion_receptora" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Secretaría de Economía, SAT, Tribunal Superior o Empresa X">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_it_numero_registro">
+                                    Número de Oficio, Dictamen o Folio de Entrega
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave de expediente, contrato u oficio institucional con acuse de recibo."></i>
+                                </label>
+                                <input type="text" name="numero_registro" id="id_it_numero_registro" class="form-control" value="{% if form.numero_registro.value %}{{ form.numero_registro.value }}{% elif form.instance.numero_registro %}{{ form.instance.numero_registro }}{% endif %}" placeholder="Ej. OF-FCA-2026/894 o EXP-PER-1142">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_it_tipo_desarrollo">
+                                    Modalidad o Alcance del Dictamen / Informe
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Naturaleza técnica del dictamen pericial o consultoría."></i>
+                                </label>
+                                <select name="tipo_desarrollo" id="id_it_tipo_desarrollo" class="form-control">
+                                    <option value="">Selecciona el alcance del dictamen...</option>
+                                    <option value="Dictamen Pericial Contable / Fiscal">Dictamen Pericial Contable / Fiscal</option>
+                                    <option value="Auditoría Financiera / Forense Especializada">Auditoría Financiera / Forense Especializada</option>
+                                    <option value="Consultoría Técnica y Estratégica">Consultoría Técnica y Estratégica</option>
+                                    <option value="Estudio de Factibilidad Económica / Administrativa">Estudio de Factibilidad Económica / Administrativa</option>
+                                    <option value="Informe Técnico de Proyecto Gubernamental">Informe Técnico de Proyecto Gubernamental</option>
+                                    <option value="Asesoría Especializada con Carta de Satisfacción">Asesoría Especializada con Carta de Satisfacción</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_it_proyecto_origen">
+                                    Proyecto de Investigación u Origen (Opcional)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave del proyecto o iniciativa en cuyo marco se gestó el dictamen."></i>
+                                </label>
+                                <input type="text" name="proyecto_origen" id="id_it_proyecto_origen" class="form-control" value="{% if form.proyecto_origen.value %}{{ form.proyecto_origen.value }}{% elif form.instance.proyecto_origen %}{{ form.instance.proyecto_origen }}{% endif %}" placeholder="Ej. Proyecto UABC 2026-FCA-012">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. BLOQUE ESPECÍFICO: DOSSIER TEMÁTICO / ANTOLOGÍA ACADÉMICA -->
+                <div id="bloque-dossier" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-layer-group mr-1"></i> Datos Específicos del Dossier / Antología Académica
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_dossier_obra_receptora">
+                                    Título de la Antología o Dossier Temático
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre completo de la colección, compendio o publicación temática compilada."></i>
+                                </label>
+                                <input type="text" name="obra_receptora" id="id_dossier_obra_receptora" class="form-control" value="{% if form.obra_receptora.value %}{{ form.obra_receptora.value }}{% elif form.instance.obra_receptora %}{{ form.instance.obra_receptora }}{% endif %}" placeholder="Ej. Compendio Normativo y Crítico de Finanzas Públicas Contemporáneas">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_dossier_rol">
+                                    Rol del Académico en la Compilación
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Función editorial desempeñada por el docente/investigador en la obra."></i>
+                                </label>
+                                <select name="rol_participacion" id="id_dossier_rol" class="form-control">
+                                    <option value="">Selecciona el rol...</option>
+                                    <option value="Compilador Principal">Compilador Principal</option>
+                                    <option value="Editor Temático / Coordinador General">Editor Temático / Coordinador General</option>
+                                    <option value="Co-compilador">Co-compilador</option>
+                                    <option value="Curador de Contenidos y Comentarista">Curador de Contenidos y Comentarista</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_dossier_editorial">
+                                    Casa Editorial o Institución Convocante
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial o entidad auspiciante de la antología."></i>
+                                </label>
+                                <input type="text" name="editorial" id="id_dossier_editorial" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC / Tirant lo Blanch">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_dossier_isbn">
+                                    ISBN / ISSN de la Obra (Si aplica)
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Registro bibliográfico estándar de la antología o dossier."></i>
+                                </label>
+                                <input type="text" name="isbn_issn" id="id_dossier_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-000-0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_dossier_paginas">
+                                    Páginas Totales / Rango
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Extensión de la compilación o páginas de la sección introductoria."></i>
+                                </label>
+                                <input type="text" name="paginas" id="id_dossier_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 1-320 págs.">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 13. BLOQUE ESPECÍFICO: PRÓLOGO / ESTUDIO INTRODUCTORIO -->
+                <div id="bloque-prologo" class="bloque-dinamico">
+                    <h6 class="font-weight-bold text-success mb-3">
+                        <i class="fas fa-feather-alt mr-1"></i> Datos Específicos del Prólogo o Estudio Introductorio
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_prologo_obra_receptora">
+                                    Título del Libro o Publicación Prologada
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre del libro o monografía donde figura el prólogo o estudio preliminar."></i>
+                                </label>
+                                <input type="text" name="obra_receptora" id="id_prologo_obra_receptora" class="form-control" value="{% if form.obra_receptora.value %}{{ form.obra_receptora.value }}{% elif form.instance.obra_receptora %}{{ form.instance.obra_receptora }}{% endif %}" placeholder="Ej. Tratado Moderno de Administración y Liderazgo Global">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="id_prologo_autor_original">
+                                    Autor(es) del Libro Prologado
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre del autor o autores de la obra principal a la cual se le escribió el prólogo."></i>
+                                </label>
+                                <input type="text" name="autor_original" id="id_prologo_autor_original" class="form-control" value="{% if form.autor_original.value %}{{ form.autor_original.value }}{% elif form.instance.autor_original %}{{ form.instance.autor_original }}{% endif %}" placeholder="Ej. Dr. Jean-Jacques Rousseau o Mtro. Roberto Hernández">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_prologo_editorial">
+                                    Casa Editorial o Imprenta
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial responsable de la edición de la obra."></i>
+                                </label>
+                                <input type="text" name="editorial" id="id_prologo_editorial" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial Porrúa / McGraw-Hill">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_prologo_isbn">
+                                    ISBN del Libro Prologado
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Código ISBN formal del libro publicado."></i>
+                                </label>
+                                <input type="text" name="isbn_issn" id="id_prologo_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-09-1234-5">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="id_prologo_paginas">
+                                    Páginas del Prólogo
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas exacto que abarca el prólogo o estudio preliminar."></i>
+                                </label>
+                                <input type="text" name="paginas" id="id_prologo_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. Págs. ix-xxiv o 11-28">
                             </div>
                         </div>
                     </div>
@@ -1220,13 +1994,186 @@
                     <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
                         <i class="fas fa-save mr-2"></i>{% if es_edicion %}Guardar Cambios{% else %}Guardar y Publicar{% endif %}
                     </button>
+                    <!-- PÍLDORA DE ATAJO DE TECLADO RÁPIDO (IDEA 11) -->
+                    <div id="pildora-atajo-ctrl-enter" class="mt-2 text-center" style="display: none;">
+                        <span class="badge badge-light border border-success text-success px-3 py-2 shadow-xs rounded-pill" style="font-size: 0.78rem; font-weight: 600; background-color: #f0fdf4;">
+                            <i class="fas fa-keyboard mr-1 text-warning"></i>
+                            ¡Formulario listo! Puedes guardar haciendo clic o presionando <kbd style="background-color: #1e293b; color: #fff; padding: 2px 6px; border-radius: 4px;">Ctrl</kbd> + <kbd style="background-color: #1e293b; color: #fff; padding: 2px 6px; border-radius: 4px;">Enter</kbd>
+                        </span>
+                    </div>
                 </div>
 
             </div>
         </form>
     </div>
 
-    <div class="modal fade" id="modalInfoCategoria" tabindex="-1" role="dialog" aria-hidden="true">
+    
+    <!-- ============================================================== -->
+    <!-- MODAL DE CONFIRMACIÓN Y RESUMEN PREVIO AL PUBLICAR (FASE A - IDEA 1) -->
+    <!-- ============================================================== -->
+        <!-- ============================================================== -->
+    <!-- MODAL DE PREVISUALIZACIÓN DE PUBLICACIÓN (IDÉNTICO AL CATÁLOGO - IMAGEN 4) -->
+    <!-- ============================================================== -->
+    <div class="modal fade" id="modalConfirmarPublicacion" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-width: 900px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-success text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background-color: #006633 !important;">
+                    <h5 class="modal-title font-weight-bold mb-0 text-white d-flex align-items-center">
+                        <i class="fas fa-book-open mr-2" style="font-size: 1.25rem;"></i> Previsualización de Publicación
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; font-size: 1.5rem;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <!-- Pestañas de Navegación idénticas al catálogo -->
+                    <ul class="nav nav-pills justify-content-center mb-4 bg-white p-2 rounded-3 border shadow-xs" id="pills-modal-preview-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active font-weight-bold small py-2 px-3 rounded-pill" id="tab-ficha-detallada" data-toggle="pill" href="#pane-ficha-detallada" role="tab">
+                                <i class="fas fa-book-open mr-1"></i> Ficha Académica Detallada
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link font-weight-bold small py-2 px-3 rounded-pill" id="tab-credencial-publica" data-toggle="pill" href="#pane-credencial-publica" role="tab">
+                                <i class="fas fa-id-badge mr-1"></i> Credencial Pública
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link font-weight-bold small py-2 px-3 rounded-pill" id="tab-ficha-publica" data-toggle="pill" href="#pane-ficha-publica" role="tab">
+                                <i class="fas fa-globe mr-1"></i> Ficha Académica Pública
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent-preview">
+                        <!-- PESTAÑA 1: FICHA ACADÉMICA DETALLADA (IMAGEN 4) -->
+                        <div class="tab-pane fade show active" id="pane-ficha-detallada" role="tabpanel">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border" style="max-height: 60vh; overflow-y: auto;">
+                                <h4 class="font-weight-bold text-dark mb-3" id="prevTitulo" style="line-height: 1.35;"></h4>
+                                <div class="mb-3 d-flex flex-wrap" style="gap: 6px;">
+                                    <span class="badge badge-success px-2 py-1 font-weight-bold" id="prevTipoBadge" style="background-color: #006633; font-size: 0.78rem;"></span>
+                                    <span class="badge badge-primary px-2 py-1 font-weight-bold" id="prevAreaBadge" style="background-color: #0284c7; font-size: 0.78rem;"></span>
+                                    <span class="badge badge-secondary px-2 py-1 font-weight-bold" id="prevEntidadBadge" style="background-color: #64748b; font-size: 0.78rem;"></span>
+                                    <span class="badge badge-dark px-2 py-1 font-weight-bold" id="prevAnioBadge" style="background-color: #1e293b; font-size: 0.78rem;"></span>
+                                </div>
+
+                                <!-- Tarjeta de Metadatos Detallados (Exacta a Image 4) -->
+                                <div class="card bg-light border-0 p-3 mb-3 small rounded-3" style="line-height: 1.8; font-size: 0.88rem;">
+                                    <div class="mb-2">
+                                        <strong class="text-dark"><i class="fas fa-users text-success mr-1"></i>Autores:</strong> 
+                                        <span id="prevAutores"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong class="text-dark"><i class="fas fa-language text-success mr-1"></i>Idioma:</strong> 
+                                        <span id="prevIdioma">Español</span>
+                                    </div>
+                                    <!-- Campos especializados según recurso activo -->
+                                    <div id="prevCamposEspecificos"></div>
+                                </div>
+
+                                <h6 class="font-weight-bold text-dark mb-2">Resumen / Descripción:</h6>
+                                <div class="p-3 rounded-3 bg-light border text-muted small mb-3" id="prevDescripcion" style="white-space: pre-line; line-height: 1.6; max-height: 150px; overflow-y: auto;"></div>
+
+                                <!-- Estado del Archivo PDF Comprobatorio -->
+                                <h6 class="font-weight-bold text-dark mb-2">Documento Comprobatorio PDF:</h6>
+                                <div id="prevPdfContainer" class="p-3 rounded-3 border mb-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 2: CREDENCIAL PÚBLICA -->
+                        <div class="tab-pane fade" id="pane-credencial-publica" role="tabpanel">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border mx-auto text-center" style="max-width: 480px;">
+                                <div class="p-3 border rounded-3 bg-light shadow-xs mb-3 text-left">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge badge-success px-2 py-1" id="credTipo">Artículo</span>
+                                        <small class="text-muted"><i class="far fa-calendar-alt mr-1"></i><span id="credAnio">2026</span></small>
+                                    </div>
+                                    <h5 class="font-weight-bold text-dark mb-2" id="credTitulo" style="font-size: 1rem; line-height: 1.4;"></h5>
+                                    <p class="text-muted small mb-3 text-truncate-3" id="credResumen" style="line-height: 1.5;"></p>
+                                    <div class="border-top pt-2 small text-muted text-truncate" id="credAutores">
+                                        <i class="fas fa-user-edit mr-1 text-success"></i> Autores...
+                                    </div>
+                                </div>
+                                <span class="badge badge-secondary px-3 py-1 font-weight-bold" style="font-size: 0.75rem;">
+                                    <i class="fas fa-eye mr-1"></i> Vista Previa en Directorio Institucional
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 3: FICHA ACADÉMICA PÚBLICA -->
+                        <div class="tab-pane fade" id="pane-ficha-publica" role="tabpanel">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border">
+                                <div class="row align-items-center">
+                                    <div class="col-md-5 text-center mb-3 mb-md-0 border-right">
+                                        <div class="p-4 bg-light rounded-3 border d-flex flex-column align-items-center justify-content-center" style="height: 220px;">
+                                            <i id="publicoPdfIcon" class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                                            <span id="publicoPdfTexto" class="d-block small font-weight-bold text-dark">Vista Documental</span>
+                                            <small id="publicoPdfSub" class="text-muted" style="font-size: 0.72rem;">Repositorio Institucional FCA</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h5 class="font-weight-bold text-dark mb-2" id="publicoTitulo"></h5>
+                                        <div class="mb-2">
+                                            <span class="badge badge-success px-2 py-1" id="publicoTipo"></span>
+                                            <span class="badge badge-dark px-2 py-1" id="publicoAnio"></span>
+                                        </div>
+                                        <p class="small text-muted mb-2" id="publicoAutores"><i class="fas fa-users text-success mr-1"></i></p>
+                                        <p class="small text-secondary mb-0 text-truncate-3" id="publicoResumen"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje Institucional -->
+                    <div id="resumen-modal-aviso-moderacion" class="alert alert-info border-0 p-3 mt-3 mb-0 small" style="background-color: #e0f2fe; color: #0369a1; border-radius: 8px;">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <span>
+                            {% if user.is_superuser %}
+                                Como Administrador, esta obra quedará registrada y publicada de forma inmediata en el catálogo oficial de la FCA.
+                            {% else %}
+                                Tu obra quedará registrada en el sistema y se enviará a la cola de moderación. Tus coautores recibirán su solicitud en la bandeja de coautorías.
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white py-3 px-4 d-flex justify-content-between align-items-center flex-wrap">
+                    <!-- Dropdown Citar Obra (Idea 7) -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-success btn-sm rounded-pill dropdown-toggle font-weight-bold px-3 py-2" type="button" id="btnCitarObraPreview" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-quote-left mr-1"></i> Citar Obra
+                        </button>
+                        <div class="dropdown-menu p-3 shadow-lg border-0 rounded-3" aria-labelledby="btnCitarObraPreview" style="min-width: 340px; font-size: 0.8rem;">
+                            <h6 class="dropdown-header px-0 text-success font-weight-bold">Formato de Cita Bibliográfica</h6>
+                            <div class="mb-2">
+                                <strong class="d-block text-dark small font-weight-bold">APA (7.ª edición):</strong>
+                                <p id="cita-apa-prev" class="text-muted font-italic mb-1" style="font-size: 0.75rem; line-height: 1.4;"></p>
+                            </div>
+                            <div class="mb-2">
+                                <strong class="d-block text-dark small font-weight-bold">Harvard:</strong>
+                                <p id="cita-harvard-prev" class="text-muted font-italic mb-1" style="font-size: 0.75rem; line-height: 1.4;"></p>
+                            </div>
+                            <div>
+                                <strong class="d-block text-dark small font-weight-bold">IEEE:</strong>
+                                <p id="cita-ieee-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 font-weight-bold mr-2" data-dismiss="modal">
+                            <i class="fas fa-arrow-left mr-1"></i> Continuar Editando
+                        </button>
+                        <button type="button" id="btn-confirmar-envio-final" class="btn btn-success btn-sm rounded-pill px-4 py-2 font-weight-bold shadow-sm" style="background-color: #006633; border-color: #006633;">
+                            <i class="fas fa-check-circle mr-1"></i> Confirmar y Publicar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="modal fade" id="modalInfoCategoria" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-light">
@@ -1345,7 +2292,7 @@
                                     <div class="author-avatar-badge author-avatar-ind mx-auto mb-2" style="width: 40px; height: 40px; font-size: 1.1rem;">
                                         <i class="fas fa-user-tie"></i>
                                     </div>
-                                    <strong class="d-block font-weight-bold small" style="color: #6f42c1;">Investigador Independiente</strong>
+                                    <strong class="d-block font-weight-bold small" style="color: #6f42c1;">Investigador</strong>
                                     <small class="text-muted d-block" style="font-size: 0.72rem;">Sin adscripción universitaria exclusiva</small>
                                 </label>
                             </div>
@@ -1453,6 +2400,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
+            var envioConfirmadoPorModal = false;
             $('[data-toggle="tooltip"]').tooltip();
 
             const dirInput = $('#id_director_tesis');
@@ -1500,14 +2448,17 @@
 
             // --- MANEJO DEL DOCUMENTO PDF (INTERACTIVO / DRAG & DROP / VISOR) ---
             let currentPdfBlobUrl = null;
+            let archivoPdfSeleccionado = null;
 
             function procesarArchivoPdf(file) {
                 if (!file) return;
+                archivoPdfSeleccionado = file;
                 const maxBytes = 20 * 1024 * 1024; // 20 MB
 
                 if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
                     mostrarToastForm('Formato no válido: Por favor selecciona únicamente archivos en formato PDF (.pdf).', 'warning');
                     $('#id_pdf').val('');
+                archivoPdfSeleccionado = null;
                     $('#tarjeta-pdf-seleccionado').slideUp(200);
                     $('#zona-drag-drop-pdf').slideDown(250);
                     return;
@@ -1517,6 +2468,7 @@
                     const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
                     mostrarToastForm(`El archivo seleccionado excede el límite permitido de 20 MB (${sizeMb} MB). Por favor selecciona un documento más ligero.`, 'danger');
                     $('#id_pdf').val('');
+                archivoPdfSeleccionado = null;
                     $('#tarjeta-pdf-seleccionado').slideUp(200);
                     $('#zona-drag-drop-pdf').slideDown(250);
                     if (currentPdfBlobUrl) {
@@ -1540,6 +2492,7 @@
                 }
                 currentPdfBlobUrl = URL.createObjectURL(file);
                 formularioModificado = true;
+                actualizarProgresoFormulario();
             }
 
             $('#id_pdf').on('change', function() {
@@ -1553,6 +2506,7 @@
                         currentPdfBlobUrl = null;
                     }
                 }
+                actualizarProgresoFormulario();
             });
 
             // Drag & Drop en Zona PDF
@@ -1589,6 +2543,8 @@
 
             $('#btn-limpiar-pdf-seleccionado').on('click', function() {
                 $('#id_pdf').val('');
+                archivoPdfSeleccionado = null;
+                actualizarProgresoFormulario();
                 $('#tarjeta-pdf-seleccionado').slideUp(200);
                 $('#zona-drag-drop-pdf').slideDown(250);
                 if (currentPdfBlobUrl) {
@@ -1675,6 +2631,11 @@
                     `);
                     container.append(chip);
                 });
+                if (tags && tags.length > 0) {
+                    $('#wrapper-tags-palabras-clave').addClass('campo-valido-check');
+                } else {
+                    $('#wrapper-tags-palabras-clave').removeClass('campo-valido-check');
+                }
             }
 
             function agregarTagPalabraClave(texto) {
@@ -1742,34 +2703,95 @@
 
             const infoData = {
                 'Artículo de Revista': {
-                    titulo: 'Artículo Científico / Publicación Académica',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Se selecciona esta opción para investigaciones originales, revisiones de literatura, ensayos científicos o artículos académicos arbitrados que han sido publicados formalmente en una revista científica, indexada o de divulgación especializada (en formato físico o digital).'
+                    titulo: 'Artículo Científico / Revista Especializada',
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Investigación arbitrada en revista indexada o de divulgación',
+                    detalle: 'Publicaciones originales, revisiones sistemáticas o ensayos científicos arbitrados publicados formalmente en revistas académicas con registro ISSN (JCR, Scopus, SciELO, Redalyc, Latindex o Conahcyt).',
+                    comprobante: 'PDF del artículo completo publicado con membrete oficial de la revista, volumen, número y rango de páginas (o carta formal de aceptación definitiva).'
                 },
                 'Tesis': {
-                    titulo: 'Tesis y Trabajos de Grado / Titulación',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Corresponde a los trabajos recepcionales de investigación presentados para la obtención formal de un grado académico en los niveles de Licenciatura, Especialidad, Maestría o Doctorado, debidamente avalados por la institución.'
+                    titulo: 'Tesis y Trabajos Recepcionales de Titulación',
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Trabajo recepcional defendido para obtención de grado',
+                    detalle: 'Investigaciones recepcionales evaluadas y aprobadas para obtener un título o grado académico en Licenciatura, Especialidad, Maestría o Doctorado en la UABC u otra institución acreditada.',
+                    comprobante: 'Acta oficial de examen de grado o portada del documento con firmas del sínodo y sello de la coordinación académica.'
                 },
                 'Libro': {
                     titulo: 'Libro Monográfico Completo',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Aplica para obras monográficas de carácter científico, técnico o docente que abarcan una temática exhaustiva y cuentan de manera formal con su respectivo registro de Número Internacional Normalizado del Libro (ISBN).'
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Obra monográfica de autoría completa con ISBN',
+                    detalle: 'Libros completos de carácter científico, técnico, humanístico o docente que abarcan una temática con arbitraje riguroso por pares ciegos y registro ISBN formal.',
+                    comprobante: 'Páginas preliminares y legales completas (portada, contraportada, página de derechos con ISBN, dictamen/prólogo e índice general) o libro íntegro en PDF.'
                 },
                 'Capítulo de Libro': {
-                    titulo: 'Capítulo en Obra Colectiva',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Se emplea cuando el documento corresponde a una contribución temática específica y con autoría propia que forma parte de un libro más amplio, coordinado o editado de forma colectiva.'
+                    titulo: 'Capítulo en Obra Colectiva / Coordinada',
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Aportación individual en libro coordinado por pares',
+                    detalle: 'Capítulo o sección con autoría propia que forma parte de un libro colectivo coordinado o compilado, evaluado por comité editorial y con código ISBN propio de la obra.',
+                    comprobante: 'PDF que incluye la portada de la obra, página de créditos legales con ISBN, tabla de contenidos donde conste el capítulo y el texto completo del capítulo.'
                 },
                 'Ponencia / Memoria': {
                     titulo: 'Ponencia / Memoria de Congreso',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Diseñado para artículos extensos, ponencias, carteles (pósters) o memorias completas que fueron presentadas, discutidas y avaladas en congresos, simposios, coloquios o foros académicos internacionales o nacionales.'
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Trabajo expuesto y publicado en memorias de congreso',
+                    detalle: 'Ponencias en extenso, carteles científicos o conferencias presentadas y avaladas en congresos, coloquios o foros académicos nacionales o internacionales.',
+                    comprobante: 'Constancia oficial de ponente en el evento junto con la memoria publicada del congreso (con ISBN/ISSN) o enlace oficial a las actas.'
                 },
                 'Reporte de Investigación': {
-                    titulo: 'Proyecto / Reporte Técnico Especializado',
-                    criterio: '¿Cuándo utilizar esta categoría?',
-                    detalle: 'Aplica para informes técnicos de resultados, reportes derivados de proyectos de investigación aplicada, estudios de consultoría o documentos institucionales orientados a resolver problemáticas prácticas.'
+                    titulo: 'Proyecto / Reporte Técnico de Investigación',
+                    categoria: 'Producción Humanista y Científica',
+                    criterio: 'Informe formal de investigación institucional o financiada',
+                    detalle: 'Informes de avances o resultados finales derivados de proyectos de investigación formalmente registrados ante Conahcyt, UABC u organismos de financiamiento.',
+                    comprobante: 'Carátula oficial del informe debidamente firmada por los responsables y avalada por el comité de investigación o carta de entrega-recepción.'
+                },
+                'Propiedad Intelectual': {
+                    titulo: 'Propiedad Intelectual (INDAUTOR / IMPI)',
+                    categoria: 'Producción Tecnológica e Innovación',
+                    criterio: 'Registro formal ante INDAUTOR (Software) o IMPI (Patentes / Modelos)',
+                    detalle: 'Certificados de registro expedidos por el Instituto Nacional del Derecho de Autor (INDAUTOR) para programas de computación (software), bases de datos u obras científicas; o bien títulos de patentes de invención, modelos de utilidad o diseños industriales otorgados por el IMPI.',
+                    comprobante: 'Certificado oficial de Registro Público del Derecho de Autor (INDAUTOR) con número de folio (ej. 03-XXXX), o Título Oficial de Patente/Modelo de Utilidad expedido por el IMPI.'
+                },
+                'Desarrollo Tecnológico e Innovación': {
+                    titulo: 'Desarrollo Tecnológico e Innovación',
+                    categoria: 'Producción Tecnológica e Innovación',
+                    criterio: 'Software, prototipo funcional, planta piloto o norma técnica',
+                    detalle: 'Creación de plataformas de software, aplicativos móviles, algoritmos inteligentes, prototipos funcionales o normas técnicas validadas que solucionan un problema tecnológico o administrativo concreto.',
+                    comprobante: 'Manual técnico y funcional del software o prototipo, constancia de validación en entorno operativo o acta de entrega-recepción de la tecnología implementada.'
+                },
+                'Transferencia Tecnológica': {
+                    titulo: 'Transferencia Tecnológica y Licenciamiento',
+                    categoria: 'Producción Tecnológica e Innovación',
+                    criterio: 'Contrato de licenciamiento, cesión o explotación tecnológica',
+                    detalle: 'Mecanismos formales mediante los cuales conocimientos, tecnologías o sistemas generados en la universidad son transferidos para su adopción y explotación a empresas, dependencias públicas o sectores productivos.',
+                    comprobante: 'Copia del convenio de colaboración, contrato de licenciamiento o transferencia tecnológica firmado por las partes intervinientes.'
+                },
+                'Traducción Científica': {
+                    titulo: 'Traducción Científica y Especializada',
+                    categoria: 'Otras Producciones Humanistas y Científicas',
+                    criterio: 'Traducción autorizada y publicada de obras académicas',
+                    detalle: 'Traducción con rigor académico de obras científicas, capítulos de libros o artículos especializados entre diferentes idiomas, contando con la debida autorización de los titulares originales.',
+                    comprobante: 'Página legal de la obra traducida donde figure formalmente el crédito del traductor y constancia o página de autorización del autor/titular original.'
+                },
+                'Informe Técnico': {
+                    titulo: 'Informe Técnico y Dictamen Pericial',
+                    categoria: 'Otras Producciones Científicas y Técnicas',
+                    criterio: 'Dictamen especializado o consultoría técnica profesional',
+                    detalle: 'Informes técnicos derivados de consultorías, asesorías especializadas, auditorías periciales o dictámenes emitidos formalmente para resolver solicitudes de organismos externos o gubernamentales.',
+                    comprobante: 'Carátula y resumen ejecutivo del dictamen con acuse de recibo y carta formal de satisfacción emitida por la entidad receptora o contratante.'
+                },
+                'Dossier / Antología': {
+                    titulo: 'Dossier Temático / Antología Académica',
+                    categoria: 'Otras Producciones Científicas y Técnicas',
+                    criterio: 'Compilación y análisis temático de documentos o normativas',
+                    detalle: 'Compilación razonada y estructurada de textos, jurisprudencia, normativas o artículos comentados con un marco teórico introductorio que aporte una visión crítica unificada.',
+                    comprobante: 'Página legal con créditos del compilador, introducción analítica firmada e índice general del dossier publicado en medio institucional o editorial.'
+                },
+                'Prólogo / Estudio Introductorio': {
+                    titulo: 'Prólogo / Estudio Introductorio',
+                    categoria: 'Otras Producciones Científicas y Técnicas',
+                    criterio: 'Estudio preliminar crítico en obra académica de autoría ajena',
+                    detalle: 'Texto crítico, preliminar, prefacio o posfacio de alta especialidad que analiza, contextualiza y abre una obra académica, monográfica o reedición clásica.',
+                    comprobante: 'Páginas preliminares completas de la obra donde conste el título del libro, código ISBN y la autoría expresa del prólogo o estudio introductorio.'
                 }
             };
 
@@ -1823,29 +2845,103 @@
                 if (!tipoNombre) {
                     $('#secciones-formulario').addClass('secciones-inactivas');
                     $('#aviso-bloqueo-paso1').slideDown(250);
+                    $('#caja-explicacion-recurso').slideUp(200);
                     return;
                 }
+
+                // Normalización de búsqueda para match exacto
+                const tipo = tipoNombre.toLowerCase().trim();
+
+                let tarjetaEncontrada = false;
                 $('.card-selector').each(function() {
-                    if ($(this).data('tipo').toLowerCase() === tipoNombre.toLowerCase()) {
+                    const cardTipo = ($(this).data('tipo') || '').toLowerCase().trim();
+                    if (cardTipo === tipo) {
                         $(this).addClass('selected');
+                        tarjetaEncontrada = true;
                     }
                 });
+
+                // Fallback inteligente para variantes antiguas solo si no hubo coincidencia exacta
+                if (!tarjetaEncontrada) {
+                    $('.card-selector').each(function() {
+                        const cardTipo = ($(this).data('tipo') || '').toLowerCase().trim();
+                        if (cardTipo.startsWith('artículo') && tipo.startsWith('art') && !tipo.includes('capítulo') && !tipo.includes('capitulo')) {
+                            $(this).addClass('selected');
+                            tarjetaEncontrada = true;
+                            return false;
+                        }
+                    });
+                }
+
+                // Si es un recurso del bloque expandible (7 a 13), abrir el contenedor automáticamente
+                const tiposSecundarios = [
+                    'propiedad', 'intelectual', 'indautor', 'impi', 'patente',
+                    'desarrollo', 'tecnológico', 'tecnologico', 'software',
+                    'transferencia', 'traducción', 'traduccion',
+                    'informe', 'técnico', 'tecnico', 'dossier', 'antología', 'antologia',
+                    'prólogo', 'prologo', 'introductorio'
+                ];
+                if (tiposSecundarios.some(sub => tipo.includes(sub))) {
+                    $('#contenedor-mas-recursos').slideDown(200);
+                    $('#texto-toggle-recursos').text('Ocultar tipos de recursos adicionales');
+                    $('#icono-toggle-recursos').removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                }
+
                 $('#real-tipo-contenido').val(tipoNombre);
                 $('#secciones-formulario').removeClass('secciones-inactivas');
                 $('#aviso-bloqueo-paso1').slideUp(250);
-                const tipo = tipoNombre.toLowerCase();
 
+                // Actualizar Caja de Explicación y Comprobante Oficial (Sketch pág 9)
+                let info = infoData[tipoNombre];
+                if (!info) {
+                    for (let key in infoData) {
+                        if (tipo.includes(key.toLowerCase()) || key.toLowerCase().includes(tipo)) {
+                            info = infoData[key];
+                            break;
+                        }
+                    }
+                }
+                if (info) {
+                    $('#exp-titulo-recurso').text(info.titulo);
+                    $('#exp-categoria-pill').text(info.categoria);
+                    $('#exp-descripcion-corta').text(info.detalle);
+                    $('#exp-comprobante-texto').text(info.comprobante);
+                    $('#caja-explicacion-recurso').slideDown(250);
+                } else {
+                    $('#caja-explicacion-recurso').slideUp(150);
+                }
+
+                // Selección de bloque dinámico según el tipo seleccionado
                 let bloqueActivo = null;
-                if (tipo.includes('revista') || tipo.includes('artículo') || tipo.includes('articulo')) {
+                if (tipo.includes('propiedad') || tipo.includes('intelectual') || tipo.includes('indautor') || tipo.includes('patente')) {
+                    bloqueActivo = $('#bloque-propiedad-intelectual');
+                } else if (tipo.includes('desarrollo') || tipo.includes('software') || (tipo.includes('tecnol') && tipo.includes('innovaci'))) {
+                    bloqueActivo = $('#bloque-desarrollo-tecnologico');
+                } else if (tipo.includes('transferencia')) {
+                    bloqueActivo = $('#bloque-transferencia-tecnologica');
+                } else if (tipo.includes('traducci')) {
+                    bloqueActivo = $('#bloque-traduccion');
+                } else if (tipo.includes('informe') && (tipo.includes('técnico') || tipo.includes('tecnico') || tipo.includes('dictamen'))) {
+                    bloqueActivo = $('#bloque-informe-tecnico');
+                } else if (tipo.includes('prólog') || tipo.includes('prolog') || tipo.includes('introductorio') || tipo.includes('prefacio')) {
+                    bloqueActivo = $('#bloque-prologo');
+                } else if (tipo.includes('dossier') || tipo.includes('antolog') || tipo.includes('compilaci')) {
+                    bloqueActivo = $('#bloque-dossier');
+                } else if (tipo.includes('capítulo') || tipo.includes('capitulo')) {
+                    // Capítulo de Libro va ANTES de Libro
+                    bloqueActivo = $('#bloque-capitulo');
+                } else if (tipo === 'libro' || (tipo.includes('libro') && !tipo.includes('capítulo') && !tipo.includes('capitulo'))) {
+                    bloqueActivo = $('#bloque-libro');
+                } else if (tipo.includes('revista') || tipo.includes('artículo') || tipo.includes('articulo')) {
                     bloqueActivo = $('#bloque-articulo');
                 } else if (tipo.includes('tesis')) {
                     bloqueActivo = $('#bloque-tesis');
-                } else if (tipo.includes('capítulo') || tipo.includes('capitulo')) {
-                    bloqueActivo = $('#bloque-capitulo');
-                } else if (tipo.includes('libro')) {
-                    bloqueActivo = $('#bloque-libro');
+                } else if (tipo.includes('ponencia') || tipo.includes('congreso') || tipo.includes('memoria')) {
+                    bloqueActivo = $('#bloque-ponencia');
+                } else if (tipo.includes('reporte') || tipo.includes('proyecto')) {
+                    bloqueActivo = $('#bloque-reporte-investigacion');
                 } else {
-                    bloqueActivo = $('#bloque-otro');
+                    bloqueActivo = $('#bloque-ponencia');
                 }
 
                 if (bloqueActivo) {
@@ -1867,6 +2963,36 @@
                     bloqueActivo.slideDown(300);
                     bloqueActivo.find('input, select, textarea').prop('disabled', false);
                 }
+                setTimeout(refrescarValidacionVisualCampos, 150);
+                actualizarProgresoFormulario();
+            }
+
+            
+            // --- MANEJO DE DESPLIEGUE DE MÁS TIPOS DE RECURSOS (SKETCH PÁG 9) ---
+            $('#btn-toggle-mas-recursos').on('click', function() {
+                const $contenedor = $('#contenedor-mas-recursos');
+                const isVisible = $contenedor.is(':visible');
+                if (isVisible) {
+                    $contenedor.slideUp(250);
+                    $('#texto-toggle-recursos').text('Ver más tipos de recursos (Tecnológica, Propiedad Intelectual y Especializados)');
+                    $('#icono-toggle-recursos').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                } else {
+                    $contenedor.slideDown(250);
+                    $('#texto-toggle-recursos').text('Ocultar tipos de recursos adicionales');
+                    $('#icono-toggle-recursos').removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                }
+            });
+
+            // --- VISIBILIDAD CONDICIONAL DE ÁMBITO PCT (PROPIEDAD INTELECTUAL) ---
+            $('#id_ambito_solicitud').on('change', function() {
+                if ($(this).val().includes('Internacional')) {
+                    $('#sub-bloque-pct').slideDown(200);
+                } else {
+                    $('#sub-bloque-pct').slideUp(200);
+                }
+            });
+            if ($('#id_ambito_solicitud').val() && $('#id_ambito_solicitud').val().includes('Internacional')) {
+                $('#sub-bloque-pct').show();
             }
 
             $(document).on('click', '.card-selector', function(e) {
@@ -1952,7 +3078,7 @@
                     avatarClass = 'author-avatar-ind';
                     iconClass = 'fas fa-user-tie';
                     pillClass = 'code-pill-ind';
-                    subMeta = 'Investigador Independiente';
+                    subMeta = 'Investigador';
                 } else if (tipoNormalizado === 'externo') {
                     avatarClass = 'author-avatar-ext';
                     iconClass = 'fas fa-university';
@@ -2135,6 +3261,7 @@
                     $('#submit-btn').prop('disabled', true);
                     $('#real-autor-select').empty();
                 }
+                actualizarProgresoFormulario();
             }
 
             {% if es_edicion and autores_asignados %}
@@ -2226,6 +3353,39 @@
                     coincidenciaAutorDetectada = mejorCoincidencia;
                     $('#nombre-duplicado-sugerido').text(mejorCoincidencia.nombre);
                     $('#alerta-posible-duplicado').slideDown(200);
+                } else if (paterno.length >= 3) {
+                    // Consulta reactiva en vivo al servidor (por si otro usuario registró el autor simultáneamente)
+                    clearTimeout(window._timerBuscarAutorLive);
+                    window._timerBuscarAutorLive = setTimeout(function() {
+                        $.get("{% url 'buscar_autores_live_ajax' %}", { q: paterno }, function(res) {
+                            if (res.autores && res.autores.length > 0) {
+                                let encontradaServer = null;
+                                res.autores.forEach(function(aut) {
+                                    const nom = (aut.nombre || '').toLowerCase();
+                                    if (nom.includes(paterno)) {
+                                        if (nombres.length >= 2) {
+                                            const partes = nombres.split(/\s+/);
+                                            if (partes.some(p => p.length >= 2 && nom.includes(p))) {
+                                                encontradaServer = aut;
+                                                return false;
+                                            }
+                                        } else {
+                                            encontradaServer = aut;
+                                            return false;
+                                        }
+                                    }
+                                });
+                                if (encontradaServer) {
+                                    coincidenciaAutorDetectada = encontradaServer;
+                                    $('#nombre-duplicado-sugerido').text((encontradaServer.nombre_con_titulo || encontradaServer.nombre) + (encontradaServer.institucion ? ' (' + encontradaServer.institucion + ')' : ''));
+                                    $('#alerta-posible-duplicado').slideDown(200);
+                                    return;
+                                }
+                            }
+                            $('#alerta-posible-duplicado').slideUp(200);
+                            coincidenciaAutorDetectada = null;
+                        });
+                    }, 200);
                 } else {
                     $('#alerta-posible-duplicado').slideUp(200);
                     coincidenciaAutorDetectada = null;
@@ -2239,13 +3399,18 @@
 
             $('#btn-seleccionar-coincidencia').on('click', function() {
                 if (coincidenciaAutorDetectada) {
-                    agregarAutorDirecto(
-                        coincidenciaAutorDetectada.id,
-                        coincidenciaAutorDetectada.nombre,
-                        coincidenciaAutorDetectada.codigo,
-                        coincidenciaAutorDetectada.institucion,
-                        coincidenciaAutorDetectada.tipo
-                    );
+                    const cId = coincidenciaAutorDetectada.id;
+                    const cNombre = coincidenciaAutorDetectada.nombre_con_titulo || coincidenciaAutorDetectada.nombre;
+                    const cCodigo = coincidenciaAutorDetectada.codigo || '';
+                    const cInst = coincidenciaAutorDetectada.institucion || '';
+                    const cTipo = coincidenciaAutorDetectada.tipo || 'uabc';
+
+                    if ($('#available-list li[data-id="' + cId + '"]').length === 0) {
+                        const nuevoLi = generarHtmlAutor(cId, cNombre, cCodigo, cInst, cTipo, false);
+                        $('#available-list').prepend(nuevoLi);
+                    }
+
+                    agregarAutorDirecto(cId, cNombre, cCodigo, cInst, cTipo);
                     $('#modalNuevoAutor').modal('hide');
                     $('#nuevo_autor_titulo, #nuevo_autor_nombres, #nuevo_autor_paterno, #nuevo_autor_materno, #nuevo_autor_universidad, #nuevo_autor_siglas').val('');
                     $('#previewNombreAutorNuevo').text('---');
@@ -2411,6 +3576,8 @@
             // --- ENVÍO DEL FORMULARIO CON OVERLAY DE PROGRESO DE SUBIDA ---
             $('#upload-form').on('submit', function(e) {
                 if (!this.checkValidity()) {
+                    e.preventDefault();
+                    this.reportValidity();
                     return;
                 }
 
@@ -2420,6 +3587,24 @@
                     $('html, body').animate({
                         scrollTop: $('#seccion-autores').offset().top - 80
                     }, 400);
+                    return;
+                }
+
+                const tagsActuales = typeof parsearPalabrasClave === 'function' ? parsearPalabrasClave() : [];
+                if (tagsActuales.length === 0) {
+                    e.preventDefault();
+                    mostrarToastForm('Por favor añade al menos una palabra clave pulsando Enter o coma.', 'warning');
+                    $('html, body').animate({
+                        scrollTop: $('#wrapper-tags-palabras-clave').offset().top - 100
+                    }, 400);
+                    $('#input-chip-palabra').focus();
+                    return;
+                }
+
+                // Si aún no se ha confirmado mediante el modal de resumen, abrir el modal
+                if (!envioConfirmadoPorModal) {
+                    e.preventDefault();
+                    poblarYAbrirModalConfirmacion();
                     return;
                 }
 
@@ -2441,7 +3626,617 @@
                 $('#submit-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Guardando Obra...');
                 $('#modalProgresoSubida').modal('show');
             });
-        });
+        
+            // ==============================================================
+            // FASE A: LÓGICA DE PROGRESO, DETECTOR DE DUPLICADOS Y CONFIRMACIÓN
+            // ==============================================================
+
+                        // 1. CÁLCULO DINÁMICO DE COMPLETITUD Y BARRA DE PROGRESO (IDEA 9 Y 10)
+            function actualizarProgresoFormulario() {
+                let pasosCumplidos = 0;
+                const totalPasos = 5;
+
+                // Paso 1: Tipo de recurso seleccionado (20%)
+                const tipoSel = ($('#real-tipo-contenido').val() || '').trim();
+                const paso1Ok = Boolean(tipoSel);
+                if (paso1Ok) {
+                    pasosCumplidos++;
+                    $('#paso-progreso-1').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                } else {
+                    $('#paso-progreso-1').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                }
+
+                // Paso 2: Archivo PDF adjunto o resguardado (20%)
+                const tieneNuevoPdf = Boolean(archivoPdfSeleccionado || ($('#id_pdf')[0] && $('#id_pdf')[0].files && $('#id_pdf')[0].files.length > 0));
+                const tienePdfPrevio = Boolean($('#contenedor-pdf-existente').length > 0 && !$('#pdf-clear_id').prop('checked'));
+                const paso2Ok = (tieneNuevoPdf || tienePdfPrevio);
+                if (paso2Ok) {
+                    pasosCumplidos++;
+                    $('#paso-progreso-2').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                } else {
+                    $('#paso-progreso-2').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                }
+
+                // Paso 3: Al menos un autor confirmado en la lista derecha (20%)
+                const numAutores = $('#selected-list li.author-card-row').length;
+                const paso3Ok = numAutores > 0;
+                if (paso3Ok) {
+                    pasosCumplidos++;
+                    $('#paso-progreso-3').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                } else {
+                    $('#paso-progreso-3').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                }
+
+                // Paso 4: Metadatos generales completos (Título >= 3 letras, Año, Área, Entidad, Resumen >= 3 letras, Idioma, Palabras Clave >= 1) (20%)
+                const tituloVal = ($('#id_titulo').val() || '').trim();
+                const anoVal = ($('#id_año_produccion').val() || '').trim();
+                const areaVal = ($('#id_area').val() || '').trim();
+                const entidadVal = ($('#id_entidad').val() || '').trim();
+                const descVal = ($('#id_descripcion').val() || '').trim();
+                const idiomaVal = ($('#id_idioma').val() || '').trim();
+                const numPalabrasClave = typeof parsearPalabrasClave === 'function' ? parsearPalabrasClave().length : (($('#id_palabras_clave').val() || '').trim() ? 1 : 0);
+
+                const paso4Ok = Boolean(
+                    tituloVal.length >= 3 &&
+                    anoVal &&
+                    areaVal &&
+                    entidadVal &&
+                    descVal.length >= 3 &&
+                    idiomaVal.length >= 2 &&
+                    numPalabrasClave >= 1
+                );
+
+                if (paso4Ok) {
+                    pasosCumplidos++;
+                    $('#paso-progreso-4').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                } else {
+                    $('#paso-progreso-4').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                }
+
+                // Paso 5: Campos del bloque especializado activo con validación rigurosa por tipo (20%)
+                let paso5Ok = false;
+                const $bloqueActivo = $('.bloque-dinamico:visible');
+                if ($bloqueActivo.length > 0) {
+                    const camposVisibles = $bloqueActivo.find('input:visible, select:visible, textarea:visible').not('[disabled]');
+                    const totalCampos = camposVisibles.length;
+                    let llenos = 0;
+                    camposVisibles.each(function() {
+                        if ($(this).val() && $(this).val().toString().trim()) {
+                            llenos++;
+                        }
+                    });
+
+                    const tipoActivo = (tipoSel || '').toLowerCase();
+                    if (tipoActivo.includes('revista') || tipoActivo.includes('artículo') || tipoActivo.includes('articulo')) {
+                        // Artículo de revista: requiere obligatoriamente Nombre de Revista e ISSN (los demás son Opcionales)
+                        const revVal = ($bloqueActivo.find('[name="revista"]').val() || '').trim();
+                        const issnVal = ($bloqueActivo.find('[name="isbn_issn"]').val() || '').trim();
+                        paso5Ok = Boolean(revVal.length >= 2 && issnVal.length >= 3);
+                    } else if (tipoActivo.includes('tesis')) {
+                        // Tesis: requiere grado académico, programa/carrera y director/asesor
+                        const grado = ($bloqueActivo.find('[name="grado_academico"]').val() || '').trim();
+                        const prog = ($bloqueActivo.find('[name="carrera_o_posgrado"]').val() || '').trim();
+                        const asesor = ($bloqueActivo.find('[name="asesor"]').val() || '').trim();
+                        paso5Ok = Boolean(grado && prog && asesor);
+                    } else if (tipoActivo.includes('libro') && !tipoActivo.includes('capítulo') && !tipoActivo.includes('capitulo')) {
+                        // Libro: requiere editorial y al menos ISBN o páginas
+                        const edit = ($bloqueActivo.find('[name="editorial"]').val() || '').trim();
+                        paso5Ok = Boolean(edit.length >= 2 && llenos >= 2);
+                    } else if (tipoActivo.includes('capítulo') || tipoActivo.includes('capitulo')) {
+                        // Capítulo: requiere título de obra/libro, editorial y al menos ISBN/páginas
+                        const obra = ($bloqueActivo.find('[name="revista"], [name="obra_receptora"]').val() || '').trim();
+                        const edit = ($bloqueActivo.find('[name="editorial"]').val() || '').trim();
+                        paso5Ok = Boolean(obra.length >= 2 && edit.length >= 2 && llenos >= 2);
+                    } else if (tipoActivo.includes('ponencia') || tipoActivo.includes('congreso')) {
+                        // Ponencia: requiere nombre de congreso y ciudad/lugar
+                        const cong = ($bloqueActivo.find('[name="revista"]').val() || '').trim();
+                        const lugar = ($bloqueActivo.find('[name="editorial"]').val() || '').trim();
+                        paso5Ok = Boolean(cong.length >= 2 && lugar.length >= 2);
+                    } else if (tipoActivo.includes('reporte') || tipoActivo.includes('proyecto')) {
+                        // Reporte técnico: clave y organismo financiador
+                        const cve = ($bloqueActivo.find('[name="proyecto_origen"]').val() || '').trim();
+                        const fin = ($bloqueActivo.find('[name="institucion_receptora"]').val() || '').trim();
+                        paso5Ok = Boolean(cve.length >= 2 && fin.length >= 2);
+                    } else if (tipoActivo.includes('propiedad') || tipoActivo.includes('indautor') || tipoActivo.includes('impi')) {
+                        // Propiedad intelectual: modalidad y no. registro / folio
+                        const mod = ($bloqueActivo.find('[name="tipo_proteccion"]').val() || '').trim();
+                        const fol = ($bloqueActivo.find('[name="numero_registro"]').val() || '').trim();
+                        paso5Ok = Boolean(mod && fol.length >= 2);
+                    } else if (tipoActivo.includes('desarrollo') || tipoActivo.includes('software')) {
+                        // Desarrollo tecnológico: tipo de desarrollo y problema que resuelve
+                        const tipD = ($bloqueActivo.find('[name="tipo_desarrollo"]').val() || '').trim();
+                        const prob = ($bloqueActivo.find('[name="problema_atiende"]').val() || '').trim();
+                        paso5Ok = Boolean(tipD && prob.length >= 3);
+                    } else if (tipoActivo.includes('transferencia')) {
+                        // Transferencia: empresa/institución receptora y modalidad
+                        const inst = ($bloqueActivo.find('[name="institucion_receptora"]').val() || '').trim();
+                        const tipT = ($bloqueActivo.find('[name="tipo_transferencia"]').val() || '').trim();
+                        paso5Ok = Boolean(inst.length >= 2 && tipT);
+                    } else if (tipoActivo.includes('traducci')) {
+                        // Traducción: idioma y título original
+                        const idio = ($bloqueActivo.find('[name="idioma_original"]').val() || '').trim();
+                        const titO = ($bloqueActivo.find('[name="titulo_original"]').val() || '').trim();
+                        paso5Ok = Boolean(idio && titO.length >= 2);
+                    } else if (tipoActivo.includes('informe')) {
+                        // Informe técnico: entidad solicitante y oficio
+                        const inst = ($bloqueActivo.find('[name="institucion_receptora"]').val() || '').trim();
+                        const num = ($bloqueActivo.find('[name="numero_registro"]').val() || '').trim();
+                        paso5Ok = Boolean(inst.length >= 2 && num.length >= 2);
+                    } else if (tipoActivo.includes('dossier') || tipoActivo.includes('antolog')) {
+                        // Dossier: editorial/institución y colección
+                        const edit = ($bloqueActivo.find('[name="editorial"], [name="obra_receptora"]').val() || '').trim();
+                        paso5Ok = Boolean(edit.length >= 2 && llenos >= 2);
+                    } else if (tipoActivo.includes('prólog') || tipoActivo.includes('prolog')) {
+                        // Prólogo: obra mayor y editorial
+                        const obra = ($bloqueActivo.find('[name="obra_receptora"]').val() || '').trim();
+                        paso5Ok = Boolean(obra.length >= 2 && llenos >= 2);
+                    } else {
+                        // En cualquier otro caso: al menos 2 campos llenos (o todos si son menos de 2)
+                        paso5Ok = Boolean(totalCampos === 0 || (llenos >= Math.min(2, totalCampos)));
+                    }
+                } else if (paso1Ok) {
+                    paso5Ok = true;
+                }
+
+                if (paso5Ok) {
+                    pasosCumplidos++;
+                    $('#paso-progreso-5').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                } else {
+                    $('#paso-progreso-5').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                }
+
+                // Cada paso aporta exactamente 20%
+                const completitud = pasosCumplidos * 20;
+                $('#barra-progreso-llenado').css('width', completitud + '%').attr('aria-valuenow', completitud);
+
+                const $badge = $('#badge-porcentaje-progreso');
+                if (completitud === 100) {
+                    $badge.text('100% ¡Listo para Publicar!')
+                          .removeClass('badge-secondary badge-warning')
+                          .addClass('badge-animado-listo');
+                    $('#pildora-atajo-ctrl-enter').slideDown(250);
+                } else if (completitud >= 60) {
+                    $badge.text(completitud + '% en progreso')
+                          .removeClass('badge-secondary badge-animado-listo')
+                          .addClass('badge-warning text-dark');
+                    $('#pildora-atajo-ctrl-enter').slideUp(200);
+                } else {
+                    $badge.text(completitud + '% completado')
+                          .removeClass('badge-warning badge-animado-listo text-dark')
+                          .addClass('badge-secondary');
+                    $('#pildora-atajo-ctrl-enter').slideUp(200);
+                }
+            }
+
+            // Validación visual en vivo con checkmarks y actualización reactiva (Idea 10)
+            function verificarCampoVisual(el) {
+                const $campo = $(el);
+                if ($campo.is(':button') || $campo.is(':submit') || $campo.attr('type') === 'hidden' || $campo.prop('disabled')) {
+                    return;
+                }
+                const val = ($campo.val() || '').toString().trim();
+                const esRequerido = $campo.prop('required');
+                const minLen = parseInt($campo.attr('minlength') || '1', 10);
+
+                if (val && (!esRequerido || val.length >= minLen)) {
+                    $campo.addClass('campo-valido-check');
+                } else {
+                    $campo.removeClass('campo-valido-check');
+                }
+            }
+
+            function refrescarValidacionVisualCampos() {
+                $('#upload-form input:visible, #upload-form select:visible, #upload-form textarea:visible').each(function() {
+                    verificarCampoVisual(this);
+                });
+                if (typeof parsearPalabrasClave === 'function') {
+                    const tags = parsearPalabrasClave();
+                    if (tags && tags.length > 0) {
+                        $('#wrapper-tags-palabras-clave').addClass('campo-valido-check');
+                    } else {
+                        $('#wrapper-tags-palabras-clave').removeClass('campo-valido-check');
+                    }
+                }
+            }
+
+            $('#upload-form').on('input change blur keyup', 'input, select, textarea', function() {
+                verificarCampoVisual(this);
+                actualizarProgresoFormulario();
+            });
+
+
+            // 2. DETECTOR DE TÍTULOS DUPLICADOS EN TIEMPO REAL CON DEBOUNCE (IDEA 3)
+            let timerDuplicado = null;
+            $('#id_titulo').on('input', function() {
+                const tituloActual = $(this).val().trim();
+                clearTimeout(timerDuplicado);
+
+                if (tituloActual.length < 5) {
+                    $('#alerta-titulo-duplicado').slideUp(200);
+                    return;
+                }
+
+                timerDuplicado = setTimeout(function() {
+                    const artId = '{% if es_edicion and form.instance.pk %}{{ form.instance.pk }}{% else %}{% endif %}';
+                    $.ajax({
+                        url: "{% url 'verificar_titulo_duplicado_ajax' %}",
+                        type: "GET",
+                        data: {
+                            'titulo': tituloActual,
+                            'articulo_id': artId
+                        },
+                        success: function(res) {
+                            if (res.duplicado) {
+                                $('#duplicado-titulo-existente').text(res.titulo);
+                                $('#duplicado-meta-existente').text((res.ano ? res.ano + ', ' : '') + (res.autor ? res.autor : ''));
+                                
+                                if (res.exacto) {
+                                    $('#duplicado-header-texto').text('⚠️ Título idéntico detectado en el repositorio');
+                                    $('#duplicado-badge-tipo').text('Coincidencia Exacta').removeClass('badge-warning').addClass('badge-danger text-white');
+                                } else {
+                                    $('#duplicado-header-texto').text('ℹ️ Obra con título muy similar encontrada');
+                                    $('#duplicado-badge-tipo').text('Coincidencia Parcial').removeClass('badge-danger text-white').addClass('badge-warning text-dark');
+                                }
+                                $('#alerta-titulo-duplicado').slideDown(250);
+                            } else {
+                                $('#alerta-titulo-duplicado').slideUp(200);
+                            }
+                        }
+                    });
+                }, 450);
+            });
+
+
+            // 3. ATAJO DE TECLADO CTRL + ENTER PARA ENVÍO RÁPIDO CON VALIDACIÓN ESTRICTA (IDEA 11)
+            $(document).on('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.keyCode === 13)) {
+                    // Si el modal de confirmación está abierto, confirmar el envío
+                    if ($('#modalConfirmarPublicacion').is(':visible')) {
+                        e.preventDefault();
+                        $('#btn-confirmar-envio-final').click();
+                        return;
+                    }
+                    // Validar primero si el formulario nativo está completo
+                    const formEl = document.getElementById('upload-form');
+                    if (formEl) {
+                        e.preventDefault();
+                        if (!formEl.checkValidity()) {
+                            formEl.reportValidity();
+                            return;
+                        }
+                        if ($('#selected-list li.author-card-row').length === 0) {
+                            mostrarToastForm('Por favor selecciona al menos un autor para la obra.', 'warning');
+                            $('html, body').animate({
+                                scrollTop: $('#seccion-autores').offset().top - 80
+                            }, 400);
+                            return;
+                        }
+                        const tagsCtrl = typeof parsearPalabrasClave === 'function' ? parsearPalabrasClave() : [];
+                        if (tagsCtrl.length === 0) {
+                            mostrarToastForm('Por favor añade al menos una palabra clave pulsando Enter o coma.', 'warning');
+                            $('html, body').animate({
+                                scrollTop: $('#wrapper-tags-palabras-clave').offset().top - 100
+                            }, 400);
+                            $('#input-chip-palabra').focus();
+                            return;
+                        }
+                        poblarYAbrirModalConfirmacion();
+                    }
+                }
+            });
+
+
+            // 4. POBLADO ROBUSTO DEL MODAL DE PREVISUALIZACIÓN USANDO SELECTORES POR [name]
+            // Flag ya declarada al inicio
+            envioConfirmadoPorModal = false;
+
+            function poblarYAbrirModalConfirmacion() {
+                // Título
+                const tit = ($('#id_titulo').val() || '').trim() || 'Sin título especificado';
+                $('#prevTitulo').text(tit);
+                $('#credTitulo').text(tit);
+                $('#publicoTitulo').text(tit);
+
+                // Badges Principales
+                const tipoNom = ($('#real-tipo-contenido').val() || '').trim() || 'Recurso Académico';
+                const anioVal = ($('#id_año_produccion').val() || '').trim() || '2026';
+                const areaVal = ($('#id_area').val() || '').trim() || 'Área Académica';
+                const entidadVal = ($('#id_entidad').val() || '').trim() || 'Facultad de Contaduría y Administración';
+                const idiomaVal = ($('#id_idioma').val() || '').trim() || 'Español';
+
+                $('#prevTipoBadge').text(tipoNom);
+                $('#prevAreaBadge').text(areaVal);
+                $('#prevEntidadBadge').text(entidadVal);
+                $('#prevAnioBadge').text(anioVal);
+
+                $('#credTipo').text(tipoNom);
+                $('#credAnio').text(anioVal);
+                $('#publicoTipo').text(tipoNom);
+                $('#publicoAnio').text(anioVal);
+
+                // Idioma
+                $('#prevIdioma').text(idiomaVal);
+
+                // Autores
+                const listaAutores = [];
+                $('#selected-list li.author-card-row').each(function() {
+                    const nombre = $(this).data('nombre') || $(this).find('.author-name-text').text().trim();
+                    const codigo = $(this).data('codigo') || '';
+                    listaAutores.push(nombre + (codigo ? ' (' + codigo + ')' : ''));
+                });
+
+                const autoresTexto = listaAutores.length > 0 ? listaAutores.join(' • ') : '<span class="text-danger font-weight-bold">⚠️ Sin autores asignados</span>';
+                $('#prevAutores').html(autoresTexto);
+                $('#credAutores').html('<i class="fas fa-user-edit mr-1 text-success"></i> ' + (listaAutores.length > 0 ? listaAutores.join(', ') : 'Sin autores'));
+                $('#publicoAutores').html('<i class="fas fa-users text-success mr-1"></i> ' + (listaAutores.length > 0 ? listaAutores.join(' &bull; ') : 'Sin autores'));
+
+                // Resumen
+                const descVal = ($('#id_descripcion').val() || '').trim() || 'Sin descripción proporcionada.';
+                $('#prevDescripcion').text(descVal);
+                $('#credResumen').text(descVal);
+                $('#publicoResumen').text(descVal);
+
+                // CAMPOS ESPECÍFICOS SEGÚN EL TIPO DE RECURSO (OBTENIDOS ROBUSTAMENTE POR name Y POR id)
+                let camposHtml = '';
+                const tipoLower = tipoNom.toLowerCase();
+                const $bloque = $('.bloque-dinamico:visible');
+
+                function obtenerValorCampo(nameAttr, idFallback) {
+                    let val = '';
+                    if ($bloque.length > 0) {
+                        const el = $bloque.find('[name="' + nameAttr + '"]');
+                        if (el.length > 0) val = el.val();
+                    }
+                    if (!val && idFallback) {
+                        val = $('#' + idFallback).val();
+                    }
+                    return (val || '').toString().trim();
+                }
+
+                if (tipoLower.includes('propiedad') || tipoLower.includes('indautor') || tipoLower.includes('impi')) {
+                    const mod = obtenerValorCampo('tipo_proteccion', 'id_tipo_proteccion') || 'Derechos de Autor (INDAUTOR)';
+                    const folio = obtenerValorCampo('numero_registro', 'id_numero_registro') || 'En trámite';
+                    const rama = obtenerValorCampo('rama_propiedad', 'id_rama_propiedad') || 'No especificada';
+                    const titular = obtenerValorCampo('titular_propiedad', 'id_titular_propiedad') || 'Universidad Autónoma de Baja California (UABC)';
+                    const rol = obtenerValorCampo('rol_participacion', 'id_rol_participacion') || 'No especificado';
+                    const estado = obtenerValorCampo('estado_propiedad', 'id_estado_propiedad') || 'Otorgado / Concedido';
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-shield-alt text-success mr-1"></i>Modalidad:</strong> <span class="text-secondary">${mod}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-certificate text-success mr-1"></i>No. Registro / Folio Oficial:</strong> <span class="badge badge-warning px-2 py-1 font-weight-bold" style="background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d;">${folio}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-folder text-success mr-1"></i>Rama / Clasificación:</strong> <span class="text-secondary">${rama}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-university text-success mr-1"></i>Titular Patrimonial:</strong> <span class="text-secondary">${titular}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-user-tie text-success mr-1"></i>Rol de Participación:</strong> <span class="text-secondary">${rol}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-check-circle text-success mr-1"></i>Estado:</strong> <span class="badge badge-success px-2 py-1" style="background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">${estado}</span></div>
+                    `;
+                } else if (tipoLower.includes('revista') || tipoLower.includes('artículo') || tipoLower.includes('articulo')) {
+                    const rev = obtenerValorCampo('revista', 'id_revista_art') || '(No especificada)';
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_issn_art') || '(Sin ISSN)';
+                    const vol = obtenerValorCampo('volumen_numero', 'id_volumen_art') || '(Sin volumen)';
+                    const pags = obtenerValorCampo('paginas', 'id_paginas_art') || '(Sin páginas)';
+                    const doi = obtenerValorCampo('doi_enlace', 'id_doi_art');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-book-reader text-success mr-1"></i>Revista:</strong> <span class="text-secondary font-weight-bold">${rev}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode text-success mr-1"></i>ISSN / ISBN:</strong> <span class="badge badge-info px-2 py-1">${isbn}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-layer-group text-success mr-1"></i>Volumen / Número:</strong> <span class="text-secondary">${vol}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt text-success mr-1"></i>Rango de Páginas:</strong> <span class="text-secondary">${pags}</span></div>
+                        ${doi ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-external-link-alt text-success mr-1"></i>DOI:</strong> <a href="${doi}" target="_blank" class="text-primary">${doi}</a></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('tesis')) {
+                    const grado = obtenerValorCampo('grado_academico', 'id_grado_academico') || '(Sin grado)';
+                    const prog = obtenerValorCampo('carrera_o_posgrado', 'id_programa_academico') || '(Sin programa)';
+                    const dir = obtenerValorCampo('asesor', 'id_director_tesis') || '(Sin director)';
+                    const codir = obtenerValorCampo('coasesor', 'id_codirector_tesis');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-graduation-cap text-success mr-1"></i>Grado Obtenido:</strong> <span class="badge badge-primary px-2 py-1">${grado}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-university text-success mr-1"></i>Programa Académico:</strong> <span class="text-secondary font-weight-bold">${prog}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-chalkboard-teacher text-success mr-1"></i>Director / Asesor:</strong> <span class="text-secondary font-weight-bold">${dir}</span></div>
+                        ${codir ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-user-friends text-success mr-1"></i>Co-asesor:</strong> <span class="text-secondary">${codir}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('libro') && !tipoLower.includes('capítulo') && !tipoLower.includes('capitulo')) {
+                    const edit = obtenerValorCampo('editorial', 'id_editorial_libro') || '(Sin editorial)';
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_isbn_libro') || '(Sin ISBN)';
+                    const pags = obtenerValorCampo('paginas', 'id_paginas_libro') || '(Sin páginas)';
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-print text-success mr-1"></i>Editorial:</strong> <span class="text-secondary font-weight-bold">${edit}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode text-success mr-1"></i>ISBN:</strong> <span class="badge badge-warning px-2 py-1">${isbn}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt text-success mr-1"></i>Total de Páginas:</strong> <span class="text-secondary">${pags}</span></div>
+                    `;
+                } else if (tipoLower.includes('capítulo') || tipoLower.includes('capitulo')) {
+                    const obra = obtenerValorCampo('revista', 'id_revista_cap') || '(No especificado)';
+                    const edit = obtenerValorCampo('editorial', 'id_editorial_cap') || '(Sin editorial)';
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_isbn_cap');
+                    const pags = obtenerValorCampo('paginas', 'id_paginas_cap');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-book mr-1 text-success"></i>Libro Mayor:</strong> <span class="text-secondary font-weight-bold">${obra}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-print mr-1 text-success"></i>Editorial:</strong> <span class="text-secondary">${edit}</span></div>
+                        ${isbn ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode mr-1 text-success"></i>ISBN:</strong> <span class="badge badge-secondary px-2 py-1">${isbn}</span></div>` : ''}
+                        ${pags ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt mr-1 text-success"></i>Páginas:</strong> <span class="text-secondary">${pags}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('ponencia') || tipoLower.includes('congreso')) {
+                    const cong = obtenerValorCampo('revista', 'id_ponencia_nombre') || '(No especificado)';
+                    const org = obtenerValorCampo('editorial', 'id_ponencia_sede') || '(No especificada)';
+                    const mod = obtenerValorCampo('rol_participacion', 'id_ponencia_modalidad') || 'Ponencia';
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_ponencia_isbn');
+                    const pags = obtenerValorCampo('paginas', 'id_ponencia_paginas');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-microphone-alt text-success mr-1"></i>Congreso / Evento:</strong> <span class="text-secondary font-weight-bold">${cong}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-building text-success mr-1"></i>Institución Organizadora:</strong> <span class="text-secondary">${org}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-user-tag text-success mr-1"></i>Modalidad:</strong> <span class="badge badge-info px-2 py-1">${mod}</span></div>
+                        ${isbn ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode text-success mr-1"></i>Memorias ISBN/ISSN:</strong> <span class="badge badge-secondary px-2 py-1">${isbn}</span></div>` : ''}
+                        ${pags ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt text-success mr-1"></i>Páginas:</strong> <span class="text-secondary">${pags}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('reporte') || tipoLower.includes('proyecto')) {
+                    const cve = obtenerValorCampo('proyecto_origen', 'id_rep_proyecto_origen') || '(Sin clave)';
+                    const fin = obtenerValorCampo('institucion_receptora', 'id_rep_financiador') || '(No especificado)';
+                    const eta = obtenerValorCampo('tipo_desarrollo', 'id_rep_etapa') || 'Informe Final';
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-hashtag text-success mr-1"></i>Clave Proyecto:</strong> <span class="badge badge-dark px-2 py-1">${cve}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-hand-holding-usd text-success mr-1"></i>Organismo Financiador:</strong> <span class="text-secondary font-weight-bold">${fin}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-clipboard-list text-success mr-1"></i>Etapa:</strong> <span class="text-secondary">${eta}</span></div>
+                    `;
+                } else if (tipoLower.includes('desarrollo') || tipoLower.includes('software')) {
+                    const tipoD = obtenerValorCampo('tipo_desarrollo', 'id_tipo_desarrollo') || 'Software';
+                    const prob = obtenerValorCampo('problema_atiende', 'id_problema_atiende');
+                    const ben = obtenerValorCampo('beneficiarios_impacto', 'id_beneficiarios_impacto');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-laptop-code text-success mr-1"></i>Tipo de Desarrollo:</strong> <span class="badge badge-primary px-2 py-1">${tipoD}</span></div>
+                        ${prob ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-exclamation-circle text-success mr-1"></i>Problema que Resuelve:</strong> <span class="text-secondary">${prob}</span></div>` : ''}
+                        ${ben ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-users text-success mr-1"></i>Población Impactada:</strong> <span class="text-secondary">${ben}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('transferencia')) {
+                    const rec = obtenerValorCampo('institucion_receptora', 'id_institucion_receptora') || '(No especificada)';
+                    const mod = obtenerValorCampo('tipo_transferencia', 'id_tipo_transferencia') || 'Convenio';
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-handshake text-success mr-1"></i>Empresa Receptora:</strong> <span class="text-secondary font-weight-bold">${rec}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-file-contract text-success mr-1"></i>Modalidad:</strong> <span class="badge badge-info px-2 py-1">${mod}</span></div>
+                    `;
+                } else if (tipoLower.includes('traducci')) {
+                    const idio = obtenerValorCampo('idioma_original', 'id_idioma_original') || '(No especificado)';
+                    const titO = obtenerValorCampo('titulo_original', 'id_titulo_original') || '(No especificado)';
+                    const autO = obtenerValorCampo('autor_original', 'id_autor_original') || '(No especificado)';
+                    const edit = obtenerValorCampo('editorial', 'id_editorial_traduccion') || '';
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-language text-success mr-1"></i>Idioma Original:</strong> <span class="badge badge-secondary px-2 py-1">${idio}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-heading text-success mr-1"></i>Título Original:</strong> <span class="text-secondary font-italic">${titO}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-user-edit text-success mr-1"></i>Autor Original:</strong> <span class="text-secondary">${autO}</span></div>
+                        ${edit ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-print text-success mr-1"></i>Editorial:</strong> <span class="text-secondary">${edit}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('informe') && (tipoLower.includes('técnico') || tipoLower.includes('tecnico'))) {
+                    const ent = obtenerValorCampo('institucion_receptora', 'id_it_institucion_receptora') || '(No especificada)';
+                    const num = obtenerValorCampo('numero_registro', 'id_it_numero_registro') || '(Sin número)';
+                    const mod = obtenerValorCampo('tipo_desarrollo', 'id_it_tipo_desarrollo') || 'Dictamen Pericial';
+                    const proy = obtenerValorCampo('proyecto_origen', 'id_it_proyecto_origen');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-building text-success mr-1"></i>Entidad Solicitante:</strong> <span class="text-secondary font-weight-bold">${ent}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-file-invoice text-success mr-1"></i>No. de Oficio / Dictamen:</strong> <span class="badge badge-dark px-2 py-1">${num}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-tasks text-success mr-1"></i>Modalidad:</strong> <span class="text-secondary">${mod}</span></div>
+                        ${proy ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-project-diagram text-success mr-1"></i>Proyecto Origen:</strong> <span class="text-secondary">${proy}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('dossier') || tipoLower.includes('antolog')) {
+                    const obr = obtenerValorCampo('obra_receptora', 'id_dossier_obra_receptora') || '(No especificada)';
+                    const rol = obtenerValorCampo('rol_participacion', 'id_dossier_rol') || 'Compilador';
+                    const edi = obtenerValorCampo('editorial', 'id_dossier_editorial');
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_dossier_isbn');
+                    const pags = obtenerValorCampo('paginas', 'id_dossier_paginas');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-layer-group text-success mr-1"></i>Antología / Obra:</strong> <span class="text-secondary font-weight-bold">${obr}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-user-tag text-success mr-1"></i>Rol:</strong> <span class="badge badge-info px-2 py-1">${rol}</span></div>
+                        ${edi ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-print text-success mr-1"></i>Editorial:</strong> <span class="text-secondary">${edi}</span></div>` : ''}
+                        ${isbn ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode text-success mr-1"></i>ISBN / ISSN:</strong> <span class="badge badge-secondary px-2 py-1">${isbn}</span></div>` : ''}
+                        ${pags ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt text-success mr-1"></i>Páginas:</strong> <span class="text-secondary">${pags}</span></div>` : ''}
+                    `;
+                } else if (tipoLower.includes('prólog') || tipoLower.includes('prolog')) {
+                    const obr = obtenerValorCampo('obra_receptora', 'id_prologo_obra_receptora') || '(No especificada)';
+                    const aut = obtenerValorCampo('autor_original', 'id_prologo_autor_original') || '(No especificado)';
+                    const edi = obtenerValorCampo('editorial', 'id_prologo_editorial');
+                    const isbn = obtenerValorCampo('isbn_issn', 'id_prologo_isbn');
+                    const pags = obtenerValorCampo('paginas', 'id_prologo_paginas');
+
+                    camposHtml = `
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-book mr-1 text-success"></i>Obra Prologada:</strong> <span class="text-secondary font-weight-bold">${obr}</span></div>
+                        <div class="mb-2"><strong class="text-dark"><i class="fas fa-user-edit mr-1 text-success"></i>Autor de la Obra:</strong> <span class="text-secondary">${aut}</span></div>
+                        ${edi ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-print text-success mr-1"></i>Editorial:</strong> <span class="text-secondary">${edi}</span></div>` : ''}
+                        ${isbn ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-barcode text-success mr-1"></i>ISBN:</strong> <span class="badge badge-secondary px-2 py-1">${isbn}</span></div>` : ''}
+                        ${pags ? `<div class="mb-2"><strong class="text-dark"><i class="fas fa-file-alt text-success mr-1"></i>Páginas:</strong> <span class="text-secondary">${pags}</span></div>` : ''}
+                    `;
+                }
+
+                $('#prevCamposEspecificos').html(camposHtml);
+
+                // DOCUMENTO PDF COMPROBATORIO (Detección precisa)
+                const file = archivoPdfSeleccionado || ($('#id_pdf')[0] && $('#id_pdf')[0].files && $('#id_pdf')[0].files.length > 0 ? $('#id_pdf')[0].files[0] : null);
+                const $pdfBox = $('#prevPdfContainer');
+
+                if (file) {
+                    const mb = (file.size / (1024 * 1024)).toFixed(2);
+                    $pdfBox.html(`
+                        <div class="d-flex align-items-center justify-content-between flex-wrap p-2 bg-light rounded border border-success">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-pdf fa-2x text-danger mr-3"></i>
+                                <div>
+                                    <strong class="d-block text-dark small font-weight-bold">${file.name}</strong>
+                                    <small class="text-muted">${mb} MB &bull; Archivo PDF verificado listo para cargar</small>
+                                </div>
+                            </div>
+                            <span class="badge badge-success px-3 py-1 font-weight-bold" style="background-color: #006633;">
+                                <i class="fas fa-check mr-1"></i> Adjunto
+                            </span>
+                        </div>
+                    `);
+                    $('#publicoPdfIcon').removeClass('text-muted').addClass('text-danger');
+                    $('#publicoPdfTexto').text(file.name);
+                    $('#publicoPdfSub').text(mb + ' MB adjunto');
+                } else if ($('#contenedor-pdf-existente').length > 0 && !$('#pdf-clear_id').prop('checked')) {
+                    $pdfBox.html(`
+                        <div class="d-flex align-items-center justify-content-between flex-wrap p-2 bg-light rounded border border-success">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-pdf fa-2x text-danger mr-3"></i>
+                                <div>
+                                    <strong class="d-block text-dark small font-weight-bold">Archivo PDF resguardado previamente</strong>
+                                    <small class="text-muted">Se conservará en el repositorio oficial</small>
+                                </div>
+                            </div>
+                            <span class="badge badge-success px-3 py-1 font-weight-bold" style="background-color: #006633;">Conservado</span>
+                        </div>
+                    `);
+                    $('#publicoPdfIcon').removeClass('text-muted').addClass('text-danger');
+                    $('#publicoPdfTexto').text('PDF en Repositorio');
+                } else {
+                    $pdfBox.html(`
+                        <div class="d-flex align-items-center justify-content-between flex-wrap p-2 rounded" style="background-color: #fffbeb; border: 1.5px solid #fde047;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning mr-3"></i>
+                                <div>
+                                    <strong class="d-block text-dark small font-weight-bold">Sin documento PDF adjunto</strong>
+                                    <small class="text-secondary">Se registrará únicamente la ficha técnica y los metadatos de la obra.</small>
+                                </div>
+                            </div>
+                            <span class="badge badge-warning text-dark px-3 py-1 font-weight-bold" style="background-color: #fef08a;">Sin PDF</span>
+                        </div>
+                    `);
+                    $('#publicoPdfIcon').removeClass('text-danger').addClass('text-muted');
+                    $('#publicoPdfTexto').text('Sin archivo PDF');
+                    $('#publicoPdfSub').text('Solo metadatos');
+                }
+
+                // CITAS BIBLIOGRÁFICAS EN VIVO (IDEA 7)
+                const primerAutor = listaAutores.length > 0 ? listaAutores[0].replace(/\s*\([^)]*\)/g, '').trim() : 'Autor Desconocido';
+                $('#cita-apa-prev').text(`${primerAutor} (${anioVal}). ${tit}. Repositorio Institucional FCA, Universidad Autónoma de Baja California.`);
+                $('#cita-harvard-prev').text(`${primerAutor}, ${anioVal}. ${tit}. UABC: Tijuana.`);
+                $('#cita-ieee-prev').text(`${primerAutor}, "${tit}," Repositorio Institucional FCA UABC, ${anioVal}.`);
+
+                // Abrir modal en la pestaña 1 por defecto
+                $('#tab-ficha-detallada').tab('show');
+                $('#modalConfirmarPublicacion').modal('show');
+            }
+
+            // Click en el botón final dentro del modal
+            $('#btn-confirmar-envio-final').on('click', function() {
+                envioConfirmadoPorModal = true;
+                $('#modalConfirmarPublicacion').modal('hide');
+                $('#upload-form').submit();
+            });
+
+            // Llamada inicial para inicializar barra de progreso y validaciones visuales
+            refrescarValidacionVisualCampos();
+            setTimeout(function() {
+                refrescarValidacionVisualCampos();
+                actualizarProgresoFormulario();
+            }, 300);
+
+            });
     </script>
 </body>
 </html>

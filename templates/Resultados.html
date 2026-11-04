@@ -282,6 +282,13 @@
                                                     {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-success"></i>
                                                     {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-success"></i>
                                                     {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-success"></i>
+                                                    {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
+                                                    {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
+                                                    {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-success"></i>
+                                                    {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-secondary"></i>
+                                                    {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-secondary"></i>
+                                                    {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-secondary"></i>
+                                                    {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-secondary"></i>
                                                     {% else %}<i class="fas fa-file-alt me-1 text-success"></i>{% endif %}
                                                     {{ tipo.nombre }}
                                                 </span>
@@ -295,6 +302,13 @@
                                                     {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-muted"></i>
                                                     {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-muted"></i>
                                                     {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-muted"></i>
+                                                    {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
+                                                    {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
+                                                    {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-muted"></i>
+                                                    {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-muted"></i>
+                                                    {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-muted"></i>
+                                                    {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-muted"></i>
+                                                    {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-muted"></i>
                                                     {% else %}<i class="fas fa-file-alt me-1 text-muted"></i>{% endif %}
                                                     {{ tipo.nombre }}
                                                 </span>
@@ -383,6 +397,16 @@
                                  data-codirector="{% if art.coasesor %}{{ art.coasesor.nombre }}{% else %}N/A{% endif %}"
                                  data-programa="{{ art.carrera_o_posgrado|default:'N/A' }}"
                                  data-editorial="{{ art.editorial|default:'N/A' }}"
+                                 data-proteccion="{{ art.tipo_proteccion|default:'N/A' }}"
+                                 data-registro="{{ art.numero_registro|default:'N/A' }}"
+                                 data-rama="{{ art.rama_propiedad|default:'N/A' }}"
+                                 data-titular="{{ art.titular_propiedad|default:'N/A' }}"
+                                 data-rol="{{ art.rol_participacion|default:'N/A' }}"
+                                 data-estado-prop="{{ art.estado_propiedad|default:'N/A' }}"
+                                 data-desarrollo="{{ art.tipo_desarrollo|default:'N/A' }}"
+                                 data-receptora="{{ art.institucion_receptora|default:'N/A' }}"
+                                 data-transferencia="{{ art.tipo_transferencia|default:'N/A' }}"
+                                 data-obra-rec="{{ art.obra_receptora|default:'N/A' }}"
                                  data-descripcion="{{ art.descripcion|default:'Sin resumen disponible.' }}"
                                  data-pdf="{% if art.pdf %}{{ art.pdf.url }}{% endif %}">
                                 <div>
@@ -411,6 +435,14 @@
                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-0 rounded-pill" style="font-size: 0.62rem;">{{ art.tipo_contenido.nombre }}</span>
                                                 <span class="text-muted small" style="font-size: 0.65rem;"><i class="far fa-calendar-alt me-1"></i>{{ art.año_produccion }}</span>
                                             </div>
+                                            {% if art.numero_registro %}
+                                                <div class="mb-1">
+                                                    <span class="badge bg-warning bg-opacity-25 text-dark border border-warning px-1 py-0" style="font-size: 0.65rem;" title="Folio / Registro Oficial"><i class="fas fa-certificate text-warning me-1"></i>{{ art.numero_registro }}</span>
+                                                    {% if art.tipo_proteccion %}
+                                                        <span class="badge bg-light text-secondary border px-1 py-0 ms-1" style="font-size: 0.62rem;">{{ art.tipo_proteccion }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
                                             <h6 class="doc-title">{{ art.titulo }}</h6>
                                         </div>
                                     </div>
@@ -749,6 +781,16 @@
                     const volumen = btn.getAttribute('data-volumen') || 'N/A';
                     const paginas = btn.getAttribute('data-paginas') || 'N/A';
                     const doi = btn.getAttribute('data-doi') || 'N/A';
+                    const proteccion = btn.getAttribute('data-proteccion') || 'N/A';
+                    const registro = btn.getAttribute('data-registro') || 'N/A';
+                    const rama = btn.getAttribute('data-rama') || 'N/A';
+                    const titular = btn.getAttribute('data-titular') || 'N/A';
+                    const rol = btn.getAttribute('data-rol') || 'N/A';
+                    const estadoProp = btn.getAttribute('data-estado-prop') || 'N/A';
+                    const tipoDesarrollo = btn.getAttribute('data-desarrollo') || 'N/A';
+                    const receptora = btn.getAttribute('data-receptora') || 'N/A';
+                    const tipoTransf = btn.getAttribute('data-transferencia') || 'N/A';
+                    const obraRec = btn.getAttribute('data-obra-rec') || 'N/A';
                     const grado = btn.getAttribute('data-grado') || 'N/A';
 
                     let rawDirector = btn.getAttribute('data-director') || 'N/A';
@@ -790,6 +832,26 @@
                             <div class="mb-2"><strong><i class="fas fa-barcode me-1 text-success"></i>Número ISBN:</strong> ${isbn}</div>
                             <div class="mb-2"><strong><i class="fas fa-file-alt me-1 text-success"></i>Páginas del Capítulo:</strong> ${paginas}</div>
                             <div><strong><i class="fas fa-link me-1 text-success"></i>DOI / Enlace:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
+                        `;
+                    } else if (tipoL.includes('propiedad') || tipoL.includes('intelectual') || tipoL.includes('indautor') || tipoL.includes('patente')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-award me-1 text-success"></i>Modalidad:</strong> ${proteccion}</div>
+                            <div class="mb-2"><strong><i class="fas fa-certificate me-1 text-success"></i>No. Registro / Folio Oficial:</strong> <span class="badge bg-warning text-dark font-monospace">${registro}</span></div>
+                            <div class="mb-2"><strong><i class="fas fa-folder me-1 text-success"></i>Rama / Clasificación:</strong> ${rama}</div>
+                            <div class="mb-2"><strong><i class="fas fa-university me-1 text-success"></i>Titular Patrimonial:</strong> ${titular}</div>
+                            <div class="mb-2"><strong><i class="fas fa-user-check me-1 text-success"></i>Rol de Participación:</strong> ${rol}</div>
+                            <div><strong><i class="fas fa-check-circle me-1 text-success"></i>Estado:</strong> <span class="badge bg-success bg-opacity-25 text-success border border-success">${estadoProp}</span></div>
+                        `;
+                    } else if (tipoL.includes('desarrollo') || tipoL.includes('software')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-laptop-code me-1 text-success"></i>Tipo de Desarrollo:</strong> ${tipoDesarrollo}</div>
+                            <div><strong><i class="fas fa-external-link-alt me-1 text-success"></i>Repositorio / Demo:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
+                        `;
+                    } else if (tipoL.includes('transferencia')) {
+                        htmlEspecificos = `
+                            <div class="mb-2"><strong><i class="fas fa-building me-1 text-success"></i>Entidad Receptora:</strong> ${receptora}</div>
+                            <div class="mb-2"><strong><i class="fas fa-handshake me-1 text-success"></i>Mecanismo:</strong> ${tipoTransf}</div>
+                            <div><strong><i class="fas fa-file-contract me-1 text-success"></i>Convenio / Enlace:</strong> ${doi !== 'N/A' ? `<a href="${doi}" target="_blank">${doi}</a>` : 'N/A'}</div>
                         `;
                     } else if (tipoL.includes('libro')) {
                         htmlEspecificos = `

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto Institucional &bull; Repositorio FCA UABC</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-green-light: #e8f5e9;
+            --uabc-gold: #dd971a;
+            --uabc-gold-dark: #b87b14;
+            --uabc-gold-light: #fef8ec;
+            --bg-color: #f4f6f9;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #2d3748;
+        }
+
+        /* NAVEGACIÓN PRINCIPAL */
+        .navbar-custom {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border-bottom: 3px solid var(--uabc-green);
+        }
+        .navbar-brand-custom {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--uabc-green);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+        .navbar-brand-custom img {
+            max-height: 42px;
+            margin-right: 10px;
+        }
+        .nav-link-custom {
+            color: #4a5568;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .nav-link-custom:hover {
+            color: var(--uabc-green);
+            background-color: #edf2f7;
+        }
+        .nav-link-custom.active {
+            color: #ffffff;
+            background-color: var(--uabc-green);
+        }
+
+        /* BANNER INSTITUCIONAL */
+        .banner-contacto {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            border-top: 4px solid var(--uabc-gold);
+            color: #ffffff;
+            padding: 48px 0 42px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,102,51,0.15);
+        }
+        .banner-contacto::after {
+            content: "\f0e0"; /* envelope icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 40px;
+            bottom: -30px;
+            font-size: 12rem;
+            color: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+        }
+
+        /* TARJETAS DE CONTENIDO */
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+            padding: 32px 28px;
+            transition: all 0.25s ease;
+        }
+        .card-custom:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+        }
+
+        .card-sidebar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .card-sidebar-header {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: #ffffff;
+            padding: 20px 24px;
+            border-bottom: 3px solid var(--uabc-gold);
+        }
+
+        /* FORMULARIO */
+        .form-label-custom {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .form-control-custom, .form-select-custom {
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 11px 16px;
+            font-size: 0.94rem;
+            transition: all 0.2s ease;
+        }
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: var(--uabc-green);
+            box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.15);
+            outline: none;
+        }
+
+        /* BOTONES */
+        .btn-enviar-custom {
+            background: linear-gradient(135deg, var(--uabc-green) 0%, var(--uabc-green-dark) 100%);
+            color: #ffffff;
+            border: none;
+            padding: 13px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 102, 51, 0.25);
+            transition: all 0.25s ease;
+        }
+        .btn-enviar-custom:hover {
+            background: linear-gradient(135deg, #00773c 0%, #00592c 100%);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 51, 0.35);
+        }
+
+        /* CAJA DE FOLIO DE ÉXITO */
+        .box-folio-exito {
+            background-color: #f0fdf4;
+            border: 2px dashed #16a34a;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* PIE DE PÁGINA */
+        .footer-institucional {
+            background-color: var(--uabc-green);
+            color: #ffffff;
+            padding: 45px 0 25px 0;
+            border-top: 4px solid var(--uabc-gold);
+            margin-top: 60px;
+        }
+        .footer-col-title {
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+        .footer-institucional ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-institucional ul li {
+            margin-bottom: 8px;
+        }
+        .footer-institucional a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s ease;
+        }
+        .footer-institucional a:hover {
+            color: var(--uabc-gold);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN INSTITUCIONAL -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-2.5">
+        <div class="container">
+            <a class="navbar-brand-custom" href="/">
+                <img src="/static/images/LOGO FCA2.png" alt="Logo FCA">
+                <span>Repositorio FCA</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars text-success"></i>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+                <div class="navbar-nav align-items-center gap-1 mt-2 mt-lg-0">
+                    <a class="nav-link-custom" href="/"><i class="fas fa-home me-1"></i>Inicio</a>
+                    <a class="nav-link-custom" href="/profesores/"><i class="fas fa-chalkboard-teacher me-1"></i>Claustro Docente e Investigadores</a>
+                    <a class="nav-link-custom" href="/universidades-colaboradoras/"><i class="fas fa-globe-americas me-1"></i>Red Aliada</a>
+                    <a class="nav-link-custom active" href="{% url 'contacto' %}"><i class="fas fa-envelope me-1"></i>Contacto</a>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="dropdown ms-lg-2 mt-2 mt-lg-0">
+                            <button class="btn btn-outline-success btn-sm rounded-pill dropdown-toggle px-3 fw-bold" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3" aria-labelledby="userMenuBtn">
+                                <li><a class="dropdown-item py-2" href="{% url 'mi_panel' %}"><i class="fas fa-id-badge text-success me-2"></i>Mi Panel</a></li>
+                                {% if user.is_superuser %}
+                                <li><a class="dropdown-item py-2" href="{% url 'configuracion_soporte' %}"><i class="fas fa-cogs text-primary me-2"></i>Configuración & Soporte</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-sm btn-outline-success rounded-pill px-3.5 ms-lg-2 fw-bold mt-2 mt-lg-0">
+                            <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BANNER DE ENCABEZADO -->
+    <header class="banner-contacto">
+        <div class="container position-relative" style="z-index: 2;">
+            <div class="d-inline-flex align-items-center mb-2 px-3 py-1 rounded-pill" style="background: rgba(221, 151, 26, 0.25); border: 1px solid var(--uabc-gold);">
+                <i class="fas fa-headset me-2 text-warning"></i>
+                <span class="text-uppercase fw-bold" style="font-size: 0.76rem; letter-spacing: 1px; color: #ffd54f;">{{ config_sistema.contacto_banner_badge|default:'Atención y Vinculación Institucional' }}</span>
+            </div>
+            <h1 class="fw-bold mb-2 display-6">{{ config_sistema.contacto_banner_titulo|default:'Contacto Institucional FCA' }}</h1>
+            <p class="lead mb-0 text-white-50" style="max-width: 780px; font-size: 1.05rem;">
+                {{ config_sistema.contacto_banner_subtitulo|default:'Comunícate directamente con la Facultad de Contaduría y Administración. Nuestro equipo de soporte institucional atenderá tu consulta a la brevedad.' }}
+            </p>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="container my-5">
+        <!-- MENSAJES FLOTANTES -->
+        {% if messages %}
+            {% for m in messages %}
+                <div class="alert alert-{{ m.tags }} alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+                    <i class="fas {% if m.tags == 'success' %}fa-check-circle text-success{% else %}fa-exclamation-triangle text-danger{% endif %} me-2"></i>
+                    {{ m }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- COLUMNA IZQUIERDA: FORMULARIO DE CONTACTO -->
+            <div class="col-lg-7">
+                <div class="card-custom h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div>
+                            <h3 class="fw-bold text-dark mb-1" style="font-size: 1.35rem;">
+                                <i class="fas fa-paper-plane text-success me-2"></i>{{ config_sistema.contacto_form_titulo|default:'Envíanos un mensaje' }}
+                            </h3>
+                            <p class="text-muted small mb-0">
+                                {{ config_sistema.contacto_form_subtitulo|default:'Llena los campos a continuación y te responderemos a tu correo electrónico institucional o personal.' }}
+                            </p>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.78rem;">
+                            <i class="fas fa-shield-alt me-1"></i>Canal Seguro
+                        </span>
+                    </div>
+
+                    {% if enviado_exitoso %}
+                        <!-- ESTADO DE ÉXITO -->
+                        <div class="box-folio-exito my-4">
+                            <div class="mb-2">
+                                <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-success mb-1">¡Mensaje Enviado con Éxito!</h4>
+                            <p class="text-muted small mb-3">
+                                Tu solicitud ha sido registrada y notificada a nuestro equipo de soporte técnico y académico.
+                            </p>
+                            <div class="d-inline-block bg-white px-4 py-2 rounded-3 border shadow-sm mb-3">
+                                <div class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 1px;">Folio Institucional de Atención</div>
+                                <div class="fw-bold text-success" style="font-size: 1.45rem; letter-spacing: 0.5px;">{{ folio_generado }}</div>
+                            </div>
+                            <p class="small text-muted mb-4">
+                                <i class="fas fa-envelope-open-text text-primary me-1"></i>
+                                Hemos enviado un <strong>acuse de recibo</strong> con el folio y el resumen a tu correo electrónico.
+                            </p>
+                            <div>
+                                <a href="{% url 'contacto' %}" class="btn btn-outline-success rounded-pill px-4 fw-bold">
+                                    <i class="fas fa-plus me-1"></i>Enviar otra consulta
+                                </a>
+                                <a href="/" class="btn btn-success rounded-pill px-4 fw-bold ms-2">
+                                    <i class="fas fa-home me-1"></i>Ir al Inicio
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- FORMULARIO DE CAPTURA -->
+                        <form method="POST" action="{% url 'contacto' %}" id="formContacto">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label for="inputNombre" class="form-label form-label-custom">
+                                    Nombre Completo <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0 rounded-start-3"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control form-control-custom border-start-0" id="inputNombre" name="nombre" value="{{ datos_form.nombre }}" placeholder="Ej. Dr. Juan Pérez Gómez / Lic. María Morales" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="form-label form-label-custom">
+                                        Correo Electrónico <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-end-0 rounded-start-3"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control form-control-custom border-start-0" id="inputEmail" name="email" value="{{ datos_form.email }}" placeholder="ejemplo@uabc.edu.mx" required>
+                                    </div>
+                                    <div class="form-text" style="font-size: 0.76rem;">Aquí recibirás la respuesta y tu acuse.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="inputTelefono" class="form-label form-label-custom">
+                                        Teléfono de Contacto <span class="text-muted fw-normal">(Opcional)</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-end-0 rounded-start-3"><i class="fas fa-phone-alt"></i></span>
+                                        <input type="tel" class="form-control form-control-custom border-start-0" id="inputTelefono" name="telefono" value="{{ datos_form.telefono }}" placeholder="+52 (664) 000-0000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="inputOrganizacion" class="form-label form-label-custom">
+                                    Facultad / Institución / Escuela / Empresa <span class="text-muted fw-normal">(Opcional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0 rounded-start-3"><i class="fas fa-university"></i></span>
+                                    <input type="text" class="form-control form-control-custom border-start-0" id="inputOrganizacion" name="organizacion" value="{{ datos_form.organizacion }}" placeholder="Ej. FCA UABC, Egresado, Estudiante, Docente...">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="inputAsunto" class="form-label form-label-custom">
+                                    Asunto o Motivo de la Consulta <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0 rounded-start-3"><i class="fas fa-tag"></i></span>
+                                    <input type="text" class="form-control form-control-custom border-start-0" list="opcionesAsunto" id="inputAsunto" name="asunto" value="{{ datos_form.asunto }}" placeholder="Selecciona o escribe el tema de tu consulta..." required>
+                                    <datalist id="opcionesAsunto">
+                                        <option value="Duda sobre publicación o carga de obra en catálogo">
+                                        <option value="Soporte técnico o acceso a cuenta de usuario">
+                                        <option value="Solicitud de vinculación o corrección de ficha docente">
+                                        <option value="Trámite de coautoría o invitaciones académicas">
+                                        <option value="Información sobre eventos o conferencias FCA">
+                                        <option value="Convenios, alianzas o vinculación externa">
+                                        <option value="Consulta general o sugerencia">
+                                    </datalist>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="inputMensaje" class="form-label form-label-custom">
+                                    Mensaje, Duda o Solicitud Detallada <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control form-control-custom" id="inputMensaje" name="mensaje" rows="5" placeholder="Escribe aquí con total libertad los detalles de tu duda, problema o solicitud para que el equipo pueda atenderte con precisión..." required>{{ datos_form.mensaje }}</textarea>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="text-muted" style="font-size: 0.76rem;">Por favor sé lo más claro posible.</span>
+                                    <span id="charCount" class="text-muted" style="font-size: 0.76rem;">0 caracteres</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                                <div class="text-muted small" style="font-size: 0.8rem;">
+                                    <i class="fas fa-lock text-success me-1"></i>Tus datos se manejan con estricta confidencialidad.
+                                </div>
+                                <button type="submit" class="btn btn-enviar-custom" id="btnEnviar">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Consulta
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: INFORMACIÓN Y CANALES OFICIALES -->
+            <div class="col-lg-5">
+                <div class="d-flex flex-column gap-4">
+                    <!-- TARJETA 1: UBICACIÓN Y TELÉFONOS -->
+                    <div class="card-sidebar">
+                        <div class="card-sidebar-header">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <img src="/static/images/esc3.png" alt="Escudo UABC" style="height: 32px; width: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" class="me-1">
+                                    <img src="/static/images/LOGO FCA1.png" alt="Escudo FCA" style="height: 32px; width: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));">
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-white" style="font-size: 1.05rem;">Atención Institucional</h5>
+                                    <div class="text-white-50 small">Facultad de Contaduría y Administración</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4">
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="me-3 mt-1 text-success fs-5">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">Ubicación del Campus</div>
+                                    <div class="text-muted small mt-0.5">
+                                        <strong class="text-dark">UABC - Campus Tijuana</strong><br>
+                                        {{ config_sistema.footer_direccion|default:'Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427' }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="me-3 mt-1 text-success fs-5">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">Línea Universitaria</div>
+                                    <div class="text-muted small mt-0.5">
+                                        <a href="tel:{{ config_sistema.footer_telefono_universitario|default:'+526649797500' }}" class="text-decoration-none text-success fw-bold">
+                                            {{ config_sistema.footer_telefono_universitario|default:'+52 (664) 979-7500' }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="me-3 mt-1 text-success fs-5">
+                                    <i class="fas fa-phone-square-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">Línea Directa de la Facultad</div>
+                                    <div class="text-muted small mt-0.5">
+                                        <a href="tel:{{ config_sistema.footer_telefono_directo|default:'+526646833174' }}" class="text-decoration-none text-success fw-bold">
+                                            {{ config_sistema.footer_telefono_directo|default:'+52 (664) 683-3174' }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="me-3 mt-1 text-success fs-5">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">Correo de Soporte Institucional</div>
+                                    <div class="text-muted small mt-0.5">
+                                        <a href="mailto:{{ config_sistema.soporte_email|default:'soporte.fca@uabc.edu.mx' }}" class="text-decoration-none text-success fw-bold">
+                                            {{ config_sistema.soporte_email|default:'soporte.fca@uabc.edu.mx' }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-2">
+                                <div class="me-3 mt-1 text-warning fs-5">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">Horario y Tiempo de Respuesta</div>
+                                    <div class="text-muted small mt-0.5">
+                                        {{ config_sistema.contacto_horario_atencion|default:'Lunes a Viernes de 8:00 AM a 8:00 PM' }}<br>
+                                        <span class="badge bg-warning text-dark mt-1">
+                                            <i class="fas fa-bolt me-1"></i>Tiempo estimado: {{ config_sistema.soporte_tiempo_respuesta|default:'Menos de 24 hrs hábiles' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARJETA 2: DOCENTES FCA -->
+                    <div class="card-custom bg-white border-0 shadow-sm" style="border-left: 4px solid var(--uabc-gold) !important;">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-graduation-cap text-warning me-2 fs-5"></i>
+                            <h6 class="fw-bold mb-0 text-dark">{{ config_sistema.contacto_docente_titulo|default:'¿Perteneces al Claustro Docente e Investigadores?' }}</h6>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            {{ config_sistema.contacto_docente_descripcion|default:'Si eres profesor o investigador de la FCA, inicia sesión con tus credenciales para acceder al Canal Exclusivo de Soporte Interno, auditar tus obras en catálogo o comunicarte con colegas.' }}
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'login' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">
+                                Iniciar Sesión &rarr;
+                            </a>
+                            <a href="/profesores/" class="btn btn-sm btn-light border rounded-pill px-3 text-muted">
+                                Ver Directorio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PIE DE PÁGINA INSTITUCIONAL -->
+    <footer class="footer-institucional">
+        <div class="container">
+            <div class="row align-items-start g-4">
+                <!-- COLUMNA 1: FCA -->
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="footer-col-title">FCA</div>
+                    <ul>
+                        {% for link in enlaces_footer %}
+                            {% if link.columna == 'FCA' and link.activo %}
+                            <li><a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a></li>
+                            {% endif %}
+                        {% empty %}
+                            <li><a href="https://fca.tij.uabc.mx/" target="_blank">Inicio</a></li>
+                            <li><a href="https://fca.tij.uabc.mx/acerca-de" target="_blank">Nuestra facultad</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 2: ESTUDIANTES -->
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="footer-col-title">Estudiantes</div>
+                    <ul>
+                        {% for link in enlaces_footer %}
+                            {% if link.columna == 'ESTUDIANTES' and link.activo %}
+                            <li><a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a></li>
+                            {% endif %}
+                        {% empty %}
+                            <li><a href="https://fca.tij.uabc.mx/ticketayuda" target="_blank">Ticket de ayuda (odoo)</a></li>
+                            <li><a href="https://drive.google.com/file/d/1KZwB3fAkZ_88xWOL-iM0gBYVRuFws4oo/view" target="_blank">Calendario escolar</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 3: DOCENTES -->
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <div class="footer-col-title">Docentes</div>
+                    <ul>
+                        {% for link in enlaces_footer %}
+                            {% if link.columna == 'DOCENTES' and link.activo %}
+                            <li><a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a></li>
+                            {% endif %}
+                        {% empty %}
+                            <li><a href="https://fca.tij.uabc.mx/docentes-infogral" target="_blank">Consultar aviso</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 4: INSTITUCIONAL -->
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="footer-col-title">Institucional</div>
+                    <ul>
+                        {% for link in enlaces_footer %}
+                            {% if link.columna == 'INSTITUCIONAL' and link.activo %}
+                            <li><a href="{{ link.url }}" {% if link.abrir_en_nueva_pestana %}target="_blank"{% endif %}>{{ link.titulo }}</a></li>
+                            {% endif %}
+                        {% empty %}
+                            <li><a href="https://fca.tij.uabc.mx/plandedesarrollo" target="_blank">Plan de desarrollo 2023-2027</a></li>
+                            <li><a href="https://www.uabc.mx/wp-content/uploads/bsk-pdf-manager/2023/10/Programa-Institucional-para-la-Cultura-de-Paz-UABC_.pdf" target="_blank">Programa para la cultura de paz</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 5: REDES SOCIALES -->
+                <div class="col-lg-2 col-md-6 col-12 text-lg-end">
+                    <div class="footer-col-title d-none d-lg-block">&nbsp;</div>
+                    <div class="d-inline-flex gap-2 align-items-center">
+                        {% for red in redes_footer %}
+                            {% if red.activo %}
+                            <a href="{{ red.url }}" target="_blank" title="{{ red.nombre }}" class="text-white fs-5" style="display: inline-block; transition: transform 0.2s ease;">
+                                {% if red.usar_imagen and red.icono_imagen %}
+                                <img src="{{ red.icono_imagen.url }}" alt="{{ red.nombre }}" style="width: 22px; height: 22px; object-fit: contain; vertical-align: middle; border-radius: 4px; {% if red.filtro_blanco %}filter: brightness(0) invert(1);{% endif %}">
+                                {% else %}
+                                <i class="{{ red.icono }}"></i>
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                        {% empty %}
+                            <a href="#" class="text-white fs-5"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="text-white fs-5"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="text-white fs-5"><i class="fab fa-tiktok"></i></a>
+                            <a href="#" class="text-white fs-5"><i class="fab fa-youtube"></i></a>
+                            <a href="#" class="text-white fs-5"><i class="fab fa-linkedin-in"></i></a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-4" style="border-top: 1px solid rgba(255, 255, 255, 0.2);"></div>
+
+            <!-- BLOQUE INFERIOR DE ESCUDOS Y TELÉFONOS -->
+            <div class="row align-items-center g-3">
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3 flex-shrink-0">
+                            <img src="/static/images/esc3.png" alt="Escudo UABC" style="height: 38px; width: auto;" class="me-1">
+                            <img src="/static/images/LOGO FCA1.png" alt="Escudo FCA" style="height: 38px; width: auto;">
+                        </div>
+                        <div>
+                            <div class="fw-bold text-white" style="font-size: 1rem; line-height: 1.2;">Facultad de Contaduría y Administración</div>
+                            <div class="text-white-50 small mt-0.5">
+                                <strong class="text-white">UABC - Campus Tijuana</strong><br>
+                                {{ config_sistema.footer_direccion|default:'Calzada Universidad 14418, Mesa de Otay, Tijuana, B.C., México, C.P. 22427' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 text-lg-end">
+                    <div class="text-white-50 small">Línea Universitaria</div>
+                    <div class="text-white fw-bold">{{ config_sistema.footer_telefono_universitario|default:'+52 (664) 979-7500' }}</div>
+                </div>
+
+                <div class="col-lg-3 col-sm-6 text-lg-end">
+                    <div class="text-white-50 small">Línea Directa de la Facultad</div>
+                    <div class="text-white fw-bold">{{ config_sistema.footer_telefono_directo|default:'+52 (664) 683-3174' }}</div>
+                </div>
+            </div>
+
+            <div class="row mt-4 pt-2 border-top border-white border-opacity-10">
+                <div class="col-12 text-center text-white-50" style="font-size: 0.8rem;">
+                    &copy; 2026 Facultad de Contaduría y Administración &bull; Universidad Autónoma de Baja California. Todos los derechos reservados.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('inputMensaje');
+            const counter = document.getElementById('charCount');
+            if (textarea && counter) {
+                textarea.addEventListener('input', function() {
+                    const len = this.value.length;
+                    counter.textContent = `${len} caracter${len === 1 ? '' : 'es'}`;
+                });
+            }
+
+            const form = document.getElementById('formContacto');
+            const btnEnviar = document.getElementById('btnEnviar');
+            if (form && btnEnviar) {
+                form.addEventListener('submit', function() {
+                    btnEnviar.disabled = true;
+                    btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Enviando mensaje...';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

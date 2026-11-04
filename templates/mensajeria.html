@@ -597,8 +597,8 @@
                         </div>
                     </div>
                     <div>
-                        <a href="{% url 'directorio_profesores' %}?q={{ chat_activo.contacto.nombre }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Ver ficha en Claustro Docente">
-                            <i class="fas fa-chalkboard-teacher me-1"></i>Ver en Claustro
+                        <a href="{% url 'directorio_profesores' %}?q={{ chat_activo.contacto.nombre }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Ver ficha en Claustro Docente e Investigadores">
+                            <i class="fas fa-chalkboard-teacher me-1"></i>Ver en Claustro Docente e Investigadores
                         </a>
                     </div>
                 </div>
@@ -946,7 +946,7 @@
                                         <div>
                                             <div class="fw-bold text-dark">{{ a.nombre_con_titulo }}</div>
                                             <div class="small text-muted">
-                                                {{ a.institucion_origen|default:"Investigador Independiente" }}
+                                                {{ a.institucion_origen|default:"Investigador" }}
                                                 {% if a.codigo_institucional %}
                                                     &bull; <span class="badge bg-secondary py-0 px-1">{{ a.codigo_institucional }}</span>
                                                 {% endif %}
@@ -958,7 +958,7 @@
                                     </span>
                                 </a>
                                 {% empty %}
-                                <div class="text-center py-4 text-muted">No hay investigadores independientes registrados.</div>
+                                <div class="text-center py-4 text-muted">No hay investigadores registrados.</div>
                                 {% endfor %}
                             </div>
                         </div>
