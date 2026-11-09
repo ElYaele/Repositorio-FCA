@@ -420,6 +420,58 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 1px solid #86efac;
         }
+        /* PORTADAS Y VISTA PREVIA PDF (IDÉNTICO A MODERACIÓN / CATÁLOGO) */
+        .pdf-preview-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            height: 165px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+        .pdf-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        .modal-pdf-preview {
+            background: #fdfdfd;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            height: 480px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .modal-pdf-canvas {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            display: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+        .modal-info-scroll {
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .modal-info-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-info-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .doc-card-grid {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            transition: all 0.2s ease;
+        }
         /* CHIPS DE PALABRAS CLAVE */
         .tag-chip {
             background-color: #dcfce7;
@@ -2143,45 +2195,80 @@
                             </div>
                         </div>
 
-                        <!-- PESTAÑA 2: CREDENCIAL PÚBLICA -->
+                        <!-- PESTAÑA 2: CREDENCIAL PÚBLICA (IDÉNTICO A MODERACIÓN / CATÁLOGO) -->
                         <div class="tab-pane fade" id="pane-credencial-publica" role="tabpanel">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border mx-auto text-center" style="max-width: 480px;">
-                                <div class="p-3 border rounded-3 bg-light shadow-xs mb-3 text-left">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge badge-success px-2 py-1" id="credTipo">Artículo</span>
-                                        <small class="text-muted"><i class="far fa-calendar-alt mr-1"></i><span id="credAnio">2026</span></small>
+                            <div class="doc-card-grid mx-auto my-3 rounded-4 shadow-sm" style="max-width: 480px; cursor: default;">
+                                <div>
+                                    <div class="row g-2 align-items-center mb-2">
+                                        <div class="col-5">
+                                            <div class="pdf-preview-box shadow-sm" id="modalCardPdfBox">
+                                                <canvas class="pdf-canvas" id="modalCardCanvas"></canvas>
+                                                <div class="pdf-loading text-danger text-center p-1" id="modalCardLoading">
+                                                    <i class="fas fa-file-pdf fa-2x"></i>
+                                                    <span class="d-block" style="font-size: 0.65rem;">Cargando...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="badge badge-success px-2 py-0" style="font-size: 0.65rem;" id="credCardTipo">Artículo</span>
+                                                <small class="text-muted" style="font-size: 0.68rem;"><i class="far fa-calendar-alt mr-1"></i><span id="credCardAnio">2026</span></small>
+                                            </div>
+                                            <h6 class="doc-title text-dark font-weight-bold mb-1" id="credCardTitulo" style="font-size: 0.88rem; line-height: 1.35;">Título de la obra</h6>
+                                        </div>
                                     </div>
-                                    <h5 class="font-weight-bold text-dark mb-2" id="credTitulo" style="font-size: 1rem; line-height: 1.4;"></h5>
-                                    <p class="text-muted small mb-3 text-truncate-3" id="credResumen" style="line-height: 1.5;"></p>
-                                    <div class="border-top pt-2 small text-muted text-truncate" id="credAutores">
+                                    <p class="doc-snippet text-muted small mb-2" id="credCardSnippet" style="line-height: 1.4; max-height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 0.78rem;">Descripción...</p>
+                                </div>
+                                <div>
+                                    <div class="text-muted small mb-2 border-top pt-2 text-truncate" style="font-size: 0.75rem;" id="credCardAutores">
                                         <i class="fas fa-user-edit mr-1 text-success"></i> Autores...
                                     </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button type="button" class="btn btn-outline-success btn-sm font-weight-bold py-0 px-2 rounded-pill" style="font-size: 0.72rem;" onclick="$('#tab-ficha-publica').tab('show');">Ver más</button>
+                                        <button type="button" id="credCardPdfBtn" class="btn btn-success btn-sm font-weight-bold py-0 px-2 rounded-pill" style="font-size: 0.72rem; display: none;">
+                                            <i class="fas fa-file-pdf mr-1"></i>PDF
+                                        </button>
+                                    </div>
                                 </div>
-                                <span class="badge badge-secondary px-3 py-1 font-weight-bold" style="font-size: 0.75rem;">
-                                    <i class="fas fa-eye mr-1"></i> Vista Previa en Directorio Institucional
-                                </span>
                             </div>
                         </div>
 
-                        <!-- PESTAÑA 3: FICHA ACADÉMICA PÚBLICA -->
+                        <!-- PESTAÑA 3: FICHA ACADÉMICA PÚBLICA (IDÉNTICO A MODERACIÓN / CATÁLOGO) -->
                         <div class="tab-pane fade" id="pane-ficha-publica" role="tabpanel">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border">
-                                <div class="row align-items-center">
-                                    <div class="col-md-5 text-center mb-3 mb-md-0 border-right">
-                                        <div class="p-4 bg-light rounded-3 border d-flex flex-column align-items-center justify-content-center" style="height: 220px;">
-                                            <i id="publicoPdfIcon" class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
-                                            <span id="publicoPdfTexto" class="d-block small font-weight-bold text-dark">Vista Documental</span>
-                                            <small id="publicoPdfSub" class="text-muted" style="font-size: 0.72rem;">Repositorio Institucional FCA</small>
+                            <div class="row align-items-start">
+                                <div class="col-lg-5 d-flex flex-column mb-3 mb-lg-0">
+                                    <div class="modal-pdf-preview mb-3 shadow-sm">
+                                        <canvas class="modal-pdf-canvas" id="modalPublicoPdfCanvas"></canvas>
+                                        <div class="modal-pdf-loading text-danger text-center p-3" id="modalPublicoPdfLoading">
+                                            <i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i>
+                                            <span class="d-block small font-weight-bold text-dark">Generando vista previa del documento...</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-7">
-                                        <h5 class="font-weight-bold text-dark mb-2" id="publicoTitulo"></h5>
-                                        <div class="mb-2">
-                                            <span class="badge badge-success px-2 py-1" id="publicoTipo"></span>
-                                            <span class="badge badge-dark px-2 py-1" id="publicoAnio"></span>
+                                    <div id="modalPublicoPdfWrapper" class="mt-2" style="display: none;">
+                                        <button type="button" id="modalPublicoPdfLink" class="btn btn-danger btn-block font-weight-bold shadow-sm py-2 rounded-pill w-100" style="background-color: #dc2626; border-color: #dc2626;">
+                                            <i class="fas fa-file-pdf mr-2"></i>Abrir Documento PDF Completo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll">
+                                        <h4 class="font-weight-bold text-dark mb-3 pt-1" id="modalPublicoTituloObra" style="line-height: 1.35;"></h4>
+                                        <div class="mb-3 d-flex flex-wrap" style="gap: 5px;">
+                                            <span class="badge badge-success px-2 py-1 font-weight-bold" id="modalPublicoTipoObra" style="background-color: #006633;"></span>
+                                            <span class="badge badge-primary px-2 py-1 font-weight-bold" id="modalPublicoAreaObra" style="background-color: #0284c7;"></span>
+                                            <span class="badge badge-secondary px-2 py-1 font-weight-bold" id="modalPublicoEntidadObra" style="background-color: #64748b;"></span>
+                                            <span class="badge badge-dark px-2 py-1 font-weight-bold" id="modalPublicoAnioObra" style="background-color: #1e293b;"></span>
                                         </div>
-                                        <p class="small text-muted mb-2" id="publicoAutores"><i class="fas fa-users text-success mr-1"></i></p>
-                                        <p class="small text-secondary mb-0 text-truncate-3" id="publicoResumen"></p>
+                                        <div class="card bg-light border-0 p-3 mb-3 small rounded-3" style="line-height: 1.8;">
+                                            <div class="mb-2"><strong class="text-dark"><i class="fas fa-users mr-1 text-success"></i>Autores Acreditados:</strong> <span id="modalPublicoAutoresObra"></span></div>
+                                            <div class="mb-2"><strong class="text-dark"><i class="fas fa-language mr-1 text-success"></i>Idioma:</strong> <span id="modalPublicoIdiomaObra">Español</span></div>
+                                            <!-- CONTENEDOR DINÁMICO PÚBLICO -->
+                                            <div id="modalPublicoCamposEspecificos"></div>
+                                        </div>
+                                        <h6 class="font-weight-bold text-dark mb-2"><i class="fas fa-align-left mr-1 text-success"></i>Resumen / Descripción Detallada:</h6>
+                                        <div class="p-3 bg-light rounded-3 border">
+                                            <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6;" id="modalPublicoDescripcionObra"></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2521,7 +2608,11 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
         $(document).ready(function() {
             var envioConfirmadoPorModal = false;
             $('[data-toggle="tooltip"]').tooltip();
@@ -4349,6 +4440,35 @@
                     $('#publicoPdfSub').text('Solo metadatos');
                 }
 
+                // PESTAÑA 2: CREDENCIAL PÚBLICA
+                $('#credCardTipo').text(tipoNom);
+                $('#credCardAnio').text(anioVal);
+                $('#credCardTitulo').text(tit);
+                $('#credCardSnippet').text(desc);
+                $('#credCardAutores').html('<i class="fas fa-user-edit mr-1 text-success"></i> ' + (autoresTexto || 'Sin autores asignados'));
+
+                // PESTAÑA 3: FICHA ACADÉMICA PÚBLICA
+                $('#modalPublicoTituloObra').text(tit);
+                $('#modalPublicoTipoObra').text(tipoNom);
+                $('#modalPublicoAreaObra').text(areaVal);
+                $('#modalPublicoEntidadObra').text(entidadVal);
+                $('#modalPublicoAnioObra').text(anioVal);
+                $('#modalPublicoAutoresObra').text(autoresTexto || 'Sin autores asignados');
+                $('#modalPublicoIdiomaObra').text(idiomaVal);
+                $('#modalPublicoCamposEspecificos').html(camposHtml);
+                $('#modalPublicoDescripcionObra').text(desc);
+
+                // RENDERIZADO VISUAL DEL DOCUMENTO PDF EN CANVAS MEDIANTE PDF.JS
+                let pdfParaRenderizar = null;
+                if (file) {
+                    pdfParaRenderizar = file;
+                } else if (currentPdfBlobUrl) {
+                    pdfParaRenderizar = currentPdfBlobUrl;
+                } else if ($('#contenedor-pdf-existente a').length > 0 && !$('#pdf-clear_id').prop('checked')) {
+                    pdfParaRenderizar = $('#contenedor-pdf-existente a').attr('href');
+                }
+                renderizarPdfEnPreviewModal(pdfParaRenderizar);
+
                 // CITAS BIBLIOGRÁFICAS EN VIVO (IDEA 7)
                 const primerAutor = listaAutores.length > 0 ? listaAutores[0].replace(/\s*\([^)]*\)/g, '').trim() : 'Autor Desconocido';
                 $('#cita-apa-prev').text(`${primerAutor} (${anioVal}). ${tit}. Repositorio Institucional FCA, Universidad Autónoma de Baja California.`);
@@ -4358,6 +4478,110 @@
                 // Abrir modal en la pestaña 1 por defecto
                 $('#tab-ficha-detallada').tab('show');
                 $('#modalConfirmarPublicacion').modal('show');
+            }
+
+            function renderizarPdfEnPreviewModal(source) {
+                const cardCanvas = document.getElementById('modalCardCanvas');
+                const cardLoading = document.getElementById('modalCardLoading');
+                const cardPdfBtn = document.getElementById('credCardPdfBtn');
+
+                const pubCanvas = document.getElementById('modalPublicoPdfCanvas');
+                const pubLoading = document.getElementById('modalPublicoPdfLoading');
+                const pubWrapper = document.getElementById('modalPublicoPdfWrapper');
+                const pubLink = document.getElementById('modalPublicoPdfLink');
+
+                if (!source) {
+                    if (cardLoading) {
+                        cardLoading.style.display = 'block';
+                        cardLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-2x"></i><span class="d-block small text-muted mt-1">Sin PDF</span>';
+                    }
+                    if (cardCanvas) cardCanvas.style.display = 'none';
+                    if (cardPdfBtn) cardPdfBtn.style.display = 'none';
+
+                    if (pubLoading) {
+                        pubLoading.style.display = 'block';
+                        pubLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin documento PDF adjunto</span>';
+                    }
+                    if (pubCanvas) pubCanvas.style.display = 'none';
+                    if (pubWrapper) pubWrapper.style.display = 'none';
+                    return;
+                }
+
+                if (cardLoading) {
+                    cardLoading.style.display = 'block';
+                    cardLoading.innerHTML = '<i class="fas fa-spinner fa-spin text-success fa-2x"></i><span class="d-block" style="font-size: 0.65rem;">Cargando...</span>';
+                }
+                if (cardCanvas) cardCanvas.style.display = 'none';
+                if (cardPdfBtn) cardPdfBtn.style.display = 'inline-block';
+
+                if (pubLoading) {
+                    pubLoading.style.display = 'block';
+                    pubLoading.innerHTML = '<i class="fas fa-spinner fa-spin fa-3x mb-2 text-success"></i><span class="d-block small font-weight-bold text-dark">Generando vista previa del documento...</span>';
+                }
+                if (pubCanvas) pubCanvas.style.display = 'none';
+                if (pubWrapper) pubWrapper.style.display = 'block';
+
+                function abrirDocCompleto(e) {
+                    if (e) e.preventDefault();
+                    if (currentPdfBlobUrl) {
+                        window.open(currentPdfBlobUrl, '_blank');
+                    } else if (source instanceof File || source instanceof Blob) {
+                        const tempUrl = URL.createObjectURL(source);
+                        window.open(tempUrl, '_blank');
+                    } else if (typeof source === 'string') {
+                        window.open(source, '_blank');
+                    }
+                }
+
+                $(pubLink).off('click').on('click', abrirDocCompleto);
+                $(cardPdfBtn).off('click').on('click', abrirDocCompleto);
+
+                if (typeof pdfjsLib === 'undefined') {
+                    console.warn('PDF.js no está cargado');
+                    if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
+                    if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">PDF adjunto</span>';
+                    return;
+                }
+
+                let cargarPromise;
+                if (source instanceof File || source instanceof Blob) {
+                    cargarPromise = source.arrayBuffer().then(function(buffer) {
+                        return pdfjsLib.getDocument({ data: buffer }).promise;
+                    });
+                } else {
+                    cargarPromise = pdfjsLib.getDocument(source).promise;
+                }
+
+                cargarPromise.then(function(pdfDoc) {
+                    return pdfDoc.getPage(1);
+                }).then(function(page) {
+                    if (cardCanvas) {
+                        const ctxCard = cardCanvas.getContext('2d');
+                        const vpCard = page.getViewport({ scale: 0.45 });
+                        cardCanvas.height = vpCard.height;
+                        cardCanvas.width = vpCard.width;
+                        page.render({ canvasContext: ctxCard, viewport: vpCard }).promise.then(function() {
+                            if (cardLoading) cardLoading.style.display = 'none';
+                            cardCanvas.style.display = 'block';
+                        });
+                    }
+
+                    if (pubCanvas) {
+                        const ctxPub = pubCanvas.getContext('2d');
+                        const vpPub = page.getViewport({ scale: 1.15 });
+                        pubCanvas.height = vpPub.height;
+                        pubCanvas.width = vpPub.width;
+                        page.render({ canvasContext: ctxPub, viewport: vpPub }).promise.then(function() {
+                            if (pubLoading) pubLoading.style.display = 'none';
+                            pubCanvas.style.display = 'block';
+                        });
+                    }
+                }).catch(function(err) {
+                    console.warn('Error al generar portada con PDF.js:', err);
+                    if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
+                    if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo generar vista previa</span>';
+                });
+            }
             }
 
             // Click en el botón final dentro del modal
