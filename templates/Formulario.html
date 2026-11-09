@@ -1006,6 +1006,24 @@
                                 </div>
                             </div>
 
+                            <!-- Barra visual de peso del PDF (Límite institucional 20 MB) -->
+                            <div class="mt-3 pt-2 border-top" id="contenedor-barra-peso-pdf">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="font-weight-bold" id="label-peso-pdf" style="color: #1f2937; font-size: 0.8rem;">
+                                        <i class="fas fa-weight-hanging mr-1 text-success" id="icono-peso-pdf"></i>Peso del documento: 
+                                        <span id="texto-peso-actual" class="text-dark font-weight-bold">0.00 MB</span> 
+                                        <span class="text-muted">/ 20.00 MB permitidos</span>
+                                    </small>
+                                    <span id="badge-estado-peso-pdf" class="badge badge-success px-2 py-1" style="font-size: 0.75rem;">Válido (0%)</span>
+                                </div>
+                                <div class="progress" style="height: 10px; border-radius: 6px; background-color: #e5e7eb; overflow: hidden;">
+                                    <div id="barra-peso-pdf" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div id="alerta-exceso-tamano-pdf" class="alert alert-danger py-2 px-3 mt-2 mb-0 small font-weight-bold d-none" style="border-radius: 6px;">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>El documento supera el límite institucional de <strong>20.00 MB</strong>. No es posible avanzar ni publicar la obra hasta adjuntar un archivo dentro del límite o comprimir el PDF.
+                                </div>
+                            </div>
+
                             <!-- Sugerencia inteligente de Título extraído del PDF (Idea 6) -->
                             <div id="alerta-sugerencia-titulo-pdf" class="alert alert-info mt-3 mb-0 p-2 d-none align-items-center justify-content-between flex-wrap" style="background-color: #f0fdf4; border: 1.5px dashed #16a34a; border-radius: 8px;">
                                 <div class="d-flex align-items-center mb-1 mb-md-0">
@@ -2660,9 +2678,11 @@
                 setTimeout(() => { if (t.parentElement) t.remove(); }, 4500);
             }
 
-            // --- MANEJO DEL DOCUMENTO PDF (INTERACTIVO / DRAG & DROP / VISOR) ---
+            // --- MANEJO DEL DOCUMENTO PDF (INTERACTIVO / DRAG & DROP / VISOR / MEDIDOR DE PESO) ---
             let currentPdfBlobUrl = null;
             let archivoPdfSeleccionado = null;
+            let archivoPdfExcedeTamano = false;
+            let pesoArchivoPdfActualTexto = '';
 
             function procesarArchivoPdf(file) {
                 if (!file) return;
@@ -2672,46 +2692,84 @@
                 if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
                     mostrarToastForm('Formato no válido: Por favor selecciona únicamente archivos en formato PDF (.pdf).', 'warning');
                     $('#id_pdf').val('');
-                archivoPdfSeleccionado = null;
+                    archivoPdfSeleccionado = null;
+                    archivoPdfExcedeTamano = false;
+                    pesoArchivoPdfActualTexto = '';
                     $('#tarjeta-pdf-seleccionado').slideUp(200);
                     $('#zona-drag-drop-pdf').slideDown(250);
+                    actualizarProgresoFormulario();
                     return;
                 }
 
-                if (file.size > maxBytes) {
-                    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-                    mostrarToastForm(`El archivo seleccionado excede el límite permitido de 20 MB (${sizeMb} MB). Por favor selecciona un documento más ligero.`, 'danger');
-                    $('#id_pdf').val('');
-                archivoPdfSeleccionado = null;
-                    $('#tarjeta-pdf-seleccionado').slideUp(200);
-                    $('#zona-drag-drop-pdf').slideDown(250);
+                const sizeBytes = file.size;
+                const sizeMb = (sizeBytes / (1024 * 1024)).toFixed(2);
+                const sizeTexto = sizeBytes > 1024 * 1024 
+                    ? sizeMb + ' MB' 
+                    : (sizeBytes / 1024).toFixed(1) + ' KB';
+                pesoArchivoPdfActualTexto = sizeTexto;
+
+                const pct = Math.min((sizeBytes / maxBytes) * 100, 100).toFixed(1);
+
+                $('#nombre-pdf-seleccionado').text(file.name);
+                $('#tamano-pdf-seleccionado').text(sizeTexto);
+                $('#texto-peso-actual').text(sizeTexto);
+
+                if (sizeBytes > maxBytes) {
+                    // Excede el límite institucional de 20 MB
+                    archivoPdfExcedeTamano = true;
+                    $('#tarjeta-pdf-seleccionado').removeClass('border-success').addClass('border-danger');
+                    $('#barra-peso-pdf').removeClass('bg-success').addClass('bg-danger').css('width', '100%').attr('aria-valuenow', 100);
+                    $('#badge-estado-peso-pdf').removeClass('badge-success').addClass('badge-danger').text('¡Excede 20 MB! (' + sizeMb + ' MB)');
+                    $('#icono-peso-pdf').removeClass('text-success').addClass('text-danger');
+                    $('#alerta-exceso-tamano-pdf').removeClass('d-none');
+                    $('#btn-ver-pdf-seleccionado').prop('disabled', true);
+                    $('#tarjeta-pdf-seleccionado').slideDown(250);
+                    $('#zona-drag-drop-pdf').slideUp(200);
+
+                    mostrarToastForm(`El archivo supera el límite de 20 MB (${sizeMb} MB). No es posible avanzar con este documento.`, 'danger');
+
                     if (currentPdfBlobUrl) {
                         URL.revokeObjectURL(currentPdfBlobUrl);
                         currentPdfBlobUrl = null;
                     }
-                    return;
+                    if (typeof eliminarPdfBorrador === 'function') {
+                        eliminarPdfBorrador();
+                    }
+                } else {
+                    // Dentro del límite permitido <= 20 MB
+                    archivoPdfExcedeTamano = false;
+                    $('#tarjeta-pdf-seleccionado').removeClass('border-danger').addClass('border-success');
+                    $('#barra-peso-pdf').removeClass('bg-danger').addClass('bg-success').css('width', pct + '%').attr('aria-valuenow', pct);
+                    $('#badge-estado-peso-pdf').removeClass('badge-danger').addClass('badge-success').text('Válido (' + pct + '%)');
+                    $('#icono-peso-pdf').removeClass('text-danger').addClass('text-success');
+                    $('#alerta-exceso-tamano-pdf').addClass('d-none');
+                    $('#btn-ver-pdf-seleccionado').prop('disabled', false);
+                    $('#tarjeta-pdf-seleccionado').slideDown(250);
+                    $('#zona-drag-drop-pdf').slideUp(200);
+
+                    if (currentPdfBlobUrl) {
+                        URL.revokeObjectURL(currentPdfBlobUrl);
+                    }
+                    currentPdfBlobUrl = URL.createObjectURL(file);
+                    formularioModificado = true;
+                    if (typeof guardarPdfBorrador === 'function') {
+                        guardarPdfBorrador(file);
+                    }
+                    if (typeof programarAutoGuardado === 'function') {
+                        programarAutoGuardado();
+                    }
                 }
 
-                const sizeTexto = file.size > 1024 * 1024 
-                    ? (file.size / (1024 * 1024)).toFixed(2) + ' MB' 
-                    : (file.size / 1024).toFixed(1) + ' KB';
+                // Sugerencia inteligente de Título extraído del PDF (Idea 6)
+                if (!archivoPdfExcedeTamano && !($('#id_titulo').val() || '').trim()) {
+                    let nombreSinExt = file.name.replace(/\.[^/.]+$/, '');
+                    nombreSinExt = nombreSinExt.replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+                    if (nombreSinExt.length >= 5) {
+                        $('#texto-titulo-extraido').text(nombreSinExt);
+                        $('#alerta-sugerencia-titulo-pdf').removeClass('d-none').addClass('d-flex');
+                    }
+                }
 
-                $('#nombre-pdf-seleccionado').text(file.name);
-                $('#tamano-pdf-seleccionado').text(sizeTexto);
-                $('#tarjeta-pdf-seleccionado').slideDown(250);
-                $('#zona-drag-drop-pdf').slideUp(200);
-
-                if (currentPdfBlobUrl) {
-                    URL.revokeObjectURL(currentPdfBlobUrl);
-                }
-                currentPdfBlobUrl = URL.createObjectURL(file);
-                formularioModificado = true;
-                if (typeof guardarPdfBorrador === 'function') {
-                    guardarPdfBorrador(file);
-                }
-                if (typeof programarAutoGuardado === 'function') {
-                    programarAutoGuardado();
-                }
                 actualizarProgresoFormulario();
             }
 
@@ -2764,12 +2822,17 @@
             $('#btn-limpiar-pdf-seleccionado').on('click', function() {
                 $('#id_pdf').val('');
                 archivoPdfSeleccionado = null;
+                archivoPdfExcedeTamano = false;
+                pesoArchivoPdfActualTexto = '';
                 if (typeof eliminarPdfBorrador === 'function') {
                     eliminarPdfBorrador();
                 }
-                actualizarProgresoFormulario();
                 $('#tarjeta-pdf-seleccionado').slideUp(200);
                 $('#zona-drag-drop-pdf').slideDown(250);
+                $('#alerta-sugerencia-titulo-pdf').removeClass('d-flex').addClass('d-none');
+                $('#alerta-exceso-tamano-pdf').addClass('d-none');
+                $('#barra-peso-pdf').removeClass('bg-danger').addClass('bg-success').css('width', '0%');
+                $('#tarjeta-pdf-seleccionado').removeClass('border-danger').addClass('border-success');
                 if (currentPdfBlobUrl) {
                     URL.revokeObjectURL(currentPdfBlobUrl);
                     currentPdfBlobUrl = null;
@@ -2778,6 +2841,7 @@
                 if (typeof programarAutoGuardado === 'function') {
                     programarAutoGuardado();
                 }
+                actualizarProgresoFormulario();
             });
 
             $('#btn-ver-pdf-seleccionado').on('click', function() {
@@ -3480,15 +3544,19 @@
             });
 
             function updateFormState() {
-                if ($('#selected-list li').length > 0) {
+                if ($('#selected-list li').length > 0 && !archivoPdfExcedeTamano) {
                     $('#empty-hint').hide();
-                    $('#status-badge').removeClass('badge-warning').addClass('badge-success').html('<i class="fas fa-check-circle mr-1"></i>Autores confirmados');
+                    $('#status-badge').removeClass('badge-warning badge-danger').addClass('badge-success').html('<i class="fas fa-check-circle mr-1"></i>Autores confirmados');
                     $('#submit-btn').prop('disabled', false);
                 } else {
                     $('#empty-hint').show();
-                    $('#status-badge').removeClass('badge-success').addClass('badge-warning').html('<i class="fas fa-exclamation-circle mr-1"></i>Obligatorio seleccionar al menos un autor');
+                    if ($('#selected-list li').length === 0) {
+                        $('#status-badge').removeClass('badge-success badge-danger').addClass('badge-warning').html('<i class="fas fa-exclamation-circle mr-1"></i>Obligatorio seleccionar al menos un autor');
+                        $('#real-autor-select').empty();
+                    } else if (archivoPdfExcedeTamano) {
+                        $('#status-badge').removeClass('badge-success badge-warning').addClass('badge-danger').html('<i class="fas fa-times-circle mr-1"></i>PDF excede 20 MB');
+                    }
                     $('#submit-btn').prop('disabled', true);
-                    $('#real-autor-select').empty();
                 }
                 actualizarProgresoFormulario();
             }
@@ -3804,6 +3872,19 @@
 
             // --- ENVÍO DEL FORMULARIO CON OVERLAY DE PROGRESO DE SUBIDA ---
             $('#upload-form').on('submit', function(e) {
+                if (archivoPdfExcedeTamano) {
+                    e.preventDefault();
+                    mostrarModalAlertaFormulario(
+                        'Archivo PDF excede el límite permitido',
+                        'El documento PDF seleccionado pesa ' + pesoArchivoPdfActualTexto + ', superando el límite institucional de 20.00 MB. Debes comprimir el archivo o adjuntar uno menor para poder guardar o publicar la obra.',
+                        'danger'
+                    );
+                    $('html, body').animate({
+                        scrollTop: $('#seccion-pdf').offset().top - 80
+                    }, 400);
+                    return;
+                }
+
                 if (!this.checkValidity()) {
                     e.preventDefault();
                     this.reportValidity();
@@ -3878,12 +3959,14 @@
                 // Paso 2: Archivo PDF adjunto o resguardado (20%)
                 const tieneNuevoPdf = Boolean(archivoPdfSeleccionado || ($('#id_pdf')[0] && $('#id_pdf')[0].files && $('#id_pdf')[0].files.length > 0));
                 const tienePdfPrevio = Boolean($('#contenedor-pdf-existente').length > 0 && !$('#pdf-clear_id').prop('checked'));
-                const paso2Ok = (tieneNuevoPdf || tienePdfPrevio);
+                const paso2Ok = (tieneNuevoPdf || tienePdfPrevio) && !archivoPdfExcedeTamano;
                 if (paso2Ok) {
                     pasosCumplidos++;
-                    $('#paso-progreso-2').addClass('completado').find('i').removeClass('far fa-circle').addClass('fas fa-check-circle');
+                    $('#paso-progreso-2').removeClass('text-danger').addClass('completado').find('i').removeClass('far fa-circle fas fa-times-circle').addClass('fas fa-check-circle');
+                } else if (archivoPdfExcedeTamano) {
+                    $('#paso-progreso-2').removeClass('completado').addClass('text-danger').find('i').removeClass('far fa-circle fas fa-check-circle').addClass('fas fa-times-circle');
                 } else {
-                    $('#paso-progreso-2').removeClass('completado').find('i').removeClass('fas fa-check-circle').addClass('far fa-circle');
+                    $('#paso-progreso-2').removeClass('completado text-danger').find('i').removeClass('fas fa-check-circle fas fa-times-circle').addClass('far fa-circle');
                 }
 
                 // Paso 3: Al menos un autor confirmado en la lista derecha (20%)
@@ -4019,19 +4102,25 @@
                 $('#barra-progreso-llenado').css('width', completitud + '%').attr('aria-valuenow', completitud);
 
                 const $badge = $('#badge-porcentaje-progreso');
-                if (completitud === 100) {
+                if (archivoPdfExcedeTamano) {
+                    $badge.text('⚠️ PDF Excede 20 MB')
+                          .removeClass('badge-secondary badge-warning badge-animado-listo')
+                          .addClass('badge-danger text-white');
+                    $('#submit-btn').prop('disabled', true);
+                    $('#pildora-atajo-ctrl-enter').slideUp(200);
+                } else if (completitud === 100) {
                     $badge.text('100% ¡Listo para Publicar!')
-                          .removeClass('badge-secondary badge-warning')
+                          .removeClass('badge-secondary badge-warning badge-danger text-white')
                           .addClass('badge-animado-listo');
                     $('#pildora-atajo-ctrl-enter').slideDown(250);
                 } else if (completitud >= 60) {
                     $badge.text(completitud + '% en progreso')
-                          .removeClass('badge-secondary badge-animado-listo')
+                          .removeClass('badge-secondary badge-animado-listo badge-danger text-white')
                           .addClass('badge-warning text-dark');
                     $('#pildora-atajo-ctrl-enter').slideUp(200);
                 } else {
                     $badge.text(completitud + '% completado')
-                          .removeClass('badge-warning badge-animado-listo text-dark')
+                          .removeClass('badge-warning badge-animado-listo badge-danger text-dark text-white')
                           .addClass('badge-secondary');
                     $('#pildora-atajo-ctrl-enter').slideUp(200);
                 }
@@ -4119,6 +4208,15 @@
             // 3. ATAJO DE TECLADO CTRL + ENTER PARA ENVÍO RÁPIDO CON VALIDACIÓN ESTRICTA (IDEA 11)
             $(document).on('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.keyCode === 13)) {
+                    if (archivoPdfExcedeTamano) {
+                        e.preventDefault();
+                        mostrarModalAlertaFormulario(
+                            'Archivo PDF excede el límite permitido',
+                            'No es posible realizar el guardado rápido porque el documento PDF seleccionado pesa ' + pesoArchivoPdfActualTexto + ' y supera el límite de 20.00 MB permitidos.',
+                            'danger'
+                        );
+                        return;
+                    }
                     // Si el modal de confirmación está abierto, confirmar el envío
                     if ($('#modalConfirmarPublicacion').is(':visible')) {
                         e.preventDefault();
@@ -4160,6 +4258,14 @@
             envioConfirmadoPorModal = false;
 
             function poblarYAbrirModalConfirmacion() {
+                if (archivoPdfExcedeTamano) {
+                    mostrarModalAlertaFormulario(
+                        'Documento no permitido',
+                        'El archivo PDF seleccionado pesa ' + pesoArchivoPdfActualTexto + ', superando el límite institucional de 20.00 MB. No es posible generar la previsualización ni publicar la obra.',
+                        'danger'
+                    );
+                    return;
+                }
                 // Título
                 const tit = ($('#id_titulo').val() || '').trim() || 'Sin título especificado';
                 $('#prevTitulo').text(tit);
@@ -4582,7 +4688,6 @@
                     if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo generar vista previa</span>';
                 });
             }
-            }
 
             // Click en el botón final dentro del modal
             $('#btn-confirmar-envio-final').on('click', function() {
@@ -4922,12 +5027,18 @@
                 // 3. Limpiar Archivo PDF
                 $('#id_pdf').val('');
                 archivoPdfSeleccionado = null;
+                archivoPdfExcedeTamano = false;
+                pesoArchivoPdfActualTexto = '';
                 if (currentPdfBlobUrl) {
                     URL.revokeObjectURL(currentPdfBlobUrl);
                     currentPdfBlobUrl = null;
                 }
                 $('#tarjeta-pdf-seleccionado').slideUp(200);
                 $('#zona-drag-drop-pdf').slideDown(250);
+                $('#alerta-sugerencia-titulo-pdf').removeClass('d-flex').addClass('d-none');
+                $('#alerta-exceso-tamano-pdf').addClass('d-none');
+                $('#barra-peso-pdf').removeClass('bg-danger').addClass('bg-success').css('width', '0%');
+                $('#tarjeta-pdf-seleccionado').removeClass('border-danger').addClass('border-success');
 
                 // 4. Limpiar Bloques Dinámicos
                 $('.bloque-dinamico input, .bloque-dinamico select, .bloque-dinamico textarea').val('');
