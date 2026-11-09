@@ -610,10 +610,10 @@
                     </div>
                     <div>
                         <h6 class="mb-0 font-weight-bold text-dark d-flex align-items-center" style="font-size: 0.95rem;">
-                            Borrador Local Encontrado
+                            Borrador Local Detectado
                             <span class="badge badge-success ml-2 font-weight-normal px-2 py-1" id="borrador-fecha-badge" style="font-size: 0.74rem;">Guardado</span>
                         </h6>
-                        <small class="text-secondary" id="borrador-info-texto">Se detectaron datos no publicados de una sesión previa en este equipo.</small>
+                        <small class="text-secondary" id="borrador-info-texto">Se detectaron datos no guardados de una sesión previa. Puedes recuperarlos o descartarlos para iniciar en limpio.</small>
                     </div>
                 </div>
                 <div class="d-flex align-items-center" style="gap: 8px;">
@@ -3747,7 +3747,7 @@
 
                 // Paso 4: Metadatos generales completos (Título >= 3 letras, Año, Área, Entidad, Resumen >= 3 letras, Idioma, Palabras Clave >= 1) (20%)
                 const tituloVal = ($('#id_titulo').val() || '').trim();
-                const anoVal = ($('#id_año_produccion').val() || '').trim();
+                const anoVal = ($('#id_año_produccion').val() || $('#id_ano_produccion').val() || '').trim();
                 const areaVal = ($('#id_area').val() || '').trim();
                 const entidadVal = ($('#id_entidad').val() || '').trim();
                 const descVal = ($('#id_descripcion').val() || '').trim();
@@ -4334,7 +4334,7 @@
                 try {
                     const tipoContenido = $('#real-tipo-contenido').val();
                     const titulo = ($('#id_titulo').val() || '').trim();
-                    const anio = ($('#id_ano_produccion').val() || '').trim();
+                    const anio = ($('#id_año_produccion').val() || $('#id_ano_produccion').val() || '').trim();
                     const area = $('#id_area').val() || '';
                     const entidad = ($('#id_entidad').val() || '').trim();
                     const descripcion = ($('#id_descripcion').val() || '').trim();
@@ -4346,16 +4346,32 @@
                         autoresIds.push($(this).val());
                     });
 
+                    const autoresData = [];
+                    $('#selected-list li.author-card-row').each(function() {
+                        autoresData.push({
+                            id: $(this).data('id'),
+                            nombre: $(this).data('nombre'),
+                            codigo: $(this).data('codigo'),
+                            institucion: $(this).data('institucion'),
+                            tipo: $(this).data('tipo')
+                        });
+                    });
+
                     // Si está completamente en blanco, no sobrescribir con vacío
-                    if (!tipoContenido && !titulo && !descripcion && autoresIds.length === 0) {
+                    if (!tipoContenido && !titulo && !descripcion && autoresIds.length === 0 && autoresData.length === 0) {
                         return;
                     }
 
                     const camposEspecificos = {};
                     $('#contenedor-campos-especificos input, #contenedor-campos-especificos select, #contenedor-campos-especificos textarea').each(function() {
                         const id = $(this).attr('id');
-                        if (id) {
-                            camposEspecificos[id] = $(this).val();
+                        const name = $(this).attr('name');
+                        const val = $(this).val();
+                        if (id && val !== undefined && val !== null) {
+                            camposEspecificos['id_' + id] = val;
+                        }
+                        if (name && val !== undefined && val !== null) {
+                            camposEspecificos['name_' + name] = val;
                         }
                     });
 
@@ -4373,6 +4389,7 @@
                         palabras_clave: palabrasClave,
                         idioma: idioma,
                         autores_ids: autoresIds,
+                        autores_data: autoresData,
                         campos_especificos: camposEspecificos,
                         fecha: `${fechaFmt} a las ${horaFmt}`
                     };
@@ -4396,49 +4413,77 @@
 
                     // 1. Tipo de contenido
                     if (data.tipo_contenido) {
-                        const $card = $(`.tipo-card[data-id="${data.tipo_contenido}"]`);
-                        if ($card.length > 0) {
-                            $card.trigger('click');
+                        if (typeof activarTipo === 'function') {
+                            activarTipo(data.tipo_contenido);
+                        } else {
+                            $('#real-tipo-contenido').val(data.tipo_contenido).trigger('change');
                         }
                     }
 
                     // 2. Metadatos generales
                     if (data.titulo) $('#id_titulo').val(data.titulo).trigger('input');
-                    if (data.ano) $('#id_ano_produccion').val(data.ano).trigger('input');
-                    if (data.area) $('#id_area').val(data.area).trigger('change');
+                    if (data.ano) {
+                        $('#id_año_produccion').val(data.ano).trigger('input');
+                        $('#id_ano_produccion').val(data.ano).trigger('input');
+                    }
+                    if (data.area) $('#id_area').val(data.area).trigger('input').trigger('change');
                     if (data.entidad) $('#id_entidad').val(data.entidad).trigger('input');
                     if (data.descripcion) $('#id_descripcion').val(data.descripcion).trigger('input');
                     if (data.idioma) $('#id_idioma').val(data.idioma).trigger('input');
 
-                    // 3. Palabras clave
+                    // 3. Palabras clave y chips interactivos
                     if (data.palabras_clave) {
                         $('#id_palabras_clave').val(data.palabras_clave);
-                        if (typeof renderizarTagsChips === 'function') {
-                            renderizarTagsChips();
+                        if (typeof sincronizarChipsPalabras === 'function') {
+                            sincronizarChipsPalabras();
                         }
                     }
 
-                    // 4. Campos específicos
+                    // 4. Campos específicos según tipo de obra
                     if (data.campos_especificos) {
-                        for (const [id, val] of Object.entries(data.campos_especificos)) {
-                            $(`#${id}`).val(val).trigger('input').trigger('change');
+                        for (const [key, val] of Object.entries(data.campos_especificos)) {
+                            if (key.startsWith('id_')) {
+                                const realId = key.substring(3);
+                                $(`#${realId}`).val(val).trigger('input').trigger('change');
+                            } else if (key.startsWith('name_')) {
+                                const realName = key.substring(5);
+                                $(`[name="${realName}"]`).val(val).trigger('input').trigger('change');
+                            } else {
+                                $(`#${key}`).val(val).trigger('input').trigger('change');
+                                $(`[name="${key}"]`).val(val).trigger('input').trigger('change');
+                            }
                         }
                     }
 
-                    // 5. Autores
-                    if (data.autores_ids && Array.isArray(data.autores_ids)) {
+                    // 5. Autores seleccionados
+                    if (data.autores_data && Array.isArray(data.autores_data) && data.autores_data.length > 0) {
+                        data.autores_data.forEach(function(a) {
+                            if (typeof agregarAutorDirecto === 'function') {
+                                agregarAutorDirecto(a.id, a.nombre, a.codigo, a.institucion, a.tipo);
+                            }
+                        });
+                    } else if (data.autores_ids && Array.isArray(data.autores_ids)) {
                         data.autores_ids.forEach(function(aid) {
-                            const $btn = $(`.btn-agregar-autor[data-id="${aid}"]`);
-                            if ($btn.length > 0) {
-                                $btn.trigger('click');
+                            const itemLeft = $(`#available-list li[data-id="${aid}"]`);
+                            if (itemLeft.length > 0 && typeof agregarAutorDirecto === 'function') {
+                                agregarAutorDirecto(
+                                    aid,
+                                    itemLeft.data('nombre'),
+                                    itemLeft.data('codigo'),
+                                    itemLeft.data('institucion'),
+                                    itemLeft.data('tipo')
+                                );
                             }
                         });
                     }
 
                     $('#banner-borrador-local').slideUp(250);
+                    if (typeof actualizarSugerenciasKeywords === 'function') {
+                        actualizarSugerenciasKeywords();
+                    }
                     actualizarProgresoFormulario();
                     refrescarValidacionVisualCampos();
-                    mostrarToastFlotante('¡Borrador restaurado con éxito!');
+                    mostrarToastFlotante('¡Borrador restaurado con éxito! Recuerda volver a adjuntar tu archivo PDF.');
                 } catch (e) {
                     console.error('Error al restaurar borrador:', e);
                     alert('No se pudo restaurar el borrador completamente.');
@@ -4473,36 +4518,117 @@
             $('#btnDescartarBorrador').on('click', descartarBorradorLocal);
 
             // ==============================================================
-            // SUGERENCIAS INTELIGENTES DE PALABRAS CLAVE (IDEA 8)
+            // SUGERENCIAS INTELIGENTES DE PALABRAS CLAVE CONTEXTUALES (IDEA 8)
             // ==============================================================
             const SUGERENCIAS_KEYWORDS = {
-                'administracion': ['Gestión Estratégica', 'Liderazgo Organizacional', 'Recursos Humanos', 'Emprendimiento', 'Calidad y Procesos', 'Cultura Corporativa'],
-                'contaduria': ['Auditoría Forense', 'Normas NIF', 'Costos y Presupuestos', 'Fiscal y Tributación', 'Gobierno Corporativo', 'Contabilidad Financiera'],
-                'finanzas': ['Finanzas Corporativas', 'Mercado de Valores', 'Riesgo Financiero', 'Inversiones y Portafolios', 'Fintech', 'Análisis Bursátil'],
-                'informatica': ['Inteligencia Artificial', 'Ciberseguridad', 'Ciencia de Datos', 'Desarrollo de Software', 'Transformación Digital', 'Machine Learning'],
-                'mercadotecnia': ['Marketing Digital', 'Comportamiento del Consumidor', 'Branding', 'E-commerce', 'Redes Sociales', 'Estrategias de Mercado'],
-                'negocios': ['Comercio Exterior', 'Logística Internacional', 'Aduanas', 'Tratados Comerciales', 'Cadenas de Suministro'],
+                'inteligencia de negocios': [
+                    'Auditoría de TI', 'Inteligencia de Negocios', 'Minería de Datos', 'Big Data',
+                    'Gobierno de TI (COBIT/ITIL)', 'Ciberseguridad', 'Analítica Predictiva',
+                    'Transformación Digital', 'Certificación CISA'
+                ],
+                'auditoria': [
+                    'Auditoría de TI e Innovación', 'Formación del Auditor', 'Control Interno',
+                    'Gestión de Riesgos', 'Normativa ISO 27001', 'ISACA / CISA', 'Auditoría Forense',
+                    'Ciberseguridad'
+                ],
+                'sistemas': [
+                    'Ciberseguridad', 'Arquitectura de Software', 'Computación en la Nube',
+                    'Inteligencia Artificial', 'Bases de Datos', 'Gobierno de TI'
+                ],
+                'informatica': [
+                    'Inteligencia Artificial', 'Ciberseguridad', 'Ciencia de Datos',
+                    'Desarrollo de Software', 'Transformación Digital', 'Machine Learning'
+                ],
+                'finanzas': [
+                    'Finanzas Corporativas', 'Mercado de Valores', 'Riesgo Financiero',
+                    'Inversiones y Portafolios', 'Fintech', 'Análisis Bursátil'
+                ],
+                'contaduria': [
+                    'Auditoría Forense', 'Normas NIF', 'Costos y Presupuestos',
+                    'Fiscal y Tributación', 'Gobierno Corporativo', 'Contabilidad Financiera'
+                ],
+                'contabilidad': [
+                    'Auditoría Financiera', 'Normas Internacionales NIIF', 'Contabilidad de Costos',
+                    'Dictamen Fiscal', 'Control Interno'
+                ],
+                'talento humano': [
+                    'Gestión del Talento Humano', 'Liderazgo Organizacional', 'Clima Laboral',
+                    'Desarrollo Organizacional', 'Cultura Corporativa'
+                ],
+                'logistica': [
+                    'Cadena de Suministro', 'Logística y Operaciones', 'Gestión de Inventarios',
+                    'Distribución y Transporte', 'Optimización de Procesos'
+                ],
+                'comercio': [
+                    'Comercio Exterior', 'Operaciones Aduaneras', 'Tratados Comerciales (T-MEC)',
+                    'Logística Internacional', 'Cadenas Globales'
+                ],
+                'mercadotecnia': [
+                    'Marketing Digital', 'Comportamiento del Consumidor', 'Branding',
+                    'Comercio Electrónico', 'Redes Sociales', 'Estrategias de Mercado'
+                ],
+                'administracion': [
+                    'Gestión Estratégica', 'Liderazgo Organizacional', 'Emprendimiento',
+                    'Calidad y Procesos', 'Innovación Empresarial', 'Modelos de Negocio'
+                ],
+                'economia': [
+                    'Economía Aplicada', 'Métodos Cuantitativos', 'Microeconomía',
+                    'Políticas Públicas', 'Modelos Econométricos'
+                ],
                 'default': ['Investigación Aplicada', 'Educación Superior', 'UABC', 'Metodología', 'Innovación']
             };
 
             function actualizarSugerenciasKeywords() {
                 const areaTexto = ($('#id_area option:selected').text() || $('#id_area').val() || '').toLowerCase();
-                let sugerencias = SUGERENCIAS_KEYWORDS['default'];
+                const tituloTexto = ($('#id_titulo').val() || '').toLowerCase();
+                const descTexto = ($('#id_descripcion').val() || '').toLowerCase();
+                const contextoCompleto = `${areaTexto} ${tituloTexto} ${descTexto}`;
 
+                let sugerenciasCandidatas = [];
+
+                // 1. Detección específica por temas de alta relevancia
+                if (contextoCompleto.includes('auditor') || contextoCompleto.includes('cisa') || contextoCompleto.includes('isaca') || contextoCompleto.includes('cobit')) {
+                    sugerenciasCandidatas.push(...SUGERENCIAS_KEYWORDS['auditoria']);
+                }
+                if (contextoCompleto.includes('inteligencia de negocios') || contextoCompleto.includes('business intelligence') || contextoCompleto.includes('analítica') || contextoCompleto.includes('analitica')) {
+                    sugerenciasCandidatas.push(...SUGERENCIAS_KEYWORDS['inteligencia de negocios']);
+                }
+                if (contextoCompleto.includes('innovación') || contextoCompleto.includes('innovacion')) {
+                    sugerenciasCandidatas.push('Innovación Tecnológica', 'Transformación Digital');
+                }
+
+                // 2. Mapeo por disciplinas académicas
                 for (const [clave, lista] of Object.entries(SUGERENCIAS_KEYWORDS)) {
-                    if (clave !== 'default' && areaTexto.includes(clave)) {
-                        sugerencias = lista;
-                        break;
+                    if (clave !== 'default' && clave !== 'auditoria' && clave !== 'inteligencia de negocios') {
+                        if (areaTexto.includes(clave) || tituloTexto.includes(clave)) {
+                            sugerenciasCandidatas.push(...lista);
+                        }
                     }
                 }
+
+                // Si no hubo ninguna coincidencia, usar el conjunto por defecto
+                if (sugerenciasCandidatas.length === 0) {
+                    sugerenciasCandidatas = SUGERENCIAS_KEYWORDS['default'];
+                }
+
+                // Deduplicar respetando mayúsculas/minúsculas
+                const sugerenciasUnicas = [];
+                const vistas = new Set();
+                sugerenciasCandidatas.forEach(function(item) {
+                    const norm = item.toLowerCase();
+                    if (!vistas.has(norm)) {
+                        vistas.add(norm);
+                        sugerenciasUnicas.push(item);
+                    }
+                });
 
                 const tagsActuales = typeof parsearPalabrasClave === 'function' ? parsearPalabrasClave().map(t => t.toLowerCase()) : [];
                 const $contenedorPildoras = $('#pildoras-sugerencias-tags');
                 $contenedorPildoras.empty();
 
                 let contadorMostradas = 0;
-                sugerencias.forEach(function(tag) {
-                    if (!tagsActuales.includes(tag.toLowerCase())) {
+                sugerenciasUnicas.forEach(function(tag) {
+                    if (!tagsActuales.includes(tag.toLowerCase()) && contadorMostradas < 8) {
                         contadorMostradas++;
                         const $btn = $(`
                             <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 rounded-pill font-weight-bold shadow-xs btn-click-sugerencia-tag" data-tag="${tag}" style="font-size: 0.72rem; transition: all 0.2s;">
@@ -4520,7 +4646,9 @@
                 }
             }
 
-            $('#id_area').on('change', actualizarSugerenciasKeywords);
+            $('#id_area, #id_titulo, #id_descripcion').on('input change', function() {
+                actualizarSugerenciasKeywords();
+            });
 
             $(document).on('click', '.btn-click-sugerencia-tag', function(e) {
                 e.preventDefault();
