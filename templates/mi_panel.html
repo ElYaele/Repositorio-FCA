@@ -1142,6 +1142,9 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-center pe-3 text-nowrap">
+                                            <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 fw-bold me-1 shadow-xs" title="Descargar Acuse Oficial de Recepción (Folio / QR)">
+                                                <i class="fas fa-file-invoice me-1"></i>Acuse
+                                            </a>
                                             <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold me-1 shadow-xs" title="Editar Metadatos de la Obra">
                                                 <i class="fas fa-pencil-alt me-1"></i>Editar
                                             </a>
@@ -1324,6 +1327,9 @@
                                                 <i class="fas fa-eye"></i>
                                             </button>
 
+                                            <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle me-1 shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
+                                                <i class="fas fa-file-invoice"></i>
+                                            </a>
                                             {% if doc.estado == 'rechazado' %}
                                                 <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-warning fw-bold text-dark shadow-sm me-1 rounded-pill px-2" title="Corregir">
                                                     <i class="fas fa-exclamation-triangle me-1"></i>Corregir
@@ -1430,7 +1436,10 @@
                                                         data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Vista Previa">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                {% if doc.estado == 'rechazado' %}
+                                                <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle me-1 shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
+                                                <i class="fas fa-file-invoice"></i>
+                                            </a>
+                                            {% if doc.estado == 'rechazado' %}
                                                     <a href="{% url 'editar_documento' doc.id %}" class="btn btn-warning py-0 px-2 fw-bold text-dark" title="Corregir">
                                                         <i class="fas fa-exclamation-triangle"></i>
                                                     </a>

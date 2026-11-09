@@ -7337,3 +7337,40 @@ def cambiar_estado_contacto_view(request, contacto_id):
         return redirect(f"{reverse('soporte_institucional')}?vista=contacto_web&contacto_id={contacto.id}")
 
     return redirect(f"{reverse('soporte_institucional')}?vista=contacto_web")
+
+
+@login_required
+def acuse_recepcion_documento_view(request, doc_id):
+    """
+    Genera el Acuse Oficial Digital de Recepción y Registro de Obra Académica (SECIHTI / RIZOMA / UABC)
+    con folio institucional, sello digital SHA-256 y código QR de verificación institucional.
+    """
+    articulo = get_object_or_404(Articulo, id=doc_id)
+
+    # Validar permisos: autor acreditado, quien subió, o superadmin/soporte
+    es_autor = bool(request.user.is_authenticated and hasattr(request.user, 'autor') and articulo.autor.filter(id=request.user.autor.id).exists())
+    es_uploader = bool(articulo.subido_por == request.user)
+    es_admin = bool(es_superusuario(request.user))
+
+    if not (es_autor or es_uploader or es_admin):
+        messages.error(request, 'No tienes permiso para consultar el acuse de esta obra.')
+        return redirect('mi_panel')
+
+    # Generar URL de verificación para el código QR
+    scheme = request.scheme
+    host = request.get_host()
+    url_verificacion = f"{scheme}://{host}/busqueda/?q={articulo.id}"
+
+    # Código QR oficial dinámico
+    qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={url_verificacion}&color=006633"
+
+    context = {
+        'articulo': articulo,
+        'url_verificacion': url_verificacion,
+        'qr_api_url': qr_api_url,
+        'fecha_emision': timezone.now(),
+        'folio': articulo.folio_institucional,
+        'sello': articulo.hash_sello_digital,
+    }
+    return render(request, 'acuse_recepcion.html', context)
+

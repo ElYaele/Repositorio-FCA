@@ -725,6 +725,17 @@ class Articulo(models.Model):
     def esta_publicado(self):
         return self.estado == 'aprobado' and not self.en_papelera
 
+    @property
+    def folio_institucional(self):
+        year = self.created_at.year if self.created_at else (self.año_produccion or 2026)
+        return f"FOLIO-FCA-{year}-{self.id:05d}"
+
+    @property
+    def hash_sello_digital(self):
+        import hashlib
+        raw = f"{self.id}-{self.titulo}-{self.created_at}-{self.subido_por_id}"
+        return hashlib.sha256(raw.encode('utf-8')).hexdigest()[:32].upper()
+
     def __str__(self):
         return f"{self.titulo} ({self.año_produccion}) - [{self.estado}]"
 

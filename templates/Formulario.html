@@ -601,6 +601,32 @@
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <!-- ============================================================== -->
+            <!-- BANNER DE BORRADOR LOCAL ENCONTRADO (IDEA 2 Y 4) -->
+            <!-- ============================================================== -->
+            <div id="banner-borrador-local" class="alert shadow-sm rounded-4 mb-3 p-3 d-none align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #86efac;">
+                <div class="d-flex align-items-center mb-2 mb-md-0">
+                    <div class="rounded-circle bg-white text-success p-2 mr-3 shadow-xs d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                        <i class="fas fa-save text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 font-weight-bold text-dark d-flex align-items-center" style="font-size: 0.95rem;">
+                            Borrador Local Encontrado
+                            <span class="badge badge-success ml-2 font-weight-normal px-2 py-1" id="borrador-fecha-badge" style="font-size: 0.74rem;">Guardado</span>
+                        </h6>
+                        <small class="text-secondary" id="borrador-info-texto">Se detectaron datos no publicados de una sesión previa en este equipo.</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3 font-weight-bold shadow-xs" id="btnRestaurarBorrador">
+                        <i class="fas fa-undo mr-1"></i>Restaurar Borrador
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 font-weight-bold" id="btnDescartarBorrador">
+                        <i class="fas fa-trash-alt mr-1"></i>Descartar
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
             <!-- BARRA DE PROGRESO DE COMPLETITUD DEL FORMULARIO (FASE A - IDEA 9) -->
             <!-- ============================================================== -->
             <div id="contenedor-barra-progreso" class="mb-4 p-3 bg-white rounded-4 shadow-sm border" style="border-color: #e2e8f0; position: sticky; top: 15px; z-index: 100;">
@@ -609,9 +635,14 @@
                         <i class="fas fa-tasks mr-2 text-success" style="font-size: 1.1rem;"></i>
                         <span>Progreso de Captura del Documento:</span>
                     </span>
-                    <span id="badge-porcentaje-progreso" class="badge badge-pill badge-secondary px-3 py-1 shadow-xs" style="font-size: 0.8rem; font-weight: 700; transition: all 0.3s ease;">
-                        0% Completado
-                    </span>
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1 font-weight-bold shadow-xs" id="btnIniciarTour">
+                            <i class="fas fa-question-circle mr-1 text-warning"></i>Guía Rápida
+                        </button>
+                        <span id="badge-porcentaje-progreso" class="badge badge-pill badge-secondary px-3 py-1 shadow-xs" style="font-size: 0.8rem; font-weight: 700; transition: all 0.3s ease;">
+                            0% Completado
+                        </span>
+                    </div>
                 </div>
                 <div class="progress mb-2" style="height: 10px; border-radius: 8px; background-color: #f1f5f9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
                     <div id="barra-progreso-llenado" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%; transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); background-color: #006633 !important;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -922,6 +953,19 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Sugerencia inteligente de Título extraído del PDF (Idea 6) -->
+                            <div id="alerta-sugerencia-titulo-pdf" class="alert alert-info mt-3 mb-0 p-2 d-none align-items-center justify-content-between flex-wrap" style="background-color: #f0fdf4; border: 1.5px dashed #16a34a; border-radius: 8px;">
+                                <div class="d-flex align-items-center mb-1 mb-md-0">
+                                    <i class="fas fa-magic text-success mr-2" style="font-size: 1.1rem;"></i>
+                                    <span class="small text-dark">
+                                        ¿Deseas autocompletar el título con el archivo? <strong id="texto-titulo-extraido" class="text-success"></strong>
+                                    </span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1 font-weight-bold shadow-xs" id="btnAplicarTituloExtraido">
+                                    <i class="fas fa-check mr-1"></i>Usar este título
+                                </button>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-2">
@@ -1167,6 +1211,17 @@
                                 <small class="form-text text-muted" style="font-size: 0.72rem;">
                                     Pulsa <strong>Enter</strong> o <strong>coma (,)</strong> para añadir cada etiqueta. Haz clic en la <strong>&times;</strong> para quitar.
                                 </small>
+
+                                <!-- Sugerencias Inteligentes de Palabras Clave según Área (Idea 8) -->
+                                <div id="contenedor-sugerencias-tags" class="mt-2 p-2 rounded-lg bg-light border border-dashed d-none" style="border-color: #cbd5e1; background-color: #f8fafc; border-radius: 8px;">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <span class="small font-weight-bold text-dark d-flex align-items-center" style="font-size: 0.76rem;">
+                                            <i class="fas fa-lightbulb text-warning mr-1"></i>Sugerencias para tu Área Académica:
+                                        </span>
+                                        <span class="text-muted small" style="font-size: 0.68rem;">Clic para añadir</span>
+                                    </div>
+                                    <div id="pildoras-sugerencias-tags" class="d-flex flex-wrap align-items-center" style="gap: 5px;"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1991,9 +2046,17 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
-                        <i class="fas fa-save mr-2"></i>{% if es_edicion %}Guardar Cambios{% else %}Guardar y Publicar{% endif %}
-                    </button>
+                    <div class="d-inline-flex align-items-center flex-wrap justify-content-center" style="gap: 10px;">
+                        <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>
+                            <i class="fas fa-save mr-2"></i>{% if es_edicion %}Guardar Cambios{% else %}Guardar y Publicar{% endif %}
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill font-weight-bold shadow-xs" id="btnGuardarBorradorManual">
+                            <i class="fas fa-save text-success mr-1"></i>Guardar Borrador
+                        </button>
+                    </div>
+                    <span id="indicador-borrador-estado" class="d-block text-muted small mt-2" style="font-size: 0.74rem;">
+                        <i class="fas fa-shield-alt text-success mr-1"></i>Auto-guardado local activo en este navegador
+                    </span>
                     <!-- PÍLDORA DE ATAJO DE TECLADO RÁPIDO (IDEA 11) -->
                     <div id="pildora-atajo-ctrl-enter" class="mt-2 text-center" style="display: none;">
                         <span class="badge badge-light border border-success text-success px-3 py-2 shadow-xs rounded-pill" style="font-size: 0.78rem; font-weight: 600; background-color: #f0fdf4;">
@@ -2146,16 +2209,31 @@
                         </button>
                         <div class="dropdown-menu p-3 shadow-lg border-0 rounded-3" aria-labelledby="btnCitarObraPreview" style="min-width: 340px; font-size: 0.8rem;">
                             <h6 class="dropdown-header px-0 text-success font-weight-bold">Formato de Cita Bibliográfica</h6>
-                            <div class="mb-2">
-                                <strong class="d-block text-dark small font-weight-bold">APA (7.ª edición):</strong>
-                                <p id="cita-apa-prev" class="text-muted font-italic mb-1" style="font-size: 0.75rem; line-height: 1.4;"></p>
+                            <div class="mb-2 p-2 rounded bg-light border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark small font-weight-bold">APA (7.ª edición):</strong>
+                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-apa-prev" style="font-size: 0.7rem;">
+                                        <i class="far fa-copy mr-1"></i>Copiar
+                                    </button>
+                                </div>
+                                <p id="cita-apa-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
                             </div>
-                            <div class="mb-2">
-                                <strong class="d-block text-dark small font-weight-bold">Harvard:</strong>
-                                <p id="cita-harvard-prev" class="text-muted font-italic mb-1" style="font-size: 0.75rem; line-height: 1.4;"></p>
+                            <div class="mb-2 p-2 rounded bg-light border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark small font-weight-bold">Harvard:</strong>
+                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-harvard-prev" style="font-size: 0.7rem;">
+                                        <i class="far fa-copy mr-1"></i>Copiar
+                                    </button>
+                                </div>
+                                <p id="cita-harvard-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
                             </div>
-                            <div>
-                                <strong class="d-block text-dark small font-weight-bold">IEEE:</strong>
+                            <div class="p-2 rounded bg-light border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark small font-weight-bold">IEEE:</strong>
+                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-ieee-prev" style="font-size: 0.7rem;">
+                                        <i class="far fa-copy mr-1"></i>Copiar
+                                    </button>
+                                </div>
                                 <p id="cita-ieee-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
                             </div>
                         </div>
@@ -4229,6 +4307,332 @@
                 $('#upload-form').submit();
             });
 
+            
+            // ==============================================================
+            // AUTO-GUARDADO Y GESTIÓN DE BORRADORES LOCALES (IDEAS 2 Y 4)
+            // ==============================================================
+            const CLAVE_STORAGE_BORRADOR = 'fca_borrador_obra_v1';
+            let temporizadorAutoGuardado = null;
+
+            function verificarBorradorExistente() {
+                try {
+                    const guardado = localStorage.getItem(CLAVE_STORAGE_BORRADOR);
+                    if (!guardado) return;
+                    const data = JSON.parse(guardado);
+                    if (!data || (!data.titulo && !data.descripcion && !data.tipo_contenido && (!data.autores_ids || data.autores_ids.length === 0))) {
+                        return;
+                    }
+                    const fechaStr = data.fecha || 'reciente';
+                    $('#borrador-fecha-badge').text(fechaStr);
+                    $('#banner-borrador-local').removeClass('d-none').addClass('d-flex').slideDown(250);
+                } catch (e) {
+                    console.warn('Error al verificar borrador local:', e);
+                }
+            }
+
+            function guardarBorradorLocal(esManual = false) {
+                try {
+                    const tipoContenido = $('#real-tipo-contenido').val();
+                    const titulo = ($('#id_titulo').val() || '').trim();
+                    const anio = ($('#id_ano_produccion').val() || '').trim();
+                    const area = $('#id_area').val() || '';
+                    const entidad = ($('#id_entidad').val() || '').trim();
+                    const descripcion = ($('#id_descripcion').val() || '').trim();
+                    const palabrasClave = ($('#id_palabras_clave').val() || '').trim();
+                    const idioma = ($('#id_idioma').val() || '').trim();
+
+                    const autoresIds = [];
+                    $('#hidden-autores-inputs input[name="autor"]').each(function() {
+                        autoresIds.push($(this).val());
+                    });
+
+                    // Si está completamente en blanco, no sobrescribir con vacío
+                    if (!tipoContenido && !titulo && !descripcion && autoresIds.length === 0) {
+                        return;
+                    }
+
+                    const camposEspecificos = {};
+                    $('#contenedor-campos-especificos input, #contenedor-campos-especificos select, #contenedor-campos-especificos textarea').each(function() {
+                        const id = $(this).attr('id');
+                        if (id) {
+                            camposEspecificos[id] = $(this).val();
+                        }
+                    });
+
+                    const ahora = new Date();
+                    const horaFmt = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const fechaFmt = ahora.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                    const payload = {
+                        tipo_contenido: tipoContenido,
+                        titulo: titulo,
+                        ano: anio,
+                        area: area,
+                        entidad: entidad,
+                        descripcion: descripcion,
+                        palabras_clave: palabrasClave,
+                        idioma: idioma,
+                        autores_ids: autoresIds,
+                        campos_especificos: camposEspecificos,
+                        fecha: `${fechaFmt} a las ${horaFmt}`
+                    };
+
+                    localStorage.setItem(CLAVE_STORAGE_BORRADOR, JSON.stringify(payload));
+                    $('#indicador-borrador-estado').html(`<i class="fas fa-check-circle text-success mr-1"></i>Borrador guardado: ${horaFmt}`);
+
+                    if (esManual) {
+                        mostrarToastFlotante('¡Borrador guardado localmente en este navegador!');
+                    }
+                } catch (e) {
+                    console.warn('Error al guardar borrador en localStorage:', e);
+                }
+            }
+
+            function restaurarBorradorLocal() {
+                try {
+                    const guardado = localStorage.getItem(CLAVE_STORAGE_BORRADOR);
+                    if (!guardado) return;
+                    const data = JSON.parse(guardado);
+
+                    // 1. Tipo de contenido
+                    if (data.tipo_contenido) {
+                        const $card = $(`.tipo-card[data-id="${data.tipo_contenido}"]`);
+                        if ($card.length > 0) {
+                            $card.trigger('click');
+                        }
+                    }
+
+                    // 2. Metadatos generales
+                    if (data.titulo) $('#id_titulo').val(data.titulo).trigger('input');
+                    if (data.ano) $('#id_ano_produccion').val(data.ano).trigger('input');
+                    if (data.area) $('#id_area').val(data.area).trigger('change');
+                    if (data.entidad) $('#id_entidad').val(data.entidad).trigger('input');
+                    if (data.descripcion) $('#id_descripcion').val(data.descripcion).trigger('input');
+                    if (data.idioma) $('#id_idioma').val(data.idioma).trigger('input');
+
+                    // 3. Palabras clave
+                    if (data.palabras_clave) {
+                        $('#id_palabras_clave').val(data.palabras_clave);
+                        if (typeof renderizarTagsChips === 'function') {
+                            renderizarTagsChips();
+                        }
+                    }
+
+                    // 4. Campos específicos
+                    if (data.campos_especificos) {
+                        for (const [id, val] of Object.entries(data.campos_especificos)) {
+                            $(`#${id}`).val(val).trigger('input').trigger('change');
+                        }
+                    }
+
+                    // 5. Autores
+                    if (data.autores_ids && Array.isArray(data.autores_ids)) {
+                        data.autores_ids.forEach(function(aid) {
+                            const $btn = $(`.btn-agregar-autor[data-id="${aid}"]`);
+                            if ($btn.length > 0) {
+                                $btn.trigger('click');
+                            }
+                        });
+                    }
+
+                    $('#banner-borrador-local').slideUp(250);
+                    actualizarProgresoFormulario();
+                    refrescarValidacionVisualCampos();
+                    mostrarToastFlotante('¡Borrador restaurado con éxito!');
+                } catch (e) {
+                    console.error('Error al restaurar borrador:', e);
+                    alert('No se pudo restaurar el borrador completamente.');
+                }
+            }
+
+            function descartarBorradorLocal() {
+                if (confirm('¿Deseas descartar y eliminar el borrador guardado en este equipo?')) {
+                    localStorage.removeItem(CLAVE_STORAGE_BORRADOR);
+                    $('#banner-borrador-local').slideUp(250);
+                    $('#indicador-borrador-estado').html('<i class="fas fa-info-circle text-muted mr-1"></i>Borrador descartado');
+                    mostrarToastFlotante('Borrador descartado.');
+                }
+            }
+
+            function programarAutoGuardado() {
+                clearTimeout(temporizadorAutoGuardado);
+                temporizadorAutoGuardado = setTimeout(function() {
+                    guardarBorradorLocal(false);
+                }, 1800);
+            }
+
+            $('#upload-form').on('input change', 'input:not([type="file"]):not([type="hidden"]), textarea, select', function() {
+                programarAutoGuardado();
+            });
+
+            $('#btnGuardarBorradorManual').on('click', function() {
+                guardarBorradorLocal(true);
+            });
+
+            $('#btnRestaurarBorrador').on('click', restaurarBorradorLocal);
+            $('#btnDescartarBorrador').on('click', descartarBorradorLocal);
+
+            // ==============================================================
+            // SUGERENCIAS INTELIGENTES DE PALABRAS CLAVE (IDEA 8)
+            // ==============================================================
+            const SUGERENCIAS_KEYWORDS = {
+                'administracion': ['Gestión Estratégica', 'Liderazgo Organizacional', 'Recursos Humanos', 'Emprendimiento', 'Calidad y Procesos', 'Cultura Corporativa'],
+                'contaduria': ['Auditoría Forense', 'Normas NIF', 'Costos y Presupuestos', 'Fiscal y Tributación', 'Gobierno Corporativo', 'Contabilidad Financiera'],
+                'finanzas': ['Finanzas Corporativas', 'Mercado de Valores', 'Riesgo Financiero', 'Inversiones y Portafolios', 'Fintech', 'Análisis Bursátil'],
+                'informatica': ['Inteligencia Artificial', 'Ciberseguridad', 'Ciencia de Datos', 'Desarrollo de Software', 'Transformación Digital', 'Machine Learning'],
+                'mercadotecnia': ['Marketing Digital', 'Comportamiento del Consumidor', 'Branding', 'E-commerce', 'Redes Sociales', 'Estrategias de Mercado'],
+                'negocios': ['Comercio Exterior', 'Logística Internacional', 'Aduanas', 'Tratados Comerciales', 'Cadenas de Suministro'],
+                'default': ['Investigación Aplicada', 'Educación Superior', 'UABC', 'Metodología', 'Innovación']
+            };
+
+            function actualizarSugerenciasKeywords() {
+                const areaTexto = ($('#id_area option:selected').text() || $('#id_area').val() || '').toLowerCase();
+                let sugerencias = SUGERENCIAS_KEYWORDS['default'];
+
+                for (const [clave, lista] of Object.entries(SUGERENCIAS_KEYWORDS)) {
+                    if (clave !== 'default' && areaTexto.includes(clave)) {
+                        sugerencias = lista;
+                        break;
+                    }
+                }
+
+                const tagsActuales = typeof parsearPalabrasClave === 'function' ? parsearPalabrasClave().map(t => t.toLowerCase()) : [];
+                const $contenedorPildoras = $('#pildoras-sugerencias-tags');
+                $contenedorPildoras.empty();
+
+                let contadorMostradas = 0;
+                sugerencias.forEach(function(tag) {
+                    if (!tagsActuales.includes(tag.toLowerCase())) {
+                        contadorMostradas++;
+                        const $btn = $(`
+                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 rounded-pill font-weight-bold shadow-xs btn-click-sugerencia-tag" data-tag="${tag}" style="font-size: 0.72rem; transition: all 0.2s;">
+                                <i class="fas fa-plus mr-1" style="font-size: 0.65rem;"></i>${tag}
+                            </button>
+                        `);
+                        $contenedorPildoras.append($btn);
+                    }
+                });
+
+                if (contadorMostradas > 0) {
+                    $('#contenedor-sugerencias-tags').removeClass('d-none').slideDown(200);
+                } else {
+                    $('#contenedor-sugerencias-tags').slideUp(200);
+                }
+            }
+
+            $('#id_area').on('change', actualizarSugerenciasKeywords);
+
+            $(document).on('click', '.btn-click-sugerencia-tag', function(e) {
+                e.preventDefault();
+                const tag = $(this).data('tag');
+                if (tag && typeof agregarTagPalabraClave === 'function') {
+                    agregarTagPalabraClave(tag);
+                    $(this).fadeOut(150, function() {
+                        $(this).remove();
+                        if ($('#pildoras-sugerencias-tags').children().length === 0) {
+                            $('#contenedor-sugerencias-tags').slideUp(200);
+                        }
+                    });
+                }
+            });
+
+            // ==============================================================
+            // EXTRACTOR DE SUGERENCIA DE TÍTULO DESDE PDF (IDEA 6)
+            // ==============================================================
+            function detectarTituloDesdePdf(file) {
+                if (!file || !file.name) return;
+                let nombreLimpio = file.name.replace(/\.[^/.]+$/, "");
+                nombreLimpio = nombreLimpio.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+
+                if (nombreLimpio.length >= 3) {
+                    const tituloActual = ($('#id_titulo').val() || '').trim();
+                    if (tituloActual.length < 3) {
+                        $('#texto-titulo-extraido').text(`"${nombreLimpio}"`);
+                        $('#btnAplicarTituloExtraido').data('titulo-extraido', nombreLimpio);
+                        $('#alerta-sugerencia-titulo-pdf').removeClass('d-none').addClass('d-flex').slideDown(200);
+                    }
+                }
+            }
+
+            $('#btnAplicarTituloExtraido').on('click', function() {
+                const tit = $(this).data('titulo-extraido');
+                if (tit) {
+                    $('#id_titulo').val(tit).trigger('input');
+                    $('#alerta-sugerencia-titulo-pdf').slideUp(200);
+                    actualizarProgresoFormulario();
+                    refrescarValidacionVisualCampos();
+                    mostrarToastFlotante('Título autocompletado desde el archivo PDF');
+                }
+            });
+
+            // Detectar cuando el input de archivo PDF cambia
+            $('#id_pdf').on('change', function() {
+                if (this.files && this.files.length > 0) {
+                    detectarTituloDesdePdf(this.files[0]);
+                }
+            });
+
+            // ==============================================================
+            // COPIAR CITA BIBLIOGRÁFICA AL PORTAPAPELES (IDEA 7)
+            // ==============================================================
+            $(document).on('click', '.btn-copiar-cita', function(e) {
+                e.stopPropagation();
+                const targetId = $(this).data('target');
+                const textoCita = $(`#${targetId}`).text();
+                if (textoCita && navigator.clipboard) {
+                    const $btn = $(this);
+                    const originalHtml = $btn.html();
+                    navigator.clipboard.writeText(textoCita).then(function() {
+                        $btn.html('<i class="fas fa-check mr-1"></i>¡Copiado!').removeClass('btn-outline-success').addClass('btn-success');
+                        setTimeout(function() {
+                            $btn.html(originalHtml).removeClass('btn-success').addClass('btn-outline-success');
+                        }, 2000);
+                    }).catch(function(err) {
+                        console.warn('Error al copiar cita:', err);
+                    });
+                }
+            });
+
+            // ==============================================================
+            // GUÍA RÁPIDA / TOUR INTERACTIVO (IDEA 15)
+            // ==============================================================
+            $('#btnIniciarTour').on('click', function(e) {
+                e.preventDefault();
+                $('#modalGuiaPasoPaso').modal('show');
+            });
+
+            // ==============================================================
+            // TOAST FLOTANTE INFORMATIVO
+            // ==============================================================
+            function mostrarToastFlotante(msg) {
+                let $toast = $('#fca-toast-alerta');
+                if ($toast.length === 0) {
+                    $toast = $(`
+                        <div id="fca-toast-alerta" style="position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 99999; display: none;">
+                            <div class="px-4 py-2 rounded-pill shadow-lg text-white font-weight-bold" style="background-color: #006633; border: 1.5px solid #86efac; font-size: 0.88rem;">
+                                <i class="fas fa-check-circle mr-2 text-warning"></i><span id="fca-toast-msg"></span>
+                            </div>
+                        </div>
+                    `);
+                    $('body').append($toast);
+                }
+                $('#fca-toast-msg').text(msg);
+                $toast.stop(true, true).fadeIn(250).delay(2500).fadeOut(300);
+            }
+
+            // Limpiar borrador local al confirmar el envío
+            $('#upload-form').on('submit', function() {
+                if (envioConfirmadoPorModal) {
+                    try {
+                        localStorage.removeItem(CLAVE_STORAGE_BORRADOR);
+                    } catch (e) {}
+                }
+            });
+
+            // Inicializar verificación de borrador y sugerencias
+            verificarBorradorExistente();
+            actualizarSugerenciasKeywords();
+
             // Llamada inicial para inicializar barra de progreso y validaciones visuales
             refrescarValidacionVisualCampos();
             setTimeout(function() {
@@ -4238,5 +4642,96 @@
 
             });
     </script>
+
+    <!-- ============================================================== -->
+    <!-- MODAL DE GUÍA INTERACTIVA PASO A PASO (IDEA 15) -->
+    <!-- ============================================================== -->
+    <div class="modal fade" id="modalGuiaPasoPaso" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-success text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background-color: #006633 !important;">
+                    <h5 class="modal-title font-weight-bold mb-0 text-white d-flex align-items-center">
+                        <i class="fas fa-compass mr-2 text-warning"></i> Guía Rápida para el Registro de Obras Académicas
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <p class="text-muted small mb-4">
+                        Sigue estos sencillos pasos para registrar correctamente tu producción en el Repositorio de la FCA UABC según los lineamientos <strong>SECIHTI / CONAHCYT / RIZOMA</strong>:
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-success text-white p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">1</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Tipo de Recurso</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Selecciona la tarjeta que corresponda a tu obra (Artículo, Tesis, Software INDAUTOR, etc.). Esto desbloqueará el formulario.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-danger text-white p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">2</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Comprobante PDF</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Arrastra tu archivo PDF (máx. 20 MB). El sistema puede sugerir el título de tu obra automáticamente.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-primary text-white p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">3</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Autores y Coautorías</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Confirma quiénes participaron. Los coautores con cuenta recibirán una notificación para aceptar su acreditación.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-warning text-dark p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">4</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Información General</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Ingresa título, resumen y usa las sugerencias inteligentes de palabras clave según tu Área Académica.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-info text-white p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">5</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Datos Específicos</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Completa los campos obligatorios marcados con asterisco (*). Los opcionales tienen su etiqueta gris.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 p-3 border-0 shadow-xs rounded-3 bg-white">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-dark text-white p-2 mr-2 font-weight-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.9rem;">6</div>
+                                    <h6 class="mb-0 font-weight-bold text-dark">Publicar y Acuse</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Al llegar al 100%, confirma en el modal de previsualización o presiona Ctrl + Enter. Podrás descargar tu Acuse Oficial con Folio y QR.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white py-3 px-4">
+                    <button type="button" class="btn btn-success rounded-pill px-4 font-weight-bold shadow-xs" data-dismiss="modal">
+                        <i class="fas fa-check mr-1"></i>¡Entendido, comenzar!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

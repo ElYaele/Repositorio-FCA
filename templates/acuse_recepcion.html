@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acuse de Recepción Oficial - {{ articulo.folio_institucional }} - UABC FCA</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-gold: #dd971a;
+            --uabc-dark: #1e293b;
+        }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Montserrat', sans-serif;
+            color: #334155;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .acuse-container {
+            max-width: 860px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 2px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .acuse-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: rgba(0, 102, 51, 0.035);
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            letter-spacing: 6px;
+            font-family: 'Cinzel', serif;
+        }
+        .header-strip {
+            height: 10px;
+            background: linear-gradient(90deg, var(--uabc-green) 0%, var(--uabc-gold) 100%);
+        }
+        .uabc-brand-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--uabc-green);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .fca-brand-subtitle {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0;
+        }
+        .acuse-badge-title {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: inline-block;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(0, 102, 51, 0.25);
+        }
+        .meta-table th {
+            width: 32%;
+            background-color: #f8fafc;
+            color: #475569;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border-color: #e2e8f0 !important;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .meta-table td {
+            font-size: 0.88rem;
+            color: #1e293b;
+            border-color: #e2e8f0 !important;
+            vertical-align: middle;
+        }
+        .sello-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.72rem;
+            word-break: break-all;
+            color: #475569;
+        }
+        .folio-highlight {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 800;
+            color: var(--uabc-green);
+            font-size: 1.15rem;
+            letter-spacing: 1px;
+        }
+        .btn-floating-print {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            box-shadow: 0 6px 20px rgba(0, 102, 51, 0.35);
+        }
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .acuse-container {
+                box-shadow: none !important;
+                border: 1.5px solid #006633 !important;
+                margin: 0 auto !important;
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .btn-floating-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BOTONES FLOTANTES DE ACCIÓN -->
+    <div class="btn-floating-print no-print d-flex align-items-center" style="gap: 10px;">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm bg-white font-weight-bold">
+            <i class="fas fa-arrow-left mr-1"></i>Volver
+        </a>
+        <button onclick="window.print()" class="btn btn-success rounded-pill px-4 py-2 font-weight-bold shadow-sm" style="background-color: #006633;">
+            <i class="fas fa-print mr-2"></i>Imprimir / Guardar en PDF
+        </button>
+    </div>
+
+    <div class="container py-4">
+        <div class="acuse-container p-4 p-md-5">
+            <div class="header-strip mb-4" style="margin: -2rem -2rem 2rem -2rem; height: 8px;"></div>
+            <div class="acuse-watermark">UABC FCA</div>
+
+            <!-- ENCABEZADO INSTITUCIONAL -->
+            <div class="row align-items-center mb-4 pb-3 border-bottom">
+                <div class="col-3 col-md-2 text-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Escudo-uabc-2022.png" 
+                         alt="Escudo UABC" 
+                         class="img-fluid" 
+                         style="max-height: 85px;"
+                         onerror="this.src='/static/img/escudo-uabc.png'; this.onerror=null;">
+                </div>
+                <div class="col-9 col-md-7">
+                    <h5 class="uabc-brand-title">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</h5>
+                    <p class="fca-brand-subtitle">Facultad de Contaduría y Administración</p>
+                    <p class="small text-muted mb-0 font-weight-bold">Repositorio Institucional Académico y Científico</p>
+                </div>
+                <div class="col-12 col-md-3 text-md-right mt-3 mt-md-0">
+                    <div class="acuse-badge-title">
+                        <i class="fas fa-file-invoice mr-1"></i> ACUSE OFICIAL
+                    </div>
+                    <div class="small text-muted mt-1 font-weight-bold">Convalidador Curricular</div>
+                </div>
+            </div>
+
+            <!-- CERTIFICACIÓN Y FOLIO -->
+            <div class="text-center mb-4">
+                <h4 class="font-weight-bold text-dark mb-1" style="font-size: 1.25rem;">
+                    CONSTANCIA OFICIAL DE RECEPCIÓN Y REGISTRO DE OBRA ACADÉMICA
+                </h4>
+                <p class="small text-muted mb-2">
+                    Estándar oficial interoperable <strong>SECIHTI / CONAHCYT / RIZOMA (SNII)</strong> & INDAUTOR / IMPI
+                </p>
+                <div class="d-inline-block p-2 px-4 rounded-lg bg-light border border-success">
+                    <span class="small text-muted font-weight-bold mr-2">FOLIO OFICIAL ÚNICO:</span>
+                    <span class="folio-highlight">{{ folio }}</span>
+                </div>
+            </div>
+
+            <!-- TABLA DE METADATOS COMPROBATORIOS -->
+            <table class="table table-bordered meta-table mb-4 shadow-xs">
+                <tbody>
+                    <tr>
+                        <th>Título de la Obra:</th>
+                        <td><strong class="text-dark" style="font-size: 0.96rem;">{{ articulo.titulo }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Categoría / Tipo de Obra:</th>
+                        <td>
+                            <span class="badge badge-success px-2 py-1 font-weight-bold" style="background-color: #006633;">
+                                {{ articulo.tipo_contenido.nombre }}
+                            </span>
+                            <span class="badge badge-dark px-2 py-1 ml-1 font-weight-bold">
+                                Año: {{ articulo.año_produccion }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Autores Acreditados:</th>
+                        <td>
+                            <ul class="list-unstyled mb-0 font-weight-bold text-dark">
+                                {% for a in articulo.autor.all %}
+                                    <li class="mb-1">
+                                        <i class="fas fa-user-check text-success mr-2"></i>{{ a.nombre }}
+                                        <span class="badge badge-light border text-muted ml-1" style="font-size: 0.72rem;">
+                                            {{ a.institucion_origen|default:"UABC" }}
+                                        </span>
+                                    </li>
+                                {% empty %}
+                                    <li>No especificado</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Entidad Académica:</th>
+                        <td>{{ articulo.entidad.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Área de Conocimiento:</th>
+                        <td>{{ articulo.area.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Idioma & Palabras Clave:</th>
+                        <td>
+                            <strong>{{ articulo.idioma|default:"Español" }}</strong> — 
+                            <span class="text-muted">{{ articulo.palabras_clave|default:"Sin palabras clave" }}</span>
+                        </td>
+                    </tr>
+                    {% if articulo.revista %}
+                    <tr>
+                        <th>Revista / ISSN:</th>
+                        <td>{{ articulo.revista }} {% if articulo.isbn_issn %}(ISSN: {{ articulo.isbn_issn }}){% endif %}</td>
+                    </tr>
+                    {% endif %}
+                    {% if articulo.editorial %}
+                    <tr>
+                        <th>Editorial / ISBN:</th>
+                        <td>{{ articulo.editorial }} {% if articulo.isbn_issn %}(ISBN: {{ articulo.isbn_issn }}){% endif %}</td>
+                    </tr>
+                    {% endif %}
+                    {% if articulo.numero_registro %}
+                    <tr>
+                        <th>Registro INDAUTOR / IMPI:</th>
+                        <td><strong>{{ articulo.numero_registro }}</strong> ({{ articulo.tipo_proteccion|default:"Propiedad Intelectual" }})</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Estatus Institucional:</th>
+                        <td>
+                            {% if articulo.estado == 'aprobado' %}
+                                <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>Aprobado y Publicado en Catálogo Oficial</span>
+                            {% elif articulo.estado == 'pendiente' %}
+                                <span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-clock mr-1"></i>Recibido en Espera de Moderación Colegiada</span>
+                            {% else %}
+                                <span class="badge badge-secondary px-2 py-1">{{ articulo.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Fecha y Hora Oficial de Recepción:</th>
+                        <td>
+                            <i class="far fa-calendar-check text-success mr-1"></i>
+                            <strong>{{ articulo.created_at|date:"d/m/Y - h:i:s A" }}</strong> (Hora Pacífico / Tijuana, B.C.)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- SECCIÓN DE SELLO DIGITAL Y QR DE VERIFICACIÓN -->
+            <div class="row align-items-center mt-3 pt-3 border-top">
+                <div class="col-8 col-md-9">
+                    <h6 class="font-weight-bold text-dark small mb-1">
+                        <i class="fas fa-shield-alt text-success mr-1"></i>SELLO DIGITAL DE INTEGRIDAD CRIPTOGRÁFICA (SHA-256):
+                    </h6>
+                    <div class="sello-box mb-2">
+                        SHA256: {{ sello }}
+                    </div>
+                    <p class="small text-muted mb-0" style="font-size: 0.72rem; line-height: 1.4;">
+                        El presente acuse digital tiene validez institucional como comprobante fehaciente de depósito y postulación curricular dentro del Repositorio de la FCA UABC. Puede verificarse escaneando el código QR adjunto.
+                    </p>
+                </div>
+                <div class="col-4 col-md-3 text-center">
+                    <img src="{{ qr_api_url }}" alt="Código QR de Verificación" class="img-fluid border p-1 rounded bg-white shadow-xs" style="max-width: 125px;">
+                    <span class="d-block text-muted font-weight-bold mt-1" style="font-size: 0.65rem;">ESCANEAR PARA VALIDAR</span>
+                </div>
+            </div>
+
+            <!-- FIRMA INSTITUCIONAL AL PIE -->
+            <div class="text-center mt-4 pt-3 border-top small text-muted font-weight-bold">
+                UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA &bull; FACULTAD DE CONTADURÍA Y ADMINISTRACIÓN &bull; TIJUANA, B.C.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

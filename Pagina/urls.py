@@ -3,6 +3,7 @@ from .views import (
     HomePageView,
     ArticuloCreateView,
     ArticuloDocenteEditarView,
+    acuse_recepcion_documento_view,
     BusquedaResultadosView,
     login_view,
     logout_view,
@@ -106,6 +107,7 @@ urlpatterns = [
     path('contacto/', contacto_view, name='contacto'),
     path('upload/', ArticuloCreateView.as_view(), name='upload_document'),
     path('documento/editar/<int:pk>/', ArticuloDocenteEditarView.as_view(), name='editar_documento'),
+    path('documento/<int:doc_id>/acuse/', acuse_recepcion_documento_view, name='acuse_recepcion'),
 
     # Autenticación y Registro
     path('login/', login_view, name='login'),
