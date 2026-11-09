@@ -2570,6 +2570,12 @@
                 }
                 currentPdfBlobUrl = URL.createObjectURL(file);
                 formularioModificado = true;
+                if (typeof guardarPdfBorrador === 'function') {
+                    guardarPdfBorrador(file);
+                }
+                if (typeof programarAutoGuardado === 'function') {
+                    programarAutoGuardado();
+                }
                 actualizarProgresoFormulario();
             }
 
@@ -2622,6 +2628,9 @@
             $('#btn-limpiar-pdf-seleccionado').on('click', function() {
                 $('#id_pdf').val('');
                 archivoPdfSeleccionado = null;
+                if (typeof eliminarPdfBorrador === 'function') {
+                    eliminarPdfBorrador();
+                }
                 actualizarProgresoFormulario();
                 $('#tarjeta-pdf-seleccionado').slideUp(200);
                 $('#zona-drag-drop-pdf').slideDown(250);
@@ -2630,6 +2639,9 @@
                     currentPdfBlobUrl = null;
                 }
                 formularioModificado = true;
+                if (typeof programarAutoGuardado === 'function') {
+                    programarAutoGuardado();
+                }
             });
 
             $('#btn-ver-pdf-seleccionado').on('click', function() {
@@ -3262,6 +3274,9 @@
 
                     $('#real-autor-select').append(new Option(nombre, id, true, true));
                 });
+                if (typeof programarAutoGuardado === 'function') {
+                    programarAutoGuardado();
+                }
             }
 
             function agregarAutorDirecto(id, nombre, codigo, institucion, tipo) {
@@ -4309,6 +4324,82 @@
 
             
             // ==============================================================
+            // ALMACENAMIENTO DE ARCHIVO PDF EN INDEXEDDB PARA BORRADOR LOCAL
+            // ==============================================================
+            const DRAFT_DB_NAME = 'FCARepositorioDraftDB';
+            const DRAFT_STORE_NAME = 'pdf_drafts';
+
+            function abrirBorradorDB() {
+                return new Promise(function(resolve) {
+                    if (!window.indexedDB) return resolve(null);
+                    try {
+                        const req = indexedDB.open(DRAFT_DB_NAME, 1);
+                        req.onupgradeneeded = function(e) {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains(DRAFT_STORE_NAME)) {
+                                db.createObjectStore(DRAFT_STORE_NAME);
+                            }
+                        };
+                        req.onsuccess = function(e) {
+                            resolve(e.target.result);
+                        };
+                        req.onerror = function() {
+                            resolve(null);
+                        };
+                    } catch (e) {
+                        resolve(null);
+                    }
+                });
+            }
+
+            function guardarPdfBorrador(file) {
+                if (!file) return;
+                abrirBorradorDB().then(function(db) {
+                    if (!db) return;
+                    try {
+                        const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
+                        tx.objectStore(DRAFT_STORE_NAME).put(file, 'borrador_archivo_pdf');
+                    } catch (err) {
+                        console.warn('No se pudo guardar PDF en IndexedDB:', err);
+                    }
+                }).catch(function() {});
+            }
+
+            function obtenerPdfBorrador() {
+                return new Promise(function(resolve) {
+                    abrirBorradorDB().then(function(db) {
+                        if (!db) return resolve(null);
+                        try {
+                            const tx = db.transaction(DRAFT_STORE_NAME, 'readonly');
+                            const req = tx.objectStore(DRAFT_STORE_NAME).get('borrador_archivo_pdf');
+                            req.onsuccess = function() {
+                                resolve(req.result || null);
+                            };
+                            req.onerror = function() {
+                                resolve(null);
+                            };
+                        } catch (err) {
+                            resolve(null);
+                        }
+                    }).catch(function() {
+                        resolve(null);
+                    });
+                });
+            }
+
+            function eliminarPdfBorrador() {
+                abrirBorradorDB().then(function(db) {
+                    if (!db) return;
+                    try {
+                        const tx = db.transaction(DRAFT_STORE_NAME, 'readwrite');
+                        tx.objectStore(DRAFT_STORE_NAME).delete('borrador_archivo_pdf');
+                    } catch (err) {
+                        console.warn('Error al eliminar PDF de IndexedDB:', err);
+                    }
+                }).catch(function() {});
+            }
+
+            // ==============================================================
             // AUTO-GUARDADO Y GESTIÓN DE BORRADORES LOCALES (IDEAS 2 Y 4)
             // ==============================================================
             const CLAVE_STORAGE_BORRADOR = 'fca_borrador_obra_v1';
@@ -4319,7 +4410,7 @@
                     const guardado = localStorage.getItem(CLAVE_STORAGE_BORRADOR);
                     if (!guardado) return;
                     const data = JSON.parse(guardado);
-                    if (!data || (!data.titulo && !data.descripcion && !data.tipo_contenido && (!data.autores_ids || data.autores_ids.length === 0))) {
+                    if (!data || (!data.titulo && !data.descripcion && !data.tipo_contenido && (!data.autores_ids || data.autores_ids.length === 0) && !data.tiene_pdf)) {
                         return;
                     }
                     const fechaStr = data.fecha || 'reciente';
@@ -4341,39 +4432,48 @@
                     const palabrasClave = ($('#id_palabras_clave').val() || '').trim();
                     const idioma = ($('#id_idioma').val() || '').trim();
 
+                    // Capturar IDs de autores desde el select real y la lista confirmada
                     const autoresIds = [];
-                    $('#hidden-autores-inputs input[name="autor"]').each(function() {
-                        autoresIds.push($(this).val());
+                    $('#real-autor-select option:selected').each(function() {
+                        const val = $(this).val();
+                        if (val && !autoresIds.includes(String(val))) {
+                            autoresIds.push(String(val));
+                        }
                     });
 
                     const autoresData = [];
                     $('#selected-list li.author-card-row').each(function() {
+                        const aid = $(this).data('id');
+                        if (aid && !autoresIds.includes(String(aid))) {
+                            autoresIds.push(String(aid));
+                        }
                         autoresData.push({
-                            id: $(this).data('id'),
-                            nombre: $(this).data('nombre'),
-                            codigo: $(this).data('codigo'),
-                            institucion: $(this).data('institucion'),
-                            tipo: $(this).data('tipo')
+                            id: aid,
+                            nombre: $(this).data('nombre') || $(this).find('.author-name-text').text().trim(),
+                            codigo: $(this).data('codigo') || '',
+                            institucion: $(this).data('institucion') || '',
+                            tipo: $(this).data('tipo') || 'uabc'
                         });
                     });
 
-                    // Si está completamente en blanco, no sobrescribir con vacío
-                    if (!tipoContenido && !titulo && !descripcion && autoresIds.length === 0 && autoresData.length === 0) {
-                        return;
-                    }
-
+                    // Capturar campos específicos de TODOS los bloques dinámicos
                     const camposEspecificos = {};
-                    $('#contenedor-campos-especificos input, #contenedor-campos-especificos select, #contenedor-campos-especificos textarea').each(function() {
+                    $('.bloque-dinamico input, .bloque-dinamico select, .bloque-dinamico textarea').each(function() {
                         const id = $(this).attr('id');
                         const name = $(this).attr('name');
                         const val = $(this).val();
-                        if (id && val !== undefined && val !== null) {
-                            camposEspecificos['id_' + id] = val;
-                        }
-                        if (name && val !== undefined && val !== null) {
-                            camposEspecificos['name_' + name] = val;
+                        if (val !== undefined && val !== null && val !== '') {
+                            if (id) camposEspecificos['id_' + id] = val;
+                            if (name) camposEspecificos['name_' + name] = val;
                         }
                     });
+
+                    const tienePdf = Boolean(archivoPdfSeleccionado || ($('#id_pdf')[0] && $('#id_pdf')[0].files && $('#id_pdf')[0].files.length > 0));
+
+                    // Si está completamente en blanco, no sobrescribir con vacío
+                    if (!tipoContenido && !titulo && !descripcion && autoresIds.length === 0 && autoresData.length === 0 && !tienePdf) {
+                        return;
+                    }
 
                     const ahora = new Date();
                     const horaFmt = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -4391,6 +4491,8 @@
                         autores_ids: autoresIds,
                         autores_data: autoresData,
                         campos_especificos: camposEspecificos,
+                        tiene_pdf: tienePdf,
+                        pdf_nombre: archivoPdfSeleccionado ? archivoPdfSeleccionado.name : '',
                         fecha: `${fechaFmt} a las ${horaFmt}`
                     };
 
@@ -4405,13 +4507,13 @@
                 }
             }
 
-            function restaurarBorradorLocal() {
+            async function restaurarBorradorLocal() {
                 try {
                     const guardado = localStorage.getItem(CLAVE_STORAGE_BORRADOR);
                     if (!guardado) return;
                     const data = JSON.parse(guardado);
 
-                    // 1. Tipo de contenido
+                    // 1. Tipo de contenido y desbloqueo del formulario
                     if (data.tipo_contenido) {
                         if (typeof activarTipo === 'function') {
                             activarTipo(data.tipo_contenido);
@@ -4439,9 +4541,10 @@
                         }
                     }
 
-                    // 4. Campos específicos según tipo de obra
+                    // 4. Campos específicos según tipo de obra (¡habilitados en su bloque dinámico!)
                     if (data.campos_especificos) {
                         for (const [key, val] of Object.entries(data.campos_especificos)) {
+                            if (!val) continue;
                             if (key.startsWith('id_')) {
                                 const realId = key.substring(3);
                                 $(`#${realId}`).val(val).trigger('input').trigger('change');
@@ -4455,14 +4558,14 @@
                         }
                     }
 
-                    // 5. Autores seleccionados
+                    // 5. Autores seleccionados (Restaurar en la lista derecha)
                     if (data.autores_data && Array.isArray(data.autores_data) && data.autores_data.length > 0) {
                         data.autores_data.forEach(function(a) {
                             if (typeof agregarAutorDirecto === 'function') {
                                 agregarAutorDirecto(a.id, a.nombre, a.codigo, a.institucion, a.tipo);
                             }
                         });
-                    } else if (data.autores_ids && Array.isArray(data.autores_ids)) {
+                    } else if (data.autores_ids && Array.isArray(data.autores_ids) && data.autores_ids.length > 0) {
                         data.autores_ids.forEach(function(aid) {
                             const itemLeft = $(`#available-list li[data-id="${aid}"]`);
                             if (itemLeft.length > 0 && typeof agregarAutorDirecto === 'function') {
@@ -4477,13 +4580,39 @@
                         });
                     }
 
+                    // 6. Archivo PDF comprobatorio (Restaurado desde IndexedDB + DataTransfer nativo)
+                    let pdfRestaurado = false;
+                    try {
+                        const pdfBlob = await obtenerPdfBorrador();
+                        if (pdfBlob && typeof procesarArchivoPdf === 'function') {
+                            let fileObj = pdfBlob;
+                            if (!(fileObj instanceof File)) {
+                                fileObj = new File([pdfBlob], data.pdf_nombre || "documento_comprobatorio.pdf", { type: 'application/pdf' });
+                            }
+                            if (window.DataTransfer) {
+                                const dt = new DataTransfer();
+                                dt.items.add(fileObj);
+                                $('#id_pdf')[0].files = dt.files;
+                            }
+                            procesarArchivoPdf(fileObj);
+                            pdfRestaurado = true;
+                        }
+                    } catch (ePdf) {
+                        console.warn('No se pudo restaurar PDF desde IndexedDB:', ePdf);
+                    }
+
                     $('#banner-borrador-local').slideUp(250);
                     if (typeof actualizarSugerenciasKeywords === 'function') {
                         actualizarSugerenciasKeywords();
                     }
                     actualizarProgresoFormulario();
                     refrescarValidacionVisualCampos();
-                    mostrarToastFlotante('¡Borrador restaurado con éxito! Recuerda volver a adjuntar tu archivo PDF.');
+
+                    if (pdfRestaurado) {
+                        mostrarToastFlotante('¡Borrador completo restaurado con éxito (incluyendo PDF, Autores y Datos Específicos)!');
+                    } else {
+                        mostrarToastFlotante('¡Borrador restaurado con éxito!');
+                    }
                 } catch (e) {
                     console.error('Error al restaurar borrador:', e);
                     alert('No se pudo restaurar el borrador completamente.');
@@ -4493,6 +4622,7 @@
             function descartarBorradorLocal() {
                 if (confirm('¿Deseas descartar y eliminar el borrador guardado en este equipo?')) {
                     localStorage.removeItem(CLAVE_STORAGE_BORRADOR);
+                    eliminarPdfBorrador();
                     $('#banner-borrador-local').slideUp(250);
                     $('#indicador-borrador-estado').html('<i class="fas fa-info-circle text-muted mr-1"></i>Borrador descartado');
                     mostrarToastFlotante('Borrador descartado.');
