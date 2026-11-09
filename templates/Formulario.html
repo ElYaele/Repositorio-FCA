@@ -4112,6 +4112,7 @@
                     $badge.text('100% ¡Listo para Publicar!')
                           .removeClass('badge-secondary badge-warning badge-danger text-white')
                           .addClass('badge-animado-listo');
+                    $('#submit-btn').prop('disabled', false);
                     $('#pildora-atajo-ctrl-enter').slideDown(250);
                 } else if (completitud >= 60) {
                     $badge.text(completitud + '% en progreso')
@@ -4307,6 +4308,7 @@
 
                 // Resumen
                 const descVal = ($('#id_descripcion').val() || '').trim() || 'Sin descripción proporcionada.';
+                const desc = descVal;
                 $('#prevDescripcion').text(descVal);
                 $('#credResumen').text(descVal);
                 $('#publicoResumen').text(descVal);
@@ -4550,7 +4552,7 @@
                 $('#credCardTipo').text(tipoNom);
                 $('#credCardAnio').text(anioVal);
                 $('#credCardTitulo').text(tit);
-                $('#credCardSnippet').text(desc);
+                $('#credCardSnippet').text(descVal);
                 $('#credCardAutores').html('<i class="fas fa-user-edit mr-1 text-success"></i> ' + (autoresTexto || 'Sin autores asignados'));
 
                 // PESTAÑA 3: FICHA ACADÉMICA PÚBLICA
@@ -4562,7 +4564,7 @@
                 $('#modalPublicoAutoresObra').text(autoresTexto || 'Sin autores asignados');
                 $('#modalPublicoIdiomaObra').text(idiomaVal);
                 $('#modalPublicoCamposEspecificos').html(camposHtml);
-                $('#modalPublicoDescripcionObra').text(desc);
+                $('#modalPublicoDescripcionObra').text(descVal);
 
                 // RENDERIZADO VISUAL DEL DOCUMENTO PDF EN CANVAS MEDIANTE PDF.JS
                 let pdfParaRenderizar = null;
@@ -4573,6 +4575,7 @@
                 } else if ($('#contenedor-pdf-existente a').length > 0 && !$('#pdf-clear_id').prop('checked')) {
                     pdfParaRenderizar = $('#contenedor-pdf-existente a').attr('href');
                 }
+                pdfParaRenderizarActivo = pdfParaRenderizar;
                 renderizarPdfEnPreviewModal(pdfParaRenderizar);
 
                 // CITAS BIBLIOGRÁFICAS EN VIVO (IDEA 7)
@@ -4586,108 +4589,123 @@
                 $('#modalConfirmarPublicacion').modal('show');
             }
 
+            var pdfParaRenderizarActivo = null;
+
             function renderizarPdfEnPreviewModal(source) {
-                const cardCanvas = document.getElementById('modalCardCanvas');
-                const cardLoading = document.getElementById('modalCardLoading');
-                const cardPdfBtn = document.getElementById('credCardPdfBtn');
+                try {
+                    const cardCanvas = document.getElementById('modalCardCanvas');
+                    const cardLoading = document.getElementById('modalCardLoading');
+                    const cardPdfBtn = document.getElementById('credCardPdfBtn');
 
-                const pubCanvas = document.getElementById('modalPublicoPdfCanvas');
-                const pubLoading = document.getElementById('modalPublicoPdfLoading');
-                const pubWrapper = document.getElementById('modalPublicoPdfWrapper');
-                const pubLink = document.getElementById('modalPublicoPdfLink');
+                    const pubCanvas = document.getElementById('modalPublicoPdfCanvas');
+                    const pubLoading = document.getElementById('modalPublicoPdfLoading');
+                    const pubWrapper = document.getElementById('modalPublicoPdfWrapper');
+                    const pubLink = document.getElementById('modalPublicoPdfLink');
 
-                if (!source) {
+                    if (!source) {
+                        if (cardLoading) {
+                            cardLoading.style.display = 'block';
+                            cardLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-2x"></i><span class="d-block small text-muted mt-1">Sin PDF</span>';
+                        }
+                        if (cardCanvas) cardCanvas.style.display = 'none';
+                        if (cardPdfBtn) cardPdfBtn.style.display = 'none';
+
+                        if (pubLoading) {
+                            pubLoading.style.display = 'block';
+                            pubLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin documento PDF adjunto</span>';
+                        }
+                        if (pubCanvas) pubCanvas.style.display = 'none';
+                        if (pubWrapper) pubWrapper.style.display = 'none';
+                        return;
+                    }
+
                     if (cardLoading) {
                         cardLoading.style.display = 'block';
-                        cardLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-2x"></i><span class="d-block small text-muted mt-1">Sin PDF</span>';
+                        cardLoading.innerHTML = '<i class="fas fa-spinner fa-spin text-success fa-2x"></i><span class="d-block" style="font-size: 0.65rem;">Cargando...</span>';
                     }
                     if (cardCanvas) cardCanvas.style.display = 'none';
-                    if (cardPdfBtn) cardPdfBtn.style.display = 'none';
+                    if (cardPdfBtn) cardPdfBtn.style.display = 'inline-block';
 
                     if (pubLoading) {
                         pubLoading.style.display = 'block';
-                        pubLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin documento PDF adjunto</span>';
+                        pubLoading.innerHTML = '<i class="fas fa-spinner fa-spin fa-3x mb-2 text-success"></i><span class="d-block small font-weight-bold text-dark">Generando vista previa del documento...</span>';
                     }
                     if (pubCanvas) pubCanvas.style.display = 'none';
-                    if (pubWrapper) pubWrapper.style.display = 'none';
-                    return;
-                }
+                    if (pubWrapper) pubWrapper.style.display = 'block';
 
-                if (cardLoading) {
-                    cardLoading.style.display = 'block';
-                    cardLoading.innerHTML = '<i class="fas fa-spinner fa-spin text-success fa-2x"></i><span class="d-block" style="font-size: 0.65rem;">Cargando...</span>';
-                }
-                if (cardCanvas) cardCanvas.style.display = 'none';
-                if (cardPdfBtn) cardPdfBtn.style.display = 'inline-block';
+                    function abrirDocCompleto(e) {
+                        if (e) e.preventDefault();
+                        if (currentPdfBlobUrl) {
+                            window.open(currentPdfBlobUrl, '_blank');
+                        } else if (source instanceof File || source instanceof Blob) {
+                            const tempUrl = URL.createObjectURL(source);
+                            window.open(tempUrl, '_blank');
+                        } else if (typeof source === 'string') {
+                            window.open(source, '_blank');
+                        }
+                    }
 
-                if (pubLoading) {
-                    pubLoading.style.display = 'block';
-                    pubLoading.innerHTML = '<i class="fas fa-spinner fa-spin fa-3x mb-2 text-success"></i><span class="d-block small font-weight-bold text-dark">Generando vista previa del documento...</span>';
-                }
-                if (pubCanvas) pubCanvas.style.display = 'none';
-                if (pubWrapper) pubWrapper.style.display = 'block';
+                    $(pubLink).off('click').on('click', abrirDocCompleto);
+                    $(cardPdfBtn).off('click').on('click', abrirDocCompleto);
 
-                function abrirDocCompleto(e) {
-                    if (e) e.preventDefault();
-                    if (currentPdfBlobUrl) {
-                        window.open(currentPdfBlobUrl, '_blank');
-                    } else if (source instanceof File || source instanceof Blob) {
-                        const tempUrl = URL.createObjectURL(source);
-                        window.open(tempUrl, '_blank');
+                    if (typeof pdfjsLib === 'undefined') {
+                        console.warn('PDF.js no está cargado');
+                        if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
+                        if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">PDF adjunto</span>';
+                        return;
+                    }
+
+                    let cargarPromise;
+                    if (source instanceof File || source instanceof Blob) {
+                        cargarPromise = source.arrayBuffer().then(function(buffer) {
+                            return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+                        });
                     } else if (typeof source === 'string') {
-                        window.open(source, '_blank');
+                        cargarPromise = pdfjsLib.getDocument(source).promise;
+                    } else {
+                        return;
                     }
-                }
 
-                $(pubLink).off('click').on('click', abrirDocCompleto);
-                $(cardPdfBtn).off('click').on('click', abrirDocCompleto);
+                    cargarPromise.then(function(pdfDoc) {
+                        return pdfDoc.getPage(1);
+                    }).then(function(page) {
+                        if (cardCanvas) {
+                            const ctxCard = cardCanvas.getContext('2d');
+                            const vpCard = page.getViewport({ scale: 0.45 });
+                            cardCanvas.height = vpCard.height;
+                            cardCanvas.width = vpCard.width;
+                            page.render({ canvasContext: ctxCard, viewport: vpCard }).promise.then(function() {
+                                if (cardLoading) cardLoading.style.display = 'none';
+                                cardCanvas.style.display = 'block';
+                            });
+                        }
 
-                if (typeof pdfjsLib === 'undefined') {
-                    console.warn('PDF.js no está cargado');
-                    if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
-                    if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">PDF adjunto</span>';
-                    return;
-                }
-
-                let cargarPromise;
-                if (source instanceof File || source instanceof Blob) {
-                    cargarPromise = source.arrayBuffer().then(function(buffer) {
-                        return pdfjsLib.getDocument({ data: buffer }).promise;
+                        if (pubCanvas) {
+                            const ctxPub = pubCanvas.getContext('2d');
+                            const vpPub = page.getViewport({ scale: 1.15 });
+                            pubCanvas.height = vpPub.height;
+                            pubCanvas.width = vpPub.width;
+                            page.render({ canvasContext: ctxPub, viewport: vpPub }).promise.then(function() {
+                                if (pubLoading) pubLoading.style.display = 'none';
+                                pubCanvas.style.display = 'block';
+                            });
+                        }
+                    }).catch(function(err) {
+                        console.warn('Error al generar portada con PDF.js:', err);
+                        if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
+                        if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo generar vista previa</span>';
                     });
-                } else {
-                    cargarPromise = pdfjsLib.getDocument(source).promise;
+                } catch(e) {
+                    console.warn('Excepción en renderizarPdfEnPreviewModal:', e);
                 }
-
-                cargarPromise.then(function(pdfDoc) {
-                    return pdfDoc.getPage(1);
-                }).then(function(page) {
-                    if (cardCanvas) {
-                        const ctxCard = cardCanvas.getContext('2d');
-                        const vpCard = page.getViewport({ scale: 0.45 });
-                        cardCanvas.height = vpCard.height;
-                        cardCanvas.width = vpCard.width;
-                        page.render({ canvasContext: ctxCard, viewport: vpCard }).promise.then(function() {
-                            if (cardLoading) cardLoading.style.display = 'none';
-                            cardCanvas.style.display = 'block';
-                        });
-                    }
-
-                    if (pubCanvas) {
-                        const ctxPub = pubCanvas.getContext('2d');
-                        const vpPub = page.getViewport({ scale: 1.15 });
-                        pubCanvas.height = vpPub.height;
-                        pubCanvas.width = vpPub.width;
-                        page.render({ canvasContext: ctxPub, viewport: vpPub }).promise.then(function() {
-                            if (pubLoading) pubLoading.style.display = 'none';
-                            pubCanvas.style.display = 'block';
-                        });
-                    }
-                }).catch(function(err) {
-                    console.warn('Error al generar portada con PDF.js:', err);
-                    if (cardLoading) cardLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block small text-danger mt-1">PDF</span>';
-                    if (pubLoading) pubLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo generar vista previa</span>';
-                });
             }
+
+            // Re-renderizar portadas PDF al cambiar de pestaña en el modal
+            $('#modalConfirmarPublicacion a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
+                if (pdfParaRenderizarActivo) {
+                    renderizarPdfEnPreviewModal(pdfParaRenderizarActivo);
+                }
+            });
 
             // Click en el botón final dentro del modal
             $('#btn-confirmar-envio-final').on('click', function() {
