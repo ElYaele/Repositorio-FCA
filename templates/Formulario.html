@@ -2474,6 +2474,51 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIRMACIÓN PARA DESCARTAR Y ELIMINAR BORRADOR (DISEÑO PROPIO UABC) -->
+    <div class="modal fade" id="modalConfirmarDescartarBorrador" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 440px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-center p-3">
+                <div class="modal-body p-3">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3 text-danger" style="width: 68px; height: 68px; align-items: center; justify-content: center; font-size: 1.8rem; background-color: #fee2e2; border: 2px solid #fecaca;">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-2">¿Descartar borrador local?</h5>
+                    <p class="text-muted small mb-3">
+                        Esta acción eliminará de forma permanente los datos temporales y archivos guardados en este navegador, reiniciando el formulario para comenzar en limpio.
+                    </p>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 font-weight-bold mr-2" data-dismiss="modal">
+                            <i class="fas fa-times mr-1"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 py-2 font-weight-bold shadow-sm" id="btnConfirmarEliminarBorradorModal">
+                            <i class="fas fa-trash-alt mr-1"></i>Sí, descartar y limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ALERTA / ADVERTENCIA PERSONALIZADO (REEMPLAZO ELEGANTE DE alert() DE GOOGLE) -->
+    <div class="modal fade" id="modalAlertaFormulario" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 440px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-center p-3">
+                <div class="modal-body p-3">
+                    <div id="alertaFormIconoContenedor" class="rounded-circle d-inline-flex p-3 mb-3" style="width: 68px; height: 68px; align-items: center; justify-content: center; font-size: 1.8rem; background-color: #fef3c7; border: 2px solid #fde68a; color: #d97706;">
+                        <i id="alertaFormIcono" class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h5 id="alertaFormTitulo" class="font-weight-bold text-dark mb-2">Atención</h5>
+                    <p id="alertaFormMensaje" class="text-muted small mb-3" style="line-height: 1.55;"></p>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" id="alertaFormBtnAceptar" class="btn btn-success btn-sm rounded-pill px-4 py-2 font-weight-bold shadow-sm" data-dismiss="modal">
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -4615,18 +4660,102 @@
                     }
                 } catch (e) {
                     console.error('Error al restaurar borrador:', e);
-                    alert('No se pudo restaurar el borrador completamente.');
+                    mostrarAlertaFormulario('No se pudo restaurar el borrador completamente o los datos estaban dañados.', 'Error de Borrador', 'danger');
                 }
             }
 
             function descartarBorradorLocal() {
-                if (confirm('¿Deseas descartar y eliminar el borrador guardado en este equipo?')) {
+                clearTimeout(temporizadorAutoGuardado);
+                try {
                     localStorage.removeItem(CLAVE_STORAGE_BORRADOR);
                     eliminarPdfBorrador();
-                    $('#banner-borrador-local').slideUp(250);
-                    $('#indicador-borrador-estado').html('<i class="fas fa-info-circle text-muted mr-1"></i>Borrador descartado');
-                    mostrarToastFlotante('Borrador descartado.');
+                } catch (e) {
+                    console.warn('Error al limpiar borrador:', e);
                 }
+
+                // 1. Resetear selección de tipo y bloquear secciones
+                if (typeof activarTipo === 'function') {
+                    activarTipo('');
+                } else {
+                    $('#real-tipo-contenido').val('');
+                    $('.card-selector').removeClass('selected');
+                    $('.bloque-dinamico').slideUp(200);
+                    $('#secciones-formulario').addClass('secciones-inactivas');
+                    $('#aviso-bloqueo-paso1').slideDown(250);
+                }
+
+                // 2. Limpiar Metadatos Generales
+                $('#id_titulo').val('').trigger('input');
+                $('#id_ano_produccion, #id_año_produccion').val('2026');
+                $('#id_area').val('').trigger('change');
+                $('#id_descripcion').val('').trigger('input');
+                $('#id_idioma').val('');
+                $('#id_palabras_clave').val('');
+                if (typeof sincronizarChipsPalabras === 'function') {
+                    sincronizarChipsPalabras();
+                }
+
+                // 3. Limpiar Archivo PDF
+                $('#id_pdf').val('');
+                archivoPdfSeleccionado = null;
+                if (currentPdfBlobUrl) {
+                    URL.revokeObjectURL(currentPdfBlobUrl);
+                    currentPdfBlobUrl = null;
+                }
+                $('#tarjeta-pdf-seleccionado').slideUp(200);
+                $('#zona-drag-drop-pdf').slideDown(250);
+
+                // 4. Limpiar Bloques Dinámicos
+                $('.bloque-dinamico input, .bloque-dinamico select, .bloque-dinamico textarea').val('');
+
+                // 5. Limpiar Autores (devolver a la lista disponible)
+                $('#selected-list li.author-card-row').each(function() {
+                    const id = $(this).data('id');
+                    const original = $(`#available-list li[data-id="${id}"]`);
+                    if (original.length > 0) {
+                        original.removeClass('d-none');
+                    }
+                });
+                $('#selected-list').empty();
+                $('#real-autor-select').empty();
+                if (typeof updateFormState === 'function') {
+                    updateFormState();
+                }
+                if (typeof filtrarAutores === 'function') {
+                    filtrarAutores();
+                }
+
+                // 6. Ocultar banner y actualizar progreso a 0%
+                $('#banner-borrador-local').slideUp(250);
+                $('#indicador-borrador-estado').html('<i class="fas fa-trash-alt text-muted mr-1"></i>Borrador eliminado');
+                actualizarProgresoFormulario();
+                refrescarValidacionVisualCampos();
+                mostrarToastFlotante('Borrador descartado y formulario reiniciado en limpio.');
+            }
+
+            function mostrarAlertaFormulario(mensaje, titulo = 'Atención', tipo = 'warning') {
+                const $modal = $('#modalAlertaFormulario');
+                const $iconoCont = $('#alertaFormIconoContenedor');
+                const $icono = $('#alertaFormIcono');
+                const $btn = $('#alertaFormBtnAceptar');
+
+                $('#alertaFormTitulo').text(titulo);
+                $('#alertaFormMensaje').text(mensaje);
+
+                if (tipo === 'warning') {
+                    $iconoCont.css({ 'background-color': '#fef3c7', 'border': '2px solid #fde68a', 'color': '#d97706' });
+                    $icono.attr('class', 'fas fa-exclamation-triangle');
+                    $btn.attr('class', 'btn btn-warning text-dark btn-sm rounded-pill px-4 py-2 font-weight-bold shadow-sm');
+                } else if (tipo === 'danger' || tipo === 'error') {
+                    $iconoCont.css({ 'background-color': '#fee2e2', 'border': '2px solid #fecaca', 'color': '#dc2626' });
+                    $icono.attr('class', 'fas fa-times-circle');
+                    $btn.attr('class', 'btn btn-danger btn-sm rounded-pill px-4 py-2 font-weight-bold shadow-sm');
+                } else {
+                    $iconoCont.css({ 'background-color': '#f0fdf4', 'border': '2px solid #86efac', 'color': '#16a34a' });
+                    $icono.attr('class', 'fas fa-check-circle');
+                    $btn.attr('class', 'btn btn-success btn-sm rounded-pill px-4 py-2 font-weight-bold shadow-sm');
+                }
+                $modal.modal('show');
             }
 
             function programarAutoGuardado() {
@@ -4645,7 +4774,15 @@
             });
 
             $('#btnRestaurarBorrador').on('click', restaurarBorradorLocal);
-            $('#btnDescartarBorrador').on('click', descartarBorradorLocal);
+            $('#btnDescartarBorrador').on('click', function(e) {
+                e.preventDefault();
+                $('#modalConfirmarDescartarBorrador').modal('show');
+            });
+            $('#btnConfirmarEliminarBorradorModal').on('click', function(e) {
+                e.preventDefault();
+                $('#modalConfirmarDescartarBorrador').modal('hide');
+                descartarBorradorLocal();
+            });
 
             // ==============================================================
             // SUGERENCIAS INTELIGENTES DE PALABRAS CLAVE CONTEXTUALES (IDEA 8)
