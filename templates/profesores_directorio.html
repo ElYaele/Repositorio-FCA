@@ -968,9 +968,18 @@
 
                             <!-- CAPACILLO PLISADO CON LECTURA Y BOTONES -->
                             <div class="cupcake-liner-section">
-                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 55px;">
+                                <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                     {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                                 </p>
+                                {% if prof.lista_lineas_investigacion_publicas %}
+                                    <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                            <span class="badge rounded-pill shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                                #{{ tag }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 {% if prof.horario_pdf %}
                                     <div class="mt-2 text-center">
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -1055,9 +1064,18 @@
                                 </div>
                             </div>
 
-                            <p class="text-muted small" style="line-height: 1.5; min-height: 55px;">
+                            <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                 {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                             </p>
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                    {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                        <span class="badge rounded-pill shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                            #{{ tag }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             {% if prof.horario_pdf %}
                                 <div class="mt-2 text-center">
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -1162,6 +1180,22 @@
                                                     <p class="mb-0 text-dark small fst-italic">"{{ nota.mensaje }}"</p>
                                                 </div>
                                             </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (IDEA 24) -->
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <h5 class="fw-bold text-success border-bottom pb-2 mb-3">
+                                        <i class="fas fa-tags me-2"></i>Líneas de Investigación y Áreas de Especialidad
+                                    </h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas %}
+                                            <span class="badge rounded-pill px-3 py-2 shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.82rem; font-weight: 600;">
+                                                <i class="fas fa-hashtag me-1 opacity-50"></i>{{ tag }}
+                                            </span>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -1437,7 +1471,7 @@
                             <div class="cupcake-frosting-section">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
                                     <span class="badge bg-white text-dark border shadow-sm small text-truncate" style="max-width: 100%;" title="{{ prof.institucion_origen }}">
-                                        <i class="fas fa-globe-americas me-1 text-primary"></i>{{ prof.institucion_origen }}
+                                        <i class="fas fa-university me-1 text-primary"></i><strong>{{ prof.siglas_institucion }}</strong> &bull; {{ prof.institucion_origen }}
                                     </span>
                                     <span class="cupcake-badge ms-auto flex-shrink-0"><i class="fas fa-birthday-cake me-1"></i>¡Cumpleaños Hoy! 🧁</span>
                                 </div>
@@ -1471,9 +1505,18 @@
                             <div class="cupcake-drip-divider"></div>
 
                             <div class="cupcake-liner-section">
-                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 55px;">
+                                <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                     {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                                 </p>
+                                {% if prof.lista_lineas_investigacion_publicas %}
+                                    <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                            <span class="badge rounded-pill shadow-xs" style="background-color: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                                #{{ tag }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 {% if prof.horario_pdf %}
                                     <div class="mt-2 text-center">
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -1523,7 +1566,7 @@
                         <div>
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-3">
                                 <span class="badge border small text-truncate" style="max-width: 100%; background: #f0f9ff; color: #0284c7; border-color: #bae6fd;" title="{{ prof.institucion_origen }}">
-                                    <i class="fas fa-globe-americas me-1"></i>{{ prof.institucion_origen }}
+                                    <i class="fas fa-university me-1"></i><strong>{{ prof.siglas_institucion }}</strong> &bull; {{ prof.institucion_origen }}
                                 </span>
                                 {% if prof.medalla_productividad %}
                                     <span class="badge {{ prof.medalla_productividad.badge_class }} rounded-pill px-2 py-1 shadow-xs ms-auto flex-shrink-0" style="font-size: 0.72rem;" title="{{ prof.medalla_productividad.descripcion }}">
@@ -1557,9 +1600,18 @@
                                 </div>
                             </div>
 
-                            <p class="text-muted small" style="line-height: 1.5; min-height: 55px;">
+                            <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                 {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                             </p>
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                    {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                        <span class="badge rounded-pill shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                            #{{ tag }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             {% if prof.horario_pdf %}
                                 <div class="mt-2 text-center">
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -1664,6 +1716,22 @@
                                                     <p class="mb-0 text-dark small fst-italic">"{{ nota.mensaje }}"</p>
                                                 </div>
                                             </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (IDEA 24) -->
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <h5 class="fw-bold border-bottom pb-2 mb-3" style="color: #0284c7;">
+                                        <i class="fas fa-tags me-2"></i>Líneas de Investigación y Áreas de Especialidad
+                                    </h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas %}
+                                            <span class="badge rounded-pill px-3 py-2 shadow-xs" style="background-color: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.25); font-size: 0.82rem; font-weight: 600;">
+                                                <i class="fas fa-hashtag me-1 opacity-50"></i>{{ tag }}
+                                            </span>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -1972,9 +2040,18 @@
                             <div class="cupcake-drip-divider"></div>
 
                             <div class="cupcake-liner-section">
-                                <p class="text-muted small mb-3" style="line-height: 1.5; min-height: 55px;">
+                                <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                     {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                                 </p>
+                                {% if prof.lista_lineas_investigacion_publicas %}
+                                    <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                            <span class="badge rounded-pill shadow-xs" style="background-color: rgba(124, 58, 237, 0.08); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                                #{{ tag }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 {% if prof.horario_pdf %}
                                     <div class="mt-2 text-center">
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -2058,9 +2135,18 @@
                                 </div>
                             </div>
 
-                            <p class="text-muted small" style="line-height: 1.5; min-height: 55px;">
+                            <p class="text-muted small mb-2" style="line-height: 1.5; min-height: 55px;">
                                 {{ prof.biografia|default:"Sin semblanza académica registrada actualmente."|truncatewords:26 }}
                             </p>
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="mt-1 mb-2 d-flex flex-wrap gap-1">
+                                    {% for tag in prof.lista_lineas_investigacion_publicas|slice:":3" %}
+                                        <span class="badge rounded-pill shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.65rem; font-weight: 600;">
+                                            #{{ tag }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             {% if prof.horario_pdf %}
                                 <div class="mt-2 text-center">
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
@@ -2165,6 +2251,22 @@
                                                     <p class="mb-0 text-dark small fst-italic">"{{ nota.mensaje }}"</p>
                                                 </div>
                                             </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (IDEA 24) -->
+                            {% if prof.lista_lineas_investigacion_publicas %}
+                                <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                                    <h5 class="fw-bold border-bottom pb-2 mb-3" style="color: #7c3aed;">
+                                        <i class="fas fa-tags me-2"></i>Líneas de Investigación y Áreas de Especialidad
+                                    </h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for tag in prof.lista_lineas_investigacion_publicas %}
+                                            <span class="badge rounded-pill px-3 py-2 shadow-xs" style="background-color: rgba(124, 58, 237, 0.08); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.25); font-size: 0.82rem; font-weight: 600;">
+                                                <i class="fas fa-hashtag me-1 opacity-50"></i>{{ tag }}
+                                            </span>
                                         {% endfor %}
                                     </div>
                                 </div>

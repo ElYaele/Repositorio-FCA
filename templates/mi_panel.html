@@ -954,6 +954,11 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <!-- GUÍA RÁPIDA INSTITUCIONAL Y SOPORTE FCA (IDEA 29) -->
+            <button type="button" class="btn btn-light rounded-circle shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGuiaRapidaPanel" title="Guía Rápida y Preguntas Frecuentes FCA" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-question-circle text-info"></i>
+            </button>
+
             <!-- CENTRO DE NOTIFICACIONES Y ALERTAS (FASE 1) -->
             <button type="button" class="btn btn-light rounded-circle position-relative shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCentroNotificaciones" title="Centro de Notificaciones y Alertas" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-bell text-secondary"></i>
@@ -976,6 +981,7 @@
                     {% endif %}
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalActualizarDatosCuenta"><i class="fas fa-user-cog me-2" style="color: var(--theme-primary);"></i>Actualizar Datos de Cuenta</a></li>
                     <li><a class="dropdown-item" href="{% url 'reporte_curriculo_pdf' %}" target="_blank"><i class="fas fa-file-pdf me-2 text-danger"></i>Reporte Curricular (PDF)</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalGuiaRapidaPanel"><i class="fas fa-question-circle me-2 text-info"></i>Guía Rápida y Ayuda FCA</a></li>
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCambiarMiClave"><i class="fas fa-key me-2 text-warning"></i>Seguridad</a></li>
                     <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalDesactivarMiCuenta"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -1239,10 +1245,19 @@
                                 <span class="badge shadow-sm" style="background-color: #0d6efd; color: #ffffff;"><i class="fas fa-user-tie me-1"></i>Personal Administrativo</span>
                             {% endif %}
 
-                            <!-- INSIGNIA INSTITUCIONAL SEGURA PARA DOCENTES EXTERNOS (IDEA 16) -->
-                            {% if user.autor and user.autor.es_externo and user.autor.institucion_origen %}
-                                <span class="badge shadow-sm px-3 py-1" style="background-color: #0369a1; color: #ffffff; border-radius: 20px; font-weight: 600;" title="Institución Externa Acreditada">
-                                    🏛️ {{ user.autor.institucion_origen }}
+                            <!-- ESCUDO Y MONOGRAMA HERÁLDICO PARA UNIVERSIDADES EXTERNAS (IDEA 16) -->
+                            {% if user.autor and user.autor.institucion_origen and user.autor.institucion_origen.upper != 'UABC' and 'FACULTAD DE CONTADUR' not in user.autor.institucion_origen.upper %}
+                                <span class="badge shadow-xs px-3 py-1 d-inline-flex align-items-center gap-1" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border-radius: 20px; font-weight: 700;" title="Institución de Procedencia Acreditada: {{ user.autor.institucion_origen }}">
+                                    <i class="fas fa-university"></i>
+                                    <span>{{ user.autor.siglas_institucion }}</span>
+                                    <span style="opacity: 0.85; font-weight: 400; font-size: 0.72rem;">&bull; {{ user.autor.institucion_origen|truncatechars:28 }}</span>
+                                </span>
+                            {% endif %}
+
+                            <!-- DISTINTIVO DE PRODUCTIVIDAD INSTITUCIONAL Y PROGRESO A MEDALLA (IDEA 25) -->
+                            {% if user.autor and user.autor.puede_tener_semblanza and user.autor.progreso_productividad.actual %}
+                                <span class="badge {{ user.autor.progreso_productividad.actual.badge_class }} shadow-xs px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ user.autor.progreso_productividad.actual.descripcion }}{% if not user.autor.progreso_productividad.es_maximo %} &bull; Próxima meta {{ user.autor.progreso_productividad.siguiente_emoji }} {{ user.autor.progreso_productividad.siguiente_titulo }}: {{ user.autor.progreso_productividad.obras }}/{{ user.autor.progreso_productividad.meta }} obras aprobadas (Faltan {{ user.autor.progreso_productividad.faltantes }}){% else %} &bull; ¡Nivel máximo de producción alcanzado!{% endif %}">
+                                    {{ user.autor.progreso_productividad.actual.emoji }} {{ user.autor.progreso_productividad.actual.titulo }}
                                 </span>
                             {% endif %}
 
@@ -1267,7 +1282,7 @@
                                 </span>
                                 {% else %}
                                 <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-50 shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalVerMiPoemaAnual" title="Haz clic para ver tu poema institucional conmemorativo de este año">
-                                    📜 Poema {{ hoy.year|default:poema_cumpleanos.anio }}
+                                    📜 Poema {{ poema_cumpleanos.anio|default:"Conmemorativo" }}
                                 </span>
                                 {% endif %}
                             {% endif %}
@@ -1303,6 +1318,18 @@
                                 Panel exclusivo para la gestión de documentos, cargas y coautorías institucionales.
                             {% endif %}
                         </p>
+
+                        <!-- LÍNEAS DE INVESTIGACIÓN INTERACTIVAS / TAGS (IDEA 24) -->
+                        {% if user.autor and user.autor.lista_lineas_investigacion %}
+                        <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                            <small class="text-muted fw-bold me-1" style="font-size: 0.72rem;"><i class="fas fa-tags me-1" style="color: var(--theme-primary);"></i>Líneas:</small>
+                            {% for tag in user.autor.lista_lineas_investigacion %}
+                                <span class="badge rounded-pill shadow-xs" style="background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.1); color: var(--theme-primary); border: 1px solid var(--theme-primary); font-size: 0.7rem; font-weight: 600;">
+                                    #{{ tag }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
 
                     {% if user.is_superuser %}
@@ -2434,6 +2461,15 @@
                                     <p class="text-muted small mb-0" style="line-height: 1.5; min-height: 55px;">
                                         {{ user.autor.biografia_borrador|default:user.autor.biografia|default:"Sin semblanza corta registrada actualmente." }}
                                     </p>
+                                    {% if user.autor.lista_lineas_investigacion %}
+                                        <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
+                                            {% for tag in user.autor.lista_lineas_investigacion %}
+                                                <span class="badge rounded-pill shadow-xs" style="background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.1); color: var(--theme-primary); border: 1px solid var(--theme-primary); font-size: 0.65rem;">
+                                                    #{{ tag }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                     {% if user.autor.es_profesor and not user.autor.es_externo and user.autor.rol_facultad != 'INV_IND' %}
                                         {% if user.autor.horario_pdf_borrador or user.autor.horario_pdf %}
                                             <div class="mt-2 text-center">
@@ -2499,6 +2535,22 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (IDEA 24) -->
+                        {% if user.autor.lista_lineas_investigacion %}
+                        <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 mb-3" style="color: var(--theme-primary);">
+                                <i class="fas fa-tags me-2"></i>Líneas de Investigación y Áreas de Especialidad
+                            </h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for tag in user.autor.lista_lineas_investigacion %}
+                                    <span class="badge rounded-pill px-3 py-2 shadow-xs" style="background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.1); color: var(--theme-primary); border: 1px solid var(--theme-primary); font-size: 0.82rem; font-weight: 600;">
+                                        <i class="fas fa-hashtag me-1 opacity-50"></i>{{ tag }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <!-- 1. SEMBLANZA ACADÉMICA DETALLADA (RENDERIZA EL HTML DE QUILL DE FORMA SEGURA) -->
                         <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
@@ -2984,6 +3036,50 @@
                                 <textarea name="biografia" id="textareaBioCorta" maxlength="300" class="form-control" rows="2" placeholder="Breve descripción que se muestra en la tarjeta del claustro...">{{ user.autor.biografia_borrador|default:user.autor.biografia|default:'' }}</textarea>
                             </div>
 
+                            <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD CON TAGS INTERACTIVOS (IDEA 24) -->
+                            <div class="col-12 p-2 rounded" id="seccion-lineas-investigacion">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-bold mb-0">
+                                        <i class="fas fa-tags me-1" style="color: var(--theme-primary);"></i>Líneas de Investigación y Áreas de Especialidad:
+                                        <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Escribe tus áreas y temas de investigación o especialidad. Presiona Enter o haz clic en Añadir. Se mostrarán como etiquetas institucionales en tu tarjeta del claustro."></i>
+                                    </label>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Máx. 10 líneas</small>
+                                </div>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <!-- Input interactivo con botón -->
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-hashtag" style="color: var(--theme-primary);"></i></span>
+                                        <input type="text" id="inputNuevaLinea" class="form-control border-start-0" placeholder="Ej. Finanzas Corporativas, Auditoría Forense, Inteligencia Artificial..." maxlength="50" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); agregarChipLinea(); }">
+                                        <button type="button" class="btn btn-theme-solid px-3 fw-bold" onclick="agregarChipLinea()">
+                                            <i class="fas fa-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+
+                                    <!-- Contenedor dinámico de chips interactivos -->
+                                    <div id="contenedorChipsLineas" class="d-flex flex-wrap gap-2 py-1 align-items-center" style="min-height: 38px;">
+                                        <!-- Renderizado dinámico vía JavaScript -->
+                                    </div>
+
+                                    <!-- Sugerencias frecuentes del claustro FCA -->
+                                    <div class="mt-2 pt-2 border-top">
+                                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.72rem;"><i class="fas fa-lightbulb text-warning me-1"></i>Sugerencias frecuentes FCA (haz clic para añadir):</small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Auditoría y Fiscal')">+ Auditoría y Fiscal</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Finanzas Corporativas')">+ Finanzas Corporativas</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Inteligencia Artificial')">+ Inteligencia Artificial</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Sistemas de Información')">+ Sistemas de Información</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Gestión del Talento')">+ Gestión del Talento</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Emprendimiento')">+ Emprendimiento</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Comercio Internacional')">+ Comercio Internacional</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="sugerirChipLinea('Marketing Digital')">+ Marketing Digital</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden input sincronizado para enviar a Django -->
+                                    <input type="hidden" name="lineas_investigacion" id="inputHiddenLineasInvestigacion" value="{{ user.autor.lineas_investigacion_borrador|default:user.autor.lineas_investigacion|default:'' }}">
+                                </div>
+                            </div>
+
                             <div class="col-12 p-2 rounded {% if 'Semblanza' in user.autor.motivo_rechazo_semblanza or 'semblanza' in user.autor.motivo_rechazo_semblanza or 'detallada' in user.autor.motivo_rechazo_semblanza or 'Detallada' in user.autor.motivo_rechazo_semblanza %}border border-warning bg-warning bg-opacity-10 shadow-sm{% endif %}" id="seccion-bio-ext">
                                 <label class="form-label fw-bold">
                                     Semblanza Académica Detallada Completa (Editor Enriquecido):
@@ -3072,7 +3168,7 @@
                             <i class="fas fa-file-pdf me-2"></i>4. Expediente de Reconocimientos / CV Académico
                         </h6>
                         <div class="p-2 rounded mb-3 {% if 'Reconocimientos' in user.autor.motivo_rechazo_semblanza or 'Reconocimiento' in user.autor.motivo_rechazo_semblanza or 'CV' in user.autor.motivo_rechazo_semblanza or 'incompleto' in user.autor.motivo_rechazo_semblanza %}border border-warning bg-warning bg-opacity-10 shadow-sm{% endif %}" id="seccion-cv-pdf">
-                            <label class="form-label fw-bold text-primary">
+                            <label class="form-label fw-bold" style="color: var(--theme-primary);">
                                 Documento de Reconocimientos / CV Académico (PDF):
                                 <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Sube tu CV académico o certificaciones en formato PDF para respaldar tu perfil en el claustro."></i>
                                 {% if 'Reconocimientos' in user.autor.motivo_rechazo_semblanza or 'Reconocimiento' in user.autor.motivo_rechazo_semblanza or 'CV' in user.autor.motivo_rechazo_semblanza or 'incompleto' in user.autor.motivo_rechazo_semblanza %}
@@ -3080,26 +3176,26 @@
                                 {% endif %}
                             </label>
                             <!-- ZONA DRAG & DROP MODERNA PARA RECONOCIMIENTOS / CV (PDF) -->
-                            <div id="dropzone_reconocimiento_pdf" class="pdf-dropzone p-3 text-center rounded-3 mb-2 border border-2 border-primary bg-primary bg-opacity-10 cursor-pointer" style="border-style: dashed !important; cursor: pointer;">
+                            <div id="dropzone_reconocimiento_pdf" class="pdf-dropzone p-3 text-center rounded-3 mb-2 border border-2 cursor-pointer" style="border-style: dashed !important; cursor: pointer; border-color: var(--theme-primary) !important; background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.08);">
                                 <input type="file" name="reconocimiento_pdf" id="input_reconocimiento_pdf" class="d-none" accept=".pdf">
                                 <div class="py-2">
-                                    <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; border: 1px solid #bfdbfe;">
-                                        <i class="fas fa-cloud-upload-alt text-primary fa-lg"></i>
+                                    <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 48px; height: 48px; border: 1px solid var(--theme-primary);">
+                                        <i class="fas fa-cloud-upload-alt fa-lg" style="color: var(--theme-primary);"></i>
                                     </div>
                                     <h6 class="fw-bold text-dark mb-1 small">Arrastra y suelta tu Reconocimiento o CV (PDF) aquí</h6>
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">o haz clic para <span class="text-primary fw-bold text-decoration-underline">explorar en tu equipo</span> (Máx 20 MB)</small>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">o haz clic para <span class="fw-bold text-decoration-underline" style="color: var(--theme-primary);">explorar en tu equipo</span> (Máx 20 MB)</small>
                                 </div>
                             </div>
 
                             <!-- PREVISUALIZACIÓN DE NUEVO ARCHIVO LOCAL SELECCIONADO -->
-                            <div id="tarjeta_nuevo_reconocimiento_pdf" class="card bg-white border border-primary p-3 rounded-3 shadow-sm mb-3" style="display: none;">
+                            <div id="tarjeta_nuevo_reconocimiento_pdf" class="card bg-white p-3 rounded-3 shadow-sm mb-3" style="display: none; border: 1px solid var(--theme-primary);">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary" style="width: 40px; height: 40px;">
+                                        <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.12); color: var(--theme-primary);">
                                             <i class="fas fa-file-pdf"></i>
                                         </div>
                                         <div>
-                                            <span class="text-primary small d-block fw-bold"><i class="fas fa-check-circle me-1"></i>Nuevo PDF seleccionado:</span>
+                                            <span class="small d-block fw-bold" style="color: var(--theme-primary);"><i class="fas fa-check-circle me-1"></i>Nuevo PDF seleccionado:</span>
                                             <strong id="nombre_nuevo_reconocimiento_pdf" class="text-dark d-block text-truncate" style="max-width: 300px;">---</strong>
                                             <small id="tamano_nuevo_reconocimiento_pdf" class="text-muted fw-bold">0 KB</small>
                                         </div>
@@ -3911,11 +4007,19 @@
                     </div>
                     <p class="text-muted mb-2">¿Estás seguro de eliminar permanentemente la obra:</p>
                     <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="eliminarTituloModal">Nombre de la Obra</h6>
-                    <p class="small text-danger mb-0">Esta acción no se puede deshacer y removerá el acceso al archivo PDF asociado.</p>
+                    <p class="small text-danger mb-3">Esta acción no se puede deshacer y removerá el acceso al archivo PDF asociado.</p>
+
+                    <!-- CONFIRMACIÓN REFORZADA PARA ACCIONES CRÍTICAS (IDEA 27) -->
+                    <div class="form-check text-start p-3 bg-light rounded-3 border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" id="checkConfirmarEliminarDoc" onchange="const btn = document.getElementById('btnConfirmarEliminarDoc'); if(this.checked){ btn.classList.remove('disabled'); btn.removeAttribute('tabindex'); btn.removeAttribute('aria-disabled'); } else { btn.classList.add('disabled'); btn.setAttribute('tabindex', '-1'); btn.setAttribute('aria-disabled', 'true'); }">
+                        <label class="form-check-label small fw-bold text-dark user-select-none" for="checkConfirmarEliminarDoc">
+                            Entiendo que esta acción es definitiva e irreversible, y confirmo la eliminación permanente de esta obra académica.
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light border-0 py-3 justify-content-center">
                     <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <a href="#" id="btnConfirmarEliminarDoc" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Eliminar</a>
+                    <a href="#" id="btnConfirmarEliminarDoc" class="btn btn-danger px-4 rounded-pill shadow-sm disabled" tabindex="-1" aria-disabled="true">Sí, Eliminar</a>
                 </div>
             </div>
         </div>
@@ -4200,9 +4304,11 @@
 
                                     {% if user.autor.es_externo or user.autor.rol_facultad == 'INV_IND' %}
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-dark mb-1">Institución o Universidad de Procedencia:</label>
-                                        <input type="text" name="institucion_origen" class="form-control" value="{{ user.autor.institucion_origen|default:'' }}">
-                                        <small class="text-muted" style="font-size: 0.72rem;">Nombre completo de la universidad o centro de investigación.</small>
+                                        <label class="form-label fw-bold small text-dark mb-1">
+                                            <i class="fas fa-university me-1 text-primary"></i>Institución o Universidad de Procedencia:
+                                        </label>
+                                        <input type="text" name="institucion_origen" list="listaUniversidadesCatalogo" class="form-control" value="{{ user.autor.institucion_origen|default:'' }}" placeholder="Escribe o selecciona tu universidad...">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Catálogo oficial para monograma y escudo heráldico en el claustro.</small>
                                     </div>
                                     {% else %}
                                     <div class="col-md-6">
@@ -4212,6 +4318,13 @@
                                     </div>
                                     {% endif %}
                                 </div>
+
+                                <!-- CATÁLOGO GLOBAL DE UNIVERSIDADES PARA AUTOCOMPLETADO (IDEA 16) -->
+                                <datalist id="listaUniversidadesCatalogo">
+                                    {% for uni in universidades_catalogo %}
+                                        <option value="{{ uni.nombre }} ({{ uni.siglas }})">{{ uni.nombre }}</option>
+                                    {% endfor %}
+                                </datalist>
                             </div>
                         </div>
                     </div>
@@ -4652,6 +4765,163 @@
         </div>
     </div>
 
+    <!-- MODAL GUÍA RÁPIDA INSTITUCIONAL Y SOPORTE FCA (IDEA 29) -->
+    <div class="modal fade" id="modalGuiaRapidaPanel" tabindex="-1" aria-labelledby="modalGuiaRapidaPanelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-question-circle fa-2x me-3"></i>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="modalGuiaRapidaPanelLabel">Guía Rápida Institucional y Soporte FCA</h5>
+                            <small class="opacity-75">Preguntas frecuentes, criterios de moderación y ayuda académica</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <!-- BANNER INSTITUCIONAL -->
+                    <div class="card border-0 shadow-xs rounded-3 p-3 mb-4 text-white" style="background: linear-gradient(135deg, var(--theme-primary) 0%, rgba(var(--theme-primary-rgb, 0, 102, 51), 0.85) 100%);">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fas fa-university fa-2x opacity-75"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Repositorio Institucional &mdash; Facultad de Contaduría y Administración UABC</h6>
+                                <p class="small mb-0 opacity-90">Plataforma oficial para la difusión, resguardo y preservación de la producción científica, docente y tecnológica.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACORDEÓN DE PREGUNTAS FRECUENTES -->
+                    <div class="accordion accordion-flush rounded-3 border overflow-hidden shadow-xs" id="accordionGuiaRapida">
+                        <!-- FAQ 1: SUBIR OBRAS -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingGuiaUno">
+                                <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuiaUno" aria-expanded="false" aria-controls="collapseGuiaUno">
+                                    <i class="fas fa-cloud-upload-alt me-2" style="color: var(--theme-primary);"></i>
+                                    1. ¿Cómo subir una nueva publicación u obra académica?
+                                </button>
+                            </h2>
+                            <div id="collapseGuiaUno" class="accordion-collapse collapse" aria-labelledby="headingGuiaUno" data-bs-parent="#accordionGuiaRapida">
+                                <div class="accordion-body text-secondary small bg-white" style="line-height: 1.6;">
+                                    <p class="mb-2">Para registrar un nuevo trabajo en el repositorio:</p>
+                                    <ol class="mb-2 ps-3">
+                                        <li>Haz clic en el botón <strong>"Subir Trabajo"</strong> en la esquina superior o en tu panel.</li>
+                                        <li>Selecciona el tipo de obra (Artículo Científico, Tesis, Libro, Capítulo, Ponencia, Propiedad Intelectual).</li>
+                                        <li>Carga tu archivo en formato PDF (máximo 50 MB) y completa el título, resumen y año.</li>
+                                        <li>Asigna a los coautores participantes usando su código FCA institucional o nombre completo.</li>
+                                        <li>Haz clic en <strong>"Guardar y Enviar a Moderación"</strong> para que el comité editorial revise y autorice la obra.</li>
+                                    </ol>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success"><i class="fas fa-check-circle me-1"></i>Recibirás una notificación cuando tu obra sea aprobada.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 2: COAUTORÍAS -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingGuiaDos">
+                                <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuiaDos" aria-expanded="false" aria-controls="collapseGuiaDos">
+                                    <i class="fas fa-users-cog me-2" style="color: var(--theme-primary);"></i>
+                                    2. ¿Cómo funcionan las coautorías y cómo autorizarlas?
+                                </button>
+                            </h2>
+                            <div id="collapseGuiaDos" class="accordion-collapse collapse" aria-labelledby="headingGuiaDos" data-bs-parent="#accordionGuiaRapida">
+                                <div class="accordion-body text-secondary small bg-white" style="line-height: 1.6;">
+                                    <p class="mb-2">Cuando un colega te incluye como autor en una publicación:</p>
+                                    <ul class="mb-2 ps-3">
+                                        <li>Aparecerá en la pestaña <strong>"Obras donde figuro como Coautor"</strong> con estado <em>Pendiente de Aceptación</em>.</li>
+                                        <li>Puedes revisar los metadatos y presionar <strong>"Aceptar Coautoría"</strong> para que se sume oficialmente a tu producción curricular y reporte PDF.</li>
+                                        <li>Si no participaste o hay un error, puedes presionar <strong>"Rechazar Coautoría"</strong> para desvincularte del registro de forma transparente.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 3: SEMBLANZA Y CLAUSTRO -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingGuiaTres">
+                                <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuiaTres" aria-expanded="false" aria-controls="collapseGuiaTres">
+                                    <i class="fas fa-id-card me-2" style="color: var(--theme-primary);"></i>
+                                    3. ¿Cuáles son los requisitos para que mi semblanza sea aprobada en el Claustro?
+                                </button>
+                            </h2>
+                            <div id="collapseGuiaTres" class="accordion-collapse collapse" aria-labelledby="headingGuiaTres" data-bs-parent="#accordionGuiaRapida">
+                                <div class="accordion-body text-secondary small bg-white" style="line-height: 1.6;">
+                                    <p class="mb-2">Para publicar tu perfil en el <em>Claustro Docente e Investigadores</em>, la moderación institucional evalúa:</p>
+                                    <ul class="mb-2 ps-3">
+                                        <li><strong>Fotografía Profesional:</strong> Rostro centrado, iluminación adecuada y fondo neutral institucional.</li>
+                                        <li><strong>Semblanza Corta:</strong> Resumen claro de 1 a 2 líneas destacando tu rol académico.</li>
+                                        <li><strong>Semblanza Extensa:</strong> Descripción de tu trayectoria, formación y distinciones en el editor enriquecido.</li>
+                                        <li><strong>Expediente CV (PDF):</strong> Currículum académico oficial o constancias de grado en formato legible.</li>
+                                        <li><strong>Líneas de Investigación:</strong> Al menos una especialidad académica registrada mediante tags.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 4: MEDALLAS Y PRODUCTIVIDAD -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingGuiaCuatro">
+                                <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuiaCuatro" aria-expanded="false" aria-controls="collapseGuiaCuatro">
+                                    <i class="fas fa-medal me-2" style="color: var(--theme-primary);"></i>
+                                    4. ¿Cómo se calculan las medallas de productividad institucional?
+                                </button>
+                            </h2>
+                            <div id="collapseGuiaCuatro" class="accordion-collapse collapse" aria-labelledby="headingGuiaCuatro" data-bs-parent="#accordionGuiaRapida">
+                                <div class="accordion-body text-secondary small bg-white" style="line-height: 1.6;">
+                                    <p class="mb-2">Las medallas académicas reconocen la constancia en el repositorio:</p>
+                                    <ul class="mb-2 ps-3">
+                                        <li>🌱 <strong>Iniciador:</strong> Cuenta creada, perfil en proceso de primera publicación.</li>
+                                        <li>🥉 <strong>Nivel Bronce:</strong> 1 a 4 obras académicas aprobadas y publicadas.</li>
+                                        <li>🥈 <strong>Nivel Plata:</strong> 5 a 9 obras académicas aprobadas.</li>
+                                        <li>🥇 <strong>Nivel Oro:</strong> 10 o más obras académicas aprobadas (máxima distinción).</li>
+                                    </ul>
+                                    <p class="mb-0">Tu progreso se actualiza en tiempo real y puedes verificarlo pasando el ratón sobre la medalla en tu panel.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 5: AUXILIARES Y SERVICIO -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingGuiaCinco">
+                                <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuiaCinco" aria-expanded="false" aria-controls="collapseGuiaCinco">
+                                    <i class="fas fa-user-graduate me-2" style="color: var(--theme-primary);"></i>
+                                    5. ¿Cómo funciona la acreditación para Auxiliares de Investigación?
+                                </button>
+                            </h2>
+                            <div id="collapseGuiaCinco" class="accordion-collapse collapse" aria-labelledby="headingGuiaCinco" data-bs-parent="#accordionGuiaRapida">
+                                <div class="accordion-body text-secondary small bg-white" style="line-height: 1.6;">
+                                    <p class="mb-2">Los auxiliares asignados a un docente titular pueden registrar horas de servicio y apoyo a la investigación:</p>
+                                    <ul class="mb-2 ps-3">
+                                        <li>El profesor tutor valida las bitácoras semanales directamente desde su panel.</li>
+                                        <li>Al completar las <strong>480 horas</strong> reglamentarias, el sistema genera automáticamente la constancia con folio criptográfico y código QR de validación.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOPORTE Y CONTACTO INSTITUCIONAL -->
+                    <div class="card border-0 shadow-xs rounded-3 p-3 mt-4 bg-white border-start border-4 border-info">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark"><i class="fas fa-headset text-info me-2"></i>¿Necesitas asistencia adicional o reportar una incidencia?</h6>
+                                <p class="small text-muted mb-0">Comunícate con la Coordinación de Tecnologías e Informática de la FCA UABC.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="mailto:repositorio.fca@uabc.edu.mx" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                    <i class="fas fa-envelope me-1"></i>Contacto por Correo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 justify-content-end">
+                    <button type="button" class="btn btn-secondary btn-sm px-4 rounded-pill" data-bs-dismiss="modal">Entendido, Cerrar Guía</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -5035,6 +5305,74 @@
             }
         }
 
+        // ========================================================
+        // GESTOR INTERACTIVO DE LÍNEAS DE INVESTIGACIÓN (IDEA 24)
+        // ========================================================
+        function obtenerArrayLineas() {
+            const hidden = document.getElementById('inputHiddenLineasInvestigacion');
+            if (!hidden || !hidden.value.trim()) return [];
+            return hidden.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+
+        function guardarArrayLineas(arr) {
+            const hidden = document.getElementById('inputHiddenLineasInvestigacion');
+            if (hidden) {
+                hidden.value = arr.join(', ');
+            }
+            renderizarChipsLineas();
+        }
+
+        function renderizarChipsLineas() {
+            const contenedor = document.getElementById('contenedorChipsLineas');
+            if (!contenedor) return;
+            const lineas = obtenerArrayLineas();
+            if (lineas.length === 0) {
+                contenedor.innerHTML = '<span class="text-muted small fst-italic" style="font-size: 0.75rem;"><i class="fas fa-info-circle me-1"></i>Sin especialidades registradas aún. Escribe arriba o elige una sugerencia.</span>';
+                return;
+            }
+            contenedor.innerHTML = lineas.map(tag => `
+                <span class="badge rounded-pill shadow-xs d-inline-flex align-items-center gap-1 px-3 py-2" style="background-color: rgba(var(--theme-primary-rgb, 0, 102, 51), 0.12); color: var(--theme-primary); border: 1px solid var(--theme-primary); font-size: 0.78rem; font-weight: 600;">
+                    <span>#${tag}</span>
+                    <button type="button" class="btn-close btn-close-sm p-0 ms-1" style="font-size: 0.55rem;" onclick="eliminarChipLinea('${tag.replace(/'/g, "\\'")}')" title="Eliminar ${tag}"></button>
+                </span>
+            `).join('');
+        }
+
+        function agregarChipLineaConTexto(texto) {
+            if (!texto) return;
+            const tagLimpio = texto.trim().replace(/^#+/, '').trim();
+            if (!tagLimpio) return;
+            const lineas = obtenerArrayLineas();
+            if (lineas.some(l => l.toLowerCase() === tagLimpio.toLowerCase())) {
+                mostrarToast('Esa línea de investigación ya está en tu lista.', 'warning');
+                return;
+            }
+            if (lineas.length >= 10) {
+                mostrarToast('Puedes registrar hasta un máximo de 10 líneas de investigación.', 'warning');
+                return;
+            }
+            lineas.push(tagLimpio);
+            guardarArrayLineas(lineas);
+        }
+
+        function agregarChipLinea() {
+            const input = document.getElementById('inputNuevaLinea');
+            if (!input) return;
+            agregarChipLineaConTexto(input.value);
+            input.value = '';
+            input.focus();
+        }
+
+        function sugerirChipLinea(texto) {
+            agregarChipLineaConTexto(texto);
+        }
+
+        function eliminarChipLinea(tagAEliminar) {
+            let lineas = obtenerArrayLineas();
+            lineas = lineas.filter(l => l.toLowerCase() !== tagAEliminar.toLowerCase());
+            guardarArrayLineas(lineas);
+        }
+
         function lanzarConfettiCelebracion() {
             if (typeof confetti === 'function') {
                 confetti({
@@ -5047,6 +5385,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             actualizarVisibilidadCabeceras();
+            renderizarChipsLineas();
 
             {% if es_mi_cumpleanos %}
             lanzarConfettiCelebracion();
@@ -5543,7 +5882,17 @@
                     const docId = btn.getAttribute('data-docid');
                     const titulo = btn.getAttribute('data-doctitulo');
                     document.getElementById('eliminarTituloModal').textContent = `"${titulo}"`;
-                    document.getElementById('btnConfirmarEliminarDoc').href = `/gestion-documentos/eliminar/${docId}/`;
+                    const btnConfirmar = document.getElementById('btnConfirmarEliminarDoc');
+                    if (btnConfirmar) {
+                        btnConfirmar.href = `/gestion-documentos/eliminar/${docId}/`;
+                        btnConfirmar.classList.add('disabled');
+                        btnConfirmar.setAttribute('tabindex', '-1');
+                        btnConfirmar.setAttribute('aria-disabled', 'true');
+                    }
+                    const chk = document.getElementById('checkConfirmarEliminarDoc');
+                    if (chk) {
+                        chk.checked = false;
+                    }
                 });
             }
 

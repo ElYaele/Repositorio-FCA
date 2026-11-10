@@ -129,6 +129,16 @@ class Autor(models.Model):
     horario_pdf_borrador = models.FileField(upload_to='horarios/borradores/', blank=True, null=True,
                                             verbose_name="Horario en Borrador (PDF)")
 
+    # --- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (IDEA 24) ---
+    lineas_investigacion = models.CharField(
+        max_length=500, blank=True, null=True,
+        verbose_name="Líneas de Investigación y Especialidad (separadas por coma)"
+    )
+    lineas_investigacion_borrador = models.CharField(
+        max_length=500, blank=True, null=True,
+        verbose_name="Líneas de Investigación en Borrador"
+    )
+
     # --- FOTO PERSONAL (Exclusiva del panel del usuario) ---
     foto_personal = models.ImageField(upload_to='perfiles/', blank=True, null=True,
                                       verbose_name="Foto de Perfil Personal (Panel)")
@@ -478,6 +488,84 @@ class Autor(models.Model):
                 'descripcion': 'Publicaciones activas en el repositorio'
             }
         return None
+
+    @property
+    def progreso_productividad(self):
+        """
+        Calcula el progreso hacia el siguiente nivel de medalla académica (Idea 25).
+        """
+        obras = self.total_obras_aprobadas
+        if obras >= 10:
+            return {
+                'actual': self.medalla_productividad,
+                'siguiente_titulo': None,
+                'siguiente_emoji': '👑',
+                'porcentaje': 100,
+                'faltantes': 0,
+                'es_maximo': True,
+                'meta': 10,
+                'obras': obras
+            }
+        elif obras >= 5:
+            return {
+                'actual': self.medalla_productividad,
+                'siguiente_titulo': 'Investigador Nivel Oro',
+                'siguiente_emoji': '🥇',
+                'porcentaje': int((obras / 10) * 100),
+                'faltantes': 10 - obras,
+                'es_maximo': False,
+                'meta': 10,
+                'obras': obras
+            }
+        elif obras >= 1:
+            return {
+                'actual': self.medalla_productividad,
+                'siguiente_titulo': 'Investigador Nivel Plata',
+                'siguiente_emoji': '🥈',
+                'porcentaje': int((obras / 5) * 100),
+                'faltantes': 5 - obras,
+                'es_maximo': False,
+                'meta': 5,
+                'obras': obras
+            }
+        else:
+            return {
+                'actual': {
+                    'nivel': 'iniciador',
+                    'titulo': 'Investigador Iniciador',
+                    'badge_class': 'bg-light text-muted border shadow-xs',
+                    'icono': 'fas fa-seedling text-muted',
+                    'emoji': '🌱',
+                    'descripcion': 'Iniciando trayectoria en el repositorio'
+                },
+                'siguiente_titulo': 'Investigador Nivel Bronce',
+                'siguiente_emoji': '🥉',
+                'porcentaje': 0,
+                'faltantes': 1,
+                'es_maximo': False,
+                'meta': 1,
+                'obras': 0
+            }
+
+    @property
+    def lista_lineas_investigacion(self):
+        """Lista de líneas de investigación activas (borrador o públicas) para edición interactiva."""
+        txt = self.lineas_investigacion_borrador if self.lineas_investigacion_borrador is not None else self.lineas_investigacion
+        if not txt:
+            return []
+        return [l.strip() for l in txt.split(',') if l.strip()]
+
+    @property
+    def lista_lineas_investigacion_publicas(self):
+        """Lista de líneas de investigación públicas aprobadas para vista en claustro."""
+        if not self.lineas_investigacion:
+            return []
+        return [l.strip() for l in self.lineas_investigacion.split(',') if l.strip()]
+
+    @property
+    def siglas_institucion(self):
+        """Devuelve las siglas o acrónimo limpio de la institución de procedencia (Idea 16)."""
+        return self.obtener_prefijo_codigo_institucional()
 
     @property
     def inicial_limpia(self):

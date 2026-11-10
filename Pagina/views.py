@@ -1570,25 +1570,54 @@ def obtener_notificaciones_panel(user, autor, mis_subidas_qs, auxiliares_pendien
 
 def obtener_actividad_reciente_usuario(user, autor, mis_subidas_qs):
     actividades = []
-    # Últimas 4 subidas
+    # 1. Últimas 4 subidas
     for sub in mis_subidas_qs[:4]:
         actividades.append({
             'tipo': 'subida',
-            'icono': 'fas fa-cloud-upload-alt text-success',
+            'icono': 'fas fa-cloud-upload-alt text-primary',
             'titulo': f'Subiste la obra: "{sub.titulo}"',
             'fecha': sub.created_at,
             'estado': sub.estado,
         })
-    # Auditoría propia (últimas 4 acciones)
-    audits = RegistroAuditoria.objects.filter(admin_usuario=user)[:4]
-    for a in audits:
-        actividades.append({
-            'tipo': 'auditoria',
-            'icono': 'fas fa-history text-secondary',
-            'titulo': a.accion,
-            'fecha': a.created_at,
-            'estado': 'info',
-        })
+    # 2. Auditoría propia o sobre su cuenta
+    try:
+        from django.db.models import Q
+        audits = RegistroAuditoria.objects.filter(Q(admin_usuario=user) | Q(detalle__icontains=user.username))[:4]
+        for a in audits:
+            actividades.append({
+                'tipo': 'auditoria',
+                'icono': 'fas fa-history text-secondary',
+                'titulo': a.accion,
+                'fecha': a.created_at,
+                'estado': 'info',
+            })
+    except Exception:
+        pass
+
+    # 3. Felicitaciones de cumpleaños enviadas o recibidas
+    try:
+        from .models import MensajeCumpleanos
+        if autor:
+            for m in autor.mensajes_recibidos.all().order_by('-fecha_envio')[:2]:
+                remitente_nombre = m.de_usuario.autor.nombre if hasattr(m.de_usuario, 'autor') and m.de_usuario.autor else m.de_usuario.username
+                actividades.append({
+                    'tipo': 'felicitacion',
+                    'icono': 'fas fa-gift text-danger',
+                    'titulo': f'Felicitación de cumpleaños recibida de {remitente_nombre}',
+                    'fecha': m.fecha_envio,
+                    'estado': 'info',
+                })
+        for m in MensajeCumpleanos.objects.filter(de_usuario=user).order_by('-fecha_envio')[:2]:
+            actividades.append({
+                'tipo': 'felicitacion',
+                'icono': 'fas fa-paper-plane text-warning',
+                'titulo': f'Enviaste felicitación a {m.para_autor.nombre}',
+                'fecha': m.fecha_envio,
+                'estado': 'info',
+            })
+    except Exception:
+        pass
+
     actividades.sort(key=lambda x: x['fecha'], reverse=True)
     return actividades[:6]
 
@@ -1765,6 +1794,7 @@ def mi_panel_view(request):
         'notificaciones_sistema': notificaciones_sistema,
         'total_notificaciones_activas': len(notificaciones_sistema),
         'actividad_reciente': actividad_reciente,
+        'universidades_catalogo': Universidad.objects.all().order_by('nombre'),
     }
     return render(request, 'mi_panel.html', context)
 
@@ -2029,6 +2059,12 @@ def actualizar_perfil_docente_view(request):
         # Actualización de semblanzas (borrador o envío)
         autor.biografia_borrador = biografia
         autor.biografia_extendida_borrador = biografia_extendida
+
+        # Líneas de investigación y especialidad con tags interactivos (Idea 24)
+        lineas_investigacion = request.POST.get('lineas_investigacion', '').strip()
+        autor.lineas_investigacion_borrador = lineas_investigacion
+        if getattr(autor, 'is_trusted_publisher', False) or getattr(request.user, 'is_superuser', False):
+            autor.lineas_investigacion = lineas_investigacion
 
         if foto_claustro:
             autor.foto_perfil_borrador = foto_claustro
@@ -3279,6 +3315,8 @@ def aprobar_semblanza_view(request, autor_id):
         autor.reconocimiento_pdf = autor.reconocimiento_pdf_borrador
     if autor.horario_pdf_borrador:
         autor.horario_pdf = autor.horario_pdf_borrador
+    if autor.lineas_investigacion_borrador is not None:
+        autor.lineas_investigacion = autor.lineas_investigacion_borrador
 
     autor.estado_semblanza = 'aprobado'
     autor.perfil_completado = True
