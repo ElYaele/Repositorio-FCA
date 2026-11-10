@@ -14,6 +14,8 @@
     <!-- EDITOR ENRIQUECIDO QUILL.JS (ESTILO WORD) -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- CALENDARIO FLATPICKR INSTITUCIONAL UABC -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --uabc-green: {{ tema_rol.primary|default:'#006633' }};
@@ -25,6 +27,252 @@
             --theme-tag-color: {{ tema_rol.tag_color|default:'#a3e9c0' }};
             --sidebar-width: 72px;
             --birthday-pink: #ff4081;
+        }
+
+        /* TEMA INSTITUCIONAL UABC PARA FLATPICKR */
+        .flatpickr-calendar {
+            font-family: inherit;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(0, 102, 51, 0.35);
+            overflow: visible;
+            background: #ffffff;
+            width: 320px;
+            z-index: 1070 !important;
+        }
+        .flatpickr-months {
+            background-color: var(--theme-primary, #006633) !important;
+            color: #ffffff !important;
+            padding: 8px 6px 6px;
+            border-top-left-radius: 13px;
+            border-top-right-radius: 13px;
+            align-items: center;
+            position: relative;
+        }
+        .flatpickr-month {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            height: 40px;
+        }
+        .flatpickr-current-month {
+            font-size: 100%;
+            font-weight: 600;
+            color: #ffffff !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px 0 0;
+            left: 0;
+            width: 100%;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.2s;
+            height: 32px;
+            line-height: 1.2;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months option {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            font-weight: 500;
+        }
+        .flatpickr-calendar,
+        .flatpickr-months,
+        .flatpickr-month,
+        .flatpickr-current-month {
+            overflow: visible !important;
+        }
+        .flatpickr-year-custom-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 6px;
+            height: 32px;
+            transition: background-color 0.2s, border-color 0.2s;
+            box-sizing: border-box;
+            cursor: pointer;
+            user-select: none;
+        }
+        .flatpickr-year-custom-wrapper:hover {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+            border-color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .flatpickr-year-custom-wrapper:focus-within {
+            background-color: rgba(255, 255, 255, 0.35) !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+        .flatpickr-year-input-custom {
+            width: 54px;
+            height: 100%;
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0 0 0 6px;
+            outline: none !important;
+            box-shadow: none !important;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .flatpickr-year-input-custom:focus {
+            cursor: text;
+        }
+        .flatpickr-year-arrow-btn {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            height: 100%;
+            padding: 0 8px 0 2px;
+            cursor: pointer;
+            outline: none !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        .flatpickr-year-arrow-btn i {
+            transition: transform 0.2s ease;
+        }
+        .flatpickr-year-custom-wrapper.open .flatpickr-year-arrow-btn i {
+            transform: rotate(180deg);
+        }
+        .flatpickr-year-scroll-panel {
+            position: absolute;
+            top: 48px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 2px solid var(--theme-primary, #006633);
+            border-radius: 10px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            width: 140px;
+            max-height: 312px;
+            overflow-y: auto;
+            z-index: 999999 !important;
+            display: none;
+            padding: 4px 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar {
+            width: 7px;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar-track {
+            background: #f4f9f5;
+            border-radius: 4px;
+        }
+        .flatpickr-year-scroll-panel::-webkit-scrollbar-thumb {
+            background: var(--theme-primary, #006633);
+            border-radius: 4px;
+        }
+        .year-scroll-item {
+            height: 26px;
+            line-height: 26px;
+            text-align: center;
+            font-size: 0.92rem;
+            color: #212529;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .year-scroll-item:hover {
+            background-color: #e8f5e9;
+            color: var(--theme-primary, #006633);
+            font-weight: 700;
+        }
+        .year-scroll-item.active {
+            background-color: var(--theme-primary, #006633) !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+            padding: 6px;
+            border-radius: 50%;
+            height: 32px;
+            width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            top: 10px;
+        }
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            fill: #ffffff !important;
+            width: 14px;
+            height: 14px;
+        }
+        .flatpickr-weekdays {
+            background-color: var(--theme-primary-dark, #004d26) !important;
+            padding: 4px 0;
+            height: 28px;
+        }
+        span.flatpickr-weekday {
+            color: #e0f2e9 !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .flatpickr-day {
+            border-radius: 8px;
+            color: #212529;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            height: 36px;
+            line-height: 36px;
+            margin: 1px 0;
+        }
+        .flatpickr-day:hover {
+            background-color: #e8f5e9 !important;
+            color: var(--theme-primary, #006633) !important;
+            border-color: rgba(0, 102, 51, 0.3) !important;
+        }
+        .flatpickr-day.today {
+            border-color: var(--theme-accent, #dd971a) !important;
+            border-width: 2px;
+        }
+        .flatpickr-day.today:hover {
+            background-color: #fff9e6 !important;
+            color: #212529 !important;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.selected:focus {
+            background-color: var(--theme-primary, #006633) !important;
+            border-color: var(--theme-primary, #006633) !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .flatpickr-day.disabled,
+        .flatpickr-day.disabled:hover {
+            color: #bbbbbb !important;
         }
         body.sidebar-expanded {
             --sidebar-width: 225px;
@@ -765,65 +1013,50 @@
         </div>
         {% endif %}
 
-        <!-- BANNER FESTIVO EN EL PANEL PERSONAL (SOLO FESTEJADO) -->
+        <!-- BANNER FESTIVO EN EL PANEL PERSONAL (COMPACTO, ELEGANTE Y ADAPTABLE) -->
         {% if es_mi_cumpleanos %}
-        <div class="card border-0 shadow mb-4 rounded-4 text-white overflow-hidden" id="panelBirthdayBanner"
+        <div class="card border-0 shadow-sm mb-4 rounded-4 text-white overflow-hidden" id="panelBirthdayBanner"
              style="background: {% if user.autor.color_cumpleanos == 'cafe' %}linear-gradient(135deg, #4e342e 0%, #795548 100%)
                                  {% elif user.autor.color_cumpleanos == 'azul' %}linear-gradient(135deg, #0369a1 0%, #0284c7 100%)
                                  {% elif user.autor.color_cumpleanos == 'verde' %}linear-gradient(135deg, #15803d 0%, #16a34a 100%)
                                  {% elif user.autor.color_cumpleanos == 'dorado' %}linear-gradient(135deg, #b45309 0%, #d97706 100%)
                                  {% elif user.autor.color_cumpleanos == 'morado' %}linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)
                                  {% elif user.autor.color_cumpleanos == 'rojo' %}linear-gradient(135deg, #be123c 0%, #e11d48 100%)
-                                 {% else %}linear-gradient(135deg, #d81b60 0%, #ff4081 100%){% endif %}; transition: background 0.3s ease;">
-            <div class="card-body p-4 position-relative">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white text-danger d-flex align-items-center justify-content-center me-3 shadow" style="width: 64px; height: 64px; font-size: 2.1rem; flex-shrink: 0;">
+                                 {% else %}linear-gradient(135deg, #006633 0%, #15803d 100%){% endif %};">
+            <div class="card-body p-3 px-4 position-relative">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-white text-danger d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 46px; height: 46px; font-size: 1.5rem;">
                             🎂
                         </div>
                         <div>
-                            <span class="badge bg-white text-dark rounded-pill px-3 py-1 fw-bold mb-1 shadow-sm" style="font-size: 0.74rem;">
-                                🎉 ¡La FCA UABC celebra contigo hoy!
-                            </span>
-                            <h4 class="fw-bold mb-1">¡Feliz Cumpleaños, {{ user.autor.nombre|default:user.get_full_name|default:user.username }}! 🧁</h4>
-                            <p class="mb-0 text-white-50 small">Tus colegas del claustro docente e investigadores te han enviado mensajes de felicitación.</p>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h5 class="fw-bold mb-0 text-white">¡Feliz Cumpleaños, {{ user.autor.nombre|default:user.get_full_name|default:user.username }}!</h5>
+                                <span class="badge bg-warning text-dark rounded-pill px-2 py-0 fw-bold shadow-xs" style="font-size: 0.68rem;">
+                                    🎉 ¡Celebración FCA UABC!
+                                </span>
+                            </div>
+                            <small class="text-white-50 d-block mt-1" style="font-size: 0.78rem;">
+                                La facultad celebra tu día especial. Tu poema institucional conmemorativo {{ hoy.year }} ha sido asignado a tu cuenta.
+                            </small>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <button type="button" class="btn btn-outline-light rounded-pill px-3 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos">
-                            <i class="fas fa-palette me-1"></i>Personalizar Cupcake 🎨
+                        {% if poema_cumpleanos %}
+                        <button type="button" class="btn btn-warning text-dark btn-sm rounded-pill px-3 py-1 fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#modalVerMiPoemaAnual">
+                            <i class="fas fa-scroll me-1"></i>Ver Poema de Aniversario 📜
                         </button>
-                        <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-danger shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBuzonCumpleanosPanel">
-                            <i class="fas fa-gift me-2"></i>Ver Felicitaciones Recibidas ({{ mensajes_cumpleanos|length }})
+                        {% endif %}
+                        <button type="button" class="btn btn-light rounded-pill px-3 py-1 btn-sm fw-bold text-danger shadow-xs" data-bs-toggle="modal" data-bs-target="#modalBuzonCumpleanosPanel">
+                            <i class="fas fa-gift me-1"></i>Buzón de Felicitaciones ({{ mensajes_cumpleanos|length }})
                         </button>
+                        {% if user.autor and user.autor.puede_tener_semblanza %}
+                        <button type="button" class="btn btn-outline-light rounded-pill px-3 py-1 btn-sm fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Personalizar color de tu tarjeta cupcake en el claustro docente">
+                            <i class="fas fa-palette me-1"></i>Estilo Cupcake Claustro 🎨
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
-
-                <!-- IDEA 14: POEMA CONMEMORATIVO INSTITUCIONAL DE CUMPLEAÑOS -->
-                {% if poema_cumpleanos %}
-                <div class="mt-3 p-3 rounded-4 bg-white bg-opacity-15 border border-white border-opacity-25 shadow-xs" style="backdrop-filter: blur(8px);">
-                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-                        <span class="badge bg-warning text-dark fw-bold rounded-pill px-3 py-1 shadow-xs" style="font-size: 0.72rem;">
-                            📜 Poema Institucional de Aniversario FCA {{ poema_cumpleanos.anio }} &bull; {{ poema_cumpleanos.rol_nombre }}
-                        </span>
-                        <small class="text-white-50 fst-italic">{{ poema_cumpleanos.dedicatoria }}</small>
-                    </div>
-                    <h5 class="fw-bold text-white mb-2" style="font-family: 'Playfair Display', Georgia, serif; letter-spacing: 0.5px;">
-                        «{{ poema_cumpleanos.titulo }}»
-                    </h5>
-                    <p class="mb-2 text-white small" style="white-space: pre-line; line-height: 1.8; font-style: italic; font-size: 0.95rem;" id="textoPoemaCumpleanosBanner">
-{{ poema_cumpleanos.versos }}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-25 flex-wrap gap-2">
-                        <small class="text-white-50" style="font-size: 0.72rem;">
-                            <i class="fas fa-university me-1"></i>{{ poema_cumpleanos.firma }}
-                        </small>
-                        <button type="button" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold text-dark shadow-xs" onclick="copiarPoemaCumpleanosTexto()">
-                            <i class="fas fa-copy me-1"></i>Copiar Poema
-                        </button>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -991,9 +1224,15 @@
 
                             {% if user.autor and user.autor.fecha_nacimiento %}
                                 <span class="badge bg-light text-muted border"><i class="fas fa-birthday-cake me-1 text-danger"></i>{{ user.autor.fecha_nacimiento|date:"d M" }}</span>
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Haz clic para ver tu estilo y poema conmemorativo de cumpleaños">
+                                {% if user.autor.puede_tener_semblanza %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Haz clic para personalizar tu cupcake del claustro">
                                     🧁 {{ user.autor.get_color_cumpleanos_display|default:"Fresa Glaseada" }}
                                 </span>
+                                {% else %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-50 shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalVerMiPoemaAnual" title="Haz clic para ver tu poema institucional conmemorativo de este año">
+                                    📜 Poema {{ hoy.year|default:poema_cumpleanos.anio }}
+                                </span>
+                                {% endif %}
                             {% endif %}
 
                             {% if user.autor.codigo_institucional %}
@@ -3869,8 +4108,15 @@
                                         <small class="text-muted" style="font-size: 0.72rem;">Recibirás notificaciones institucionales aquí.</small>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-dark mb-1">Fecha de Nacimiento:</label>
-                                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ user.autor.fecha_nacimiento|date:'Y-m-d'|default:'' }}">
+                                        <label class="form-label fw-bold small text-dark mb-1">
+                                            <i class="fas fa-calendar-alt me-1" style="color: var(--theme-primary);"></i>Fecha de Nacimiento:
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white" style="color: var(--theme-primary);">
+                                                <i class="fas fa-calendar-day"></i>
+                                            </span>
+                                            <input type="text" id="inputActualizarFechaNacimiento" name="fecha_nacimiento" class="form-control" value="{{ user.autor.fecha_nacimiento|date:'Y-m-d'|default:'' }}" placeholder="Seleccionar fecha...">
+                                        </div>
                                         <small class="text-muted" style="font-size: 0.72rem;">Para felicitaciones institucionales de cumpleaños.</small>
                                     </div>
                                     <div class="col-md-6">
@@ -4374,6 +4620,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- FLATPICKR INSTITUCIONAL UABC -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -6038,6 +6287,176 @@
                 form.action = '/profesores/felicitar/' + autorId + '/';
             }
         };
+
+        // ========================================================
+        // INICIALIZACIÓN DE FLATPICKR INSTITUCIONAL UABC (MODAL ACTUALIZAR DATOS)
+        // ========================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputFecha = document.getElementById('inputActualizarFechaNacimiento');
+            if (inputFecha && typeof flatpickr !== 'undefined') {
+                flatpickr(inputFecha, {
+                    locale: 'es',
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    maxDate: 'today',
+                    allowInput: true,
+                    monthSelectorType: 'dropdown',
+                    onReady: function(selectedDates, dateStr, instance) {
+                        if (instance.altInput) {
+                            instance.altInput.setAttribute('autocomplete', 'bday');
+                            instance.altInput.setAttribute('placeholder', 'dd/mm/aaaa');
+                            instance.altInput.classList.add('form-control');
+                        }
+
+                        const yearWrapper = instance.currentYearElement ? instance.currentYearElement.parentNode : null;
+                        if (yearWrapper && !instance.calendarContainer.querySelector('.flatpickr-year-custom-wrapper')) {
+                            yearWrapper.style.display = 'none';
+
+                            const customYearWrapper = document.createElement('div');
+                            customYearWrapper.className = 'flatpickr-year-custom-wrapper';
+                            customYearWrapper.setAttribute('title', 'Escribe el año o haz clic para ver la lista');
+
+                            const yearInput = document.createElement('input');
+                            yearInput.type = 'text';
+                            yearInput.maxLength = 4;
+                            yearInput.className = 'flatpickr-year-input-custom';
+                            yearInput.value = instance.currentYear;
+                            yearInput.setAttribute('aria-label', 'Año de nacimiento');
+
+                            const arrowBtn = document.createElement('button');
+                            arrowBtn.type = 'button';
+                            arrowBtn.className = 'flatpickr-year-arrow-btn';
+                            arrowBtn.setAttribute('aria-label', 'Ver lista de años');
+                            arrowBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+
+                            customYearWrapper.appendChild(yearInput);
+                            customYearWrapper.appendChild(arrowBtn);
+                            yearWrapper.parentNode.insertBefore(customYearWrapper, yearWrapper.nextSibling);
+
+                            const yearPanel = document.createElement('div');
+                            yearPanel.className = 'flatpickr-year-scroll-panel';
+
+                            const anioActual = new Date().getFullYear();
+                            const anioMinimo = 1920;
+
+                            for (let y = anioActual; y >= anioMinimo; y--) {
+                                const item = document.createElement('div');
+                                item.className = 'year-scroll-item' + (y === instance.currentYear ? ' active' : '');
+                                item.setAttribute('data-year', y);
+                                item.textContent = y;
+
+                                item.addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                    seleccionarAnio(y);
+                                });
+
+                                yearPanel.appendChild(item);
+                            }
+
+                            instance.calendarContainer.appendChild(yearPanel);
+
+                            function openYearPanel() {
+                                yearPanel.style.display = 'block';
+                                customYearWrapper.classList.add('open');
+                                const activeEl = yearPanel.querySelector('.year-scroll-item.active');
+                                if (activeEl) {
+                                    yearPanel.scrollTop = activeEl.offsetTop - (yearPanel.clientHeight / 2) + 13;
+                                }
+                            }
+
+                            function closeYearPanel() {
+                                yearPanel.style.display = 'none';
+                                customYearWrapper.classList.remove('open');
+                            }
+
+                            function toggleYearPanel(e) {
+                                if (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }
+                                if (yearPanel.style.display === 'block') {
+                                    closeYearPanel();
+                                } else {
+                                    openYearPanel();
+                                    yearInput.select();
+                                }
+                            }
+
+                            function seleccionarAnio(y) {
+                                y = parseInt(y, 10);
+                                if (!isNaN(y) && y >= anioMinimo && y <= anioActual) {
+                                    instance.changeYear(y);
+                                    syncYearActive(y);
+                                }
+                                closeYearPanel();
+                            }
+
+                            function syncYearActive(y) {
+                                yearInput.value = y;
+                                yearPanel.querySelectorAll('.year-scroll-item').forEach(el => {
+                                    if (parseInt(el.getAttribute('data-year'), 10) === y) {
+                                        el.classList.add('active');
+                                    } else {
+                                        el.classList.remove('active');
+                                    }
+                                });
+                            }
+
+                            arrowBtn.addEventListener('click', toggleYearPanel);
+                            arrowBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+
+                            customYearWrapper.addEventListener('click', function(e) {
+                                if (e.target !== yearInput) toggleYearPanel(e);
+                            });
+
+                            yearInput.addEventListener('focus', function() {
+                                this.select();
+                                openYearPanel();
+                            });
+
+                            yearInput.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                this.select();
+                                openYearPanel();
+                            });
+
+                            yearInput.addEventListener('keydown', function(e) {
+                                e.stopPropagation();
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const val = parseInt(this.value, 10);
+                                    if (!isNaN(val) && val >= anioMinimo && val <= anioActual) {
+                                        seleccionarAnio(val);
+                                    } else {
+                                        this.value = instance.currentYear;
+                                        closeYearPanel();
+                                    }
+                                    this.blur();
+                                } else if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    this.value = instance.currentYear;
+                                    closeYearPanel();
+                                    this.blur();
+                                }
+                            });
+
+                            if (instance.config && instance.config.onYearChange) {
+                                instance.config.onYearChange.push(function(dObj, dStr, fp) {
+                                    syncYearActive(fp.currentYear);
+                                });
+                            }
+
+                            document.addEventListener('click', function(e) {
+                                if (!customYearWrapper.contains(e.target) && !yearPanel.contains(e.target)) {
+                                    closeYearPanel();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
     </script>
 
     {% if user.is_authenticated %}
