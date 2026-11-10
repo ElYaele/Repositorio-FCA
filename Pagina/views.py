@@ -1409,46 +1409,102 @@ def validar_recuperar_password_view(request, user_id):
 def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     items = []
     if not autor:
-        return 100, []
+        return 100, [], []
 
     # 1. Nombre completo
     tiene_nombre = bool(autor.nombres and autor.apellido_paterno)
-    items.append(('Nombre y apellidos oficiales', tiene_nombre, 'Indica tu nombre y apellidos oficiales'))
+    items.append({
+        'criterio': 'Nombre y Apellidos Oficiales',
+        'completado': tiene_nombre,
+        'descripcion': 'Indicar nombre de pila y apellido paterno oficiales para citas institucionales.',
+        'modal_target': '#modalActualizarDatosCuenta',
+        'es_modal': True,
+        'icono': 'fas fa-id-card'
+    })
 
     # 2. Correo de contacto
     tiene_correo = bool(autor.correo or user.email)
-    items.append(('Correo electrónico de contacto', tiene_correo, 'Registra tu correo de contacto'))
+    items.append({
+        'criterio': 'Correo Electrónico de Contacto',
+        'completado': tiene_correo,
+        'descripcion': 'Registrar correo institucional o de contacto para notificaciones del repositorio.',
+        'modal_target': '#modalActualizarDatosCuenta',
+        'es_modal': True,
+        'icono': 'fas fa-envelope'
+    })
 
     # 3. Foto personal
     tiene_foto = bool(autor.foto_personal or autor.foto_perfil)
-    items.append(('Fotografía de perfil', tiene_foto, 'Sube tu foto personal'))
+    items.append({
+        'criterio': 'Fotografía de Perfil Personal',
+        'completado': tiene_foto,
+        'descripcion': 'Subir una fotografía personal visible en tu panel y directorio.',
+        'modal_target': '#modalCambiarFotoPersonal',
+        'es_modal': True,
+        'icono': 'fas fa-camera'
+    })
 
     # 4. Fecha de nacimiento
     tiene_nacimiento = bool(autor.fecha_nacimiento)
-    items.append(('Fecha de nacimiento', tiene_nacimiento, 'Agrega tu fecha de nacimiento'))
+    items.append({
+        'criterio': 'Fecha de Nacimiento',
+        'completado': tiene_nacimiento,
+        'descripcion': 'Registrar fecha de nacimiento para felicitaciones conmemorativas de la FCA.',
+        'modal_target': '#modalActualizarDatosCuenta',
+        'es_modal': True,
+        'icono': 'fas fa-birthday-cake'
+    })
 
     # 5. Identificación institucional
     if autor.es_auxiliar:
         tiene_id = bool(autor.matricula_estudiante)
-        items.append(('Matrícula estudiantil / folio', tiene_id, 'Registra tu matrícula de estudiante'))
+        items.append({
+            'criterio': 'Matrícula Estudiantil / Folio',
+            'completado': tiene_id,
+            'descripcion': 'Registrar número de matrícula escolar o folio de servicio social.',
+            'modal_target': '#modalActualizarDatosCuenta',
+            'es_modal': True,
+            'icono': 'fas fa-fingerprint'
+        })
     else:
         tiene_id = bool(autor.numero_empleado)
-        items.append(('Número de empleado institucional', tiene_id, 'Añade tu número de empleado'))
+        items.append({
+            'criterio': 'Número de Empleado Institucional',
+            'completado': tiene_id,
+            'descripcion': 'Añadir número de empleado universitario para vinculación con nómina y expedientes.',
+            'modal_target': '#modalActualizarDatosCuenta',
+            'es_modal': True,
+            'icono': 'fas fa-id-badge'
+        })
 
     # 6. Semblanza académica (solo si aplica)
     if autor.puede_tener_semblanza:
         tiene_semblanza = bool(autor.biografia or autor.biografia_borrador)
-        items.append(('Semblanza académica o biografía', tiene_semblanza, 'Completa tus líneas de investigación'))
+        items.append({
+            'criterio': 'Semblanza Académica o Biografía',
+            'completado': tiene_semblanza,
+            'descripcion': 'Redactar tus líneas de investigación y trayectoria profesional en el claustro.',
+            'modal_target': '#modalEditarPerfil',
+            'es_modal': True,
+            'icono': 'fas fa-user-edit'
+        })
 
     # 7. Al menos una obra o coautoría
     tiene_obras = bool(mis_subidas_qs.exists() or mis_coautorias_qs.exists())
-    items.append(('Al menos una obra o coautoría registrada', tiene_obras, 'Sube tu primer trabajo académico'))
+    items.append({
+        'criterio': 'Al menos una Obra o Coautoría Registrada',
+        'completado': tiene_obras,
+        'descripcion': 'Registrar tu primer trabajo de investigación, artículo, tesis o propiedad intelectual.',
+        'modal_target': reverse('upload_document'),
+        'es_modal': False,
+        'icono': 'fas fa-cloud-upload-alt'
+    })
 
     total = len(items)
-    completados = sum(1 for _, ok, _ in items if ok)
+    completados = sum(1 for it in items if it['completado'])
     porcentaje = int((completados / total) * 100) if total > 0 else 100
-    pendientes = [desc for _, ok, desc in items if not ok]
-    return porcentaje, pendientes
+    pendientes = [it['criterio'] for it in items if not it['completado']]
+    return porcentaje, pendientes, items
 
 
 def obtener_notificaciones_panel(user, autor, mis_subidas_qs, auxiliares_pendientes_visto_bueno):
@@ -1539,6 +1595,8 @@ def obtener_actividad_reciente_usuario(user, autor, mis_subidas_qs):
 
 @login_required
 def mi_panel_view(request):
+    mi_autor = getattr(request.user, 'autor', None)
+
     # <--- MEJORA 2: Paginación en Paneles con Búsqueda Global en BD --->
     q_subidas = request.GET.get('q_subidas', '').strip()
     mis_subidas_qs = Articulo.objects.filter(subido_por=request.user).order_by('-created_at')
@@ -1580,8 +1638,12 @@ def mi_panel_view(request):
         mensajes_cumpleanos = request.user.autor.mensajes_recibidos.all().order_by('-fecha_envio')
         es_mi_cumpleanos = request.user.autor.es_cumpleanos_hoy
 
-    # Detección de colegas (docentes UABC, otras universidades, investigadores) que cumplen años hoy (excluyendo al usuario actual)
+    # Poema institucional anual de cumpleaños (600 poemas catalogados por rol)
+    from .poemas_cumpleanos import obtener_poema_cumpleanos_usuario
     hoy = timezone.localdate()
+    poema_cumpleanos = obtener_poema_cumpleanos_usuario(request.user, mi_autor, hoy.year)
+
+    # Detección de colegas (docentes UABC, otras universidades, investigadores) que cumplen años hoy (excluyendo al usuario actual)
     cumpleaneros_qs = Autor.objects.filter(
         fecha_nacimiento__isnull=False,
         fecha_nacimiento__day=hoy.day,
@@ -1664,7 +1726,7 @@ def mi_panel_view(request):
         tutor_obras = tutor_obras_qs
 
     # <--- FASE 1: Salud de Perfil, Notificaciones y Actividad Reciente --->
-    porcentaje_perfil, items_pendientes = calcular_completitud_perfil(request.user, mi_autor, mis_subidas_qs, mis_coautorias_qs)
+    porcentaje_perfil, items_pendientes, criterios_evaluados = calcular_completitud_perfil(request.user, mi_autor, mis_subidas_qs, mis_coautorias_qs)
     notificaciones_sistema = obtener_notificaciones_panel(request.user, mi_autor, mis_subidas_qs, auxiliares_pendientes_visto_bueno)
     actividad_reciente = obtener_actividad_reciente_usuario(request.user, mi_autor, mis_subidas_qs)
 
@@ -1677,6 +1739,7 @@ def mi_panel_view(request):
         'password_form': PasswordChangeForm(request.user),
         'mensajes_cumpleanos': mensajes_cumpleanos,
         'es_mi_cumpleanos': es_mi_cumpleanos,
+        'poema_cumpleanos': poema_cumpleanos,
         'cumpleaneros_hoy': cumpleaneros_hoy,
         'roles_docente': ROL_DOCENTE_OPCIONES,
         'mis_roles_codigos': mis_roles_codigos,
@@ -1698,6 +1761,7 @@ def mi_panel_view(request):
         'puede_tener_auxiliares': bool(mi_autor and mi_autor.puede_tener_auxiliares),
         'porcentaje_perfil': porcentaje_perfil,
         'items_pendientes': items_pendientes,
+        'criterios_evaluados': criterios_evaluados,
         'notificaciones_sistema': notificaciones_sistema,
         'total_notificaciones_activas': len(notificaciones_sistema),
         'actividad_reciente': actividad_reciente,
@@ -4147,22 +4211,33 @@ def enviar_felicitacion_cumpleanos_view(request, autor_id):
     if request.method == 'POST':
         destinatario_autor = get_object_or_404(Autor, id=autor_id)
         mensaje_texto = request.POST.get('mensaje', '').strip()
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('directorio_profesores')
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json'
 
         # Validar que no se autofelicite
         if hasattr(request.user, 'autor') and request.user.autor == destinatario_autor:
-            messages.error(request, 'No puedes enviarte una felicitación a ti mismo.')
-            return redirect('directorio_profesores')
+            msg = 'No puedes enviarte una felicitación a ti mismo.'
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg}, status=400)
+            messages.error(request, msg)
+            return redirect(next_url)
 
         # Validar que hoy sea el cumpleaños del colega
         if not destinatario_autor.es_cumpleanos_hoy:
-            messages.error(request, 'Solo puedes enviar felicitaciones el día del cumpleaños del docente.')
-            return redirect('directorio_profesores')
+            msg = 'Solo puedes enviar felicitaciones el día del cumpleaños del docente.'
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg}, status=400)
+            messages.error(request, msg)
+            return redirect(next_url)
 
         # Validar que el remitente sea un colega docente, investigador, de otra universidad o superusuario
         tiene_perfil = hasattr(request.user, 'autor') or request.user.is_superuser
         if not tiene_perfil:
-            messages.error(request, 'Debes contar con una cuenta registrada para enviar felicitaciones de cumpleaños.')
-            return redirect('directorio_profesores')
+            msg = 'Debes contar con una cuenta registrada para enviar felicitaciones de cumpleaños.'
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg}, status=403)
+            messages.error(request, msg)
+            return redirect(next_url)
 
         # Validar que no haya enviado una felicitación el día de hoy
         hoy = timezone.localdate()
@@ -4173,8 +4248,11 @@ def enviar_felicitacion_cumpleanos_view(request, autor_id):
         ).exists()
 
         if ya_felicito:
-            messages.warning(request, f'Ya has felicitado a {destinatario_autor.nombre} el día de hoy.')
-            return redirect('directorio_profesores')
+            msg = f'Ya has felicitado a {destinatario_autor.nombre} el día de hoy.'
+            if is_ajax:
+                return JsonResponse({'status': 'warning', 'message': msg}, status=200)
+            messages.warning(request, msg)
+            return redirect(next_url)
 
         if mensaje_texto:
             MensajeCumpleanos.objects.create(
@@ -4182,9 +4260,16 @@ def enviar_felicitacion_cumpleanos_view(request, autor_id):
                 de_usuario=request.user,
                 mensaje=mensaje_texto
             )
-            messages.success(request, f'Tu felicitación para {destinatario_autor.nombre} ha sido enviada con éxito.')
+            msg = f'Tu felicitación para {destinatario_autor.nombre} ha sido enviada con éxito.'
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': msg})
+            messages.success(request, msg)
         else:
-            messages.error(request, 'No se pudo enviar un mensaje vacío.')
+            msg = 'No se pudo enviar un mensaje vacío.'
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg}, status=400)
+            messages.error(request, msg)
+        return redirect(next_url)
     return redirect('directorio_profesores')
 
 
@@ -4195,10 +4280,10 @@ def cambiar_color_cumpleanos_view(request):
     """
     if request.method == 'POST':
         autor = getattr(request.user, 'autor', None)
-        if not autor or not autor.puede_tener_semblanza:
+        if not autor:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
-                return JsonResponse({'status': 'error', 'message': 'La personalización de cupcake de cumpleaños está reservada para docentes e investigadores.'}, status=403)
-            messages.error(request, 'La personalización de cupcake de cumpleaños está reservada para docentes e investigadores.')
+                return JsonResponse({'status': 'error', 'message': 'Debes tener un perfil registrado para personalizar el estilo de cumpleaños.'}, status=403)
+            messages.error(request, 'Debes tener un perfil registrado para personalizar el estilo de cumpleaños.')
             return redirect('mi_panel')
 
         color = request.POST.get('color', '').strip().lower()
