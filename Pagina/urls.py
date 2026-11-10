@@ -13,6 +13,7 @@ from .views import (
     recuperar_password_view,
     validar_recuperar_password_view,
     mi_panel_view,
+    actualizar_datos_cuenta_view,
     gestionar_auxiliar_docente_view,
     actualizar_perfil_docente_view,
     cambiar_password_propia_view,
@@ -121,6 +122,7 @@ urlpatterns = [
 
     # Panel personal de docente / usuario
     path('mi-panel/', mi_panel_view, name='mi_panel'),
+    path('mi-panel/actualizar-datos-cuenta/', actualizar_datos_cuenta_view, name='actualizar_datos_cuenta'),
     path('mi-panel/actualizar-perfil/', actualizar_perfil_docente_view, name='actualizar_perfil_docente'),
     path('mi-panel/cambiar-clave/', cambiar_password_propia_view, name='cambiar_password_propia'),
     path('mi-panel/desactivar-cuenta/', desactivar_cuenta_propia_view, name='desactivar_cuenta_propia'),

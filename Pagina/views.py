@@ -1564,6 +1564,96 @@ def mi_panel_view(request):
 
 
 @login_required
+def actualizar_datos_cuenta_view(request):
+    """
+    Permite a cualquier usuario (Super Admin, Docente UABC, Externo, Investigador, Auxiliar, Soporte)
+    actualizar sus datos personales y de cuenta institucional (nombre oficial, grado, adscripción,
+    número de empleado/matrícula, correo y fecha de nacimiento).
+    """
+    if request.method == 'POST':
+        mi_autor = getattr(request.user, 'autor', None)
+        if not mi_autor:
+            mi_autor = Autor.objects.create(
+                usuario=request.user,
+                nombre=request.user.get_full_name() or request.user.username
+            )
+
+        titulo_academico = request.POST.get('titulo_academico', '').strip()
+        nombres = request.POST.get('nombres', '').strip()
+        apellido_paterno = request.POST.get('apellido_paterno', '').strip()
+        apellido_materno = request.POST.get('apellido_materno', '').strip()
+        correo = request.POST.get('correo', '').strip()
+        fecha_nacimiento = request.POST.get('fecha_nacimiento', '').strip()
+        genero = request.POST.get('genero', 'NE').strip()
+        genero_otro = request.POST.get('genero_otro', '').strip()
+
+        # Actualización de nombres e identidad
+        if nombres and apellido_paterno:
+            mi_autor.nombres = nombres
+            mi_autor.apellido_paterno = apellido_paterno
+            mi_autor.apellido_materno = apellido_materno
+            partes = [nombres, apellido_paterno]
+            if apellido_materno:
+                partes.append(apellido_materno)
+            mi_autor.nombre = " ".join(partes)
+
+            # Sincronizar en User
+            request.user.first_name = nombres
+            request.user.last_name = f"{apellido_paterno} {apellido_materno}".strip()
+
+        mi_autor.titulo_academico = titulo_academico if titulo_academico else None
+
+        if correo:
+            mi_autor.correo = correo
+            request.user.email = correo
+
+        if fecha_nacimiento:
+            try:
+                mi_autor.fecha_nacimiento = fecha_nacimiento
+            except Exception:
+                pass
+
+        mi_autor.genero = genero
+        mi_autor.genero_otro = genero_otro if genero == 'OTRO' else None
+
+        # Datos específicos por rol:
+        if mi_autor.es_auxiliar:
+            matricula = request.POST.get('matricula_estudiante', '').strip()
+            modalidad = request.POST.get('modalidad_auxiliar', '').strip()
+            if matricula:
+                mi_autor.matricula_estudiante = matricula
+            if modalidad:
+                mi_autor.modalidad_auxiliar = modalidad
+        else:
+            numero_emp = request.POST.get('numero_empleado', '').strip()
+            if numero_emp:
+                mi_autor.numero_empleado = numero_emp
+
+        # Para colaboradores externos e independientes
+        if mi_autor.es_externo or mi_autor.rol_facultad == 'INV_IND':
+            institucion = request.POST.get('institucion_origen', '').strip()
+            if institucion:
+                mi_autor.institucion_origen = institucion
+
+        mi_autor.save()
+        try:
+            request.user.save(update_fields=['first_name', 'last_name', 'email'])
+        except Exception:
+            request.user.save()
+
+        registrar_auditoria(
+            request.user,
+            "Actualización de Datos de Cuenta",
+            f"El usuario {request.user.username} actualizó sus datos de perfil institucional."
+        )
+
+        messages.success(request, 'Tus datos de cuenta e identidad institucional han sido actualizados exitosamente.')
+        return redirect('mi_panel')
+
+    return redirect('mi_panel')
+
+
+@login_required
 def actualizar_perfil_docente_view(request):
     if request.method == 'POST':
         target_autor_id = request.POST.get('target_autor_id', '').strip()

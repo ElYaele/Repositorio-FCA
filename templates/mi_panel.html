@@ -666,6 +666,7 @@
                 {% if user.autor and user.autor.puede_tener_semblanza %}
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil"><i class="fas fa-id-card me-2 text-primary"></i>Editar Semblanza</a></li>
                 {% endif %}
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalActualizarDatosCuenta"><i class="fas fa-user-cog me-2" style="color: var(--theme-primary);"></i>Actualizar Datos de Cuenta</a></li>
                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCambiarMiClave"><i class="fas fa-key me-2 text-warning"></i>Seguridad</a></li>
                 <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalDesactivarMiCuenta"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta</a></li>
                 <li><hr class="dropdown-divider"></li>
@@ -1893,7 +1894,7 @@
     <div class="modal fade" id="modalPreviewMiSemblanza" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header bg-success text-white py-3">
+                <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
                     <h5 class="modal-title fw-bold"><i class="fas fa-eye me-2"></i>Previsualización de mi Semblanza Académica</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1901,10 +1902,10 @@
                     <!-- BOTONES CONMUTADORES ENTRE CREDENCIAL Y FICHA DETALLADA -->
                     <div class="text-center mb-4">
                         <div class="btn-group shadow-sm" role="group">
-                            <button type="button" class="btn btn-success active fw-bold px-4" id="btnVistaTarjeta" onclick="cambiarVistaPreviewSemblanza('tarjeta')">
+                            <button type="button" class="btn btn-theme-solid active fw-bold px-4" id="btnVistaTarjeta" onclick="cambiarVistaPreviewSemblanza('tarjeta')">
                                 <i class="fas fa-id-card me-2"></i>1. Credencial Pública (Claustro)
                             </button>
-                            <button type="button" class="btn btn-outline-success fw-bold px-4" id="btnVistaDetalle" onclick="cambiarVistaPreviewSemblanza('detalle')">
+                            <button type="button" class="btn btn-theme-outline fw-bold px-4" id="btnVistaDetalle" onclick="cambiarVistaPreviewSemblanza('detalle')">
                                 <i class="fas fa-file-alt me-2"></i>2. Ficha Pública (Detallada)
                             </button>
                         </div>
@@ -2243,7 +2244,7 @@
             <div class="modal-content border-0 shadow">
                 <form method="post" action="{% url 'actualizar_perfil_docente' %}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="modal-header bg-success text-white">
+                    <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
                         <h5 class="modal-title fw-bold"><i class="fas fa-user-circle me-2"></i>Actualizar Foto de Perfil Personal</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -2260,7 +2261,7 @@
                     </div>
                     <div class="modal-footer bg-light justify-content-between">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-4"><i class="fas fa-save me-1"></i>Guardar Foto Personal</button>
+                        <button type="submit" class="btn btn-theme-solid btn-sm rounded-pill px-4"><i class="fas fa-save me-1"></i>Guardar Foto Personal</button>
                     </div>
                 </form>
             </div>
@@ -2274,13 +2275,13 @@
             <div class="modal-content border-0 shadow">
                 <form method="post" action="{% url 'actualizar_perfil_docente' %}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="modal-header bg-success text-white">
+                    <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
                         <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>Editar Ficha Académica y Semblanza</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-4">
                         <!-- BLOQUE 1: DATOS PERSONALES Y NOMBRAMIENTOS -->
-                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3">
+                        <h6 class="fw-bold border-bottom pb-2 mb-3" style="color: var(--theme-primary);">
                             <i class="fas fa-user-circle me-2"></i>1. Datos Generales y Nombramientos
                         </h6>
                         <div class="row g-3 mb-4">
@@ -2803,10 +2804,10 @@
                     <div class="modal-footer bg-light justify-content-between">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
                         <div>
-                            <button type="submit" name="accion_borrador" value="1" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2">
+                            <button type="submit" name="accion_borrador" value="1" class="btn btn-theme-outline btn-sm rounded-pill px-3 me-2">
                                 <i class="fas fa-save me-1"></i>Guardar Borrador
                             </button>
-                            <button type="submit" name="accion_enviar" value="1" class="btn btn-success btn-sm rounded-pill px-3">
+                            <button type="submit" name="accion_enviar" value="1" class="btn btn-theme-solid btn-sm rounded-pill px-3">
                                 <i class="fas fa-paper-plane me-1"></i>Guardar y Enviar a Moderación
                             </button>
                         </div>
@@ -3559,13 +3560,160 @@
         </div>
     </div>
 
+    <!-- MODAL ACTUALIZAR DATOS DE CUENTA E IDENTIDAD INSTITUCIONAL -->
+    <div class="modal fade" id="modalActualizarDatosCuenta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form method="post" action="{% url 'actualizar_datos_cuenta' %}">
+                    {% csrf_token %}
+                    <div class="modal-header py-3 text-white" style="background-color: var(--theme-primary);">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-user-cog me-2"></i>Actualizar Datos de Cuenta e Identidad
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-light">
+                        <!-- BANNER INFORMATIVO CON FCA-ID -->
+                        <div class="p-3 mb-4 rounded-3 border bg-white shadow-xs d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <span class="badge px-3 py-1 mb-1 rounded-pill fw-bold" style="{{ tema_rol.badge_style }}">
+                                    <i class="{{ tema_rol.badge_icon }} me-1"></i>{{ tema_rol.badge_text }}
+                                </span>
+                                <h6 class="fw-bold mb-0 text-dark">Información de Registro Institucional</h6>
+                                <small class="text-muted">Modifica tus datos generales o de contacto conforme a tu expediente oficial.</small>
+                            </div>
+                            {% if user.autor.codigo_institucional %}
+                            <div class="text-end">
+                                <span class="badge bg-dark text-warning px-3 py-2 border border-warning shadow-xs fs-6">
+                                    <i class="fas fa-fingerprint me-1"></i>{{ user.autor.codigo_institucional }}
+                                </span>
+                                <small class="d-block text-muted" style="font-size: 0.72rem;">Código Institucional Único</small>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- BLOQUE 1: IDENTIDAD Y NOMBRE OFICIAL -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--theme-primary);">
+                                    <i class="fas fa-id-card me-2"></i>1. Nombre Oficial y Título Académico
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold small text-dark mb-1">Título / Grado:</label>
+                                        <input type="text" name="titulo_academico" class="form-control" placeholder="Ej. Dr., Mtro., Lic." value="{{ user.autor.titulo_academico|default:'' }}">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Opcional (Prefijo formal)</small>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <label class="form-label fw-bold small text-dark mb-1">Nombre(s) <span class="text-danger">*</span>:</label>
+                                        <input type="text" name="nombres" class="form-control" required value="{{ user.autor.nombres|default:user.first_name }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Apellido Paterno <span class="text-danger">*</span>:</label>
+                                        <input type="text" name="apellido_paterno" class="form-control" required value="{{ user.autor.apellido_paterno|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Apellido Materno:</label>
+                                        <input type="text" name="apellido_materno" class="form-control" value="{{ user.autor.apellido_materno|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BLOQUE 2: CONTACTO Y FECHA DE NACIMIENTO -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-3">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--theme-primary);">
+                                    <i class="fas fa-envelope-open-text me-2"></i>2. Contacto y Datos Generales
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Correo Electrónico <span class="text-danger">*</span>:</label>
+                                        <input type="email" name="correo" class="form-control" required value="{{ user.autor.correo|default:user.email }}">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Recibirás notificaciones institucionales aquí.</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Fecha de Nacimiento:</label>
+                                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ user.autor.fecha_nacimiento|date:'Y-m-d'|default:'' }}">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Para felicitaciones institucionales de cumpleaños.</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Género:</label>
+                                        <select name="genero" class="form-select" id="selectGeneroCuenta" onchange="document.getElementById('colGeneroOtroCuenta').style.display = (this.value === 'OTRO') ? 'block' : 'none';">
+                                            <option value="NE" {% if user.autor.genero == 'NE' %}selected{% endif %}>No Especificar / Prefiero no decir</option>
+                                            <option value="M" {% if user.autor.genero == 'M' %}selected{% endif %}>Masculino</option>
+                                            <option value="F" {% if user.autor.genero == 'F' %}selected{% endif %}>Femenino</option>
+                                            <option value="NB" {% if user.autor.genero == 'NB' %}selected{% endif %}>No Binario</option>
+                                            <option value="OTRO" {% if user.autor.genero == 'OTRO' %}selected{% endif %}>Otro / Personalizado</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="colGeneroOtroCuenta" style="display: {% if user.autor.genero == 'OTRO' %}block{% else %}none{% endif %};">
+                                        <label class="form-label fw-bold small text-dark mb-1">Especificar género:</label>
+                                        <input type="text" name="genero_otro" class="form-control" placeholder="Describe tu género" value="{{ user.autor.genero_otro|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BLOQUE 3: ADSCRIPCIÓN E IDENTIFICACIÓN SEGÚN EL ROL -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-2">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--theme-primary);">
+                                    <i class="fas fa-building me-2"></i>3. Adscripción e Identificación Institucional
+                                </h6>
+                                <div class="row g-3">
+                                    {% if user.autor and user.autor.es_auxiliar %}
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Matrícula Estudiantil o Folio:</label>
+                                        <input type="text" name="matricula_estudiante" class="form-control" placeholder="Ej. 1234567" value="{{ user.autor.matricula_estudiante|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Modalidad de Auxiliar:</label>
+                                        <input type="text" name="modalidad_auxiliar" class="form-control" placeholder="Servicio Social, Prácticas, Tesista" value="{{ user.autor.modalidad_auxiliar|default:'' }}">
+                                    </div>
+                                    {% else %}
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Número de Empleado Institucional:</label>
+                                        <input type="text" name="numero_empleado" class="form-control" placeholder="Ej. 001234" value="{{ user.autor.numero_empleado|default:'' }}">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Número oficial asignado por la institución.</small>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if user.autor.es_externo or user.autor.rol_facultad == 'INV_IND' %}
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Institución o Universidad de Procedencia:</label>
+                                        <input type="text" name="institucion_origen" class="form-control" value="{{ user.autor.institucion_origen|default:'' }}">
+                                        <small class="text-muted" style="font-size: 0.72rem;">Nombre completo de la universidad o centro de investigación.</small>
+                                    </div>
+                                    {% else %}
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Entidad / Facultad:</label>
+                                        <input type="text" class="form-control bg-light" value="{{ user.autor.institucion_origen|default:'Facultad de Contaduría y Administración - UABC' }}" readonly>
+                                        <small class="text-muted" style="font-size: 0.72rem;">Adscripción oficial en el Repositorio FCA.</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white border-top py-3 justify-content-between">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-theme-solid btn-sm rounded-pill px-4 shadow-sm">
+                            <i class="fas fa-save me-1"></i>Guardar Cambios de Cuenta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CAMBIAR CONTRASEÑA -->
     <div class="modal fade" id="modalCambiarMiClave" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <form id="formCambiarClaveModal" method="post" action="{% url 'cambiar_password_propia' %}">
                     {% csrf_token %}
-                    <div class="modal-header bg-success text-white py-3">
+                    <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
                         <h5 class="modal-title fw-bold"><i class="fas fa-shield-alt me-2"></i>Seguridad de la Cuenta</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -3588,7 +3736,7 @@
                     </div>
                     <div class="modal-footer bg-light border-0 py-3 justify-content-between">
                         <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm">Guardar Contraseña</button>
+                        <button type="submit" class="btn btn-theme-solid px-4 rounded-pill shadow-sm">Guardar Contraseña</button>
                     </div>
                 </form>
             </div>
