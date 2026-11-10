@@ -668,22 +668,35 @@
                 <i class="{{ tema_rol.badge_icon }} me-1"></i>{{ tema_rol.badge_text }}
             </span>
         </div>
-        <div class="dropdown">
-            <button class="btn btn-link text-dark text-decoration-none dropdown-toggle d-flex align-items-center" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user-circle me-2 fs-5" style="color: var(--theme-primary);"></i>
-                <span class="fw-bold small">{{ user.autor.nombre|default:user.username|upper }}</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userMenuBtn">
-                <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
-                {% if user.autor and user.autor.puede_tener_semblanza %}
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil"><i class="fas fa-id-card me-2 text-primary"></i>Editar Semblanza</a></li>
+        <div class="d-flex align-items-center gap-2">
+            <!-- CENTRO DE NOTIFICACIONES Y ALERTAS (FASE 1) -->
+            <button type="button" class="btn btn-light rounded-circle position-relative shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCentroNotificaciones" title="Centro de Notificaciones y Alertas" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-bell text-secondary"></i>
+                {% if total_notificaciones_activas > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
+                    {{ total_notificaciones_activas }}
+                </span>
                 {% endif %}
-                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalActualizarDatosCuenta"><i class="fas fa-user-cog me-2" style="color: var(--theme-primary);"></i>Actualizar Datos de Cuenta</a></li>
-                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCambiarMiClave"><i class="fas fa-key me-2 text-warning"></i>Seguridad</a></li>
-                <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalDesactivarMiCuenta"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
-            </ul>
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-link text-dark text-decoration-none dropdown-toggle d-flex align-items-center" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle me-2 fs-5" style="color: var(--theme-primary);"></i>
+                    <span class="fw-bold small">{{ user.autor.nombre|default:user.username|upper }}</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userMenuBtn">
+                    <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
+                    {% if user.autor and user.autor.puede_tener_semblanza %}
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil"><i class="fas fa-id-card me-2 text-primary"></i>Editar Semblanza</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalActualizarDatosCuenta"><i class="fas fa-user-cog me-2" style="color: var(--theme-primary);"></i>Actualizar Datos de Cuenta</a></li>
+                    <li><a class="dropdown-item" href="{% url 'reporte_curriculo_pdf' %}" target="_blank"><i class="fas fa-file-pdf me-2 text-danger"></i>Reporte Curricular (PDF)</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCambiarMiClave"><i class="fas fa-key me-2 text-warning"></i>Seguridad</a></li>
+                    <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalDesactivarMiCuenta"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                </ul>
+            </div>
         </div>
     </header>
 
@@ -842,6 +855,54 @@
             {% endif %}
         {% endif %}
 
+        <!-- BANNER DE SALUD Y COMPLETITUD DE PERFIL (FASE 1: DISMISSIBLE CON LOCALSTORAGE) -->
+        <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden" id="bannerSaludPerfil" style="background: #ffffff; border-left: 5px solid {% if porcentaje_perfil >= 100 %}#198754{% elif porcentaje_perfil >= 70 %}var(--theme-primary){% elif porcentaje_perfil >= 40 %}#ffc107{% else %}#dc3545{% endif %} !important;">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3" style="flex: 1; min-width: 280px;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-xs" style="width: 50px; height: 50px; font-size: 1.35rem; flex-shrink: 0; background-color: {% if porcentaje_perfil >= 100 %}#dcfce7; color: #15803d;{% elif porcentaje_perfil >= 70 %}#e0f2fe; color: #0369a1;{% elif porcentaje_perfil >= 40 %}#fef9c3; color: #854d0e;{% else %}#fee2e2; color: #991b1b;{% endif %};">
+                            {% if porcentaje_perfil >= 100 %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="fas fa-chart-pie"></i>
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold small text-dark">
+                                    {% if porcentaje_perfil >= 100 %}
+                                        ¡Excelente! Perfil Institucional 100% Completo
+                                    {% else %}
+                                        Salud y Completitud de tu Perfil Institucional
+                                    {% endif %}
+                                </span>
+                                <span class="fw-bold small {% if porcentaje_perfil >= 100 %}text-success{% else %}text-primary{% endif %}">{{ porcentaje_perfil }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 4px; background-color: #e2e8f0;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated {% if porcentaje_perfil >= 100 %}bg-success{% elif porcentaje_perfil >= 70 %}bg-primary{% elif porcentaje_perfil >= 40 %}bg-warning text-dark{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ porcentaje_perfil }}%;" aria-valuenow="{{ porcentaje_perfil }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            {% if items_pendientes %}
+                            <div class="mt-2 text-muted small">
+                                <span class="fw-bold text-secondary">Pendientes recomendados:</span>
+                                {% for item in items_pendientes %}
+                                    <span class="badge bg-light text-dark border me-1 mt-1"><i class="fas fa-exclamation-circle text-warning me-1"></i>{{ item }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-xs" data-bs-toggle="modal" data-bs-target="#modalActualizarDatosCuenta">
+                            <i class="fas fa-user-edit me-1"></i>Actualizar Datos
+                        </button>
+                        <button type="button" class="btn btn-link text-muted p-1" onclick="dismissBannerSaludPerfil()" title="Ocultar indicador (se puede reactivar cuando desees)">
+                            <i class="fas fa-times fs-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <div class="row align-items-center g-4">
@@ -875,6 +936,18 @@
                             {% else %}
                                 <span class="badge shadow-sm" style="background-color: #0d6efd; color: #ffffff;"><i class="fas fa-user-tie me-1"></i>Personal Administrativo</span>
                             {% endif %}
+
+                            <!-- INSIGNIA INSTITUCIONAL SEGURA PARA DOCENTES EXTERNOS (IDEA 16) -->
+                            {% if user.autor and user.autor.es_externo and user.autor.institucion_origen %}
+                                <span class="badge shadow-sm px-3 py-1" style="background-color: #0369a1; color: #ffffff; border-radius: 20px; font-weight: 600;" title="Institución Externa Acreditada">
+                                    🏛️ {{ user.autor.institucion_origen }}
+                                </span>
+                            {% endif %}
+
+                            <!-- INDICADOR DISCRETO DE SALUD DE PERFIL (IDEA 1) -->
+                            <a href="javascript:void(0)" onclick="reabrirBannerSaludPerfil()" class="badge bg-light text-secondary border text-decoration-none shadow-xs" title="Ver salud y completitud de perfil">
+                                <i class="fas fa-chart-pie me-1 text-primary"></i>Salud: {{ porcentaje_perfil }}%
+                            </a>
 
                             {% if user.autor and user.autor.puede_tener_semblanza %}
                                 {% if user.autor.perfil_completado %}
@@ -926,6 +999,9 @@
 
                     {% if user.is_superuser %}
                     <div class="col-auto d-flex flex-wrap gap-2">
+                        <a href="{% url 'reporte_curriculo_pdf' %}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" title="Descargar / Imprimir Reporte Curricular Oficial con QR y Folio">
+                            <i class="fas fa-file-pdf me-1 text-danger"></i>Reporte Curricular (PDF)
+                        </a>
                         <a href="{% url 'panel_usuarios' %}" class="btn btn-theme-solid btn-sm rounded-pill px-3 shadow-sm">
                             <i class="fas fa-shield-alt me-1"></i>Panel de Control / Moderación
                         </a>
@@ -935,6 +1011,10 @@
                     </div>
                     {% elif user.autor and user.autor.puede_tener_semblanza %}
                     <div class="col-auto d-flex flex-wrap gap-2">
+                        <a href="{% url 'reporte_curriculo_pdf' %}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" title="Descargar / Imprimir Reporte Curricular Oficial con QR y Folio">
+                            <i class="fas fa-file-pdf me-1 text-danger"></i>Reporte Curricular (PDF)
+                        </a>
+
                         <!-- PREVISUALIZAR SEMBLANZA COMPLETA -->
                         <button type="button" class="btn btn-theme-outline btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPreviewMiSemblanza" title="Previsualizar cómo ven los demás tu semblanza">
                             <i class="fas fa-eye me-1"></i>Previsualizar Semblanza
@@ -953,6 +1033,15 @@
                                 <i class="fas fa-user-edit me-1"></i>Editar Semblanza
                             </button>
                         {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="col-auto d-flex flex-wrap gap-2">
+                        <a href="{% url 'reporte_curriculo_pdf' %}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" title="Descargar / Imprimir Reporte Curricular Oficial con QR y Folio">
+                            <i class="fas fa-file-pdf me-1 text-danger"></i>Reporte Curricular (PDF)
+                        </a>
+                        <a href="{% url 'upload_document' %}" class="btn btn-theme-solid btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="fas fa-cloud-upload-alt me-1"></i>Subir Trabajo
+                        </a>
                     </div>
                     {% endif %}
                 </div>
@@ -1244,6 +1333,18 @@
                         </div>
                     </div>
 
+                    <!-- FILTRO POR TIPO DE RECURSO ACADÉMICO (FASE 1: IDEA 3) -->
+                    <div class="px-3 py-2 border-bottom bg-light d-flex flex-wrap align-items-center gap-1" id="filterPillsTipoRecurso">
+                        <span class="small fw-bold text-muted me-2"><i class="fas fa-filter me-1"></i>Tipo de Obra:</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0 filter-tipo-btn active" data-tipo="all">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="artículo">Artículos</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="tesis">Tesis</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="libro">Libros</button>
+                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="capítulo">Capítulos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="ponencia">Ponencias</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="propiedad">Prop. Intelectual</button>
+                    </div>
+
                     <div class="card-body p-0">
                         {% if mis_subidas %}
                         <div class="table-cards-container" id="view-table-doc-container">
@@ -1266,7 +1367,7 @@
                                 </thead>
                                 <tbody id="tabla-cuerpo-mis-trabajos">
                                     {% for doc in mis_subidas %}
-                                    <tr class="doc-row-docente" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.numero_registro|default:''|lower }} {{ doc.tipo_proteccion|default:''|lower }} {{ doc.rama_propiedad|default:''|lower }}">
+                                    <tr class="doc-row-docente" data-estado="{{ doc.estado }}" data-tipo="{{ doc.tipo_contenido.nombre|lower }}" data-search="{{ doc.titulo|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.numero_registro|default:''|lower }} {{ doc.tipo_proteccion|default:''|lower }} {{ doc.rama_propiedad|default:''|lower }}">
                                         <td class="ps-3">
                                             <strong class="text-dark">{{ doc.titulo }}</strong><br>
                                             <small class="text-muted d-block mb-1">
@@ -1354,6 +1455,15 @@
                                             <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle me-1 shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
                                                 <i class="fas fa-file-invoice"></i>
                                             </a>
+                                            {% if doc.pdf %}
+                                                <button type="button" class="btn btn-sm btn-outline-danger me-1 rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalVisorPdfRapido"
+                                                        data-pdf-url="{{ doc.pdf.url }}"
+                                                        data-pdf-titulo="{{ doc.titulo|escape }}"
+                                                        title="Vista Rápida PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </button>
+                                            {% endif %}
                                             {% if doc.estado == 'rechazado' %}
                                                 <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-warning fw-bold text-dark shadow-sm me-1 rounded-pill px-2" title="Corregir">
                                                     <i class="fas fa-exclamation-triangle me-1"></i>Corregir
@@ -1378,7 +1488,7 @@
                         <div class="p-3" id="view-grid-doc-container" style="display: none; max-height: 540px; overflow-y: auto;">
                             <div class="row g-3" id="grid-cuerpo-mis-trabajos">
                                 {% for doc in mis_subidas %}
-                                <div class="col-xl-4 col-lg-6 doc-card-docente" data-estado="{{ doc.estado }}" data-search="{{ doc.titulo|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.numero_registro|default:''|lower }} {{ doc.tipo_proteccion|default:''|lower }} {{ doc.rama_propiedad|default:''|lower }}">
+                                <div class="col-xl-4 col-lg-6 doc-card-docente" data-estado="{{ doc.estado }}" data-tipo="{{ doc.tipo_contenido.nombre|lower }}" data-search="{{ doc.titulo|lower }} {{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.numero_registro|default:''|lower }} {{ doc.tipo_proteccion|default:''|lower }} {{ doc.rama_propiedad|default:''|lower }}">
                                     <div class="doc-card-bubble">
                                         <div>
                                             <div class="bubble-header">
@@ -1463,6 +1573,15 @@
                                                 <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle me-1 shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
                                                 <i class="fas fa-file-invoice"></i>
                                             </a>
+                                            {% if doc.pdf %}
+                                                <button type="button" class="btn btn-sm btn-outline-danger me-1 rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalVisorPdfRapido"
+                                                        data-pdf-url="{{ doc.pdf.url }}"
+                                                        data-pdf-titulo="{{ doc.titulo|escape }}"
+                                                        title="Vista Rápida PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </button>
+                                            {% endif %}
                                             {% if doc.estado == 'rechazado' %}
                                                     <a href="{% url 'editar_documento' doc.id %}" class="btn btn-warning py-0 px-2 fw-bold text-dark" title="Corregir">
                                                         <i class="fas fa-exclamation-triangle"></i>
@@ -1898,6 +2017,59 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+
+        <!-- HISTORIAL DE ACTIVIDAD RECIENTE (FASE 1: IDEA 4) -->
+        <div class="card border-0 shadow-sm mt-4 rounded-4 overflow-hidden" id="seccionActividadReciente">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; background-color: #f1f5f9; color: var(--theme-primary);">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Mi Actividad Reciente</h6>
+                        <small class="text-muted">Registro cronológico de tus últimas acciones, subidas y actualizaciones en el Repositorio</small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-link text-secondary text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseActividadReciente" aria-expanded="true" aria-controls="collapseActividadReciente">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse show" id="collapseActividadReciente">
+                <div class="card-body p-4 bg-white">
+                    {% if actividad_reciente %}
+                        <div class="row g-3">
+                            {% for act in actividad_reciente %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 rounded-3 border bg-light h-100 d-flex align-items-start gap-3">
+                                    <div class="rounded-circle bg-white shadow-xs d-flex align-items-center justify-content-center p-2" style="width: 40px; height: 40px; font-size: 1.1rem; flex-shrink: 0;">
+                                        <i class="{{ act.icono }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold text-dark small mb-1" style="line-height: 1.3;">{{ act.titulo }}</div>
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-1 mt-2">
+                                            <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-clock me-1"></i>{{ act.fecha|date:"d/m/Y H:i" }}</small>
+                                            {% if act.estado == 'aprobado' %}
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-2 py-0" style="font-size: 0.68rem;">Aprobado</span>
+                                            {% elif act.estado == 'rechazado' %}
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-2 py-0" style="font-size: 0.68rem;">Observado</span>
+                                            {% elif act.estado == 'pendiente' %}
+                                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning rounded-pill px-2 py-0" style="font-size: 0.68rem;">En Revisión</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-check fa-2x mb-2 opacity-50"></i>
+                            <p class="small mb-0">No se registran eventos recientes en tu cuenta.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </main>
 
@@ -3719,6 +3891,98 @@
         </div>
     </div>
 
+    <!-- MODAL CENTRO DE NOTIFICACIONES Y ALERTAS (FASE 1: IDEA 6) -->
+    <div class="modal fade" id="modalCentroNotificaciones" tabindex="-1" aria-labelledby="modalCentroNotificacionesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white py-3" style="background-color: var(--theme-primary);">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bell me-2 fs-5 text-warning"></i>
+                        <h6 class="modal-title fw-bold mb-0" id="modalCentroNotificacionesLabel">Centro de Notificaciones y Avisos</h6>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3 bg-light">
+                    {% if notificaciones_sistema %}
+                        <div class="d-flex flex-column gap-2">
+                            {% for n in notificaciones_sistema %}
+                            <div class="card border-0 shadow-xs rounded-3 overflow-hidden bg-white">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="fs-4 mt-1">
+                                            <i class="{{ n.icono }}"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.9rem;">{{ n.titulo }}</h6>
+                                            <p class="small text-secondary mb-2" style="font-size: 0.82rem; line-height: 1.4;">{{ n.detalle }}</p>
+                                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
+                                                <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-clock me-1"></i>{{ n.fecha|date:"d/m/Y H:i" }}</small>
+                                                {% if n.modal %}
+                                                    <button type="button" class="btn btn-sm btn-theme-solid rounded-pill px-3 py-1" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="{{ n.enlace }}" style="font-size: 0.78rem;">
+                                                        {{ n.texto_enlace }}
+                                                    </button>
+                                                {% else %}
+                                                    <a href="{{ n.enlace }}" class="btn btn-sm btn-theme-solid rounded-pill px-3 py-1" style="font-size: 0.78rem;">
+                                                        {{ n.texto_enlace }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">¡Todo al día!</h6>
+                            <p class="small text-muted mb-0">No tienes observaciones, invitaciones pendientes ni alertas del sistema.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer bg-white border-top py-2">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR RÁPIDO DE PDF (FASE 1: IDEA 5) -->
+    <div class="modal fade" id="modalVisorPdfRapido" tabindex="-1" aria-labelledby="modalVisorPdfRapidoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 92vw;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white py-3 flex-shrink-0" style="background-color: var(--theme-primary);">
+                    <div class="d-flex align-items-center text-truncate me-2">
+                        <i class="fas fa-file-pdf me-2 fs-4 text-warning"></i>
+                        <div class="text-truncate">
+                            <h6 class="modal-title fw-bold mb-0 text-truncate text-white" id="modalVisorPdfRapidoLabel">Visor Rápido de Documento</h6>
+                            <small class="text-white-50" id="modalVisorPdfSubtitulo">Vista previa del archivo cargado en el repositorio</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <a href="#" id="btnDescargarPdfModal" download class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-xs">
+                            <i class="fas fa-download me-1 text-success"></i>Descargar
+                        </a>
+                        <a href="#" id="btnNuevaPestanaPdfModal" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold">
+                            <i class="fas fa-external-link-alt me-1"></i>Pestaña Nueva
+                        </a>
+                        <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0 bg-dark" style="height: 78vh; position: relative;">
+                    <div id="pdfLoadingSpinner" class="d-flex flex-column align-items-center justify-content-center h-100 text-white">
+                        <div class="spinner-border text-light mb-3" role="status"></div>
+                        <span class="small text-white-50">Cargando documento PDF...</span>
+                    </div>
+                    <iframe id="iframeVisorPdf" src="" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CAMBIAR CONTRASEÑA -->
     <div class="modal fade" id="modalCambiarMiClave" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -4529,29 +4793,35 @@
             }
 
             // ========================================================
-            // FILTROS Y BÚSQUEDAS EN TABLAS
+            // FILTROS Y BÚSQUEDAS EN TABLAS (FASE 1: IDEA 3)
             // ========================================================
             const searchInputTrabajos = document.getElementById('searchInputMisTrabajos');
             const filterDocenteBtns = document.querySelectorAll('.filter-doc-docente button');
+            const filterTipoBtns = document.querySelectorAll('.filter-tipo-btn');
             let estadoActual = 'all';
+            let tipoActual = 'all';
 
             function aplicarFiltrosMisTrabajos() {
                 const query = (searchInputTrabajos ? searchInputTrabajos.value : '').toLowerCase().trim();
 
                 document.querySelectorAll('.doc-row-docente').forEach(row => {
                     const rowEstado = row.getAttribute('data-estado');
+                    const rowTipo = (row.getAttribute('data-tipo') || '').toLowerCase();
                     const rowSearch = (row.getAttribute('data-search') || '').toLowerCase();
                     const coincideEstado = (estadoActual === 'all' || rowEstado === estadoActual);
+                    const coincideTipo = (tipoActual === 'all' || rowTipo.includes(tipoActual));
                     const coincideTexto = !query || rowSearch.includes(query);
-                    row.style.display = (coincideEstado && coincideTexto) ? '' : 'none';
+                    row.style.display = (coincideEstado && coincideTipo && coincideTexto) ? '' : 'none';
                 });
 
                 document.querySelectorAll('.doc-card-docente').forEach(card => {
                     const cardEstado = card.getAttribute('data-estado');
+                    const cardTipo = (card.getAttribute('data-tipo') || '').toLowerCase();
                     const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
                     const coincideEstado = (estadoActual === 'all' || cardEstado === estadoActual);
+                    const coincideTipo = (tipoActual === 'all' || cardTipo.includes(tipoActual));
                     const coincideTexto = !query || cardSearch.includes(query);
-                    card.style.display = (coincideEstado && coincideTexto) ? '' : 'none';
+                    card.style.display = (coincideEstado && coincideTipo && coincideTexto) ? '' : 'none';
                 });
             }
 
@@ -4568,6 +4838,50 @@
                     aplicarFiltrosMisTrabajos();
                 });
             });
+
+            filterTipoBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterTipoBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    tipoActual = this.getAttribute('data-tipo');
+                    aplicarFiltrosMisTrabajos();
+                });
+            });
+
+            // ========================================================
+            // VISOR RÁPIDO DE PDF (FASE 1: IDEA 5)
+            // ========================================================
+            const modalVisorPdf = document.getElementById('modalVisorPdfRapido');
+            if (modalVisorPdf) {
+                modalVisorPdf.addEventListener('show.bs.modal', function(event) {
+                    const trigger = event.relatedTarget;
+                    if (!trigger) return;
+                    const url = trigger.getAttribute('data-pdf-url') || '';
+                    const titulo = trigger.getAttribute('data-pdf-titulo') || 'Documento PDF';
+                    const lbl = document.getElementById('modalVisorPdfRapidoLabel');
+                    if (lbl) lbl.textContent = titulo;
+                    const btnDescargar = document.getElementById('btnDescargarPdfModal');
+                    if (btnDescargar) btnDescargar.href = url;
+                    const btnPestana = document.getElementById('btnNuevaPestanaPdfModal');
+                    if (btnPestana) btnPestana.href = url;
+
+                    const iframe = document.getElementById('iframeVisorPdf');
+                    const spinner = document.getElementById('pdfLoadingSpinner');
+                    if (spinner) spinner.style.display = 'flex';
+                    if (iframe) {
+                        iframe.style.display = 'none';
+                        iframe.src = url;
+                        iframe.onload = function() {
+                            if (spinner) spinner.style.display = 'none';
+                            iframe.style.display = 'block';
+                        };
+                    }
+                });
+                modalVisorPdf.addEventListener('hidden.bs.modal', function() {
+                    const iframe = document.getElementById('iframeVisorPdf');
+                    if (iframe) iframe.src = '';
+                });
+            }
 
             const btnViewTableDoc = document.getElementById('btn-view-table-doc');
             const btnViewGridDoc = document.getElementById('btn-view-grid-doc');
@@ -5377,6 +5691,42 @@
                 );
             });
         })();
+
+        // ========================================================
+        // FASE 1: SALUD Y COMPLETITUD DE PERFIL (DISMISSIBLE / LOCALSTORAGE)
+        // ========================================================
+        window.dismissBannerSaludPerfil = function() {
+            const banner = document.getElementById('bannerSaludPerfil');
+            if (banner) {
+                banner.style.transition = 'all 0.3s ease';
+                banner.style.opacity = '0';
+                banner.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 300);
+                try { localStorage.setItem('fca_dismiss_salud_perfil', 'true'); } catch(e){}
+            }
+        };
+
+        window.reabrirBannerSaludPerfil = function() {
+            try { localStorage.removeItem('fca_dismiss_salud_perfil'); } catch(e){}
+            const banner = document.getElementById('bannerSaludPerfil');
+            if (banner) {
+                banner.style.display = '';
+                banner.style.opacity = '1';
+                banner.style.transform = 'none';
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (localStorage.getItem('fca_dismiss_salud_perfil') === 'true') {
+                    const banner = document.getElementById('bannerSaludPerfil');
+                    if (banner) banner.style.display = 'none';
+                }
+            } catch(e){}
+        });
     </script>
 
     {% if user.is_authenticated and user.autor and user.autor.puede_tener_semblanza %}

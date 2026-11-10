@@ -6,6 +6,7 @@ import os
 import shutil
 import zipfile
 import io
+import hashlib
 
 logger = logging.getLogger(__name__)
 from difflib import SequenceMatcher
@@ -1405,6 +1406,137 @@ def validar_recuperar_password_view(request, user_id):
 # PANEL PROPIO DEL DOCENTE / ACTUALIZAR PERFIL
 # ==============================================================================
 
+def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
+    items = []
+    if not autor:
+        return 100, []
+
+    # 1. Nombre completo
+    tiene_nombre = bool(autor.nombres and autor.apellido_paterno)
+    items.append(('Nombre y apellidos oficiales', tiene_nombre, 'Indica tu nombre y apellidos oficiales'))
+
+    # 2. Correo de contacto
+    tiene_correo = bool(autor.correo or user.email)
+    items.append(('Correo electrónico de contacto', tiene_correo, 'Registra tu correo de contacto'))
+
+    # 3. Foto personal
+    tiene_foto = bool(autor.foto_personal or autor.foto_perfil)
+    items.append(('Fotografía de perfil', tiene_foto, 'Sube tu foto personal'))
+
+    # 4. Fecha de nacimiento
+    tiene_nacimiento = bool(autor.fecha_nacimiento)
+    items.append(('Fecha de nacimiento', tiene_nacimiento, 'Agrega tu fecha de nacimiento'))
+
+    # 5. Identificación institucional
+    if autor.es_auxiliar:
+        tiene_id = bool(autor.matricula_estudiante)
+        items.append(('Matrícula estudiantil / folio', tiene_id, 'Registra tu matrícula de estudiante'))
+    else:
+        tiene_id = bool(autor.numero_empleado)
+        items.append(('Número de empleado institucional', tiene_id, 'Añade tu número de empleado'))
+
+    # 6. Semblanza académica (solo si aplica)
+    if autor.puede_tener_semblanza:
+        tiene_semblanza = bool(autor.biografia or autor.biografia_borrador)
+        items.append(('Semblanza académica o biografía', tiene_semblanza, 'Completa tus líneas de investigación'))
+
+    # 7. Al menos una obra o coautoría
+    tiene_obras = bool(mis_subidas_qs.exists() or mis_coautorias_qs.exists())
+    items.append(('Al menos una obra o coautoría registrada', tiene_obras, 'Sube tu primer trabajo académico'))
+
+    total = len(items)
+    completados = sum(1 for _, ok, _ in items if ok)
+    porcentaje = int((completados / total) * 100) if total > 0 else 100
+    pendientes = [desc for _, ok, desc in items if not ok]
+    return porcentaje, pendientes
+
+
+def obtener_notificaciones_panel(user, autor, mis_subidas_qs, auxiliares_pendientes_visto_bueno):
+    notifs = []
+    if not user.is_authenticated:
+        return notifs
+
+    # 1. Obras con observaciones de moderación
+    obras_rechazadas = mis_subidas_qs.filter(estado='rechazado')[:5]
+    for o in obras_rechazadas:
+        notifs.append({
+            'tipo': 'observacion',
+            'icono': 'fas fa-exclamation-triangle text-danger',
+            'titulo': f'Obra con observaciones: "{o.titulo[:45]}..."',
+            'detalle': o.motivo_rechazo or 'Por favor revisa y corrige los datos solicitados por el moderador.',
+            'fecha': o.created_at,
+            'enlace': reverse('editar_documento', args=[o.id]),
+            'texto_enlace': 'Corregir obra'
+        })
+
+    # 2. Invitaciones de coautoría pendientes
+    if autor:
+        invs_pendientes = InvitacionCoautoria.objects.filter(autor_invitado=autor, estado='pendiente')[:5]
+        for inv in invs_pendientes:
+            notifs.append({
+                'tipo': 'coautoria',
+                'icono': 'fas fa-users text-primary',
+                'titulo': 'Invitación de coautoría pendiente',
+                'detalle': f'Te invitaron como coautor en: "{inv.articulo.titulo[:45]}..."',
+                'fecha': inv.fecha_creacion,
+                'enlace': reverse('gestion_coautorias'),
+                'texto_enlace': 'Responder invitación'
+            })
+
+    # 3. Auxiliares pendientes de visto bueno (para tutores)
+    if auxiliares_pendientes_visto_bueno and auxiliares_pendientes_visto_bueno.count() > 0:
+        for aux in auxiliares_pendientes_visto_bueno[:5]:
+            notifs.append({
+                'tipo': 'auxiliar',
+                'icono': 'fas fa-hands-helping text-warning',
+                'titulo': f'Solicitud de Auxiliar: {aux.nombre}',
+                'detalle': f'Estudiante ({aux.matricula_estudiante or "S/M"}) solicitó tu visto bueno académico.',
+                'fecha': aux.created_at,
+                'enlace': '?tab=auxiliares',
+                'texto_enlace': 'Revisar solicitud'
+            })
+
+    # 4. Semblanza observada (si aplica)
+    if autor and autor.puede_tener_semblanza and autor.estado_semblanza == 'rechazado':
+        notifs.append({
+            'tipo': 'semblanza',
+            'icono': 'fas fa-id-card text-danger',
+            'titulo': 'Semblanza devuelta con observaciones',
+            'detalle': autor.motivo_rechazo_semblanza or 'Tu semblanza académica requiere corrección.',
+            'fecha': timezone.now(),
+            'enlace': '#modalEditarPerfil',
+            'modal': True,
+            'texto_enlace': 'Corregir semblanza'
+        })
+
+    return notifs
+
+
+def obtener_actividad_reciente_usuario(user, autor, mis_subidas_qs):
+    actividades = []
+    # Últimas 4 subidas
+    for sub in mis_subidas_qs[:4]:
+        actividades.append({
+            'tipo': 'subida',
+            'icono': 'fas fa-cloud-upload-alt text-success',
+            'titulo': f'Subiste la obra: "{sub.titulo}"',
+            'fecha': sub.created_at,
+            'estado': sub.estado,
+        })
+    # Auditoría propia (últimas 4 acciones)
+    audits = RegistroAuditoria.objects.filter(admin_usuario=user)[:4]
+    for a in audits:
+        actividades.append({
+            'tipo': 'auditoria',
+            'icono': 'fas fa-history text-secondary',
+            'titulo': a.accion,
+            'fecha': a.created_at,
+            'estado': 'info',
+        })
+    actividades.sort(key=lambda x: x['fecha'], reverse=True)
+    return actividades[:6]
+
+
 @login_required
 def mi_panel_view(request):
     # <--- MEJORA 2: Paginación en Paneles con Búsqueda Global en BD --->
@@ -1531,6 +1663,11 @@ def mi_panel_view(request):
         tutor_total_rechazadas = tutor_obras_qs.filter(estado='rechazado').count()
         tutor_obras = tutor_obras_qs
 
+    # <--- FASE 1: Salud de Perfil, Notificaciones y Actividad Reciente --->
+    porcentaje_perfil, items_pendientes = calcular_completitud_perfil(request.user, mi_autor, mis_subidas_qs, mis_coautorias_qs)
+    notificaciones_sistema = obtener_notificaciones_panel(request.user, mi_autor, mis_subidas_qs, auxiliares_pendientes_visto_bueno)
+    actividad_reciente = obtener_actividad_reciente_usuario(request.user, mi_autor, mis_subidas_qs)
+
     context = {
         'mis_subidas': mis_subidas,
         'mis_coautorias': mis_coautorias,
@@ -1559,6 +1696,11 @@ def mi_panel_view(request):
         'es_operador_tecnico': bool(mi_autor and (getattr(mi_autor, 'es_operador_tecnico', False) or mi_autor.rol_facultad == 'DEP_TEC')),
         'puede_tener_semblanza': bool(mi_autor and mi_autor.puede_tener_semblanza),
         'puede_tener_auxiliares': bool(mi_autor and mi_autor.puede_tener_auxiliares),
+        'porcentaje_perfil': porcentaje_perfil,
+        'items_pendientes': items_pendientes,
+        'notificaciones_sistema': notificaciones_sistema,
+        'total_notificaciones_activas': len(notificaciones_sistema),
+        'actividad_reciente': actividad_reciente,
     }
     return render(request, 'mi_panel.html', context)
 
@@ -1651,6 +1793,58 @@ def actualizar_datos_cuenta_view(request):
         return redirect('mi_panel')
 
     return redirect('mi_panel')
+
+
+@login_required
+def reporte_curriculo_pdf_view(request):
+    """
+    Genera el Reporte Resumen Curricular Oficial y de Productividad Académica
+    para el usuario actual (UABC FCA), con membrete institucional, sello digital SHA-256,
+    código QR de validación y tabla detallada de todas sus obras aprobadas / publicadas y coautorías.
+    """
+    user = request.user
+    autor = getattr(user, 'autor', None)
+
+    # Obras aprobadas vinculadas al usuario (subidas directamente o donde es autor acreditado)
+    filtro_obras = Q(subido_por=user, estado='aprobado')
+    if autor:
+        filtro_obras |= Q(autor=autor, estado='aprobado')
+
+    obras_aprobadas = Articulo.objects.filter(filtro_obras).distinct().order_by('-año_produccion', '-created_at')
+
+    total_obras = obras_aprobadas.count()
+    areas_unicas = [a for a in obras_aprobadas.values_list('area__nombre', flat=True).distinct() if a]
+    tipos_unicos = [t for t in obras_aprobadas.values_list('tipo_contenido__nombre', flat=True).distinct() if t]
+
+    # Folio y Sello digital criptográfico
+    fecha_emision = timezone.now()
+    folio_reporte = f"CURR-{user.id:04d}-{fecha_emision.strftime('%Y%m%d%H%M')}"
+    raw_stamp = f"UABC-FCA-CURRICULAR|UID:{user.id}|USER:{user.username}|TOTAL:{total_obras}|TS:{fecha_emision.isoformat()}"
+    sello_digital = hashlib.sha256(raw_stamp.encode('utf-8')).hexdigest()
+
+    scheme = request.scheme
+    host = request.get_host()
+    if autor and autor.puede_tener_semblanza and autor.perfil_completado:
+        url_verificacion = f"{scheme}://{host}/profesor/{autor.id}/"
+    else:
+        url_verificacion = f"{scheme}://{host}/busqueda/?q={user.get_full_name() or user.username}"
+
+    qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={url_verificacion}&color=006633"
+
+    context = {
+        'usuario': user,
+        'autor': autor,
+        'obras_aprobadas': obras_aprobadas,
+        'total_obras': total_obras,
+        'areas_unicas': areas_unicas,
+        'tipos_unicos': tipos_unicos,
+        'folio_reporte': folio_reporte,
+        'sello_digital': sello_digital,
+        'fecha_emision': fecha_emision,
+        'url_verificacion': url_verificacion,
+        'qr_api_url': qr_api_url,
+    }
+    return render(request, 'reporte_curriculo.html', context)
 
 
 @login_required
