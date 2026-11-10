@@ -1393,7 +1393,10 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="modal-footer bg-white border-0 py-3">
+                        <div class="modal-footer bg-white border-0 py-3 justify-content-between">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-xs" onclick="lanzarConfettiCumpleanos()">
+                                🎉 ¡Lanzar Confetti!
+                            </button>
                             <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
@@ -1891,8 +1894,11 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="modal-footer bg-white border-0 py-3">
-                            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+                        <div class="modal-footer bg-white border-0 py-3 justify-content-between">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-xs" onclick="lanzarConfettiCumpleanos()">
+                                🎉 ¡Lanzar Confetti!
+                            </button>
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>
@@ -2340,8 +2346,11 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="modal-footer bg-white border-0 py-3">
-                            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+                        <div class="modal-footer bg-white border-0 py-3 justify-content-between">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-xs" onclick="lanzarConfettiCumpleanos()">
+                                🎉 ¡Lanzar Confetti!
+                            </button>
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
                 </div>
@@ -2615,15 +2624,16 @@
                 });
             }
 
-            // Confetti de cumpleaños automático si hay docentes celebrando hoy
-            const cumpleaneros = document.querySelectorAll('.card-birthday-cupcake');
-            if (cumpleaneros.length > 0 && typeof confetti === 'function') {
-                confetti({
-                    particleCount: 95,
-                    spread: 80,
-                    origin: { y: 0.6 }
-                });
-            }
+            // Función interactiva para lanzar confetti festivo (solo por acción del usuario)
+            window.lanzarConfettiCumpleanos = function() {
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 110,
+                        spread: 85,
+                        origin: { y: 0.6 }
+                    });
+                }
+            };
 
             // ========================================================
             // CONTROLADOR DEL VISOR PDF SIN TRAMPA DE SCROLL (PAGINACIÓN POR CLIC)

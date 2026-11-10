@@ -260,15 +260,24 @@ def notificaciones_institucionales(request):
     except Exception:
         pass
 
-    # Docentes de cumpleaños hoy
+    # Docentes del Claustro de cumpleaños hoy (para el icono festivo 🎂 en el sidebar institucional)
     try:
+        from .models import Autor
+        from django.db.models import Q
         hoy = timezone.localdate()
-        context['cumpleaneros_hoy'] = Autor.objects.filter(
+        hay_cumple_claustro = Autor.objects.filter(
+            fecha_nacimiento__isnull=False,
             fecha_nacimiento__month=hoy.month,
-            fecha_nacimiento__day=hoy.day
+            fecha_nacimiento__day=hoy.day,
+            activo=True
+        ).filter(
+            Q(es_profesor=True) | Q(es_externo=True) | Q(rol_facultad='INV_IND')
         ).exists()
+        context['hay_cumpleaneros_claustro_hoy'] = hay_cumple_claustro
+        context['cumpleaneros_hoy'] = hay_cumple_claustro
     except Exception:
-        pass
+        context['hay_cumpleaneros_claustro_hoy'] = False
+        context['cumpleaneros_hoy'] = False
 
     if not request.user.is_authenticated:
         return context

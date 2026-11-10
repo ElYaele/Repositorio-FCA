@@ -725,6 +725,13 @@
                         el.classList.add('theme-' + colorVal);
                     });
 
+                    // Actualizar el badge de sabor en el perfil del docente en mi_panel
+                    const badgePerfil = document.getElementById('badgeSaborCupcakePerfil');
+                    if (badgePerfil) {
+                        badgePerfil.className = 'badge badge-cupcake-' + colorVal + ' shadow-xs';
+                        badgePerfil.innerHTML = '🧁 ' + (data.color_display || 'Cupcake');
+                    }
+
                     // Actualizar el banner de mi_panel si existe
                     const panelBanner = document.getElementById('panelBirthdayBanner');
                     if (panelBanner) {

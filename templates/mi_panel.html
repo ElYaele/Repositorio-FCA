@@ -459,6 +459,43 @@
             50% { transform: translateY(-3px) scale(1.15); }
         }
 
+        /* BADGES DINÁMICOS DE COLOR/SABOR DE CUPCAKE CLAUSTRO */
+        .badge-cupcake-rosa {
+            background-color: #fdf2f8 !important;
+            color: #db2777 !important;
+            border: 1px solid #fbcfe8 !important;
+        }
+        .badge-cupcake-cafe {
+            background-color: #efebe9 !important;
+            color: #4e342e !important;
+            border: 1px solid #bcaaa4 !important;
+        }
+        .badge-cupcake-azul {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #7dd3fc !important;
+        }
+        .badge-cupcake-verde {
+            background-color: #dcfce7 !important;
+            color: #15803d !important;
+            border: 1px solid #86efac !important;
+        }
+        .badge-cupcake-dorado {
+            background-color: #fef3c7 !important;
+            color: #b45309 !important;
+            border: 1px solid #fcd34d !important;
+        }
+        .badge-cupcake-morado {
+            background-color: #f3e8ff !important;
+            color: #6d28d9 !important;
+            border: 1px solid #d8b4fe !important;
+        }
+        .badge-cupcake-rojo {
+            background-color: #ffe4e6 !important;
+            color: #be123c !important;
+            border: 1px solid #fda4af !important;
+        }
+
         /* TOASTS FLOTANTES */
         #toastContainer {
             position: fixed;
@@ -1225,7 +1262,7 @@
                             {% if user.autor and user.autor.fecha_nacimiento %}
                                 <span class="badge bg-light text-muted border"><i class="fas fa-birthday-cake me-1 text-danger"></i>{{ user.autor.fecha_nacimiento|date:"d M" }}</span>
                                 {% if user.autor.puede_tener_semblanza %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Haz clic para personalizar tu cupcake del claustro">
+                                <span id="badgeSaborCupcakePerfil" class="badge badge-cupcake-{{ user.autor.color_cumpleanos|default:'rosa' }} shadow-xs" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Haz clic para personalizar tu cupcake del claustro">
                                     🧁 {{ user.autor.get_color_cumpleanos_display|default:"Fresa Glaseada" }}
                                 </span>
                                 {% else %}
@@ -1291,7 +1328,7 @@
                             <i class="fas fa-eye me-1"></i>Previsualizar Semblanza
                         </button>
 
-                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Personalizar sabor y color de mi cupcake de cumpleaños">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPersonalizarCumpleanos" title="Personalizar sabor y color de mi cupcake de cumpleaños">
                             <i class="fas fa-palette me-1"></i>Estilo Cumpleaños 🧁
                         </button>
 
