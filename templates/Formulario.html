@@ -472,6 +472,20 @@
             padding: 14px;
             transition: all 0.2s ease;
         }
+        /* MODAL CITAR PUBLICACIÓN ARRASTRABLE */
+        #modalCitarObraDirecto {
+            z-index: 1070 !important;
+        }
+        #modalCitarObraDirecto .modal-dialog {
+            margin-top: 10vh;
+        }
+        #citaDirectoHeader {
+            cursor: grab;
+            user-select: none;
+        }
+        #citaDirectoHeader:active {
+            cursor: grabbing;
+        }
         /* CHIPS DE PALABRAS CLAVE */
         .tag-chip {
             background-color: #dcfce7;
@@ -1421,12 +1435,12 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_codirector_tesis">
-                                    Co-director / Co-asesor <span class="badge badge-light border text-muted ml-1" style="font-weight: 500;">Opcional</span>
+                                    Co-director / Co-asesor <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Profesor o investigador secundario o asesor metodológico que participó en la dirección de la tesis."></i>
                                 </label>
                                 <input type="text" name="coasesor" id="id_codirector_tesis" class="form-control sincro-codirector"
                                        value="{% if form.instance.coasesor %}{{ form.instance.coasesor.nombre }}{% elif form.coasesor.value %}{{ form.coasesor.value }}{% elif request.POST.coasesor %}{{ request.POST.coasesor }}{% endif %}"
-                                       placeholder="Ej. Dra. Martha Patricia Morales (Opcional)">
+                                       placeholder="Ej. Dra. Martha Patricia Morales">
                             </div>
                         </div>
                     </div>
@@ -1515,7 +1529,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_doi_cap">
-                                    Enlace DOI / Permanente (Opcional)
+                                    Enlace DOI / Permanente <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="DOI o enlace directo al capítulo si está publicado en línea."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_doi_cap" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://doi.org/10.1234/...">
@@ -1569,7 +1583,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_ponencia_isbn">
-                                    ISBN / ISSN de las Memorias (Si aplica)
+                                    ISBN / ISSN de las Memorias <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Si aplica</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Registro oficial de la memoria publicada con registro ISBN o ISSN."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_ponencia_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-123-4">
@@ -1589,7 +1603,7 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label for="id_ponencia_doi">
-                                    Enlace Web Oficial / Memorias en Línea / DOI (Opcional)
+                                    Enlace Web Oficial / Memorias en Línea / DOI <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web oficial donde se encuentra publicada la memoria o programa del evento."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_ponencia_doi" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://congreso.uabc.mx/memorias/2026/ponencia-42.pdf">
@@ -1643,7 +1657,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_rep_enlace">
-                                    Enlace al Repositorio del Proyecto o DOI (Opcional)
+                                    Enlace al Repositorio del Proyecto o DOI <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web del sistema de seguimiento de proyectos o repositorio de entregables."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_rep_enlace" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://investigacion.uabc.mx/proyectos/fca-2026-018">
@@ -1765,7 +1779,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_doi_pi">
-                                    Enlace Oficial / Gaceta IMPI / Repositorio (Opcional)
+                                    Enlace Oficial / Gaceta IMPI / Repositorio <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace web de consulta pública en SIGA-IMPI, INDAUTOR o repositorio institucional."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_doi_pi" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://siga.impi.gob.mx/... o enlace oficial">
@@ -1821,7 +1835,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_doi_desarrollo">
-                                    Enlace al Repositorio o Demostración Web
+                                    Enlace al Repositorio o Demostración Web <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Enlace al repositorio de código (GitHub, GitLab), sitio oficial o demo en producción."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_doi_desarrollo" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. https://github.com/... o https://sistema.uabc.mx">
@@ -1886,7 +1900,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="id_doi_transferencia">
-                                    Número o Folio del Convenio / Enlace de Respaldo
+                                    Número o Folio del Convenio / Enlace de Respaldo <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número de folio del convenio institucional o enlace de respaldo."></i>
                                 </label>
                                 <input type="text" name="doi_enlace" id="id_doi_transferencia" class="form-control" value="{% if form.doi_enlace.value %}{{ form.doi_enlace.value }}{% elif form.instance.doi_enlace %}{{ form.instance.doi_enlace }}{% endif %}" placeholder="Ej. UABC-CONV-2026/045 o https://...">
@@ -1988,7 +2002,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_it_proyecto_origen">
-                                    Proyecto de Investigación u Origen (Opcional)
+                                    Proyecto de Investigación u Origen <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave del proyecto o iniciativa en cuyo marco se gestó el dictamen."></i>
                                 </label>
                                 <input type="text" name="proyecto_origen" id="id_it_proyecto_origen" class="form-control" value="{% if form.proyecto_origen.value %}{{ form.proyecto_origen.value }}{% elif form.instance.proyecto_origen %}{{ form.instance.proyecto_origen }}{% endif %}" placeholder="Ej. Proyecto UABC 2026-FCA-012">
@@ -2041,7 +2055,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_dossier_isbn">
-                                    ISBN / ISSN de la Obra (Si aplica)
+                                    ISBN / ISSN de la Obra <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Si aplica</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Registro bibliográfico estándar de la antología o dossier."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_dossier_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-000-0">
@@ -2307,42 +2321,10 @@
                 </div>
 
                 <div class="modal-footer bg-white py-3 px-4 d-flex justify-content-between align-items-center flex-wrap">
-                    <!-- Dropdown Citar Obra (Idea 7) -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-success btn-sm rounded-pill dropdown-toggle font-weight-bold px-3 py-2" type="button" id="btnCitarObraPreview" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-quote-left mr-1"></i> Citar Obra
-                        </button>
-                        <div class="dropdown-menu p-3 shadow-lg border-0 rounded-3" aria-labelledby="btnCitarObraPreview" style="min-width: 340px; font-size: 0.8rem;">
-                            <h6 class="dropdown-header px-0 text-success font-weight-bold">Formato de Cita Bibliográfica</h6>
-                            <div class="mb-2 p-2 rounded bg-light border">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark small font-weight-bold">APA (7.ª edición):</strong>
-                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-apa-prev" style="font-size: 0.7rem;">
-                                        <i class="far fa-copy mr-1"></i>Copiar
-                                    </button>
-                                </div>
-                                <p id="cita-apa-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
-                            </div>
-                            <div class="mb-2 p-2 rounded bg-light border">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark small font-weight-bold">Harvard:</strong>
-                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-harvard-prev" style="font-size: 0.7rem;">
-                                        <i class="far fa-copy mr-1"></i>Copiar
-                                    </button>
-                                </div>
-                                <p id="cita-harvard-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
-                            </div>
-                            <div class="p-2 rounded bg-light border">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-dark small font-weight-bold">IEEE:</strong>
-                                    <button type="button" class="btn btn-xs btn-outline-success py-0 px-2 btn-copiar-cita" data-target="cita-ieee-prev" style="font-size: 0.7rem;">
-                                        <i class="far fa-copy mr-1"></i>Copiar
-                                    </button>
-                                </div>
-                                <p id="cita-ieee-prev" class="text-muted font-italic mb-0" style="font-size: 0.75rem; line-height: 1.4;"></p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Botón Citar Obra (Abre el Modal Multiformato UABC Arrastrable) -->
+                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill font-weight-bold px-3 py-2 shadow-xs" id="btnCitarObraPreview" onclick="abrirModalCitarDesdePreview()">
+                        <i class="fas fa-quote-left mr-1"></i> Citar Obra
+                    </button>
 
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 font-weight-bold mr-2" data-dismiss="modal">
@@ -2352,6 +2334,59 @@
                             <i class="fas fa-check-circle mr-1"></i> Confirmar y Publicar
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL CITAR PUBLICACIÓN (ARRASTRABLE Y MULTIFORMATO - UABC) -->
+    <!-- ============================================================== -->
+    <div class="modal fade" id="modalCitarObraDirecto" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="false" style="z-index: 1070;">
+        <div class="modal-dialog modal-dialog-centered" id="dialogCitarObra" style="max-width: 520px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="border-radius: 16px;">
+                <div class="modal-header bg-success text-white py-3 d-flex align-items-center justify-content-between" id="citaDirectoHeader" style="cursor: grab; user-select: none; background-color: #006633 !important;">
+                    <div class="d-flex align-items-center text-truncate mr-2">
+                        <i class="fas fa-grip-vertical mr-2 opacity-75" title="Haz clic y mantén presionado para mover libremente"></i>
+                        <h5 class="modal-title font-weight-bold text-white mb-0 text-truncate" style="font-size: 1rem;"><i class="fas fa-quote-right mr-2"></i>Citar Publicación</h5>
+                        <span class="badge badge-light text-white rounded-pill px-2 py-0 ml-2 small font-weight-normal d-none d-sm-inline" style="font-size: 0.68rem; background: rgba(255,255,255,0.25);" title="Haz clic y arrastra para mover">
+                            <i class="fas fa-arrows-alt mr-1"></i>Arrastrable
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center flex-shrink-0" style="gap: 5px;">
+                        <button type="button" class="btn btn-sm btn-link text-white text-decoration-none p-1" onclick="reCentrarModalCitasGlobal()" title="Restablecer posición al centro (doble clic en el encabezado)">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button type="button" class="close text-white ml-2" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; line-height: 1; opacity: 0.9;">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-dark mb-1" id="citaDirectoTitulo"></h6>
+                        <small class="text-muted d-block mb-3" id="citaDirectoAutores"></small>
+                    </div>
+                    <div class="d-flex flex-wrap mb-3" style="gap: 6px;">
+                        <button type="button" class="btn btn-sm btn-success active rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabApa" onclick="cambiarEstiloCita('APA')">APA 7ma</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabMla" onclick="cambiarEstiloCita('MLA')">MLA 9</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabChicago" onclick="cambiarEstiloCita('CHICAGO')">Chicago</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabHarvard" onclick="cambiarEstiloCita('HARVARD')">Harvard</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabIeee" onclick="cambiarEstiloCita('IEEE')">IEEE</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 tab-cita-btn font-weight-bold" id="btnTabVancouver" onclick="cambiarEstiloCita('VANCOUVER')">Vancouver</button>
+                    </div>
+                    <div class="p-3 bg-white rounded-3 border shadow-sm" style="border-radius: 8px;">
+                        <p id="citaDirectoTexto" class="small text-dark mb-0 font-monospace" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1.55; user-select: all; font-size: 0.85rem;"></p>
+                    </div>
+                    <div class="mt-2 text-right">
+                        <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-arrows-alt mr-1"></i>Puedes arrastrar este cuadro por el encabezado para ver el documento o ficha de fondo.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0 py-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 font-weight-bold" data-dismiss="modal" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success btn-sm rounded-pill px-4 font-weight-bold shadow-sm btn-copiar-cita" id="btnCopiarCitaDirecto" onclick="copiarCitaTextoDirecto()" style="background-color: #006633; border-color: #006633;">
+                        <i class="fas fa-copy mr-1"></i>Copiar Cita
+                    </button>
                 </div>
             </div>
         </div>
@@ -4578,12 +4613,6 @@
                 pdfParaRenderizarActivo = pdfParaRenderizar;
                 renderizarPdfEnPreviewModal(pdfParaRenderizar);
 
-                // CITAS BIBLIOGRÁFICAS EN VIVO (IDEA 7)
-                const primerAutor = listaAutores.length > 0 ? listaAutores[0].replace(/\s*\([^)]*\)/g, '').trim() : 'Autor Desconocido';
-                $('#cita-apa-prev').text(`${primerAutor} (${anioVal}). ${tit}. Repositorio Institucional FCA, Universidad Autónoma de Baja California.`);
-                $('#cita-harvard-prev').text(`${primerAutor}, ${anioVal}. ${tit}. UABC: Tijuana.`);
-                $('#cita-ieee-prev').text(`${primerAutor}, "${tit}," Repositorio Institucional FCA UABC, ${anioVal}.`);
-
                 // Abrir modal en la pestaña 1 por defecto
                 $('#tab-ficha-detallada').tab('show');
                 $('#modalConfirmarPublicacion').modal('show');
@@ -5321,23 +5350,207 @@
             });
 
             // ==============================================================
-            // COPIAR CITA BIBLIOGRÁFICA AL PORTAPAPELES (IDEA 7)
+            // MODAL DE CITACIÓN MULTIFORMATO Y ARRASTRABLE (IDÉNTICO AL CATÁLOGO)
             // ==============================================================
-            $(document).on('click', '.btn-copiar-cita', function(e) {
-                e.stopPropagation();
-                const targetId = $(this).data('target');
-                const textoCita = $(`#${targetId}`).text();
-                if (textoCita && navigator.clipboard) {
-                    const $btn = $(this);
-                    const originalHtml = $btn.html();
-                    navigator.clipboard.writeText(textoCita).then(function() {
-                        $btn.html('<i class="fas fa-check mr-1"></i>¡Copiado!').removeClass('btn-outline-success').addClass('btn-success');
-                        setTimeout(function() {
-                            $btn.html(originalHtml).removeClass('btn-success').addClass('btn-outline-success');
-                        }, 2000);
-                    }).catch(function(err) {
-                        console.warn('Error al copiar cita:', err);
+            let citaActualData = { titulo: '', autores: '', anio: '', tipo: '' };
+
+            window.abrirModalCitarDesdePreview = function() {
+                const tit = ($('#id_titulo').val() || '').trim() || $('#prevTitulo').text().trim() || 'Sin título especificado';
+                const anioVal = ($('#id_año_produccion').val() || '').trim() || '2026';
+                const tipoNom = ($('#real-tipo-contenido').val() || '').trim() || 'Recurso Académico';
+
+                const listaAutores = [];
+                $('#selected-list li.author-card-row').each(function() {
+                    const nombre = $(this).data('nombre') || $(this).find('.author-name-text').text().trim();
+                    if (nombre) listaAutores.push(nombre);
+                });
+                const autoresLimpios = listaAutores.length > 0 ? listaAutores.join(', ') : 'Autor Desconocido';
+
+                abrirModalCitar(tit, autoresLimpios, anioVal, tipoNom);
+            };
+
+            window.abrirModalCitar = function(titulo, autores, anio, tipo) {
+                citaActualData = {
+                    titulo: titulo || 'Título Desconocido',
+                    autores: (autores && autores !== 'Sin autor' && autores !== 'Sin autores' && !autores.includes('Sin autores')) ? autores : 'Autor Desconocido',
+                    anio: (anio && anio !== 'None') ? anio : 's.f.',
+                    tipo: tipo || ''
+                };
+
+                const tEl = document.getElementById('citaDirectoTitulo');
+                const aEl = document.getElementById('citaDirectoAutores');
+                if (tEl) tEl.textContent = citaActualData.titulo;
+                if (aEl) aEl.textContent = citaActualData.autores;
+
+                cambiarEstiloCita('APA');
+
+                if (typeof reCentrarModalCitasGlobal === 'function') {
+                    reCentrarModalCitasGlobal();
+                }
+
+                $('#modalCitarObraDirecto').modal('show');
+            };
+
+            window.formatearCita = function(estilo, datos) {
+                switch(estilo) {
+                    case 'APA':
+                        return `${datos.autores}. (${datos.anio}). ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+                    case 'MLA':
+                        return `${datos.autores}. "${datos.titulo}." Repositorio Institucional FCA UABC, ${datos.anio}.`;
+                    case 'CHICAGO':
+                        return `${datos.autores}. "${datos.titulo}." Repositorio Institucional FCA UABC (${datos.anio}).`;
+                    case 'HARVARD':
+                        return `${datos.autores}, ${datos.anio}. ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+                    case 'IEEE':
+                        return `${datos.autores}, "${datos.titulo}," Repositorio Institucional FCA UABC, ${datos.anio}.`;
+                    case 'VANCOUVER':
+                        return `${datos.autores}. ${datos.titulo}. Repositorio Institucional FCA UABC; ${datos.anio}.`;
+                    default:
+                        return `${datos.autores}. (${datos.anio}). ${datos.titulo}. Repositorio Institucional FCA UABC.`;
+                }
+            };
+
+            window.cambiarEstiloCita = function(estilo) {
+                document.querySelectorAll('#modalCitarObraDirecto .tab-cita-btn').forEach(btn => {
+                    btn.classList.remove('btn-success', 'active');
+                    btn.classList.add('btn-outline-secondary');
+                });
+                const key = estilo.charAt(0) + estilo.slice(1).toLowerCase();
+                const activeBtn = document.getElementById('btnTab' + key);
+                if (activeBtn) {
+                    activeBtn.classList.remove('btn-outline-secondary');
+                    activeBtn.classList.add('btn-success', 'active');
+                }
+                const txtEl = document.getElementById('citaDirectoTexto');
+                if (txtEl) txtEl.textContent = formatearCita(estilo, citaActualData);
+            };
+
+            window.copiarCitaTextoDirecto = function() {
+                const txtEl = document.getElementById('citaDirectoTexto');
+                const texto = txtEl ? txtEl.textContent : '';
+                function feedbackCopiado() {
+                    const btn = document.getElementById('btnCopiarCitaDirecto');
+                    if (!btn) return;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>¡Copiado!';
+                    btn.classList.replace('btn-success', 'btn-dark');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.replace('btn-dark', 'btn-success');
+                    }, 2000);
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(texto).then(feedbackCopiado).catch(err => {
+                        fallbackCopiar(texto, feedbackCopiado);
                     });
+                } else {
+                    fallbackCopiar(texto, feedbackCopiado);
+                }
+            };
+
+            function fallbackCopiar(texto, callback) {
+                const temp = document.createElement('textarea');
+                temp.value = texto;
+                document.body.appendChild(temp);
+                temp.select();
+                try {
+                    document.execCommand('copy');
+                    if (callback) callback();
+                } catch(e) {
+                    console.warn('Fallo copiar:', e);
+                }
+                document.body.removeChild(temp);
+            }
+
+            window.reCentrarModalCitasGlobal = function() {};
+
+            function initDraggableCitationModal() {
+                const modalEl = document.getElementById('modalCitarObraDirecto');
+                if (!modalEl) return;
+
+                const dialog = modalEl.querySelector('.modal-dialog');
+                const header = modalEl.querySelector('#citaDirectoHeader');
+                if (!dialog || !header) return;
+
+                let isDragging = false;
+                let startX = 0;
+                let startY = 0;
+                let currentX = 0;
+                let currentY = 0;
+
+                window.reCentrarModalCitasGlobal = function() {
+                    currentX = 0;
+                    currentY = 0;
+                    dialog.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    dialog.style.transform = '';
+                    setTimeout(() => { dialog.style.transition = ''; }, 250);
+                };
+
+                header.addEventListener('mousedown', function(e) {
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+
+                    isDragging = true;
+                    startX = e.clientX - currentX;
+                    startY = e.clientY - currentY;
+                    header.style.cursor = 'grabbing';
+                    dialog.style.transition = 'none';
+                    document.body.style.userSelect = 'none';
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+
+                    currentX = e.clientX - startX;
+                    currentY = e.clientY - startY;
+
+                    dialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                });
+
+                document.addEventListener('mouseup', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        header.style.cursor = 'grab';
+                        document.body.style.userSelect = '';
+                    }
+                });
+
+                // Compatibilidad táctil
+                header.addEventListener('touchstart', function(e) {
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+                    const touch = e.touches[0];
+                    isDragging = true;
+                    startX = touch.clientX - currentX;
+                    startY = touch.clientY - currentY;
+                    dialog.style.transition = 'none';
+                }, { passive: true });
+
+                document.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    const touch = e.touches[0];
+                    currentX = touch.clientX - startX;
+                    currentY = touch.clientY - startY;
+                    dialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }, { passive: false });
+
+                document.addEventListener('touchend', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                    }
+                });
+
+                header.addEventListener('dblclick', function(e) {
+                    if (e.target.closest('button')) return;
+                    reCentrarModalCitasGlobal();
+                });
+            }
+
+            initDraggableCitationModal();
+
+            $(document).on('hidden.bs.modal', '#modalCitarObraDirecto', function() {
+                if ($('#modalConfirmarPublicacion').hasClass('show')) {
+                    $('body').addClass('modal-open');
                 }
             });
 
