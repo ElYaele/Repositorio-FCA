@@ -472,6 +472,10 @@
             padding: 14px;
             transition: all 0.2s ease;
         }
+        /* BANNER DE BORRADOR LOCAL */
+        #banner-borrador-local.d-none {
+            display: none !important;
+        }
         /* MODAL CITAR PUBLICACIÓN ARRASTRABLE */
         #modalCitarObraDirecto {
             z-index: 1070 !important;
@@ -4825,24 +4829,46 @@
             // ==============================================================
             const CLAVE_STORAGE_BORRADOR = 'fca_borrador_obra_v1';
             let temporizadorAutoGuardado = null;
+            let estaDescartandoBorrador = false;
+
+            function ocultarBannerBorradorLocal() {
+                const $banner = $('#banner-borrador-local');
+                $banner.stop(true, true);
+                $banner.removeClass('d-flex');
+                $banner.addClass('d-none');
+                $banner.hide();
+            }
+
+            function mostrarBannerBorradorLocal(fechaStr) {
+                if (fechaStr) {
+                    $('#borrador-fecha-badge').text(fechaStr);
+                }
+                const $banner = $('#banner-borrador-local');
+                $banner.removeClass('d-none').addClass('d-flex').show();
+            }
 
             function verificarBorradorExistente() {
                 try {
                     const guardado = localStorage.getItem(CLAVE_STORAGE_BORRADOR);
-                    if (!guardado) return;
+                    if (!guardado) {
+                        ocultarBannerBorradorLocal();
+                        return;
+                    }
                     const data = JSON.parse(guardado);
                     if (!data || (!data.titulo && !data.descripcion && !data.tipo_contenido && (!data.autores_ids || data.autores_ids.length === 0) && !data.tiene_pdf)) {
+                        ocultarBannerBorradorLocal();
                         return;
                     }
                     const fechaStr = data.fecha || 'reciente';
-                    $('#borrador-fecha-badge').text(fechaStr);
-                    $('#banner-borrador-local').removeClass('d-none').addClass('d-flex').slideDown(250);
+                    mostrarBannerBorradorLocal(fechaStr);
                 } catch (e) {
                     console.warn('Error al verificar borrador local:', e);
+                    ocultarBannerBorradorLocal();
                 }
             }
 
             function guardarBorradorLocal(esManual = false) {
+                if (estaDescartandoBorrador) return;
                 try {
                     const tipoContenido = $('#real-tipo-contenido').val();
                     const titulo = ($('#id_titulo').val() || '').trim();
@@ -5022,7 +5048,7 @@
                         console.warn('No se pudo restaurar PDF desde IndexedDB:', ePdf);
                     }
 
-                    $('#banner-borrador-local').slideUp(250);
+                    ocultarBannerBorradorLocal();
                     if (typeof actualizarSugerenciasKeywords === 'function') {
                         actualizarSugerenciasKeywords();
                     }
@@ -5041,6 +5067,7 @@
             }
 
             function descartarBorradorLocal() {
+                estaDescartandoBorrador = true;
                 clearTimeout(temporizadorAutoGuardado);
                 try {
                     localStorage.removeItem(CLAVE_STORAGE_BORRADOR);
@@ -5048,6 +5075,9 @@
                 } catch (e) {
                     console.warn('Error al limpiar borrador:', e);
                 }
+
+                // Ocultar banner local de inmediato
+                ocultarBannerBorradorLocal();
 
                 // 1. Resetear selección de tipo y bloquear secciones
                 if (typeof activarTipo === 'function') {
@@ -5082,7 +5112,7 @@
                 }
                 $('#tarjeta-pdf-seleccionado').slideUp(200);
                 $('#zona-drag-drop-pdf').slideDown(250);
-                $('#alerta-sugerencia-titulo-pdf').removeClass('d-flex').addClass('d-none');
+                $('#alerta-sugerencia-titulo-pdf').removeClass('d-flex').addClass('d-none').hide();
                 $('#alerta-exceso-tamano-pdf').addClass('d-none');
                 $('#barra-peso-pdf').removeClass('bg-danger').addClass('bg-success').css('width', '0%');
                 $('#tarjeta-pdf-seleccionado').removeClass('border-danger').addClass('border-success');
@@ -5108,11 +5138,17 @@
                 }
 
                 // 6. Ocultar banner y actualizar progreso a 0%
-                $('#banner-borrador-local').slideUp(250);
+                ocultarBannerBorradorLocal();
                 $('#indicador-borrador-estado').html('<i class="fas fa-trash-alt text-muted mr-1"></i>Borrador eliminado');
                 actualizarProgresoFormulario();
                 refrescarValidacionVisualCampos();
                 mostrarToastFlotante('Borrador descartado y formulario reiniciado en limpio.');
+
+                // Asegurar que durante 800ms ningún evento dispare auto-guardado
+                setTimeout(function() {
+                    clearTimeout(temporizadorAutoGuardado);
+                    estaDescartandoBorrador = false;
+                }, 800);
             }
 
             function mostrarAlertaFormulario(mensaje, titulo = 'Atención', tipo = 'warning') {
@@ -5141,9 +5177,12 @@
             }
 
             function programarAutoGuardado() {
+                if (estaDescartandoBorrador) return;
                 clearTimeout(temporizadorAutoGuardado);
                 temporizadorAutoGuardado = setTimeout(function() {
-                    guardarBorradorLocal(false);
+                    if (!estaDescartandoBorrador) {
+                        guardarBorradorLocal(false);
+                    }
                 }, 1800);
             }
 
@@ -5163,6 +5202,7 @@
             $('#btnConfirmarEliminarBorradorModal').on('click', function(e) {
                 e.preventDefault();
                 $('#modalConfirmarDescartarBorrador').modal('hide');
+                ocultarBannerBorradorLocal();
                 descartarBorradorLocal();
             });
 
