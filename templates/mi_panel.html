@@ -663,7 +663,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userMenuBtn">
                 <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
-                {% if user.autor.es_profesor %}
+                {% if user.autor and user.autor.puede_tener_semblanza %}
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil"><i class="fas fa-id-card me-2 text-primary"></i>Editar Semblanza</a></li>
                 {% endif %}
                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCambiarMiClave"><i class="fas fa-key me-2 text-warning"></i>Seguridad</a></li>
@@ -803,7 +803,7 @@
         </div>
         {% endif %}
 
-        {% if user.autor and user.autor.es_profesor %}
+        {% if user.autor and user.autor.puede_tener_semblanza %}
             {% if user.autor.estado_semblanza == 'pendiente' %}
                 <div class="alert alert-warning shadow-sm border-0 mb-4">
                     <i class="fas fa-hourglass-half me-2"></i><strong>Semblanza en Revisión:</strong> Tu ficha académica y semblanza han sido enviadas al equipo de moderación. Se publicarán en el claustro una vez sean aprobadas.
@@ -863,7 +863,7 @@
                                 <span class="badge shadow-sm" style="background-color: #0d6efd; color: #ffffff;"><i class="fas fa-user-tie me-1"></i>Personal Administrativo</span>
                             {% endif %}
 
-                            {% if user.autor.es_profesor %}
+                            {% if user.autor and user.autor.puede_tener_semblanza %}
                                 {% if user.autor.perfil_completado %}
                                     <span class="badge bg-success bg-opacity-25 text-success border border-success"><i class="fas fa-globe me-1"></i>Público en Claustro</span>
                                 {% else %}
@@ -886,7 +886,7 @@
                                     <i class="fab fa-orcid me-1 text-success"></i>{{ user.autor.orcid }}
                                 </a>
                             {% endif %}
-                            {% if user.autor.horario_pdf and not user.autor.es_externo and user.autor.rol_facultad != 'INV_IND' %}
+                            {% if user.autor.horario_pdf and user.autor.puede_tener_semblanza and not user.autor.es_externo and user.autor.rol_facultad != 'INV_IND' %}
                                 <a href="{{ user.autor.horario_pdf.url }}" target="_blank" class="badge bg-info bg-opacity-10 text-primary border border-primary text-decoration-none shadow-sm" title="Horario Oficial de Clases">
                                     <i class="fas fa-calendar-alt me-1"></i>Horario Oficial
                                 </a>
@@ -901,15 +901,26 @@
                         </p>
 
                         <p class="mb-0 text-secondary small" style="line-height: 1.5;">
-                            {% if user.autor.es_profesor %}
+                            {% if user.autor and user.autor.puede_tener_semblanza %}
                                 {{ user.autor.biografia|default:"Sin semblanza académica registrada. Haz clic en 'Editar Semblanza' para añadir tus líneas de investigación y publicar tu perfil." }}
+                            {% elif user.is_superuser %}
+                                Panel de administración institucional, monitoreo y gestión de contenidos del Repositorio FCA.
                             {% else %}
                                 Panel exclusivo para la gestión de documentos, cargas y coautorías institucionales.
                             {% endif %}
                         </p>
                     </div>
 
-                    {% if user.autor.es_profesor %}
+                    {% if user.is_superuser %}
+                    <div class="col-auto d-flex flex-wrap gap-2">
+                        <a href="{% url 'panel_usuarios' %}" class="btn btn-theme-solid btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="fas fa-shield-alt me-1"></i>Panel de Control / Moderación
+                        </a>
+                        <a href="{% url 'upload_document' %}" class="btn btn-theme-outline btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="fas fa-cloud-upload-alt me-1"></i>Subir Trabajo
+                        </a>
+                    </div>
+                    {% elif user.autor and user.autor.puede_tener_semblanza %}
                     <div class="col-auto d-flex flex-wrap gap-2">
                         <!-- PREVISUALIZAR SEMBLANZA COMPLETA -->
                         <button type="button" class="btn btn-theme-outline btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPreviewMiSemblanza" title="Previsualizar cómo ven los demás tu semblanza">
@@ -1041,7 +1052,7 @@
                     <i class="fas fa-users me-2" style="color: var(--theme-accent);"></i>Obras donde figuro como Coautor
                 </button>
             </li>
-            {% if user.autor and user.autor.es_profesor %}
+            {% if user.autor and user.autor.puede_tener_auxiliares %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if request.GET.tab == 'auxiliares' %}active{% endif %}" id="auxiliares-tab" data-bs-toggle="tab" data-bs-target="#auxiliares" type="button" role="tab">
                     <i class="fas fa-hands-helping me-2" style="color: #0d6efd;"></i>Auxiliares de Investigación FCA
@@ -1770,7 +1781,7 @@
                 </div>
             </div>
 
-            {% if user.autor and user.autor.es_profesor %}
+            {% if user.autor and user.autor.puede_tener_auxiliares %}
             <!-- PESTAÑA 3: AUXILIARES DE INVESTIGACIÓN FCA -->
             <div class="tab-pane fade {% if request.GET.tab == 'auxiliares' %}show active{% endif %}" id="auxiliares" role="tabpanel">
                 <div class="card border-0 shadow-sm mb-4 rounded-4">
@@ -1878,7 +1889,7 @@
     </main>
 
     <!-- MODAL PREVISUALIZACIÓN DE MI SEMBLANZA (CON SOPORTE PARA QUILL.JS |SAFE) -->
-    {% if user.autor.es_profesor %}
+    {% if user.autor and user.autor.puede_tener_semblanza %}
     <div class="modal fade" id="modalPreviewMiSemblanza" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -2257,7 +2268,7 @@
     </div>
 
     <!-- MODAL EDITAR FICHA ACADÉMICA Y SEMBLANZA (CON QUILL.JS EN BLOQUE 2) -->
-    {% if user.autor.es_profesor %}
+    {% if user.autor and user.autor.puede_tener_semblanza %}
     <div class="modal fade" id="modalEditarPerfil" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
@@ -5208,7 +5219,7 @@
         })();
     </script>
 
-    {% if user.is_authenticated and user.autor %}
+    {% if user.is_authenticated and user.autor and user.autor.puede_tener_semblanza %}
         {% include 'modal_personalizar_cumpleanos.html' %}
     {% endif %}
 </body>

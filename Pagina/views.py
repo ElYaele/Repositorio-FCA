@@ -1509,7 +1509,7 @@ def mi_panel_view(request):
     mis_auxiliares = None
     auxiliares_pendientes_visto_bueno = None
     auxiliares_activos = None
-    if mi_autor and mi_autor.es_profesor:
+    if mi_autor and mi_autor.puede_tener_auxiliares:
         mis_auxiliares = mi_autor.auxiliares_asignados.all().order_by('-created_at')
         auxiliares_pendientes_visto_bueno = mis_auxiliares.filter(aprobado_por_tutor=False)
         auxiliares_activos = mis_auxiliares.filter(aprobado_por_tutor=True)
@@ -1557,6 +1557,8 @@ def mi_panel_view(request):
         'tutor_autor': tutor_autor,
         'es_soporte_modo_lector': bool(not request.user.is_superuser and mi_autor and (getattr(mi_autor, 'es_soporte', False) or mi_autor.rol_facultad == 'SOPORTE')),
         'es_operador_tecnico': bool(mi_autor and (getattr(mi_autor, 'es_operador_tecnico', False) or mi_autor.rol_facultad == 'DEP_TEC')),
+        'puede_tener_semblanza': bool(mi_autor and mi_autor.puede_tener_semblanza),
+        'puede_tener_auxiliares': bool(mi_autor and mi_autor.puede_tener_auxiliares),
     }
     return render(request, 'mi_panel.html', context)
 
@@ -1592,6 +1594,16 @@ def actualizar_perfil_docente_view(request):
             autor.foto_personal = foto_personal_subida
             autor.save()
             messages.success(request, 'Tu foto de perfil personal ha sido actualizada.')
+            return redirect('mi_panel')
+
+        # Control de acceso: Semblanzas reservadas exclusivamente para docentes e investigadores
+        if not es_edicion_tutor and not autor.puede_tener_semblanza:
+            if foto_personal_subida:
+                autor.foto_personal = foto_personal_subida
+                autor.save()
+                messages.success(request, 'Tu foto de perfil personal ha sido actualizada.')
+            else:
+                messages.error(request, 'Las semblanzas académicas y fichas del claustro están reservadas exclusivamente para docentes e investigadores.')
             return redirect('mi_panel')
 
         titulo_academico = request.POST.get('titulo_academico', '').strip()
@@ -3063,6 +3075,8 @@ def directorio_profesores_view(request):
         perfil_completado=True,
         institucion_origen__iexact='UABC'
     ).exclude(
+        usuario__is_superuser=True
+    ).exclude(
         Q(rol_facultad='INV_IND') | Q(institucion_origen__icontains='independiente')
     ).prefetch_related(
         'documentos', 'nombramientos', 'enlaces_profesionales', 'mensajes_recibidos'
@@ -3073,6 +3087,8 @@ def directorio_profesores_view(request):
         es_profesor=True,
         estado_semblanza='aprobado',
         perfil_completado=True
+    ).exclude(
+        usuario__is_superuser=True
     ).exclude(
         institucion_origen__iexact='UABC'
     ).exclude(
@@ -3086,6 +3102,8 @@ def directorio_profesores_view(request):
         es_profesor=True,
         estado_semblanza='aprobado',
         perfil_completado=True
+    ).exclude(
+        usuario__is_superuser=True
     ).filter(
         Q(rol_facultad='INV_IND') | Q(institucion_origen__icontains='independiente')
     ).prefetch_related(
@@ -3893,10 +3911,10 @@ def cambiar_color_cumpleanos_view(request):
     """
     if request.method == 'POST':
         autor = getattr(request.user, 'autor', None)
-        if not autor:
+        if not autor or not autor.puede_tener_semblanza:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
-                return JsonResponse({'status': 'error', 'message': 'No se encontró un perfil docente asociado.'}, status=400)
-            messages.error(request, 'No tienes un perfil docente asociado.')
+                return JsonResponse({'status': 'error', 'message': 'La personalización de cupcake de cumpleaños está reservada para docentes e investigadores.'}, status=403)
+            messages.error(request, 'La personalización de cupcake de cumpleaños está reservada para docentes e investigadores.')
             return redirect('mi_panel')
 
         color = request.POST.get('color', '').strip().lower()

@@ -339,6 +339,47 @@ class Autor(models.Model):
     )
 
     @property
+    def puede_tener_semblanza(self):
+        """
+        Determina si el usuario o autor tiene derecho a contar con ficha académica y semblanza pública.
+        Las semblanzas están reservadas exclusivamente para:
+        1. Docentes UABC (FCA)
+        2. Docentes / Colaboradores de otras universidades
+        3. Investigadores (adscritos o independientes)
+
+        NO aplica para:
+        - Super Administradores de la plataforma (is_superuser=True)
+        - Auxiliares de investigación FCA
+        - Personal de Soporte Técnico ni Operadores Técnicos
+        """
+        if self.usuario and self.usuario.is_superuser:
+            return False
+        if self.es_auxiliar or self.rol_facultad in ['AUX_INV', 'SOPORTE', 'DEP_TEC'] or getattr(self, 'es_soporte', False) or getattr(self, 'es_operador_tecnico', False):
+            return False
+        if self.es_externo or self.rol_facultad == 'EXT':
+            return True
+        if self.rol_facultad in ['INV', 'INV_IND'] or 'independiente' in (self.institucion_origen or '').lower():
+            return True
+        roles_academicos = [
+            'PTC', 'ASIG', 'COORD_LIC', 'CA', 'ACAD', 'TUTOR',
+            'SINODAL', 'VINC', 'RESP_LAB', 'EMER', 'OTRO', 'CUSTOM'
+        ]
+        return bool(self.es_profesor or self.rol_facultad in roles_academicos)
+
+    @property
+    def puede_tener_auxiliares(self):
+        """
+        Solo los docentes adscritos a la UABC pueden tener auxiliares de investigación vinculados.
+        """
+        if not self.puede_tener_semblanza:
+            return False
+        if self.es_externo or self.rol_facultad in ['EXT', 'INV_IND']:
+            return False
+        if 'independiente' in (self.institucion_origen or '').lower():
+            return False
+        return True
+
+    @property
     def esta_suspendido_vigente(self):
         """Verifica si la cuenta está suspendida y si la suspensión sigue vigente."""
         if self.estado_cuenta != 'suspendida':
@@ -513,10 +554,19 @@ class Autor(models.Model):
                 if not Autor.objects.filter(codigo_institucional=candidato).exclude(pk=self.pk).exists():
                     self.codigo_institucional = candidato
 
+        # Superadministradores nunca deben marcarse como docentes académicos
+        if self.usuario and self.usuario.is_superuser:
+            self.es_profesor = False
+            self.perfil_completado = False
+            if self.rol_facultad in ['OTRO', 'PTC', 'ASIG']:
+                self.rol_facultad = 'SOPORTE'
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         prefijo = f"[{self.codigo_institucional}] " if self.codigo_institucional else ""
+        if self.usuario and self.usuario.is_superuser:
+            return f"{prefijo}{self.nombre} (Super Administrador)"
         if self.es_externo:
             return f"{prefijo}{self.nombre} ({self.institucion_origen})"
         if self.es_profesor:
