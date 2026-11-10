@@ -513,18 +513,30 @@
             border-radius: 10px;
         }
 
-        #modalEditarPerfil .modal-dialog {
+        #modalEditarPerfil .modal-dialog,
+        #modalActualizarDatosCuenta .modal-dialog {
             max-height: 90vh;
             overflow: hidden;
         }
-        #modalEditarPerfil .modal-content {
+        #modalEditarPerfil .modal-content,
+        #modalActualizarDatosCuenta .modal-content {
             max-height: 90vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-        #modalEditarPerfil .modal-body {
+        #modalEditarPerfil form,
+        #modalActualizarDatosCuenta form {
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+        #modalEditarPerfil .modal-body,
+        #modalActualizarDatosCuenta .modal-body {
             overflow-y: auto !important;
-            max-height: calc(90vh - 130px);
+            max-height: calc(90vh - 135px);
         }
 
         /* PERSONALIZACIÓN DEL EDITOR QUILL */
@@ -3564,15 +3576,15 @@
     <div class="modal fade" id="modalActualizarDatosCuenta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form method="post" action="{% url 'actualizar_datos_cuenta' %}">
+                <form method="post" action="{% url 'actualizar_datos_cuenta' %}" class="d-flex flex-column m-0" style="max-height: 90vh; overflow: hidden;">
                     {% csrf_token %}
-                    <div class="modal-header py-3 text-white" style="background-color: var(--theme-primary);">
+                    <div class="modal-header py-3 text-white flex-shrink-0" style="background-color: var(--theme-primary);">
                         <h5 class="modal-title fw-bold">
                             <i class="fas fa-user-cog me-2"></i>Actualizar Datos de Cuenta e Identidad
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4 bg-light">
+                    <div class="modal-body p-4 bg-light flex-grow-1" style="overflow-y: auto !important; max-height: calc(90vh - 135px);">
                         <!-- BANNER INFORMATIVO CON FCA-ID -->
                         <div class="p-3 mb-4 rounded-3 border bg-white shadow-xs d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
@@ -3696,7 +3708,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-white border-top py-3 justify-content-between">
+                    <div class="modal-footer bg-white border-top py-3 justify-content-between flex-shrink-0">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-theme-solid btn-sm rounded-pill px-4 shadow-sm">
                             <i class="fas fa-save me-1"></i>Guardar Cambios de Cuenta
