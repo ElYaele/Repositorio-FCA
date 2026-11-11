@@ -1928,19 +1928,20 @@
                                 <form method="get" action="{% url 'panel_usuarios' %}#semblanzas" class="d-inline-flex align-middle">
                                     {% if estado_semb %}<input type="hidden" name="estado_semb" value="{{ estado_semb }}">{% endif %}
                                     {% if tipo_origen_semb and tipo_origen_semb != 'all' %}<input type="hidden" name="tipo_origen_semb" value="{{ tipo_origen_semb }}">{% endif %}
+                                    {% if orden_semb and orden_semb != 'jerarquia' %}<input type="hidden" name="orden_semb" value="{{ orden_semb }}">{% endif %}
                                     {% if limit_semb %}<input type="hidden" name="limit_semb" value="{{ limit_semb }}">{% endif %}
                                     <div class="input-group input-group-sm w-auto">
                                         <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
                                         <input type="text" name="q_semb" value="{{ q_semb }}" id="search-semblanzas" class="form-control" placeholder="Buscar en claustro..." style="max-width: 170px;">
                                         {% if q_semb %}
-                                            <a href="{% url 'panel_usuarios' %}?{% if estado_semb %}estado_semb={{ estado_semb }}&{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}tipo_origen_semb={{ tipo_origen_semb }}&{% endif %}{% if limit_semb %}limit_semb={{ limit_semb }}{% endif %}#semblanzas" class="btn btn-outline-secondary" title="Limpiar filtro"><i class="fas fa-times"></i></a>
+                                            <a href="{% url 'panel_usuarios' %}?{% if estado_semb %}estado_semb={{ estado_semb }}&{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}tipo_origen_semb={{ tipo_origen_semb }}&{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}orden_semb={{ orden_semb }}&{% endif %}{% if limit_semb %}limit_semb={{ limit_semb }}{% endif %}#semblanzas" class="btn btn-outline-secondary" title="Limpiar filtro"><i class="fas fa-times"></i></a>
                                         {% endif %}
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    <!-- SUB-BARRA DE FILTROS: PROCEDENCIA INSTITUCIONAL Y LÍMITE DE PÁGINA -->
+                    <!-- SUB-BARRA DE FILTROS: PROCEDENCIA, CUMPLEAÑOS, ORDENAMIENTO Y LÍMITE DE PÁGINA -->
                     <div class="card-header bg-light bg-opacity-50 py-2 px-3 border-top border-bottom-0">
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                             <div class="d-flex align-items-center flex-wrap gap-1">
@@ -1958,16 +1959,37 @@
                                     <button type="button" class="btn btn-sm {% if tipo_origen_semb == 'investigador' %}btn-secondary active{% else %}btn-outline-secondary{% endif %}" data-origen="investigador" style="{% if tipo_origen_semb == 'investigador' %}background-color: #6f42c1; border-color: #6f42c1; color: white;{% else %}color: #6f42c1; border-color: #6f42c1;{% endif %}">
                                         <i class="fas fa-atom me-1"></i>Investigadores SNII ({{ total_sem_inv|default:0 }})
                                     </button>
+                                    {% if total_sem_cumple_mes > 0 %}
+                                    <button type="button" class="btn btn-sm {% if tipo_origen_semb == 'cumple_mes' %}btn-warning text-dark fw-bold active{% else %}btn-outline-warning text-dark{% endif %}" data-origen="cumple_mes" title="Académicos que cumplen años este mes">
+                                        <i class="fas fa-birthday-cake text-danger me-1"></i>Cumpleañeros del Mes ({{ total_sem_cumple_mes }})
+                                    </button>
+                                    {% endif %}
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted small fw-semibold"><i class="fas fa-list-ol text-muted me-1"></i>Mostrar:</span>
-                                <div class="btn-group btn-group-sm limit-semb-group" role="group">
-                                    <button type="button" class="btn btn-sm {% if limit_semb == 18 or not limit_semb %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="18">18</button>
-                                    <button type="button" class="btn btn-sm {% if limit_semb == 21 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="21">21</button>
-                                    <button type="button" class="btn btn-sm {% if limit_semb == 36 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="36">36</button>
+                            <div class="d-flex align-items-center flex-wrap gap-3">
+                                <!-- CRITERIO DE ORDENAMIENTO -->
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="text-muted small fw-semibold"><i class="fas fa-sort-amount-down text-success me-1"></i>Ordenar:</span>
+                                    <select id="select-orden-semb" class="form-select form-select-sm py-1 shadow-none" style="font-size: 0.78rem; width: auto;" title="Criterio de ordenación">
+                                        <option value="jerarquia" {% if orden_semb == 'jerarquia' or not orden_semb %}selected{% endif %}>🏛️ Jerarquía (UABC → Externos → SNII)</option>
+                                        <option value="nombre_asc" {% if orden_semb == 'nombre_asc' %}selected{% endif %}>🔤 Nombre (A - Z)</option>
+                                        <option value="nombre_desc" {% if orden_semb == 'nombre_desc' %}selected{% endif %}>🔤 Nombre (Z - A)</option>
+                                        <option value="obras_desc" {% if orden_semb == 'obras_desc' %}selected{% endif %}>📚 Mayor Producción (Obras)</option>
+                                        <option value="cumpleanos" {% if orden_semb == 'cumpleanos' %}selected{% endif %}>🎂 Próximos Cumpleaños (Mes / Día)</option>
+                                        <option value="distincion" {% if orden_semb == 'distincion' %}selected{% endif %}>⭐ Con Distinción Oficial</option>
+                                    </select>
                                 </div>
-                                <span class="text-muted small">por pág.</span>
+
+                                <!-- LÍMITE DE PÁGINA -->
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="text-muted small fw-semibold"><i class="fas fa-list-ol text-muted me-1"></i>Mostrar:</span>
+                                    <div class="btn-group btn-group-sm limit-semb-group" role="group">
+                                        <button type="button" class="btn btn-sm {% if limit_semb == 18 or not limit_semb %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="18">18</button>
+                                        <button type="button" class="btn btn-sm {% if limit_semb == 21 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="21">21</button>
+                                        <button type="button" class="btn btn-sm {% if limit_semb == 36 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="36">36</button>
+                                    </div>
+                                    <span class="text-muted small">por pág.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2007,6 +2029,11 @@
                                                     <strong class="text-dark fs-6">{{ aut.nombre_con_titulo|default:aut.nombre }}</strong>
                                                     {% if aut.usuario %}
                                                         <span class="badge bg-light text-muted border ms-1" style="font-size: 0.65rem;" title="Usuario del sistema: {{ aut.usuario.username }}">@{{ aut.usuario.username }}</span>
+                                                    {% endif %}
+                                                    {% if aut.es_cumpleanos_hoy %}
+                                                        <span class="badge bg-warning text-dark border border-warning ms-1" style="font-size: 0.65rem;" title="¡Hoy es su cumpleaños!"><i class="fas fa-birthday-cake text-danger me-1"></i>¡Cumpleaños hoy! 🎉</span>
+                                                    {% elif aut.es_cumpleanos_mes %}
+                                                        <span class="badge bg-light text-primary border ms-1" style="font-size: 0.65rem;" title="Cumpleaños este mes: {{ aut.fecha_nacimiento|date:'d \d\e F' }}"><i class="fas fa-birthday-cake text-warning me-1"></i>{{ aut.fecha_nacimiento|date:"d M" }}</span>
                                                     {% endif %}
                                                     <br>
                                                     <small class="text-muted">{{ aut.correo|default:"Sin correo registrado" }}</small>
@@ -2081,6 +2108,7 @@
                                             <button type="button" class="btn btn-outline-primary btn-action-circle me-1 btn-editar-semblanza"
                                                     data-bs-toggle="modal" data-bs-target="#modalEditarSemblanzaAdmin"
                                                     data-id="{{ aut.id }}"
+                                                    data-origen="{{ aut.tipo_origen_claustro }}"
                                                     data-nombre="{{ aut.nombre }}"
                                                     data-genero="{{ aut.genero|default:'NE' }}"
                                                     data-roles='[{% for nom in aut.nombramientos.all %}"{{ nom.rol }}"{% if not forloop.last %},{% endif %}{% empty %}"{{ aut.rol_facultad }}"{% endfor %}]'
@@ -2175,6 +2203,11 @@
                                                 {% if aut.usuario %}
                                                     <span class="badge bg-light text-muted border mt-1" style="font-size: 0.65rem;" title="Usuario: {{ aut.usuario.username }}">@{{ aut.usuario.username }}</span>
                                                 {% endif %}
+                                                {% if aut.es_cumpleanos_hoy %}
+                                                    <span class="badge bg-warning text-dark border border-warning mt-1" style="font-size: 0.65rem;" title="¡Hoy es su cumpleaños!"><i class="fas fa-birthday-cake text-danger me-1"></i>¡Cumpleaños hoy! 🎉</span>
+                                                {% elif aut.es_cumpleanos_mes %}
+                                                    <span class="badge bg-light text-primary border mt-1" style="font-size: 0.65rem;" title="Cumpleaños este mes: {{ aut.fecha_nacimiento|date:'d \d\e F' }}"><i class="fas fa-birthday-cake text-warning me-1"></i>{{ aut.fecha_nacimiento|date:"d M" }}</span>
+                                                {% endif %}
                                                 <small class="text-muted d-block text-truncate mt-1" title="{{ aut.correo }}"><i class="fas fa-envelope text-muted me-1" style="font-size: 0.7rem;"></i>{{ aut.correo|default:"Sin correo registrado" }}</small>
                                             </div>
                                         </div>
@@ -2261,6 +2294,7 @@
                                                 <button type="button" class="btn btn-outline-primary btn-action-circle me-1 btn-editar-semblanza"
                                                         data-bs-toggle="modal" data-bs-target="#modalEditarSemblanzaAdmin"
                                                         data-id="{{ aut.id }}"
+                                                        data-origen="{{ aut.tipo_origen_claustro }}"
                                                         data-nombre="{{ aut.nombre }}"
                                                         data-genero="{{ aut.genero|default:'NE' }}"
                                                         data-roles='[{% for nom in aut.nombramientos.all %}"{{ nom.rol }}"{% if not forloop.last %},{% endif %}{% empty %}"{{ aut.rol_facultad }}"{% endfor %}]'
@@ -2318,19 +2352,19 @@
                         <nav aria-label="Navegación de semblanzas" class="mt-4 pb-2">
                             <ul class="pagination justify-content-center mb-0">
                                 {% if todas_semblanzas.has_previous %}
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb=1{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Primera página"><i class="fas fa-angle-double-left"></i></a></li>
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.previous_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Anterior"><i class="fas fa-angle-left"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb=1{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}&orden_semb={{ orden_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Primera página"><i class="fas fa-angle-double-left"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.previous_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}&orden_semb={{ orden_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Anterior"><i class="fas fa-angle-left"></i></a></li>
                                 {% endif %}
                                 {% for num in todas_semblanzas.paginator.page_range %}
                                     {% if todas_semblanzas.number == num %}
                                         <li class="page-item active"><span class="page-link bg-success border-success fw-bold">{{ num }}</span></li>
                                     {% elif num > todas_semblanzas.number|add:'-3' and num < todas_semblanzas.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link text-success" href="?page_semb={{ num }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link text-success" href="?page_semb={{ num }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}&orden_semb={{ orden_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
                                 {% if todas_semblanzas.has_next %}
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.next_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Siguiente"><i class="fas fa-angle-right"></i></a></li>
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.paginator.num_pages }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Última página"><i class="fas fa-angle-double-right"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.next_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}&orden_semb={{ orden_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Siguiente"><i class="fas fa-angle-right"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.paginator.num_pages }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if orden_semb and orden_semb != 'jerarquia' %}&orden_semb={{ orden_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Última página"><i class="fas fa-angle-double-right"></i></a></li>
                                 {% endif %}
                             </ul>
                         </nav>
@@ -7006,13 +7040,18 @@
                             <a href="#" id="adminEditPdfLink" target="_blank" class="small text-danger text-decoration-none"><i class="fas fa-file-pdf me-1"></i>Ver PDF Actual Cargado</a>
                         </div>
 
-                        <!-- BLOQUE 5: HORARIO OFICIAL DOCENTE -->
-                        <h6 class="fw-bold text-success border-bottom pb-2 mb-3 mt-4">
-                            <i class="fas fa-calendar-alt me-2"></i>5. Horario de Clases y Asesorías Académicas
-                        </h6>
-                        <div class="p-2 rounded mb-2 bg-light border" id="adminEditHorarioContainer" style="display: none;">
-                            <label class="form-label fw-bold text-primary small mb-1">Horario Oficial Docente del Ciclo (PDF):</label><br>
-                            <a href="#" id="adminEditHorarioLink" target="_blank" class="small text-primary text-decoration-none"><i class="fas fa-calendar-alt me-1"></i>Ver Horario Oficial Actual</a>
+                        <!-- BLOQUE 5: HORARIO OFICIAL DOCENTE (EXCLUSIVO DOCENTES UABC) -->
+                        <div id="adminBloqueHorarioSeccion" style="display: none;">
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3 mt-4">
+                                <i class="fas fa-calendar-alt me-2"></i>5. Horario de Clases y Asesorías Académicas
+                            </h6>
+                            <div class="p-2 rounded mb-2 bg-light border" id="adminEditHorarioContainer" style="display: none;">
+                                <label class="form-label fw-bold text-primary small mb-1">Horario Oficial Docente del Ciclo (PDF):</label><br>
+                                <a href="#" id="adminEditHorarioLink" target="_blank" class="small text-primary text-decoration-none"><i class="fas fa-calendar-alt me-1"></i>Ver Horario Oficial Actual</a>
+                            </div>
+                            <div id="adminEditSinHorarioAviso" class="small text-muted p-2 rounded bg-light border fst-italic" style="display: none;">
+                                <i class="fas fa-info-circle me-1"></i>Este docente UABC aún no ha cargado su horario oficial del ciclo.
+                            </div>
                         </div>
 
                     </div>
@@ -9001,6 +9040,18 @@
                 window.location.href = url.toString();
             };
 
+            window.cambiarOrdenSemblanzas = function(orden) {
+                const url = new URL(window.location.href);
+                if (orden && orden !== 'jerarquia') {
+                    url.searchParams.set('orden_semb', orden);
+                } else {
+                    url.searchParams.delete('orden_semb');
+                }
+                url.searchParams.delete('page_semb');
+                url.hash = '#semblanzas';
+                window.location.href = url.toString();
+            };
+
             // Inicialización inteligente al cargar la página (URL Hash o LocalStorage)
             const urlHash = window.location.hash;
             const savedTab = localStorage.getItem('activeAdminTab');
@@ -9646,15 +9697,28 @@
                         pdfContainer.style.display = 'none';
                     }
 
+                    const origen = btn.getAttribute('data-origen') || 'uabc';
                     const horarioUrl = btn.getAttribute('data-horario');
+                    const bloqueHorario = document.getElementById('adminBloqueHorarioSeccion');
                     const horarioContainer = document.getElementById('adminEditHorarioContainer');
                     const horarioLink = document.getElementById('adminEditHorarioLink');
-                    if (horarioContainer && horarioLink) {
-                        if (horarioUrl && horarioUrl.trim() !== '') {
-                            horarioContainer.style.display = 'block';
-                            horarioLink.href = horarioUrl;
+                    const sinHorarioAviso = document.getElementById('adminEditSinHorarioAviso');
+
+                    // El apartado 5 de Horario SOLO se muestra para docentes de la UABC
+                    if (bloqueHorario) {
+                        if (origen === 'uabc') {
+                            bloqueHorario.style.display = 'block';
+                            if (horarioUrl && horarioUrl.trim() !== '') {
+                                if (horarioContainer) horarioContainer.style.display = 'block';
+                                if (horarioLink) horarioLink.href = horarioUrl;
+                                if (sinHorarioAviso) sinHorarioAviso.style.display = 'none';
+                            } else {
+                                if (horarioContainer) horarioContainer.style.display = 'none';
+                                if (sinHorarioAviso) sinHorarioAviso.style.display = 'block';
+                            }
                         } else {
-                            horarioContainer.style.display = 'none';
+                            // Docentes externos e investigadores no tienen horario oficial en FCA
+                            bloqueHorario.style.display = 'none';
                         }
                     }
 
@@ -10445,6 +10509,13 @@
                     window.cambiarLimiteSemblanzas(limite);
                 });
             });
+
+            const selectOrdenSemb = document.getElementById('select-orden-semb');
+            if (selectOrdenSemb) {
+                selectOrdenSemb.addEventListener('change', function() {
+                    window.cambiarOrdenSemblanzas(this.value);
+                });
+            }
 
             if (searchSemblanzas) {
                 searchSemblanzas.addEventListener('input', filtrarSemblanzas);

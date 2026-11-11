@@ -21,7 +21,8 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Case, When, Value, IntegerField, F
+from django.db.models.functions import ExtractMonth, ExtractDay
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.core.paginator import Paginator  # <--- Agregado para Paginación
@@ -3972,6 +3973,7 @@ def panel_usuarios_view(request):
         ).distinct()
 
     tipo_origen_semb = request.GET.get('tipo_origen_semb', 'all')
+    orden_semb = request.GET.get('orden_semb', 'jerarquia')
     limit_semb = request.GET.get('limit_semb', '18')
     try:
         limit_semb = int(limit_semb)
@@ -3986,7 +3988,8 @@ def panel_usuarios_view(request):
     total_sem_pendientes_global = base_sem_qs.filter(estado_semblanza='pendiente').count()
     total_sem_rechazadas_global = base_sem_qs.filter(estado_semblanza='rechazado').count()
 
-    # Conteos por procedencia institucional
+    # Conteos por procedencia institucional y cumpleaños del mes
+    mes_actual = timezone.now().date().month
     total_sem_uabc = base_sem_qs.filter(
         (Q(institucion_origen__iexact='UABC') | Q(institucion_origen='')) & Q(es_externo=False) & ~Q(rol_facultad='INV_IND')
     ).count()
@@ -3996,8 +3999,27 @@ def panel_usuarios_view(request):
     total_sem_inv = base_sem_qs.filter(
         Q(rol_facultad='INV_IND') | Q(nombramientos__rol='INV_IND')
     ).distinct().count()
+    total_sem_cumple_mes = base_sem_qs.filter(fecha_nacimiento__month=mes_actual).count()
 
-    todas_semblanzas_qs = base_sem_qs.order_by('nombre')
+    # Anotación para Jerarquía Institucional (UABC=1 -> Externos=2 -> Investigadores SNII=3)
+    todas_semblanzas_qs = base_sem_qs.annotate(
+        jerarquia_origen=Case(
+            When(
+                Q(rol_facultad='INV_IND') | Q(nombramientos__rol='INV_IND'),
+                then=Value(3)
+            ),
+            When(
+                Q(es_externo=True) | Q(rol_facultad='EXT') | (~Q(institucion_origen__iexact='UABC') & ~Q(institucion_origen='')),
+                then=Value(2)
+            ),
+            default=Value(1),
+            output_field=IntegerField()
+        ),
+        total_obras_count=Count('documentos', distinct=True),
+        mes_cumple=ExtractMonth('fecha_nacimiento'),
+        dia_cumple=ExtractDay('fecha_nacimiento')
+    )
+
     if estado_semb in ['aprobado', 'pendiente', 'rechazado']:
         todas_semblanzas_qs = todas_semblanzas_qs.filter(estado_semblanza=estado_semb)
 
@@ -4013,6 +4035,27 @@ def panel_usuarios_view(request):
         todas_semblanzas_qs = todas_semblanzas_qs.filter(
             Q(rol_facultad='INV_IND') | Q(nombramientos__rol='INV_IND')
         ).distinct()
+    elif tipo_origen_semb == 'cumple_mes':
+        todas_semblanzas_qs = todas_semblanzas_qs.filter(fecha_nacimiento__month=mes_actual)
+
+    # Ordenamiento Inteligente
+    if orden_semb == 'nombre_asc':
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by('nombre')
+    elif orden_semb == 'nombre_desc':
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by('-nombre')
+    elif orden_semb == 'obras_desc':
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by('-total_obras_count', 'jerarquia_origen', 'nombre')
+    elif orden_semb == 'cumpleanos':
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by(
+            F('mes_cumple').asc(nulls_last=True),
+            F('dia_cumple').asc(nulls_last=True),
+            'nombre'
+        )
+    elif orden_semb == 'distincion':
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by('-reconocimiento_pdf', 'jerarquia_origen', 'nombre')
+    else:
+        orden_semb = 'jerarquia'
+        todas_semblanzas_qs = todas_semblanzas_qs.order_by('jerarquia_origen', 'nombre')
 
     paginator_semb = Paginator(todas_semblanzas_qs, limit_semb)
     page_semb = request.GET.get('page_semb')
@@ -4283,7 +4326,9 @@ def panel_usuarios_view(request):
         'total_sem_uabc': total_sem_uabc,
         'total_sem_externo': total_sem_externo,
         'total_sem_inv': total_sem_inv,
+        'total_sem_cumple_mes': total_sem_cumple_mes,
         'tipo_origen_semb': tipo_origen_semb,
+        'orden_semb': orden_semb,
         'limit_semb': limit_semb,
         'autores_catalogo': autores_catalogo,
         'total_autores_catalogo': total_autores_catalogo,

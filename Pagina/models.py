@@ -662,6 +662,23 @@ class Autor(models.Model):
             return 'externo'
         return 'uabc'
 
+    @property
+    def es_cumpleanos_mes(self):
+        """Indica si el académico cumple años en el mes actual."""
+        if not self.fecha_nacimiento:
+            return False
+        from django.utils import timezone
+        return self.fecha_nacimiento.month == timezone.now().date().month
+
+    @property
+    def es_cumpleanos_hoy(self):
+        """Indica si hoy es el cumpleaños del académico."""
+        if not self.fecha_nacimiento:
+            return False
+        from django.utils import timezone
+        hoy = timezone.now().date()
+        return self.fecha_nacimiento.month == hoy.month and self.fecha_nacimiento.day == hoy.day
+
     def obtener_prefijo_codigo_institucional(self):
         """
         Determina el prefijo del código institucional:
