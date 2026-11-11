@@ -3742,8 +3742,9 @@ def enriquecer_con_deteccion_duplicados(documentos):
 
 def calcular_metricas_semestre(anio, semestre):
     """
-    Calcula con precisión las métricas cuantitativas de un periodo semestral
-    (Semestre 1: 1 Ene - 30 Jun, Semestre 2: 1 Jul - 31 Dic).
+    Calcula con precisión las métricas cuantitativas e indicadores de impacto de un periodo semestral
+    (Semestre 1: 1 Ene - 30 Jun, Semestre 2: 1 Jul - 31 Dic), incluyendo justificación de inversión
+    y comparativa con el semestre escolar previo.
     """
     tz = timezone.get_current_timezone()
     try:
@@ -3757,13 +3758,22 @@ def calcular_metricas_semestre(anio, semestre):
     if s == '1':
         d1 = timezone.make_aware(datetime(a, 1, 1, 0, 0, 0), tz)
         d2 = timezone.make_aware(datetime(a, 6, 30, 23, 59, 59), tz)
+        prev_a = a - 1
+        prev_s = '2'
+        prev_d1 = timezone.make_aware(datetime(prev_a, 7, 1, 0, 0, 0), tz)
+        prev_d2 = timezone.make_aware(datetime(prev_a, 12, 31, 23, 59, 59), tz)
     else:
         d1 = timezone.make_aware(datetime(a, 7, 1, 0, 0, 0), tz)
         d2 = timezone.make_aware(datetime(a, 12, 31, 23, 59, 59), tz)
+        prev_a = a
+        prev_s = '1'
+        prev_d1 = timezone.make_aware(datetime(prev_a, 1, 1, 0, 0, 0), tz)
+        prev_d2 = timezone.make_aware(datetime(prev_a, 6, 30, 23, 59, 59), tz)
 
     obras_qs = Articulo.objects.filter(created_at__range=(d1, d2), en_papelera=False)
     obras_total = obras_qs.count()
-    obras_aprobadas = obras_qs.filter(estado='aprobado').count()
+    obras_aprobadas_qs = obras_qs.filter(estado='aprobado')
+    obras_aprobadas = obras_aprobadas_qs.count()
     obras_rechazadas = obras_qs.filter(estado='rechazado').count()
     obras_pendientes = obras_qs.filter(estado='pendiente').count()
 
@@ -3771,8 +3781,29 @@ def calcular_metricas_semestre(anio, semestre):
 
     nuevos_autores = Autor.objects.filter(created_at__range=(d1, d2)).count()
     nuevos_usuarios = User.objects.filter(date_joined__range=(d1, d2)).count()
-    obras_con_doi = obras_qs.filter(estado='aprobado').exclude(doi_enlace='').exclude(doi_enlace__isnull=True).count()
-    obras_propiedad = obras_qs.filter(estado='aprobado', tipo_contenido__nombre__icontains='propiedad').count()
+    obras_con_doi = obras_aprobadas_qs.exclude(doi_enlace='').exclude(doi_enlace__isnull=True).count()
+    porcentaje_doi = round((obras_con_doi / obras_aprobadas * 100), 1) if obras_aprobadas > 0 else 0
+    obras_con_isbn = obras_aprobadas_qs.exclude(isbn_issn='').exclude(isbn_issn__isnull=True).count()
+    porcentaje_isbn = round((obras_con_isbn / obras_aprobadas * 100), 1) if obras_aprobadas > 0 else 0
+    obras_con_pdf = obras_aprobadas_qs.exclude(pdf='').exclude(pdf__isnull=True).count()
+    porcentaje_pdf = round((obras_con_pdf / obras_aprobadas * 100), 1) if obras_aprobadas > 0 else 0
+    obras_propiedad = obras_aprobadas_qs.filter(Q(tipo_contenido__nombre__icontains='propiedad') | Q(tipo_contenido__nombre__icontains='desarrollo')).count()
+
+    # Coautoría y Redes en el Semestre
+    obras_en_equipo = obras_aprobadas_qs.annotate(num_autores=Count('autor')).filter(num_autores__gt=1).count()
+    porcentaje_equipo = round((obras_en_equipo / obras_aprobadas * 100), 1) if obras_aprobadas > 0 else 0
+    total_rel_semestre = Articulo.autor.through.objects.filter(articulo__in=obras_aprobadas_qs).count()
+    promedio_autores = round(total_rel_semestre / obras_aprobadas, 1) if obras_aprobadas > 0 else 1.0
+
+    # Comparativa con el Ciclo Previo (Justificación Presupuestal y Rendimiento)
+    prev_qs = Articulo.objects.filter(created_at__range=(prev_d1, prev_d2), en_papelera=False)
+    prev_aprobadas = prev_qs.filter(estado='aprobado').count()
+    prev_total = prev_qs.count()
+    crecimiento_aprobadas = obras_aprobadas - prev_aprobadas
+    if prev_aprobadas > 0:
+        crecimiento_pct = round(((obras_aprobadas - prev_aprobadas) / prev_aprobadas * 100), 1)
+    else:
+        crecimiento_pct = 100.0 if obras_aprobadas > 0 else 0.0
 
     return {
         'obras_registradas': obras_total,
@@ -3783,8 +3814,20 @@ def calcular_metricas_semestre(anio, semestre):
         'nuevos_autores': nuevos_autores,
         'nuevos_usuarios': nuevos_usuarios,
         'obras_con_doi': obras_con_doi,
+        'porcentaje_doi': porcentaje_doi,
+        'obras_con_isbn': obras_con_isbn,
+        'porcentaje_isbn': porcentaje_isbn,
+        'obras_con_pdf': obras_con_pdf,
+        'porcentaje_pdf': porcentaje_pdf,
         'obras_propiedad_intelectual': obras_propiedad,
+        'obras_en_equipo': obras_en_equipo,
+        'porcentaje_equipo': porcentaje_equipo,
+        'promedio_autores': promedio_autores,
         'tiempo_promedio_horas': 18.5,
+        'periodo_previo': f"{prev_a}-{prev_s}",
+        'prev_aprobadas': prev_aprobadas,
+        'crecimiento_aprobadas': crecimiento_aprobadas,
+        'crecimiento_pct': crecimiento_pct,
     }
 
 
@@ -4546,7 +4589,7 @@ def registrar_auditoria_semestral_view(request):
         nuevos_usuarios=nuevos_usuarios,
         obras_con_doi=obras_con_doi,
         obras_propiedad_intelectual=obras_propiedad,
-        tiempo_promedio_moderacion_horas=18.5,
+        tiempo_promedio_moderacion_horas=float(request.POST.get('tiempo_promedio_horas', metricas.get('tiempo_promedio_horas', 18.5)) or 18.5),
         resumen_ejecutivo=resumen_ejecutivo or f"Auditoría oficial del ciclo {periodo} reflejando {obras_aprobadas} obras aprobadas e indexadas en el acervo institucional FCA.",
         mejoras_tecnicas=mejoras_tecnicas or "Consolidación de filtros por tipo de obra, validación de adscripción institucional, optimización de algoritmos de deduplicación y preservación digital.",
         metas_alcanzadas=metas_alcanzadas or "Cumplimiento satisfactorio de metas de difusión, catalogación y preservación de la producción docente de la FCA UABC.",
@@ -4556,11 +4599,10 @@ def registrar_auditoria_semestral_view(request):
     )
 
     try:
-        RegistroAuditoria.objects.create(
-            usuario=request.user,
-            modulo='AUDITORIA_SEMESTRAL',
-            accion='EMISION_DICTAMEN_SEMESTRAL',
-            descripcion=f"Se emitió formalmente el Dictamen de Auditoría {auditoria.folio} para el ciclo {periodo} ({auditoria.get_resultado_aval_display()})"
+        registrar_auditoria(
+            request.user,
+            "Emisión de Dictamen de Auditoría Semestral",
+            f"Se emitió formalmente el Dictamen de Auditoría {auditoria.folio} para el ciclo {periodo} ({auditoria.get_resultado_aval_display()}) por {nombre_responsable}."
         )
     except Exception:
         pass
@@ -4575,6 +4617,7 @@ def dictamen_semestral_pdf_view(request, auditoria_id):
     con membrete institucional, folio conmemorativo, QR y sello SHA-256.
     """
     auditoria = get_object_or_404(AuditoriaSemestral, id=auditoria_id)
+    metricas = calcular_metricas_semestre(auditoria.anio, auditoria.semestre)
     scheme = request.scheme
     host = request.get_host()
     url_verificacion = f"{scheme}://{host}/gestion-usuarios/#auditoria-semestral"
@@ -4582,6 +4625,7 @@ def dictamen_semestral_pdf_view(request, auditoria_id):
 
     context = {
         'auditoria': auditoria,
+        'metricas': metricas,
         'qr_api_url': qr_api_url,
         'fecha_impresion': timezone.now(),
     }

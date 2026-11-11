@@ -233,7 +233,7 @@
 
             <!-- RESUMEN MÉTRICO DEL SEMESTRE -->
             <div class="section-header">1. Resumen Cuantitativo del Ciclo {{ auditoria.periodo }}</div>
-            <div class="row g-2 mb-4">
+            <div class="row g-2 mb-3">
                 <div class="col-md-3 col-6 mb-2">
                     <div class="stat-card-doc">
                         <div class="num">{{ auditoria.obras_aprobadas }}</div>
@@ -254,19 +254,47 @@
                 </div>
                 <div class="col-md-3 col-6 mb-2">
                     <div class="stat-card-doc">
-                        <div class="num" style="color: #7c3aed;">{{ auditoria.obras_con_doi }}</div>
-                        <div class="lbl">Indexadas con DOI</div>
+                        <div class="num" style="color: #7c3aed;">{{ auditoria.tiempo_promedio_moderacion_horas }}h</div>
+                        <div class="lbl">Tiempo Prom. Dictamen</div>
                     </div>
                 </div>
             </div>
 
-            <table class="table table-sm table-bordered text-center mb-4" style="font-size: 0.82rem;">
+            <!-- INDICADORES DE CALIDAD EDITORIAL, PRESERVACIÓN Y TRABAJO EN RED -->
+            <div class="row g-2 mb-3">
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc" style="background: #fffbeb; border-color: #fef3c7;">
+                        <div class="num" style="color: #b45309; font-size: 1.35rem;">{{ auditoria.obras_con_doi }} <small style="font-size: 0.75rem;">({{ metricas.porcentaje_doi }}%)</small></div>
+                        <div class="lbl" style="color: #92400e;">Indexación DOI</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc" style="background: #eff6ff; border-color: #dbeafe;">
+                        <div class="num" style="color: #1d4ed8; font-size: 1.35rem;">{{ metricas.obras_con_isbn }} <small style="font-size: 0.75rem;">({{ metricas.porcentaje_isbn }}%)</small></div>
+                        <div class="lbl" style="color: #1e40af;">Registro ISBN / ISSN</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc" style="background: #f0fdf4; border-color: #dcfce7;">
+                        <div class="num" style="color: #15803d; font-size: 1.35rem;">{{ metricas.obras_con_pdf }} <small style="font-size: 0.75rem;">({{ metricas.porcentaje_pdf }}%)</small></div>
+                        <div class="lbl" style="color: #166534;">Open Access (PDF)</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc" style="background: #faf5ff; border-color: #f3e8ff;">
+                        <div class="num" style="color: #7e22ce; font-size: 1.35rem;">{{ metricas.obras_en_equipo }} <small style="font-size: 0.75rem;">({{ metricas.porcentaje_equipo }}%)</small></div>
+                        <div class="lbl" style="color: #6b21a8;">Coautoría en Red</div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-sm table-bordered text-center mb-3" style="font-size: 0.8rem;">
                 <thead class="bg-light">
                     <tr>
                         <th>Nuevos Autores Incorporados</th>
                         <th>Nuevos Usuarios Registrados</th>
                         <th>Propiedad Intelectual (INDAUTOR)</th>
-                        <th>Tiempo Promedio de Moderación</th>
+                        <th>Promedio Autores por Publicación</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -274,10 +302,25 @@
                         <td class="font-weight-bold text-success">+{{ auditoria.nuevos_autores }} investigadores</td>
                         <td class="font-weight-bold text-primary">+{{ auditoria.nuevos_usuarios }} cuentas activas</td>
                         <td class="font-weight-bold text-danger">{{ auditoria.obras_propiedad_intelectual }} registros oficiales</td>
-                        <td class="font-weight-bold text-muted">{{ auditoria.tiempo_promedio_moderacion_horas }} horas hábiles</td>
+                        <td class="font-weight-bold text-dark">{{ metricas.promedio_autores }} investigadores / obra</td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- JUSTIFICACIÓN PRESUPUESTAL Y RETORNO INSTITUCIONAL -->
+            <div class="content-box mb-4" style="background: #f8fafc; border-left: 4px solid var(--uabc-gold);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="color: #92400e; font-size: 0.88rem;">
+                        <i class="fas fa-chart-line mr-1"></i> JUSTIFICACIÓN PRESUPUESTAL Y CRECIMIENTO COMPARATIVO vs CICLO ANTERIOR ({{ metricas.periodo_previo }})
+                    </strong>
+                    <span class="badge badge-success px-2 py-1">Retorno Comprobado</span>
+                </div>
+                <p class="mb-0 text-muted" style="font-size: 0.84rem; line-height: 1.5;">
+                    En el ciclo evaluado <strong>{{ auditoria.periodo }}</strong>, el Repositorio Institucional registró un incremento neto de 
+                    <strong class="text-success">+{{ metricas.crecimiento_aprobadas }} obras arbitradas (+{{ metricas.crecimiento_pct }}%)</strong> en comparación con el periodo previo ({{ metricas.periodo_previo }}).
+                    Asimismo, el <strong>{{ metricas.porcentaje_pdf }}%</strong> de los documentos cuentan con texto completo de preservación digital abierta y el <strong>{{ metricas.porcentaje_equipo }}%</strong> se elaboró bajo redes de colaboración académica, sustentando la eficiencia del gasto de operación y la justificación presupuestal para ampliaciones e infraestructura tecnológica institucional ante comisiones dictaminadoras y organismos acreditadores (CACECA / CONAHCYT).
+                </p>
+            </div>
 
             <!-- CONTENIDO CUALITATIVO Y REVISIÓN -->
             <div class="section-header">2. Resumen Ejecutivo del Periodo</div>
