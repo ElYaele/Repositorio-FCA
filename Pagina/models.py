@@ -648,6 +648,20 @@ class Autor(models.Model):
             return self.apellido_paterno.strip()[:1].upper()
         return nom[:1].upper() if nom else '?'
 
+    @property
+    def tipo_origen_claustro(self):
+        """
+        Clasifica al académico según su procedencia institucional para filtrado y estilo visual:
+        - 'investigador': Investigador Independiente / SNII
+        - 'externo': Otras Universidades / Instituciones
+        - 'uabc': Docente UABC
+        """
+        if self.rol_facultad == 'INV_IND' or (hasattr(self, 'nombramientos') and self.nombramientos.filter(rol='INV_IND').exists()):
+            return 'investigador'
+        if self.es_externo or self.rol_facultad == 'EXT' or (self.institucion_origen and self.institucion_origen.strip().upper() != 'UABC'):
+            return 'externo'
+        return 'uabc'
+
     def obtener_prefijo_codigo_institucional(self):
         """
         Determina el prefijo del código institucional:

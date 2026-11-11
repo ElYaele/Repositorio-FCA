@@ -1927,14 +1927,47 @@
                                 </div>
                                 <form method="get" action="{% url 'panel_usuarios' %}#semblanzas" class="d-inline-flex align-middle">
                                     {% if estado_semb %}<input type="hidden" name="estado_semb" value="{{ estado_semb }}">{% endif %}
+                                    {% if tipo_origen_semb and tipo_origen_semb != 'all' %}<input type="hidden" name="tipo_origen_semb" value="{{ tipo_origen_semb }}">{% endif %}
+                                    {% if limit_semb %}<input type="hidden" name="limit_semb" value="{{ limit_semb }}">{% endif %}
                                     <div class="input-group input-group-sm w-auto">
                                         <span class="input-group-text bg-light"><i class="fas fa-search text-muted"></i></span>
                                         <input type="text" name="q_semb" value="{{ q_semb }}" id="search-semblanzas" class="form-control" placeholder="Buscar en claustro..." style="max-width: 170px;">
                                         {% if q_semb %}
-                                            <a href="{% url 'panel_usuarios' %}{% if estado_semb %}?estado_semb={{ estado_semb }}{% endif %}#semblanzas" class="btn btn-outline-secondary" title="Limpiar filtro"><i class="fas fa-times"></i></a>
+                                            <a href="{% url 'panel_usuarios' %}?{% if estado_semb %}estado_semb={{ estado_semb }}&{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}tipo_origen_semb={{ tipo_origen_semb }}&{% endif %}{% if limit_semb %}limit_semb={{ limit_semb }}{% endif %}#semblanzas" class="btn btn-outline-secondary" title="Limpiar filtro"><i class="fas fa-times"></i></a>
                                         {% endif %}
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- SUB-BARRA DE FILTROS: PROCEDENCIA INSTITUCIONAL Y LÍMITE DE PÁGINA -->
+                    <div class="card-header bg-light bg-opacity-50 py-2 px-3 border-top border-bottom-0">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center flex-wrap gap-1">
+                                <span class="text-muted small fw-semibold me-1"><i class="fas fa-layer-group text-success me-1"></i>Procedencia:</span>
+                                <div class="btn-group btn-group-sm filter-origen-semb-group" role="group">
+                                    <button type="button" class="btn btn-sm {% if not tipo_origen_semb or tipo_origen_semb == 'all' %}btn-dark active{% else %}btn-outline-secondary{% endif %}" data-origen="all">
+                                        Todas ({{ total_sem_global|default:0 }})
+                                    </button>
+                                    <button type="button" class="btn btn-sm {% if tipo_origen_semb == 'uabc' %}btn-success active{% else %}btn-outline-success{% endif %}" data-origen="uabc">
+                                        <i class="fas fa-university me-1"></i>Docentes UABC ({{ total_sem_uabc|default:0 }})
+                                    </button>
+                                    <button type="button" class="btn btn-sm {% if tipo_origen_semb == 'externo' %}btn-primary active{% else %}btn-outline-primary{% endif %}" data-origen="externo">
+                                        <i class="fas fa-globe me-1"></i>Otras Universidades ({{ total_sem_externo|default:0 }})
+                                    </button>
+                                    <button type="button" class="btn btn-sm {% if tipo_origen_semb == 'investigador' %}btn-secondary active{% else %}btn-outline-secondary{% endif %}" data-origen="investigador" style="{% if tipo_origen_semb == 'investigador' %}background-color: #6f42c1; border-color: #6f42c1; color: white;{% else %}color: #6f42c1; border-color: #6f42c1;{% endif %}">
+                                        <i class="fas fa-atom me-1"></i>Investigadores SNII ({{ total_sem_inv|default:0 }})
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted small fw-semibold"><i class="fas fa-list-ol text-muted me-1"></i>Mostrar:</span>
+                                <div class="btn-group btn-group-sm limit-semb-group" role="group">
+                                    <button type="button" class="btn btn-sm {% if limit_semb == 18 or not limit_semb %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="18">18</button>
+                                    <button type="button" class="btn btn-sm {% if limit_semb == 21 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="21">21</button>
+                                    <button type="button" class="btn btn-sm {% if limit_semb == 36 %}btn-success active{% else %}btn-outline-secondary{% endif %}" data-limit="36">36</button>
+                                </div>
+                                <span class="text-muted small">por pág.</span>
                             </div>
                         </div>
                     </div>
@@ -1958,7 +1991,7 @@
                                 </thead>
                                 <tbody>
                                     {% for aut in todas_semblanzas %}
-                                    <tr class="semblanza-row" data-estado="{{ aut.estado_semblanza }}" data-search="{{ aut.nombre|lower }} {{ aut.correo|lower }} {{ aut.institucion_origen|lower }}">
+                                    <tr class="semblanza-row" data-estado="{{ aut.estado_semblanza }}" data-origen="{{ aut.tipo_origen_claustro }}" data-search="{{ aut.nombre|lower }} {{ aut.correo|lower }} {{ aut.institucion_origen|lower }}">
                                         <td class="ps-3">
                                             <div class="d-flex align-items-center">
                                                 {% if aut.foto_perfil_borrador %}
@@ -2097,39 +2130,69 @@
                         <div id="view-semb-grid-container" style="display: none;" class="p-3">
                             <div class="row g-3">
                                 {% for aut in todas_semblanzas %}
-                                <div class="col-xl-4 col-md-6 semblanza-card-item" data-estado="{{ aut.estado_semblanza }}" data-search="{{ aut.nombre|lower }} {{ aut.correo|lower }} {{ aut.institucion_origen|lower }}">
-                                    <div class="card h-100 border shadow-xs rounded-4 p-3 hover-lift transition-all bg-white position-relative">
-                                        <div class="d-flex align-items-center mb-3">
+                                <div class="col-xl-4 col-md-6 semblanza-card-item" data-estado="{{ aut.estado_semblanza }}" data-origen="{{ aut.tipo_origen_claustro }}" data-search="{{ aut.nombre|lower }} {{ aut.correo|lower }} {{ aut.institucion_origen|lower }}">
+                                    <div class="card h-100 border shadow-xs rounded-4 p-3 hover-lift transition-all bg-white position-relative" style="{% if aut.tipo_origen_claustro == 'uabc' %}border-top: 4px solid #006633 !important;{% elif aut.tipo_origen_claustro == 'externo' %}border-top: 4px solid #0d6efd !important;{% else %}border-top: 4px solid #6f42c1 !important;{% endif %}">
+                                        
+                                        <!-- Header Ribbon: Origen Institucional y Conteo de Obras -->
+                                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                            <div>
+                                                {% if aut.tipo_origen_claustro == 'uabc' %}
+                                                    <span class="badge" style="background-color: #006633; color: #fff; font-size: 0.72rem; padding: 4px 8px;">
+                                                        <i class="fas fa-university me-1"></i>Docente UABC
+                                                    </span>
+                                                {% elif aut.tipo_origen_claustro == 'externo' %}
+                                                    <span class="badge" style="background-color: #0d6efd; color: #fff; font-size: 0.72rem; padding: 4px 8px;" title="{{ aut.institucion_origen }}">
+                                                        <i class="fas fa-globe me-1"></i>{{ aut.institucion_origen|default:"Univ. Externa"|truncatechars:22 }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge" style="background-color: #6f42c1; color: #fff; font-size: 0.72rem; padding: 4px 8px;">
+                                                        <i class="fas fa-atom me-1"></i>Investigador / SNII
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-light text-muted border" style="font-size: 0.7rem;" title="{{ aut.documentos.count }} obras indexadas">
+                                                    <i class="fas fa-book me-1 text-success"></i>{{ aut.documentos.count }} obra{{ aut.documentos.count|pluralize }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Perfil: Avatar + Info Principal -->
+                                        <div class="d-flex align-items-start mb-2">
                                             <div class="position-relative me-3 flex-shrink-0">
                                                 {% if aut.foto_perfil_borrador %}
                                                     <img src="{{ aut.foto_perfil_borrador.url }}" class="rounded-circle shadow-sm {% if aut.estado_semblanza == 'pendiente' %}avatar-halo-pending{% elif aut.estado_semblanza == 'rechazado' %}avatar-halo-rejected{% else %}avatar-halo-approved{% endif %}" style="width: 52px; height: 52px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                    <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow-sm fw-bold" style="width: 52px; height: 52px; display: none;">{{ aut.inicial_limpia }}</div>
+                                                    <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow-sm fw-bold {% if aut.estado_semblanza == 'pendiente' %}avatar-halo-pending{% elif aut.estado_semblanza == 'rechazado' %}avatar-halo-rejected{% else %}avatar-halo-approved{% endif %}" style="width: 52px; height: 52px; display: none;">{{ aut.inicial_limpia }}</div>
                                                 {% elif aut.foto_perfil %}
                                                     <img src="{{ aut.foto_perfil.url }}" class="rounded-circle shadow-sm {% if aut.estado_semblanza == 'pendiente' %}avatar-halo-pending{% elif aut.estado_semblanza == 'rechazado' %}avatar-halo-rejected{% else %}avatar-halo-approved{% endif %}" style="width: 52px; height: 52px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                    <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow-sm fw-bold" style="width: 52px; height: 52px; display: none;">{{ aut.inicial_limpia }}</div>
+                                                    <div class="rounded-circle bg-light text-success align-items-center justify-content-center shadow-sm fw-bold {% if aut.estado_semblanza == 'pendiente' %}avatar-halo-pending{% elif aut.estado_semblanza == 'rechazado' %}avatar-halo-rejected{% else %}avatar-halo-approved{% endif %}" style="width: 52px; height: 52px; display: none;">{{ aut.inicial_limpia }}</div>
                                                 {% else %}
                                                     <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow-sm fw-bold {% if aut.estado_semblanza == 'pendiente' %}avatar-halo-pending{% elif aut.estado_semblanza == 'rechazado' %}avatar-halo-rejected{% else %}avatar-halo-approved{% endif %}" style="width: 52px; height: 52px;">{{ aut.inicial_limpia }}</div>
                                                 {% endif %}
                                             </div>
-                                            <div class="overflow-hidden">
+                                            <div class="overflow-hidden flex-grow-1">
                                                 <h6 class="mb-0 fw-bold text-dark text-truncate" title="{{ aut.nombre_con_titulo|default:aut.nombre }}">{{ aut.nombre_con_titulo|default:aut.nombre }}</h6>
                                                 {% if aut.usuario %}
-                                                    <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">@{{ aut.usuario.username }}</span>
+                                                    <span class="badge bg-light text-muted border mt-1" style="font-size: 0.65rem;" title="Usuario: {{ aut.usuario.username }}">@{{ aut.usuario.username }}</span>
                                                 {% endif %}
-                                                <small class="text-muted d-block text-truncate" title="{{ aut.correo }}">{{ aut.correo|default:"Sin correo registrado" }}</small>
+                                                <small class="text-muted d-block text-truncate mt-1" title="{{ aut.correo }}"><i class="fas fa-envelope text-muted me-1" style="font-size: 0.7rem;"></i>{{ aut.correo|default:"Sin correo registrado" }}</small>
                                             </div>
                                         </div>
                                         
+                                        <!-- Nombramientos Académicos -->
                                         <div class="mb-2">
                                             {% for nom in aut.nombramientos.all %}
                                                 <span class="badge bg-success bg-opacity-75 text-white mb-1 me-1" style="font-size: 0.68rem;">{{ nom.get_rol_display_text }}</span>
                                             {% empty %}
                                                 <span class="badge bg-success bg-opacity-75 text-white mb-1 me-1" style="font-size: 0.68rem;">{{ aut.get_rol_facultad_display }}</span>
                                             {% endfor %}
-                                            <span class="badge bg-light text-secondary border mb-1" style="font-size: 0.68rem;">{{ aut.institucion_origen|default:"UABC" }}</span>
+                                            {% if aut.institucion_origen and aut.institucion_origen != 'UABC' %}
+                                                <span class="badge bg-light text-secondary border mb-1" style="font-size: 0.68rem;"><i class="fas fa-map-marker-alt me-1"></i>{{ aut.institucion_origen }}</span>
+                                            {% endif %}
                                         </div>
 
-                                        <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <!-- Badges de Estado de Ficha / Borradores -->
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
                                             {% if aut.foto_perfil_borrador %}
                                                 <span class="badge bg-info bg-opacity-10 text-info border border-info" style="font-size: 0.65rem;"><i class="fas fa-camera me-1"></i>Foto Borrador</span>
                                             {% endif %}
@@ -2144,6 +2207,18 @@
                                             {% endif %}
                                         </div>
 
+                                        <!-- Extracto de Semblanza / Resumen Académico -->
+                                        {% if aut.biografia_borrador or aut.biografia %}
+                                        <div class="p-2 mb-3 rounded bg-light bg-opacity-70 border-start border-3 border-secondary" style="font-size: 0.74rem; color: #495057; max-height: 48px; overflow: hidden; line-height: 1.35;" title="{{ aut.biografia_borrador|default:aut.biografia }}">
+                                            <i class="fas fa-quote-left text-muted me-1" style="font-size: 0.65rem;"></i>{{ aut.biografia_borrador|default:aut.biografia|truncatechars:90 }}
+                                        </div>
+                                        {% else %}
+                                        <div class="p-2 mb-3 rounded bg-light bg-opacity-40 border-start border-2 border-light text-muted fst-italic" style="font-size: 0.72rem;">
+                                            Sin resumen curricular registrado aún.
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Footer de la Tarjeta: Estado y los 6 Botones de Acción (Restaurados) -->
                                         <div class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between">
                                             <div>
                                                 {% if aut.estado_semblanza == 'aprobado' %}
@@ -2154,8 +2229,9 @@
                                                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger"><i class="fas fa-exclamation-circle me-1"></i>Rechazado</span>
                                                 {% endif %}
                                             </div>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-outline-info btn-preview-semblanza" title="Previsualizar Ficha Completa"
+                                            <div class="d-flex align-items-center flex-wrap justify-content-end">
+                                                <!-- 1. Previsualizar Ficha Completa -->
+                                                <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-semblanza"
                                                         data-bs-toggle="modal" data-bs-target="#modalPreviewSemblanza"
                                                         data-nombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
                                                         data-correo="{{ aut.correo|default:'N/A' }}"
@@ -2169,10 +2245,20 @@
                                                         data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
                                                         data-roles='[{% for nom in aut.nombramientos.all %}"{{ nom.get_rol_display_text }}"{% if not forloop.last %},{% endif %}{% empty %}"{{ aut.get_rol_facultad_display }}"{% endfor %}]'
                                                         data-enlaces='[{% for enla in aut.enlaces_profesionales.all %}{"plataforma":"{{ enla.plataforma }}","url":"{{ enla.url }}","emoji":"{{ enla.emoji }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
-                                                        data-obras="{{ aut.documentos.count }}">
+                                                        data-obras="{{ aut.documentos.count }}"
+                                                        title="Previsualizar Ficha Completa">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-outline-primary btn-editar-semblanza" title="Gestionar y editar semblanza"
+
+                                                <!-- 2. Aprobar en Claustro -->
+                                                {% if aut.estado_semblanza != 'aprobado' %}
+                                                    <a href="{% url 'aprobar_semblanza' aut.id %}" class="btn btn-outline-success btn-action-circle me-1" title="Aprobar y Publicar en Claustro">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                {% endif %}
+
+                                                <!-- 3. Gestionar y Editar Semblanza -->
+                                                <button type="button" class="btn btn-outline-primary btn-action-circle me-1 btn-editar-semblanza"
                                                         data-bs-toggle="modal" data-bs-target="#modalEditarSemblanzaAdmin"
                                                         data-id="{{ aut.id }}"
                                                         data-nombre="{{ aut.nombre }}"
@@ -2181,22 +2267,38 @@
                                                         data-fnac="{% if aut.fecha_nacimiento %}{{ aut.fecha_nacimiento|date:'Y-m-d' }}{% else %}{% endif %}"
                                                         data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'' }}"
                                                         data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'' }}"
-                                                        data-foto="{% if aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
-                                                        data-pdf="{% if aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
-                                                        data-horario="{% if aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
-                                                        data-cargo-custom="{{ aut.cargo_personalizado|default:'' }}"
-                                                        data-enlaces='[{% for enla in aut.enlaces_profesionales.all %}{"plataforma":"{{ enla.plataforma }}","url":"{{ enla.url }}","emoji":"{{ enla.emoji }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                                                        data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
+                                                        data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
+                                                        data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
+                                                        data-cargo-custom="{% for nom in aut.nombramientos.all %}{% if nom.rol == 'CUSTOM' %}{{ nom.cargo_personalizado }}{% endif %}{% endfor %}"
+                                                        data-enlaces='[{% for enla in aut.enlaces_profesionales.all %}{"plataforma":"{{ enla.plataforma }}","url":"{{ enla.url }}","emoji":"{{ enla.emoji }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                                        title="Editar Ficha Propuesta">
                                                     <i class="fas fa-user-edit"></i>
                                                 </button>
-                                                {% if aut.estado_semblanza != 'aprobado' %}
-                                                    <a href="{% url 'aprobar_semblanza' aut.id %}" class="btn btn-success" title="Aprobar y Publicar en Claustro">
-                                                        <i class="fas fa-check"></i>
+
+                                                <!-- 4. Mensajería Directa -->
+                                                {% if aut.usuario %}
+                                                    <a href="{% url 'mensajeria' %}?contacto={{ aut.id }}" class="btn btn-outline-success btn-action-circle me-1" title="Enviar Mensaje Directo a este Docente">
+                                                        <i class="fas fa-comment-dots"></i>
                                                     </a>
                                                 {% endif %}
-                                                <button type="button" class="btn btn-outline-danger btn-eliminar-semblanza"
+
+                                                <!-- 5. Devolver con Observaciones -->
+                                                {% if aut.estado_semblanza != 'rechazado' %}
+                                                    <button type="button" class="btn btn-outline-warning btn-action-circle me-1 btn-rechazar-semblanza"
+                                                            data-bs-toggle="modal" data-bs-target="#modalRechazarSemblanza"
+                                                            data-autid="{{ aut.id }}"
+                                                            data-autnombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
+                                                            title="Devolver con observaciones">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                {% endif %}
+
+                                                <!-- 6. Vaciar y Restablecer -->
+                                                <button type="button" class="btn btn-outline-danger btn-action-circle btn-eliminar-semblanza"
                                                         data-bs-toggle="modal" data-bs-target="#modalEliminarSemblanza"
-                                                        data-id="{{ aut.id }}"
-                                                        data-nombre="{{ aut.nombre }}"
+                                                        data-autid="{{ aut.id }}"
+                                                        data-autnombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
                                                         title="Vaciar y restablecer semblanza">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -2211,27 +2313,34 @@
                             <p class="mb-0">No se encontraron semblanzas con ese criterio.</p>
                         </div>
 
-                        <!-- MEJORA 2: PAGINACIÓN DE SEMBLANZAS -->
+                        <!-- PAGINACIÓN Y CONTROL DE VISTAS DE SEMBLANZAS -->
                         {% if todas_semblanzas.has_other_pages %}
-                        <nav aria-label="Navegación de semblanzas" class="mt-4 pb-3">
+                        <nav aria-label="Navegación de semblanzas" class="mt-4 pb-2">
                             <ul class="pagination justify-content-center mb-0">
                                 {% if todas_semblanzas.has_previous %}
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb=1{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Primera página"><i class="fas fa-angle-double-left"></i></a></li>
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.previous_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Anterior"><i class="fas fa-angle-left"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb=1{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Primera página"><i class="fas fa-angle-double-left"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.previous_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Anterior"><i class="fas fa-angle-left"></i></a></li>
                                 {% endif %}
                                 {% for num in todas_semblanzas.paginator.page_range %}
                                     {% if todas_semblanzas.number == num %}
                                         <li class="page-item active"><span class="page-link bg-success border-success fw-bold">{{ num }}</span></li>
                                     {% elif num > todas_semblanzas.number|add:'-3' and num < todas_semblanzas.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link text-success" href="?page_semb={{ num }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link text-success" href="?page_semb={{ num }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
                                 {% if todas_semblanzas.has_next %}
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.next_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Siguiente"><i class="fas fa-angle-right"></i></a></li>
-                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.paginator.num_pages }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Última página"><i class="fas fa-angle-double-right"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.next_page_number }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Siguiente"><i class="fas fa-angle-right"></i></a></li>
+                                    <li class="page-item"><a class="page-link text-success" href="?page_semb={{ todas_semblanzas.paginator.num_pages }}{% if estado_semb %}&estado_semb={{ estado_semb }}{% endif %}{% if tipo_origen_semb and tipo_origen_semb != 'all' %}&tipo_origen_semb={{ tipo_origen_semb }}{% endif %}{% if limit_semb %}&limit_semb={{ limit_semb }}{% endif %}{% if q_semb %}&q_semb={{ q_semb }}{% endif %}{% if request.GET.page_docs %}&page_docs={{ request.GET.page_docs }}{% endif %}#semblanzas" title="Última página"><i class="fas fa-angle-double-right"></i></a></li>
                                 {% endif %}
                             </ul>
                         </nav>
+                        <div class="text-center text-muted small pb-3">
+                            Mostrando registros {{ todas_semblanzas.start_index }} a {{ todas_semblanzas.end_index }} de {{ todas_semblanzas.paginator.count }} registros en total ({{ limit_semb|default:18 }} por página)
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted small py-3">
+                            Mostrando {{ todas_semblanzas.paginator.count }} registro{{ todas_semblanzas.paginator.count|pluralize }} en claustro ({{ limit_semb|default:18 }} por página)
+                        </div>
                         {% endif %}
 
                         {% else %}
@@ -8872,6 +8981,26 @@
                 window.location.href = url.toString();
             };
 
+            window.filtrarSemblanzasPorOrigen = function(origen) {
+                const url = new URL(window.location.href);
+                if (origen && origen !== 'all') {
+                    url.searchParams.set('tipo_origen_semb', origen);
+                } else {
+                    url.searchParams.delete('tipo_origen_semb');
+                }
+                url.searchParams.delete('page_semb');
+                url.hash = '#semblanzas';
+                window.location.href = url.toString();
+            };
+
+            window.cambiarLimiteSemblanzas = function(limite) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('limit_semb', limite);
+                url.searchParams.delete('page_semb');
+                url.hash = '#semblanzas';
+                window.location.href = url.toString();
+            };
+
             // Inicialización inteligente al cargar la página (URL Hash o LocalStorage)
             const urlHash = window.location.hash;
             const savedTab = localStorage.getItem('activeAdminTab');
@@ -10250,21 +10379,26 @@
             }
 
             const filterSemblanzaBtns = document.querySelectorAll('.filter-semblanza-group button');
+            const filterOrigenSembBtns = document.querySelectorAll('.filter-origen-semb-group button');
+            const limitSembBtns = document.querySelectorAll('.limit-semb-group button');
             const semblanzaRows = document.querySelectorAll('.semblanza-row');
             const semblanzaCards = document.querySelectorAll('.semblanza-card-item');
             const searchSemblanzas = document.getElementById('search-semblanzas');
             const noSemblanzaResults = document.getElementById('no-semblanza-results');
 
             function filtrarSemblanzas() {
-                const activeBtn = document.querySelector('.filter-semblanza-group button.active');
-                const estado = activeBtn ? activeBtn.getAttribute('data-estado') : 'all';
+                const activeEstadoBtn = document.querySelector('.filter-semblanza-group button.active');
+                const estado = activeEstadoBtn ? activeEstadoBtn.getAttribute('data-estado') : 'all';
+                const activeOrigenBtn = document.querySelector('.filter-origen-semb-group button.active');
+                const origen = activeOrigenBtn ? activeOrigenBtn.getAttribute('data-origen') : 'all';
                 const query = searchSemblanzas ? searchSemblanzas.value.toLowerCase().trim() : '';
                 let visibles = 0;
 
                 semblanzaRows.forEach(row => {
                     const matchEstado = (estado === 'all' || row.getAttribute('data-estado') === estado);
+                    const matchOrigen = (origen === 'all' || row.getAttribute('data-origen') === origen);
                     const matchSearch = (query === '' || (row.getAttribute('data-search') || '').includes(query));
-                    if (matchEstado && matchSearch) {
+                    if (matchEstado && matchOrigen && matchSearch) {
                         row.style.display = '';
                         visibles++;
                     } else {
@@ -10274,8 +10408,9 @@
 
                 semblanzaCards.forEach(card => {
                     const matchEstado = (estado === 'all' || card.getAttribute('data-estado') === estado);
+                    const matchOrigen = (origen === 'all' || card.getAttribute('data-origen') === origen);
                     const matchSearch = (query === '' || (card.getAttribute('data-search') || '').includes(query));
-                    if (matchEstado && matchSearch) {
+                    if (matchEstado && matchOrigen && matchSearch) {
                         card.style.display = '';
                     } else {
                         card.style.display = 'none';
@@ -10292,6 +10427,22 @@
                     e.preventDefault();
                     const estado = this.getAttribute('data-estado');
                     window.filtrarSemblanzasPorEstado(estado);
+                });
+            });
+
+            filterOrigenSembBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const origen = this.getAttribute('data-origen');
+                    window.filtrarSemblanzasPorOrigen(origen);
+                });
+            });
+
+            limitSembBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const limite = this.getAttribute('data-limit');
+                    window.cambiarLimiteSemblanzas(limite);
                 });
             });
 

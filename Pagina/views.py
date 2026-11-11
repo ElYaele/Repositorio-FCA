@@ -3971,17 +3971,50 @@ def panel_usuarios_view(request):
             Q(usuario__username__icontains=q_semb)
         ).distinct()
 
+    tipo_origen_semb = request.GET.get('tipo_origen_semb', 'all')
+    limit_semb = request.GET.get('limit_semb', '18')
+    try:
+        limit_semb = int(limit_semb)
+        if limit_semb not in [18, 21, 36, 42]:
+            limit_semb = 18
+    except (ValueError, TypeError):
+        limit_semb = 18
+
     # Métricas Globales de Semblanzas (Claustro) sobre base_sem_qs antes de filtrar por estado
     total_sem_global = base_sem_qs.count()
     total_sem_aprobadas_global = base_sem_qs.filter(estado_semblanza='aprobado').count()
     total_sem_pendientes_global = base_sem_qs.filter(estado_semblanza='pendiente').count()
     total_sem_rechazadas_global = base_sem_qs.filter(estado_semblanza='rechazado').count()
 
+    # Conteos por procedencia institucional
+    total_sem_uabc = base_sem_qs.filter(
+        (Q(institucion_origen__iexact='UABC') | Q(institucion_origen='')) & Q(es_externo=False) & ~Q(rol_facultad='INV_IND')
+    ).count()
+    total_sem_externo = base_sem_qs.filter(
+        Q(es_externo=True) | Q(rol_facultad='EXT') | (~Q(institucion_origen__iexact='UABC') & ~Q(rol_facultad='INV_IND'))
+    ).count()
+    total_sem_inv = base_sem_qs.filter(
+        Q(rol_facultad='INV_IND') | Q(nombramientos__rol='INV_IND')
+    ).distinct().count()
+
     todas_semblanzas_qs = base_sem_qs.order_by('nombre')
     if estado_semb in ['aprobado', 'pendiente', 'rechazado']:
         todas_semblanzas_qs = todas_semblanzas_qs.filter(estado_semblanza=estado_semb)
 
-    paginator_semb = Paginator(todas_semblanzas_qs, 15)
+    if tipo_origen_semb == 'uabc':
+        todas_semblanzas_qs = todas_semblanzas_qs.filter(
+            (Q(institucion_origen__iexact='UABC') | Q(institucion_origen='')) & Q(es_externo=False) & ~Q(rol_facultad='INV_IND')
+        )
+    elif tipo_origen_semb == 'externo':
+        todas_semblanzas_qs = todas_semblanzas_qs.filter(
+            Q(es_externo=True) | Q(rol_facultad='EXT') | (~Q(institucion_origen__iexact='UABC') & ~Q(rol_facultad='INV_IND'))
+        )
+    elif tipo_origen_semb == 'investigador':
+        todas_semblanzas_qs = todas_semblanzas_qs.filter(
+            Q(rol_facultad='INV_IND') | Q(nombramientos__rol='INV_IND')
+        ).distinct()
+
+    paginator_semb = Paginator(todas_semblanzas_qs, limit_semb)
     page_semb = request.GET.get('page_semb')
     todas_semblanzas = paginator_semb.get_page(page_semb)
 
@@ -4247,6 +4280,11 @@ def panel_usuarios_view(request):
         'subidas_automaticas': subidas_automaticas,
         'semblanzas_pendientes': Autor.objects.filter(usuario__isnull=False, estado_semblanza='pendiente'),
         'todas_semblanzas': todas_semblanzas,
+        'total_sem_uabc': total_sem_uabc,
+        'total_sem_externo': total_sem_externo,
+        'total_sem_inv': total_sem_inv,
+        'tipo_origen_semb': tipo_origen_semb,
+        'limit_semb': limit_semb,
         'autores_catalogo': autores_catalogo,
         'total_autores_catalogo': total_autores_catalogo,
         'total_autores_con_cuenta': total_autores_con_cuenta,
