@@ -3044,15 +3044,18 @@
                             </div>
 
                             <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD CON TAGS INTERACTIVOS (IDEA 24) -->
-                            <div class="col-12 p-2 rounded" id="seccion-lineas-investigacion">
+                            <div class="col-12 p-2 rounded {% if 'Líneas' in user.autor.motivo_rechazo_semblanza or 'líneas' in user.autor.motivo_rechazo_semblanza or 'Lineas' in user.autor.motivo_rechazo_semblanza or 'lineas' in user.autor.motivo_rechazo_semblanza or 'investigación' in user.autor.motivo_rechazo_semblanza or 'investigacion' in user.autor.motivo_rechazo_semblanza or 'Investigación' in user.autor.motivo_rechazo_semblanza or 'especialidad' in user.autor.motivo_rechazo_semblanza or 'Especialidad' in user.autor.motivo_rechazo_semblanza %}border border-warning bg-warning bg-opacity-10 shadow-sm{% endif %}" id="seccion-lineas-investigacion">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-label fw-bold mb-0">
                                         <i class="fas fa-tags me-1" style="color: var(--theme-primary);"></i>Líneas de Investigación y Áreas de Especialidad:
                                         <i class="fas fa-info-circle text-primary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Escribe tus áreas y temas de investigación o especialidad. Presiona Enter o haz clic en Añadir. Se mostrarán como etiquetas institucionales en tu tarjeta del claustro."></i>
+                                        {% if 'Líneas' in user.autor.motivo_rechazo_semblanza or 'líneas' in user.autor.motivo_rechazo_semblanza or 'Lineas' in user.autor.motivo_rechazo_semblanza or 'lineas' in user.autor.motivo_rechazo_semblanza or 'investigación' in user.autor.motivo_rechazo_semblanza or 'investigacion' in user.autor.motivo_rechazo_semblanza or 'Investigación' in user.autor.motivo_rechazo_semblanza or 'especialidad' in user.autor.motivo_rechazo_semblanza or 'Especialidad' in user.autor.motivo_rechazo_semblanza %}
+                                            <span class="badge bg-warning text-dark ms-1"><i class="fas fa-exclamation-triangle me-1"></i>Requiere corrección</span>
+                                        {% endif %}
                                     </label>
                                     <small class="text-muted" style="font-size: 0.72rem;">Máx. 10 líneas</small>
                                 </div>
-                                <div class="p-3 bg-light rounded-3 border">
+                                <div class="p-3 bg-light rounded-3 border {% if 'Líneas' in user.autor.motivo_rechazo_semblanza or 'líneas' in user.autor.motivo_rechazo_semblanza or 'Lineas' in user.autor.motivo_rechazo_semblanza or 'lineas' in user.autor.motivo_rechazo_semblanza or 'investigación' in user.autor.motivo_rechazo_semblanza or 'investigacion' in user.autor.motivo_rechazo_semblanza or 'Investigación' in user.autor.motivo_rechazo_semblanza or 'especialidad' in user.autor.motivo_rechazo_semblanza or 'Especialidad' in user.autor.motivo_rechazo_semblanza %}border-warning bg-white{% endif %}">
                                     <!-- Input interactivo con botón -->
                                     <div class="input-group mb-2">
                                         <span class="input-group-text bg-white border-end-0"><i class="fas fa-hashtag" style="color: var(--theme-primary);"></i></span>
@@ -3110,6 +3113,9 @@
                         <!-- BLOQUE 3: ENLACES PROFESIONALES Y REDES -->
                         <h6 class="fw-bold border-bottom pb-2 mb-3" style="color: var(--theme-primary);">
                             <i class="fas fa-link me-2"></i>3. Enlaces Profesionales y Redes
+                            {% if 'Enlaces' in user.autor.motivo_rechazo_semblanza or 'enlaces' in user.autor.motivo_rechazo_semblanza or 'Redes' in user.autor.motivo_rechazo_semblanza or 'redes' in user.autor.motivo_rechazo_semblanza or 'rotos' in user.autor.motivo_rechazo_semblanza %}
+                                <span class="badge bg-warning text-dark ms-1"><i class="fas fa-exclamation-triangle me-1"></i>Requiere corrección</span>
+                            {% endif %}
                         </h6>
                         <div class="p-2 rounded mb-4 {% if 'Enlaces' in user.autor.motivo_rechazo_semblanza or 'enlaces' in user.autor.motivo_rechazo_semblanza or 'Redes' in user.autor.motivo_rechazo_semblanza or 'redes' in user.autor.motivo_rechazo_semblanza or 'rotos' in user.autor.motivo_rechazo_semblanza %}border border-warning bg-warning bg-opacity-10 shadow-sm{% endif %}" id="seccion-enlaces-redes">
                             <small class="text-muted d-block mb-2">Selecciona una red de acceso rápido para añadirla automáticamente o créala de forma personalizada.</small>
