@@ -1238,17 +1238,17 @@
                             {% elif tema_rol.clave == 'morado' %}
                                 <span class="badge shadow-sm" style="background-color: #6f42c1; color: #ffffff;"><i class="fas fa-flask me-1"></i>Inv. / Consultor sin Adscripción Fija</span>
                             {% elif tema_rol.clave == 'celeste' %}
-                                <span class="badge shadow-sm" style="background-color: #0284c7; color: #ffffff;"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                                <span class="badge shadow-sm" style="background-color: #0284c7; color: #ffffff;"><i class="fas fa-university me-1"></i>Colaborador Externo</span>
                             {% elif tema_rol.clave == 'verde' %}
                                 <span class="badge shadow-sm" style="background-color: #006633; color: #ffffff;"><i class="fas fa-chalkboard-teacher me-1"></i>{{ user.autor.get_rol_facultad_display|default:"Docente UABC" }}</span>
                             {% else %}
                                 <span class="badge shadow-sm" style="background-color: #0d6efd; color: #ffffff;"><i class="fas fa-user-tie me-1"></i>Personal Administrativo</span>
                             {% endif %}
 
-                            <!-- ESCUDO Y MONOGRAMA HERÁLDICO PARA UNIVERSIDADES EXTERNAS (IDEA 16) -->
+                            <!-- INSIGNIA INSTITUCIONAL PARA UNIVERSIDADES EXTERNAS (IDEA 16) -->
                             {% if user.autor and user.autor.institucion_origen and user.autor.institucion_origen.upper != 'UABC' and 'FACULTAD DE CONTADUR' not in user.autor.institucion_origen.upper %}
                                 <span class="badge shadow-xs px-3 py-1 d-inline-flex align-items-center gap-1" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border-radius: 20px; font-weight: 700;" title="Institución de Procedencia Acreditada: {{ user.autor.institucion_origen }}">
-                                    <i class="fas fa-shield-alt me-1"></i>
+                                    <i class="fas fa-university me-1"></i>
                                     <span>{{ user.autor.siglas_institucion }}</span>
                                     <span style="opacity: 0.85; font-weight: 400; font-size: 0.72rem;">&bull; {{ user.autor.institucion_origen|truncatechars:28 }}</span>
                                 </span>

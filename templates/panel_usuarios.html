@@ -2270,7 +2270,7 @@
                                     <button type="button" class="btn btn-outline-secondary active btn-sm px-3" data-filter="all"><i class="fas fa-list me-1"></i>Todas (<span id="count-sol-all">0</span>)</button>
                                     <button type="button" class="btn btn-outline-success btn-sm px-3" data-filter="docente"><i class="fas fa-chalkboard-teacher me-1"></i>Docentes (<span id="count-sol-docentes">0</span>)</button>
                                     <button type="button" class="btn btn-outline-primary btn-sm px-3" data-filter="auxiliar"><i class="fas fa-hands-helping me-1"></i>Auxiliares FCA (<span id="count-sol-auxiliares">0</span>)</button>
-                                    <button type="button" class="btn btn-outline-info btn-sm px-3" data-filter="externo"><i class="fas fa-globe-americas me-1"></i>Externos (<span id="count-sol-externos">0</span>)</button>
+                                    <button type="button" class="btn btn-outline-info btn-sm px-3" data-filter="externo"><i class="fas fa-university me-1"></i>Externos (<span id="count-sol-externos">0</span>)</button>
                                     <button type="button" class="btn btn-outline-purple btn-sm px-3" data-filter="independiente"><i class="fas fa-user-graduate me-1"></i>Investigadores (<span id="count-sol-independientes">0</span>)</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-filter="administrativo"><i class="fas fa-user-tie me-1"></i>Administrativos (<span id="count-sol-admins">0</span>)</button>
                                 </div>
@@ -2321,11 +2321,11 @@
                                         {% elif u.autor and 'independiente' in u.autor.institucion_origen|lower %}
                                             <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Inv. / Consultor sin Adscripción Fija</span>
                                         {% elif u.autor and u.autor.es_externo %}
-                                            <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                                            <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Colaborador Externo</span>
                                         {% elif u.autor and u.autor.rol_facultad == 'EXT' %}
-                                            <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                                            <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Colaborador Externo</span>
                                         {% elif u.autor and u.autor.institucion_origen and u.autor.institucion_origen != 'UABC' %}
-                                            <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Colaborador Externo</span>
+                                            <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Colaborador Externo</span>
                                         {% elif u.autor and u.autor.es_profesor %}
                                             <span class="badge bg-success"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
                                         {% else %}
@@ -2728,7 +2728,7 @@
                                     <button type="button" class="btn btn-outline-secondary active btn-sm px-3" data-filter="all"><i class="fas fa-list me-1"></i>Todos (<span id="count-all">{{ total_personal_activo|default:0 }}</span>)</button>
                                     <button type="button" class="btn btn-outline-success btn-sm px-3" data-filter="docente"><i class="fas fa-chalkboard-teacher me-1"></i>Docentes (<span id="count-docentes">{{ total_users_docentes|default:0 }}</span>)</button>
                                     <button type="button" class="btn btn-outline-primary btn-sm px-3" data-filter="auxiliar"><i class="fas fa-hands-helping me-1"></i>Auxiliares FCA (<span id="count-auxiliares">{{ total_users_auxiliares|default:0 }}</span>)</button>
-                                    <button type="button" class="btn btn-outline-info btn-sm px-3" data-filter="externo"><i class="fas fa-globe-americas me-1"></i>Externos (<span id="count-externos">{{ total_users_externos|default:0 }}</span>)</button>
+                                    <button type="button" class="btn btn-outline-info btn-sm px-3" data-filter="externo"><i class="fas fa-university me-1"></i>Externos (<span id="count-externos">{{ total_users_externos|default:0 }}</span>)</button>
                                     <button type="button" class="btn btn-outline-purple btn-sm px-3" data-filter="independiente"><i class="fas fa-user-graduate me-1"></i>Investigadores (<span id="count-independientes">{{ total_users_investigadores|default:0 }}</span>)</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-filter="tecnico" style="color: #0891b2; border-color: #0891b2;"><i class="fas fa-tools me-1"></i>Operadores Técnicos (<span id="count-tecnicos">{{ total_users_tecnicos|default:0 }}</span>)</button>
                                     <button type="button" class="btn btn-outline-warning text-dark btn-sm px-3" data-filter="candidato-confianza" title="Usuarios con más de 10 publicaciones aprobadas sin rechazos ni correcciones"><i class="fas fa-medal text-warning me-1"></i>Candidatos a Confianza (10+) (<span id="count-candidatos-confianza">{{ total_candidatos_sin_credencial }}</span>)</button>
@@ -2832,11 +2832,11 @@
                                             {% elif u.autor and 'independiente' in u.autor.institucion_origen|lower %}
                                                 <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Sin Adscripción Fija</span>
                                             {% elif u.autor and u.autor.es_externo %}
-                                                <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Externo</span>
+                                                <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Externo</span>
                                             {% elif u.autor and u.autor.rol_facultad == 'EXT' %}
-                                                <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Externo</span>
+                                                <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Externo</span>
                                             {% elif u.autor and u.autor.institucion_origen and u.autor.institucion_origen != 'UABC' %}
-                                                <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Externo</span>
+                                                <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Externo</span>
                                             {% elif u.autor and u.autor.es_profesor %}
                                                 <span class="badge bg-success"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
                                             {% else %}
@@ -3110,7 +3110,7 @@
                                             {% elif u.autor and 'independiente' in u.autor.institucion_origen|lower %}
                                                 <span class="badge" style="background-color: #6f42c1; color: white;"><i class="fas fa-flask me-1"></i>Investigador</span>
                                             {% elif u.autor and u.autor.es_externo %}
-                                                <span class="badge bg-info text-dark"><i class="fas fa-globe-americas me-1"></i>Externo</span>
+                                                <span class="badge bg-info text-dark"><i class="fas fa-university me-1"></i>Externo</span>
                                             {% elif u.autor and u.autor.es_profesor %}
                                                 <span class="badge bg-success"><i class="fas fa-chalkboard-teacher me-1"></i>Docente UABC</span>
                                             {% else %}

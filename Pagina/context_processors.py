@@ -149,7 +149,7 @@ def obtener_tema_rol(user):
                 'tag_text': 'EXTERNO FCA',
                 'badge_style': 'background-color: #0284c7; color: #ffffff;',
                 'badge_text': 'Colaborador Externo',
-                'badge_icon': 'fas fa-globe-americas',
+                'badge_icon': 'fas fa-university',
                 'topbar_badge': 'bg-info text-white',
             }
 
