@@ -101,6 +101,10 @@ from .views import (
     reordenar_footer_dragdrop_ajax,
     contacto_view,
     cambiar_estado_contacto_view,
+    toggle_politica_acceso_view,
+    obtener_metricas_semestre_api,
+    registrar_auditoria_semestral_view,
+    dictamen_semestral_pdf_view,
 )
 
 urlpatterns = [
@@ -193,6 +197,10 @@ urlpatterns = [
 
     # Panel de administración (Superusuario)
     path('gestion-usuarios/', panel_usuarios_view, name='panel_usuarios'),
+    path('gestion-usuarios/politicas-acceso/', toggle_politica_acceso_view, name='toggle_politica_acceso'),
+    path('gestion-usuarios/auditoria-semestral/registrar/', registrar_auditoria_semestral_view, name='registrar_auditoria_semestral'),
+    path('gestion-usuarios/auditoria-semestral/metricas-api/', obtener_metricas_semestre_api, name='obtener_metricas_semestre_api'),
+    path('gestion-usuarios/auditoria-semestral/<int:auditoria_id>/dictamen-pdf/', dictamen_semestral_pdf_view, name='dictamen_semestral_pdf'),
     path('gestion-usuarios/fusionar-autores/', fusionar_autores_view, name='fusionar_autores'),
     path('gestion-usuarios/revertir-fusion/<int:fusion_id>/', revertir_fusion_view, name='revertir_fusion'),
     path('gestion-usuarios/limpiar-autores-huerfanos/', limpiar_autores_huerfanos_admin_view, name='limpiar_autores_huerfanos_admin'),

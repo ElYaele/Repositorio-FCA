@@ -1249,6 +1249,18 @@ class ConfiguracionSistema(models.Model):
         verbose_name="Descripción Tarjeta Docente"
     )
 
+    # 8. Políticas y Control de Acceso y Solicitudes
+    autoaprobar_docentes_uabc = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Docentes UABC",
+        help_text="Si está activo, los docentes con correo UABC quedan activos al verificar su correo. Si está inactivo (recomendado), requieren aprobación manual de un administrador."
+    )
+    solicitudes_registro_abiertas = models.BooleanField(
+        default=True,
+        verbose_name="Recepción de Nuevas Solicitudes de Registro",
+        help_text="Permite abrir o pausar temporalmente el formulario público de registro institucional."
+    )
+
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Actualización")
 
     class Meta:
@@ -1477,3 +1489,81 @@ class MensajeContacto(models.Model):
                 sufijo = uuid.uuid4().hex[:4].upper()
                 self.folio = f"FCA-CNT-{ahora.strftime('%Y%m')}-{sufijo}"
         super().save(*args, **kwargs)
+
+
+class AuditoriaSemestral(models.Model):
+    """
+    Registro formal de auditoría y dictamen de avances semestrales del Repositorio Institucional FCA.
+    Permite al profesor encargado emitir un informe y dictamen con folio, sello SHA-256 y QR
+    para avalar oficialmente el uso del repositorio ante instancias evaluadoras y acreditadoras.
+    """
+    RESULTADOS_AVAL = [
+        ('FAVORABLE', 'Aval Favorable Pleno (100% Conforme a Criterios Institucionales)'),
+        ('CONDICIONADO', 'Aval Condicionado con Recomendaciones de Mejora'),
+        ('NO_FAVORABLE', 'No Favorable / Requiere Intervención'),
+    ]
+
+    SEMESTRES = [
+        ('1', 'Primer Semestre (Enero - Junio)'),
+        ('2', 'Segundo Semestre (Agosto - Diciembre)'),
+    ]
+
+    periodo = models.CharField(max_length=30, verbose_name="Periodo Semestral (ej. 2026-1)")
+    anio = models.PositiveIntegerField(verbose_name="Año Calendario")
+    semestre = models.CharField(max_length=10, choices=SEMESTRES, default='1', verbose_name="Semestre Académico")
+    
+    # Profesor responsable acreditado
+    responsable = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='auditorias_semestrales_responsable', verbose_name="Profesor / Administrador Responsable"
+    )
+    nombre_responsable = models.CharField(max_length=255, verbose_name="Nombre Oficial y Grado")
+    cargo_responsable = models.CharField(max_length=255, default="Profesor Encargado del Repositorio Institucional FCA", verbose_name="Cargo Institucional")
+    clave_empleado_responsable = models.CharField(max_length=50, blank=True, null=True, verbose_name="Clave o N° de Empleado")
+    fecha_emision = models.DateTimeField(default=timezone.now, verbose_name="Fecha Oficial de Emisión")
+
+    # Métricas cuantitativas del semestre
+    obras_registradas = models.PositiveIntegerField(default=0, verbose_name="Obras Recibidas en el Semestre")
+    obras_aprobadas = models.PositiveIntegerField(default=0, verbose_name="Obras Aprobadas y Publicadas")
+    obras_rechazadas = models.PositiveIntegerField(default=0, verbose_name="Obras Devueltas / Rechazadas")
+    obras_en_revision = models.PositiveIntegerField(default=0, verbose_name="Obras en Revisión al Cierre")
+    tasa_aprobacion = models.DecimalField(max_digits=5, decimal_places=2, default=0.0, verbose_name="Tasa de Aprobación (%)")
+    
+    nuevos_autores = models.PositiveIntegerField(default=0, verbose_name="Nuevos Autores Incorporados")
+    nuevos_usuarios = models.PositiveIntegerField(default=0, verbose_name="Nuevos Usuarios Registrados")
+    obras_con_doi = models.PositiveIntegerField(default=0, verbose_name="Obras con DOI Indexadas")
+    obras_propiedad_intelectual = models.PositiveIntegerField(default=0, verbose_name="Obras con Registro INDAUTOR / IMPI")
+    tiempo_promedio_moderacion_horas = models.DecimalField(max_digits=6, decimal_places=1, default=24.0, verbose_name="Tiempo Promedio de Moderación (Horas)")
+
+    # Secciones cualitativas y dictamen
+    resumen_ejecutivo = models.TextField(verbose_name="Resumen Ejecutivo del Estado del Repositorio")
+    mejoras_tecnicas = models.TextField(verbose_name="Mejoras Técnicas y Operativas Implementadas")
+    metas_alcanzadas = models.TextField(verbose_name="Cumplimiento de Metas y Objetivos del Semestre")
+    conclusion_dictamen = models.TextField(verbose_name="Conclusión del Dictamen y Declaratoria de Aval")
+    resultado_aval = models.CharField(max_length=30, choices=RESULTADOS_AVAL, default='FAVORABLE', verbose_name="Resultado del Aval")
+
+    # Folio y Sello Criptográfico SHA-256
+    folio = models.CharField(max_length=60, unique=True, blank=True, verbose_name="Folio Oficial Único")
+    sello_digital = models.CharField(max_length=64, blank=True, verbose_name="Sello Digital SHA-256")
+    
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='auditorias_creadas')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-anio', '-semestre', '-fecha_emision']
+        verbose_name = "Auditoría Semestral"
+        verbose_name_plural = "Auditorías Semestrales"
+
+    def __str__(self):
+        return f"[{self.folio or self.periodo}] {self.periodo} - {self.nombre_responsable} ({self.get_resultado_aval_display()})"
+
+    def save(self, *args, **kwargs):
+        import hashlib
+        if not self.folio:
+            self.folio = f"AUD-FCA-{self.anio}-{self.semestre}-{timezone.now().strftime('%m%d%H%M')}"
+        if not self.sello_digital:
+            raw = f"FCA-AUDITORIA-SEMESTRAL|FOLIO:{self.folio}|PERIODO:{self.periodo}|APROBADAS:{self.obras_aprobadas}|RESPONSABLE:{self.nombre_responsable}|TS:{timezone.now().isoformat()}"
+            self.sello_digital = hashlib.sha256(raw.encode('utf-8')).hexdigest()
+        super().save(*args, **kwargs)
+

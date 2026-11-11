@@ -982,12 +982,18 @@
                 </ul>
             </div>
 
-            <!-- SUB-PESTAÑAS MÓDULO 4: ANALÍTICA Y ESTADÍSTICAS (IDEA 18 & IDEA 8) -->
+            <!-- SUB-PESTAÑAS MÓDULO 4: ANALÍTICA Y ESTADÍSTICAS -->
             <div class="hub-subnav-group d-none" id="subnav-estadisticas">
                 <ul class="nav custom-subpills" id="estadisticasSubTab">
                     <li class="nav-item">
                         <button class="nav-link active" id="dashboard-analitica-tab" data-bs-target="#dashboard-analitica" type="button">
                             <i class="fas fa-chart-pie me-2 text-info"></i>Dashboard Analítico de Producción y Cuadro de Honor
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="auditoria-semestral-tab" data-bs-target="#auditoria-semestral" type="button">
+                            <i class="fas fa-file-signature me-2 text-warning"></i>Auditoría Semestral y Dictamen de Avances
+                            <span class="badge bg-secondary ms-1">{{ auditorias_semestrales|length }}</span>
                         </button>
                     </li>
                 </ul>
@@ -2203,6 +2209,47 @@
 
             <!-- PESTAÑA 3: SOLICITUDES PENDIENTES (FILTRADO Y CONTADORES COMPLETOS) -->
             <div class="tab-pane fade" id="pendientes" role="tabpanel">
+                <!-- CONTROL MAESTRO DE POLÍTICAS DE ACCESO Y SOLICITUDES -->
+                <div class="card border-0 shadow-sm rounded-4 mb-3" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #006633 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                    <i class="fas fa-shield-alt text-success"></i> Políticas de Registro y Aprobación de Cuentas
+                                </h6>
+                                <small class="text-muted">Controla si los nuevos docentes UABC requieren visto bueno administrativo obligatorio y si el formulario de registro está abierto al público.</small>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <!-- Toggle 1: Aprobación Automática Docentes UABC -->
+                                <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-xs border">
+                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarDocentes" {% if config_sistema.autoaprobar_docentes_uabc %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_docentes', this.checked)">
+                                        <label class="form-check-label fw-bold small text-dark mb-0" for="switchAutoaprobarDocentes" style="cursor: pointer;">
+                                            Autoaprobar Docentes UABC
+                                        </label>
+                                    </div>
+                                    <span class="badge ms-2 {% if config_sistema.autoaprobar_docentes_uabc %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarDocentes">
+                                        {% if config_sistema.autoaprobar_docentes_uabc %}Activa{% else %}Inactiva (Revisión Manual){% endif %}
+                                    </span>
+                                </div>
+
+                                <!-- Toggle 2: Apertura de Nuevas Solicitudes -->
+                                <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-xs border">
+                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
+                                        <input class="form-check-input" type="checkbox" id="switchSolicitudesAbiertas" {% if config_sistema.solicitudes_registro_abiertas %}checked{% endif %} onchange="togglePoliticaAcceso('solicitudes_abiertas', this.checked)">
+                                        <label class="form-check-label fw-bold small text-dark mb-0" for="switchSolicitudesAbiertas" style="cursor: pointer;">
+                                            Recepción de Solicitudes
+                                        </label>
+                                    </div>
+                                    <span class="badge ms-2 {% if config_sistema.solicitudes_registro_abiertas %}bg-primary{% else %}bg-danger{% endif %}" id="badgeSolicitudesAbiertas">
+                                        {% if config_sistema.solicitudes_registro_abiertas %}Abiertas{% else %}Pausadas{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 5 CONTADORES SUPERIORES DE SOLICITUDES -->
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
                     <div class="col">
@@ -4065,8 +4112,436 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ============================================================================== -->
+            <!-- PESTAÑA: AUDITORÍA SEMESTRAL Y DICTAMEN DE AVANCES (OBLIGATORIO) -->
+            <!-- ============================================================================== -->
+            <div class="tab-pane fade" id="auditoria-semestral" role="tabpanel">
+                <!-- BANNER DE AUDITORÍA SEMESTRAL -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);">
+                    <div class="card-body p-4 text-white">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-1">
+                                        <i class="fas fa-file-signature me-1"></i>Acreditación y Rendición de Cuentas
+                                    </span>
+                                    <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-1">
+                                        Periodo Actual: {{ periodo_actual }}
+                                    </span>
+                                </div>
+                                <h3 class="fw-bold mb-1">Auditoría Semestral y Dictamen Institucional de Avances</h3>
+                                <p class="text-white text-opacity-75 mb-0" style="font-size: 0.92rem;">
+                                    Permite al profesor encargado emitir el informe semestral de mejoras técnicas, auditar el acervo y certificar el aval de uso oficial ante órganos evaluadores (CACECA, CONAHCYT, UABC).
+                                </p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold shadow text-dark" data-bs-toggle="modal" data-bs-target="#modalNuevaAuditoriaSemestral">
+                                    <i class="fas fa-plus-circle me-1"></i>Emitir Nueva Auditoría Semestral
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARDS DE MÉTRICAS DEL SEMESTRE EN CURSO -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-line text-success me-2"></i>Métricas de Rendimiento del Ciclo Actual ({{ periodo_actual }})</h6>
+                            <small class="text-muted">Cálculo automatizado en tiempo real para el semestre en curso</small>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1">
+                            Semestre Activo
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-light rounded-4 text-center border">
+                                    <div class="text-muted small fw-bold text-uppercase">Obras Aprobadas</div>
+                                    <div class="fs-2 fw-bold text-success">{{ metricas_semestre_actual.obras_aprobadas }}</div>
+                                    <small class="text-muted">de {{ metricas_semestre_actual.obras_registradas }} recibidas</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-light rounded-4 text-center border">
+                                    <div class="text-muted small fw-bold text-uppercase">Tasa de Aprobación</div>
+                                    <div class="fs-2 fw-bold text-primary">{{ metricas_semestre_actual.tasa_aprobacion }}%</div>
+                                    <small class="text-muted">Efectividad editorial</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-light rounded-4 text-center border">
+                                    <div class="text-muted small fw-bold text-uppercase">Nuevos Autores</div>
+                                    <div class="fs-2 fw-bold text-info">+{{ metricas_semestre_actual.nuevos_autores }}</div>
+                                    <small class="text-muted">Docentes incorporados</small>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 bg-light rounded-4 text-center border">
+                                    <div class="text-muted small fw-bold text-uppercase">Impacto con DOI</div>
+                                    <div class="fs-2 fw-bold text-purple" style="color: #6f42c1;">{{ metricas_semestre_actual.obras_con_doi }}</div>
+                                    <small class="text-muted">Publicaciones indexadas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTÓRICO DE AUDITORÍAS SEMESTRALES EMITIDAS -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history text-primary me-2"></i>Historial de Dictámenes y Auditorías Emitidas</h6>
+                            <small class="text-muted">Expediente oficial de certificaciones semestrales del Repositorio FCA</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill px-3 py-1">
+                            {{ auditorias_semestrales|length }} registrada{{ auditorias_semestrales|length|pluralize:"s" }}
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if auditorias_semestrales %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light text-muted small text-uppercase">
+                                        <tr>
+                                            <th class="ps-4">Folio Oficial</th>
+                                            <th>Periodo</th>
+                                            <th>Profesor / Responsable</th>
+                                            <th>Dictamen / Aval</th>
+                                            <th class="text-center">Aprobadas / Total</th>
+                                            <th class="text-center">Tasa %</th>
+                                            <th class="text-end pe-4">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for aud in auditorias_semestrales %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark font-monospace small">{{ aud.folio }}</div>
+                                                <small class="text-muted">{{ aud.fecha_emision|date:"d/m/Y H:i" }} hrs</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fw-bold">
+                                                    {{ aud.periodo }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ aud.nombre_responsable }}</div>
+                                                <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;">{{ aud.cargo_responsable }}</small>
+                                            </td>
+                                            <td>
+                                                {% if aud.resultado_aval == 'FAVORABLE' %}
+                                                    <span class="badge bg-success text-white rounded-pill px-3 py-1">
+                                                        <i class="fas fa-check-circle me-1"></i>Aval Favorable Pleno
+                                                    </span>
+                                                {% elif aud.resultado_aval == 'CONDICIONADO' %}
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>Aval Condicionado
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger text-white rounded-pill px-3 py-1">
+                                                        <i class="fas fa-times-circle me-1"></i>No Favorable
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center font-monospace">
+                                                <strong class="text-success">{{ aud.obras_aprobadas }}</strong> / {{ aud.obras_registradas }}
+                                            </td>
+                                            <td class="text-center font-monospace fw-bold text-primary">
+                                                {{ aud.tasa_aprobacion }}%
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="btn-group">
+                                                    <a href="{% url 'dictamen_semestral_pdf' aud.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold me-1" title="Imprimir o descargar Dictamen Oficial en PDF">
+                                                        <i class="fas fa-file-pdf me-1"></i>Dictamen PDF
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#modalVerAuditoria{{ aud.id }}" title="Ver detalles y mejoras">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div class="bg-success bg-opacity-10 text-success p-4 rounded-circle d-inline-flex mb-3">
+                                    <i class="fas fa-file-signature fa-3x"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">Aún no se han emitido dictámenes de auditoría semestral</h5>
+                                <p class="text-muted small mx-auto" style="max-width: 500px;">
+                                    El profesor responsable puede generar el primer informe de auditoría semestral para avalar el uso del repositorio y documentar los avances ante las comisiones académicas.
+                                </p>
+                                <button type="button" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevaAuditoriaSemestral">
+                                    <i class="fas fa-plus-circle me-1"></i>Emitir Primera Auditoría Semestral
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- ============================================================================== -->
+    <!-- MODAL: NUEVA AUDITORÍA SEMESTRAL Y DICTAMEN DE AVANCES -->
+    <!-- ============================================================================== -->
+    <div class="modal fade" id="modalNuevaAuditoriaSemestral" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #006633 0%, #004d26 100%); border-bottom: 3px solid #dd971a;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-white bg-opacity-20 p-2 rounded-circle">
+                            <i class="fas fa-file-signature fa-lg text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0">Emitir Auditoría Semestral y Dictamen Institucional</h5>
+                            <small class="text-white text-opacity-75">Certificación oficial de avances, mejoras del repositorio y aval de uso académico</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form method="POST" action="{% url 'registrar_auditoria_semestral' %}" id="formNuevaAuditoriaSemestral">
+                    {% csrf_token %}
+                    <div class="modal-body p-4">
+                        <!-- SECCIÓN 1: PERIODO Y RESPONSABLE -->
+                        <div class="bg-light p-3 rounded-4 mb-3 border">
+                            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                                <i class="fas fa-calendar-alt text-success"></i> Periodo Académico y Datos del Evaluador
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-sm-4">
+                                    <label class="form-label small fw-bold text-muted mb-1">Año Académico</label>
+                                    <input type="number" class="form-control rounded-3" name="anio" id="auditoriaAnio" value="2026" min="2020" max="2035" required onchange="cargarMetricasSemestreModal()">
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="form-label small fw-bold text-muted mb-1">Semestre</label>
+                                    <select class="form-select rounded-3" name="semestre" id="auditoriaSemestre" required onchange="cargarMetricasSemestreModal()">
+                                        <option value="1">1 (Enero - Junio)</option>
+                                        <option value="2" selected>2 (Julio - Diciembre)</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-success w-100 rounded-3 fw-bold" id="btnCargarMetricasModal" onclick="cargarMetricasSemestreModal()">
+                                        <i class="fas fa-bolt me-1"></i> Actualizar Métricas
+                                    </button>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-muted mb-1">Profesor / Responsable Evaluador</label>
+                                    <input type="text" class="form-control rounded-3" name="nombre_responsable" value="{{ request.user.autor.nombre|default:request.user.get_full_name|default:request.user.username }}" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-muted mb-1">Cargo Académico / Institucional</label>
+                                    <input type="text" class="form-control rounded-3" name="cargo_responsable" value="Profesor Responsable del Repositorio Institucional FCA" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: MÉTRICAS EN VIVO DEL PERIODO SELECCIONADO -->
+                        <div class="card border border-success border-opacity-25 rounded-4 mb-3" style="background: #f0fdf4;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-bold text-success text-uppercase">
+                                        <i class="fas fa-calculator me-1"></i>Métricas Calculadas para el Periodo <span id="metricPreviewPeriodo">2026-2</span>
+                                    </span>
+                                    <span class="badge bg-success text-white rounded-pill px-2 py-1 small">En Vivo</span>
+                                </div>
+                                <div class="row g-2 text-center">
+                                    <div class="col">
+                                        <div class="bg-white p-2 rounded-3 border">
+                                            <div class="small text-muted">Aprobadas</div>
+                                            <strong class="text-success fs-5" id="metricPreviewAprobadas">{{ metricas_semestre_actual.obras_aprobadas }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="bg-white p-2 rounded-3 border">
+                                            <div class="small text-muted">Registradas</div>
+                                            <strong class="text-dark fs-5" id="metricPreviewRegistradas">{{ metricas_semestre_actual.obras_registradas }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="bg-white p-2 rounded-3 border">
+                                            <div class="small text-muted">Tasa Éxito</div>
+                                            <strong class="text-primary fs-5" id="metricPreviewTasa">{{ metricas_semestre_actual.tasa_aprobacion }}%</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="bg-white p-2 rounded-3 border">
+                                            <div class="small text-muted">Nuevos Autores</div>
+                                            <strong class="text-info fs-5" id="metricPreviewAutores">+{{ metricas_semestre_actual.nuevos_autores }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="bg-white p-2 rounded-3 border">
+                                            <div class="small text-muted">Con DOI</div>
+                                            <strong class="text-purple fs-5" id="metricPreviewDoi" style="color: #6f42c1;">{{ metricas_semestre_actual.obras_con_doi }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: DICTAMEN DE AVAL -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">
+                                <i class="fas fa-stamp text-warning me-1"></i> Sentido del Dictamen / Aval Institucional
+                            </label>
+                            <select class="form-select rounded-3 fw-bold" name="resultado_aval" required>
+                                <option value="FAVORABLE" selected>Aval Favorable Pleno (Cumplimiento de estándares de calidad y preservación)</option>
+                                <option value="CONDICIONADO">Aval Condicionado a Solventación de Observaciones</option>
+                                <option value="NO_FAVORABLE">No Favorable (Incumplimiento o suspensión de aval)</option>
+                            </select>
+                        </div>
+
+                        <!-- SECCIÓN 4: INFORMES CUALITATIVOS -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">1. Resumen Ejecutivo del Periodo</label>
+                            <textarea class="form-control rounded-3" name="resumen_ejecutivo" rows="3" required placeholder="Describe brevemente el volumen de producción, participación de los cuerpos académicos y desempeño editorial del periodo..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">2. Mejoras Técnicas, Arquitectónicas y de Seguridad Implementadas</label>
+                            <textarea class="form-control rounded-3" name="mejoras_tecnicas" rows="3" required placeholder="Detalla los avances técnicos implementados (e.g. optimización de flujo editorial, deduplicación de autores, sellos criptográficos SHA-256, políticas de moderación)..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">3. Metas y Compromisos para el Siguiente Periodo</label>
+                            <textarea class="form-control rounded-3" name="metas_siguiente_periodo" rows="2" required placeholder="Acciones comprometidas para el próximo semestre institucional..."></textarea>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-dark mb-1">4. Conclusiones Oficiales y Certificación de Aval</label>
+                            <textarea class="form-control rounded-3" name="conclusiones_dictamen" rows="2" required placeholder="Texto formal del dictamen que certifica que el repositorio cumple con los lineamientos de acreditación institucional..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow">
+                            <i class="fas fa-file-signature me-1"></i>Emitir y Firmar Dictamen Oficial
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- MODALES DE DETALLE PARA CADA AUDITORÍA SEMESTRAL EMITIDA -->
+    <!-- ============================================================================== -->
+    {% for aud in auditorias_semestrales %}
+    <div class="modal fade" id="modalVerAuditoria{{ aud.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-warning text-dark font-monospace fw-bold">{{ aud.folio }}</span>
+                            <span class="badge bg-white bg-opacity-20 text-white">{{ aud.periodo }}</span>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-0">Expediente de Auditoría Semestral</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- RESPONSABLE Y DICTAMEN -->
+                    <div class="d-flex justify-content-between align-items-center p-3 rounded-4 mb-3 border bg-light flex-wrap gap-2">
+                        <div>
+                            <div class="fw-bold text-dark fs-6">{{ aud.nombre_responsable }}</div>
+                            <small class="text-muted">{{ aud.cargo_responsable }}</small>
+                            <div class="small text-secondary mt-1"><i class="fas fa-clock me-1"></i>Emitido el {{ aud.fecha_emision|date:"d/m/Y H:i:s" }} hrs</div>
+                        </div>
+                        <div>
+                            {% if aud.resultado_aval == 'FAVORABLE' %}
+                                <span class="badge bg-success text-white rounded-pill px-3 py-2 fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>Aval Favorable Pleno
+                                </span>
+                            {% elif aud.resultado_aval == 'CONDICIONADO' %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Aval Condicionado
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">
+                                    <i class="fas fa-times-circle me-1"></i>No Favorable
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- MÉTRICAS CONSOLIDADAS -->
+                    <div class="row g-2 text-center mb-3">
+                        <div class="col">
+                            <div class="p-2 border rounded-3 bg-light">
+                                <div class="small text-muted">Aprobadas</div>
+                                <div class="fs-5 fw-bold text-success">{{ aud.obras_aprobadas }}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded-3 bg-light">
+                                <div class="small text-muted">Registradas</div>
+                                <div class="fs-5 fw-bold text-dark">{{ aud.obras_registradas }}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded-3 bg-light">
+                                <div class="small text-muted">Tasa Éxito</div>
+                                <div class="fs-5 fw-bold text-primary">{{ aud.tasa_aprobacion }}%</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded-3 bg-light">
+                                <div class="small text-muted">Nuevos Autores</div>
+                                <div class="fs-5 fw-bold text-info">+{{ aud.nuevos_autores }}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2 border rounded-3 bg-light">
+                                <div class="small text-muted">Con DOI</div>
+                                <div class="fs-5 fw-bold text-purple" style="color: #6f42c1;">{{ aud.obras_con_doi }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTENIDO CUALITATIVO -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-align-left text-success me-1"></i> Resumen Ejecutivo</h6>
+                        <div class="p-3 bg-light rounded-3 text-secondary small" style="white-space: pre-wrap;">{{ aud.resumen_ejecutivo }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-tools text-primary me-1"></i> Mejoras Técnicas Implementadas</h6>
+                        <div class="p-3 bg-light rounded-3 text-secondary small" style="white-space: pre-wrap;">{{ aud.mejoras_tecnicas }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-bullseye text-warning me-1"></i> Metas Siguiente Periodo</h6>
+                        <div class="p-3 bg-light rounded-3 text-secondary small" style="white-space: pre-wrap;">{{ aud.metas_siguiente_periodo }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-gavel text-info me-1"></i> Conclusiones y Dictamen de Aval</h6>
+                        <div class="p-3 bg-light rounded-3 text-secondary small" style="white-space: pre-wrap;">{{ aud.conclusiones_dictamen }}</div>
+                    </div>
+
+                    <!-- SELLO DIGITAL CRIPTOGRÁFICO -->
+                    <div class="p-3 rounded-3 border bg-white">
+                        <div class="small fw-bold text-muted text-uppercase mb-1"><i class="fas fa-shield-alt text-success me-1"></i> Sello Digital Criptográfico (SHA-256)</div>
+                        <div class="font-monospace small text-break text-muted bg-light p-2 rounded border">{{ aud.sello_digital }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                    <a href="{% url 'dictamen_semestral_pdf' aud.id %}" target="_blank" class="btn btn-success rounded-pill px-4 fw-bold shadow">
+                        <i class="fas fa-file-pdf me-1"></i>Descargar Dictamen Oficial PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 
     <!-- MODAL FUSIÓN DE AUTORES MEJORADO E INTUITIVO -->
     <div class="modal fade" id="modalFusionarAutores" tabindex="-1" aria-hidden="true">
@@ -7318,7 +7793,8 @@
                 '#supers': 'usuarios',
                 '#suspendidas': 'usuarios',
                 '#autores-fusion': 'claustro',
-                '#dashboard-analitica': 'estadisticas'
+                '#dashboard-analitica': 'estadisticas',
+                '#auditoria-semestral': 'estadisticas'
             };
 
             window.cambiarPestanaAdmin = function(targetId) {
@@ -7392,12 +7868,114 @@
                     } else if (hubName === 'claustro') {
                         targetTab = '#autores-fusion';
                     } else if (hubName === 'estadisticas') {
-                        targetTab = '#dashboard-analitica';
+                        const lastSaved = localStorage.getItem('activeAdminTab');
+                        targetTab = (lastSaved === '#auditoria-semestral') ? '#auditoria-semestral' : '#dashboard-analitica';
                     }
 
                     cambiarPestanaAdmin(targetTab);
                 });
             });
+
+            // GESTIÓN DE POLÍTICAS DE ACCESO Y SOLICITUDES
+            window.togglePoliticaAcceso = function(politica, valor) {
+                const badgeMap = {
+                    'autoaprobar_docentes': {
+                        badge: document.getElementById('badgeAutoaprobarDocentes'),
+                        activeText: 'Activa',
+                        inactiveText: 'Inactiva (Revisión Manual)'
+                    },
+                    'solicitudes_abiertas': {
+                        badge: document.getElementById('badgeSolicitudesAbiertas'),
+                        activeText: 'Abierto al Público',
+                        inactiveText: 'Pausado Temporalmente'
+                    }
+                };
+
+                fetch('{% url "toggle_politica_acceso" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: new URLSearchParams({
+                        'politica': politica,
+                        'valor': valor ? 'true' : 'false'
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        mostrarToast(data.message, 'success');
+                        const cfg = badgeMap[politica];
+                        if (cfg && cfg.badge) {
+                            if (data.nuevo_valor) {
+                                cfg.badge.className = 'badge ms-2 bg-success';
+                                cfg.badge.textContent = cfg.activeText;
+                            } else {
+                                cfg.badge.className = 'badge ms-2 bg-secondary';
+                                cfg.badge.textContent = cfg.inactiveText;
+                            }
+                        }
+                    } else {
+                        mostrarToast(data.message || 'Error al actualizar política', 'error');
+                        const switchEl = (politica === 'autoaprobar_docentes') ? document.getElementById('switchAutoaprobarDocentes') : document.getElementById('switchSolicitudesAbiertas');
+                        if (switchEl) switchEl.checked = !valor;
+                    }
+                })
+                .catch(err => {
+                    mostrarToast('Error de conexión al guardar política', 'error');
+                    const switchEl = (politica === 'autoaprobar_docentes') ? document.getElementById('switchAutoaprobarDocentes') : document.getElementById('switchSolicitudesAbiertas');
+                    if (switchEl) switchEl.checked = !valor;
+                });
+            };
+
+            // CONSULTA EN VIVO DE MÉTRICAS SEMESTRALES PARA EL MODAL DE AUDITORÍA
+            window.cargarMetricasSemestreModal = function() {
+                const anioEl = document.getElementById('auditoriaAnio');
+                const semestreEl = document.getElementById('auditoriaSemestre');
+                if (!anioEl || !semestreEl) return;
+                const anio = anioEl.value;
+                const semestre = semestreEl.value;
+                const btn = document.getElementById('btnCargarMetricasModal');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Calculando...';
+                }
+
+                fetch(`{% url 'obtener_metricas_semestre_api' %}?anio=${anio}&semestre=${semestre}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const m = data.metricas;
+                        const elAprob = document.getElementById('metricPreviewAprobadas');
+                        const elReg = document.getElementById('metricPreviewRegistradas');
+                        const elTasa = document.getElementById('metricPreviewTasa');
+                        const elAut = document.getElementById('metricPreviewAutores');
+                        const elDoi = document.getElementById('metricPreviewDoi');
+                        const elPeriodo = document.getElementById('metricPreviewPeriodo');
+
+                        if (elAprob) elAprob.textContent = m.obras_aprobadas;
+                        if (elReg) elReg.textContent = m.obras_registradas;
+                        if (elTasa) elTasa.textContent = m.tasa_aprobacion + '%';
+                        if (elAut) elAut.textContent = '+' + m.nuevos_autores;
+                        if (elDoi) elDoi.textContent = m.obras_con_doi;
+                        if (elPeriodo) elPeriodo.textContent = `${data.anio}-${data.semestre}`;
+
+                        mostrarToast(`Métricas actualizadas para ciclo ${data.periodo}`, 'info');
+                    } else {
+                        mostrarToast(data.message || 'Error al calcular métricas', 'error');
+                    }
+                })
+                .catch(err => {
+                    mostrarToast('Error de red al consultar métricas', 'error');
+                })
+                .finally(() => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-bolt me-1"></i> Actualizar Métricas';
+                    }
+                });
+            };
 
             // Eventos en cada una de las sub-pestañas
             document.querySelectorAll('.custom-subpills .nav-link').forEach(link => {

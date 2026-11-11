@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictamen Oficial de Auditoría Semestral {{ auditoria.periodo }} — Repositorio FCA UABC</title>
+    <!-- Bootstrap CSS y FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-gold: #dd971a;
+            --uabc-dark: #1b1e23;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: #212529;
+            background-color: #f8fafc;
+            padding: 25px 0;
+            font-size: 0.9rem;
+        }
+
+        .document-sheet {
+            background: #ffffff;
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 45px 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            position: relative;
+            border-top: 8px solid var(--uabc-green);
+        }
+
+        .header-top {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .inst-title {
+            color: var(--uabc-green);
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .inst-subtitle {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .dictamen-banner {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 18px 24px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--uabc-gold);
+        }
+
+        .folio-badge {
+            background-color: rgba(221, 151, 26, 0.2);
+            color: #ffd880;
+            border: 1px solid rgba(221, 151, 26, 0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stat-card-doc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card-doc .num {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--uabc-green);
+            line-height: 1.1;
+        }
+
+        .stat-card-doc .lbl {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .section-header {
+            border-left: 4px solid var(--uabc-green);
+            padding-left: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--uabc-green);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 14px 18px;
+            line-height: 1.6;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .sello-box {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.72rem;
+            word-break: break-all;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #334155;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .signature-box {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1.5px solid #0f172a;
+            text-align: center;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .no-print-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 25px;
+            z-index: 1050;
+            display: flex;
+            gap: 10px;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                font-size: 9.5pt;
+            }
+            .document-sheet {
+                box-shadow: none !important;
+                padding: 15px 25px !important;
+                border: none !important;
+                max-width: 100% !important;
+            }
+            .no-print-toolbar {
+                display: none !important;
+            }
+            @page {
+                margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+                size: letter portrait;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BOTONES FLOTANTES DE ACCIÓN RÁPIDA -->
+    <div class="no-print-toolbar">
+        <a href="javascript:window.history.back()" class="btn btn-secondary shadow rounded-pill px-4 font-weight-bold">
+            <i class="fas fa-arrow-left mr-1"></i> Volver al Panel
+        </a>
+        <button onclick="window.print()" class="btn btn-success shadow rounded-pill px-4 font-weight-bold" style="background-color: var(--uabc-green); border-color: var(--uabc-green);">
+            <i class="fas fa-print mr-1"></i> Imprimir / Guardar como PDF
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="document-sheet">
+
+            <!-- ENCABEZADO INSTITUCIONAL -->
+            <div class="header-top d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <div class="inst-title">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</div>
+                    <div class="inst-subtitle">Facultad de Contaduría y Administración — Campus Tijuana</div>
+                    <div class="small text-muted font-weight-bold">COMITÉ EDITORIAL Y DE AUDITORÍA DEL REPOSITORIO INSTITUCIONAL</div>
+                </div>
+                <div class="text-right mt-2 mt-md-0">
+                    <img src="/static/images/FCA2.png" alt="Logo FCA UABC" style="max-height: 65px;" onerror="this.style.display='none';">
+                </div>
+            </div>
+
+            <!-- BANNER PRINCIPAL DEL DICTAMEN -->
+            <div class="dictamen-banner d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <span class="folio-badge mb-2 d-inline-block">{{ auditoria.folio }}</span>
+                    <h4 class="font-weight-bold mb-1">DICTAMEN OFICIAL DE AUDITORÍA SEMESTRAL</h4>
+                    <div style="font-size: 0.95rem; opacity: 0.9;">
+                        Periodo Académico Auditado: <strong>{{ auditoria.periodo }}</strong> ({{ auditoria.get_semestre_display }})
+                    </div>
+                </div>
+                <div class="text-right mt-2 mt-md-0">
+                    <span class="badge badge-warning px-3 py-2 font-weight-bold" style="font-size: 0.85rem; color: #1e293b;">
+                        <i class="fas fa-check-circle mr-1 text-success"></i>{{ auditoria.get_resultado_aval_display }}
+                    </span>
+                    <div class="small text-white-50 mt-1">Emisión: {{ auditoria.fecha_emision|date:"d/m/Y H:i" }} hrs</div>
+                </div>
+            </div>
+
+            <!-- DATOS DEL PROFESOR RESPONSABLE DE LA AUDITORÍA -->
+            <div class="row mb-4">
+                <div class="col-md-7">
+                    <p class="mb-1"><strong>Profesor / Responsable Evaluador:</strong> {{ auditoria.nombre_responsable }}</p>
+                    <p class="mb-1"><strong>Cargo Institucional:</strong> {{ auditoria.cargo_responsable }}</p>
+                    {% if auditoria.clave_empleado_responsable %}<p class="mb-0"><strong>Clave / N° de Empleado:</strong> #{{ auditoria.clave_empleado_responsable }}</p>{% endif %}
+                </div>
+                <div class="col-md-5 text-md-right">
+                    <p class="mb-1"><strong>Entidad Académica:</strong> FCA UABC</p>
+                    <p class="mb-1"><strong>Unidad de Adscripción:</strong> Mesa de Control y Repositorio</p>
+                    <p class="mb-0"><strong>Vigencia del Dictamen:</strong> Permanente en Expediente Institucional</p>
+                </div>
+            </div>
+
+            <!-- RESUMEN MÉTRICO DEL SEMESTRE -->
+            <div class="section-header">1. Resumen Cuantitativo del Ciclo {{ auditoria.periodo }}</div>
+            <div class="row g-2 mb-4">
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc">
+                        <div class="num">{{ auditoria.obras_aprobadas }}</div>
+                        <div class="lbl">Obras Aprobadas</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc">
+                        <div class="num" style="color: #0284c7;">{{ auditoria.obras_registradas }}</div>
+                        <div class="lbl">Total Recibidas</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc">
+                        <div class="num" style="color: #d97706;">{{ auditoria.tasa_aprobacion }}%</div>
+                        <div class="lbl">Tasa de Aprobación</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                    <div class="stat-card-doc">
+                        <div class="num" style="color: #7c3aed;">{{ auditoria.obras_con_doi }}</div>
+                        <div class="lbl">Indexadas con DOI</div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-sm table-bordered text-center mb-4" style="font-size: 0.82rem;">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Nuevos Autores Incorporados</th>
+                        <th>Nuevos Usuarios Registrados</th>
+                        <th>Propiedad Intelectual (INDAUTOR)</th>
+                        <th>Tiempo Promedio de Moderación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="font-weight-bold text-success">+{{ auditoria.nuevos_autores }} investigadores</td>
+                        <td class="font-weight-bold text-primary">+{{ auditoria.nuevos_usuarios }} cuentas activas</td>
+                        <td class="font-weight-bold text-danger">{{ auditoria.obras_propiedad_intelectual }} registros oficiales</td>
+                        <td class="font-weight-bold text-muted">{{ auditoria.tiempo_promedio_moderacion_horas }} horas hábiles</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- CONTENIDO CUALITATIVO Y REVISIÓN -->
+            <div class="section-header">2. Resumen Ejecutivo del Periodo</div>
+            <div class="content-box">
+                {{ auditoria.resumen_ejecutivo|linebreaks }}
+            </div>
+
+            <div class="section-header">3. Mejoras Técnicas y Operativas Implementadas</div>
+            <div class="content-box">
+                {{ auditoria.mejoras_tecnicas|linebreaks }}
+            </div>
+
+            <div class="section-header">4. Cumplimiento de Metas y Objetivos Académicos</div>
+            <div class="content-box">
+                {{ auditoria.metas_alcanzadas|linebreaks }}
+            </div>
+
+            <!-- DECLARATORIA DE AVAL INSTITUCIONAL -->
+            <div class="section-header">5. Conclusión del Dictamen y Declaratoria de Aval</div>
+            <div class="content-box" style="border-left: 4px solid var(--uabc-green); background-color: #f0fdf4;">
+                <p class="font-weight-bold text-success mb-2">
+                    <i class="fas fa-certificate mr-1"></i> DICTAMEN DE CONFORMIDAD INSTITUCIONAL:
+                </p>
+                <p class="mb-0">
+                    {{ auditoria.conclusion_dictamen }}
+                </p>
+            </div>
+
+            <!-- SELLO DIGITAL Y CÓDIGO QR -->
+            <div class="border rounded p-3 mb-4 bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <div class="small font-weight-bold text-success mb-1">
+                            <i class="fas fa-lock mr-1"></i> SELLO DIGITAL CRIPTOGRÁFICO DE CONVALIDACIÓN (SHA-256)
+                        </div>
+                        <div class="sello-box mb-2">
+                            SHA-256: {{ auditoria.sello_digital }}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.7rem; line-height: 1.4;">
+                            Documento emitido y resguardado en el Repositorio Institucional de la FCA UABC. Cuenta con plena validez para fines de evaluación docente, comisiones dictaminadoras, acreditaciones CACECA / CONAHCYT e informes semestrales de directiva.
+                        </small>
+                    </div>
+                    <div class="col-md-3 text-center mt-3 mt-md-0">
+                        <img src="{{ qr_api_url }}" alt="Código QR Verificador" class="img-fluid border p-1 rounded bg-white shadow-xs" style="max-height: 110px;">
+                        <small class="d-block text-muted font-weight-bold mt-1" style="font-size: 0.65rem;">VALIDACIÓN QR</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIRMA DEL PROFESOR RESPONSABLE -->
+            <div class="signature-box">
+                <div class="font-weight-bold" style="font-size: 0.95rem;">{{ auditoria.nombre_responsable }}</div>
+                <div class="small text-muted">{{ auditoria.cargo_responsable }}</div>
+                <div class="small text-muted">Facultad de Contaduría y Administración — UABC</div>
+                <div class="small text-muted font-weight-bold mt-1">Folio: {{ auditoria.folio }}</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
