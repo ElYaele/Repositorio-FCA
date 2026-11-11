@@ -395,7 +395,7 @@ class Autor(models.Model):
             return self.nivel_administrador
         if self.usuario.is_superuser:
             return 'NIVEL_1'
-        if self.usuario.is_staff or self.es_soporte or self.es_operador_tecnico:
+        if self.es_soporte:
             return 'NIVEL_3'
         return 'NINGUNO'
 

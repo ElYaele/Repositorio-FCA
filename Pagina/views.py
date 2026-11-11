@@ -4309,9 +4309,10 @@ def panel_usuarios_view(request):
     es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
     es_n3 = (not es_n1) and (not es_n2)
 
-    # Lista de moderadores para gestión de permisos
+    # Lista de moderadores para gestión de permisos (exclusivo para equipo de soporte y administradores)
     moderadores_gestion = User.objects.filter(
-        Q(is_staff=True) | Q(is_superuser=True) | Q(autor__es_soporte=True) | Q(autor__es_operador_tecnico=True)
+        Q(is_superuser=True) | Q(autor__es_soporte=True),
+        is_active=True
     ).select_related('autor').distinct().order_by('username')
 
     context = {
