@@ -1249,16 +1249,41 @@ class ConfiguracionSistema(models.Model):
         verbose_name="Descripción Tarjeta Docente"
     )
 
-    # 8. Políticas y Control de Acceso y Solicitudes
+    # 8. Políticas y Control de Acceso y Solicitudes (6 Tipos de Cuentas + Switch Maestro)
+    solicitudes_registro_abiertas = models.BooleanField(
+        default=True,
+        verbose_name="Recepción de Nuevas Solicitudes de Registro",
+        help_text="Permite abrir o pausar temporalmente el formulario público de registro institucional."
+    )
     autoaprobar_docentes_uabc = models.BooleanField(
         default=False,
         verbose_name="Aprobación Automática de Docentes UABC",
         help_text="Si está activo, los docentes con correo UABC quedan activos al verificar su correo. Si está inactivo (recomendado), requieren aprobación manual de un administrador."
     )
-    solicitudes_registro_abiertas = models.BooleanField(
-        default=True,
-        verbose_name="Recepción de Nuevas Solicitudes de Registro",
-        help_text="Permite abrir o pausar temporalmente el formulario público de registro institucional."
+    autoaprobar_auxiliares = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Auxiliares FCA",
+        help_text="Si está activo, los auxiliares/estudiantes quedan activos automáticamente al verificar su correo."
+    )
+    autoaprobar_externos = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Colaboradores Externos",
+        help_text="Si está activo, los colaboradores e investigadores de otras universidades quedan activos automáticamente tras verificar su correo."
+    )
+    autoaprobar_independientes = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Investigadores Independientes",
+        help_text="Si está activo, los investigadores y consultores sin adscripción fija quedan activos automáticamente tras verificar su correo."
+    )
+    autoaprobar_administrativos = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Personal Administrativo",
+        help_text="Si está activo, el personal de apoyo y administrativo FCA queda activo automáticamente tras verificar su correo."
+    )
+    autoaprobar_soporte = models.BooleanField(
+        default=False,
+        verbose_name="Aprobación Automática de Soporte Técnico",
+        help_text="Si está activo, aspirantes de soporte técnico quedan activos automáticamente tras verificar su correo."
     )
 
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Actualización")

@@ -1208,22 +1208,29 @@ def verificar_codigo_registro_view(request, user_id):
                 'codigo_demo': autor.codigo_verificacion,
             })
 
-        # Determinar si la cuenta corresponde a un perfil docente autoactivable
-        # Solo se autoactiva si la política del sistema tiene autoaprobar_docentes_uabc = True
+        # Determinar si la cuenta corresponde a un perfil con autoaprobación habilitada en la matriz del sistema
         config_sis = ConfiguracionSistema.get_solo()
-        es_docente_autoactivable = (
-            config_sis.autoaprobar_docentes_uabc and
-            autor.es_profesor and
-            not autor.es_externo and
-            not (autor.es_auxiliar or autor.es_soporte or autor.es_operador_tecnico)
-        )
+        es_cuenta_autoactivable = False
 
-        # Código válido: marcar correo autenticado y liberar cuenta instantáneamente si es docente
+        if autor.es_profesor and not autor.es_externo and not (autor.es_auxiliar or autor.es_soporte or autor.es_operador_tecnico):
+            es_cuenta_autoactivable = config_sis.autoaprobar_docentes_uabc
+        elif autor.es_auxiliar:
+            es_cuenta_autoactivable = config_sis.autoaprobar_auxiliares
+        elif autor.es_externo or autor.rol_facultad == 'EXT':
+            es_cuenta_autoactivable = config_sis.autoaprobar_externos
+        elif autor.rol_facultad == 'INV_IND' or 'independiente' in (autor.institucion_origen or '').lower():
+            es_cuenta_autoactivable = config_sis.autoaprobar_independientes
+        elif autor.es_soporte or autor.es_operador_tecnico:
+            es_cuenta_autoactivable = config_sis.autoaprobar_soporte
+        else:
+            es_cuenta_autoactivable = config_sis.autoaprobar_administrativos
+
+        # Código válido: marcar correo autenticado y liberar cuenta si está configurada la autoaprobación
         autor.correo_verificado = True
         autor.codigo_verificacion = None
         autor.codigo_verificacion_expira = None
 
-        if es_docente_autoactivable:
+        if es_cuenta_autoactivable:
             autor.estado_cuenta = 'activa'
             autor.save()
             user.is_active = True
@@ -1248,7 +1255,7 @@ def verificar_codigo_registro_view(request, user_id):
 
         # Envío formal de correos de acuse al usuario y notificación al Super Admin
         try:
-            if es_docente_autoactivable:
+            if es_cuenta_autoactivable:
                 from .emails import notificar_aprobacion_cuenta
                 notificar_aprobacion_cuenta(user, tipo_perfil_nombre)
                 notificar_solicitud_registro_admins(user, autor.nombre, f"{tipo_perfil_nombre} (Activación Automática)")
@@ -1260,10 +1267,10 @@ def verificar_codigo_registro_view(request, user_id):
         except Exception as e:
             logger.warning(f"Error al enviar correos tras verificación OTP: {e}")
 
-        if es_docente_autoactivable:
-            registrar_auditoria(None, "Liberación Instantánea de Cuenta Docente",
-                                f"El docente {user.username} ({user.email}) autenticó su correo mediante código OTP y su cuenta fue activada automáticamente sin requerir aprobación manual del Super Admin.")
-            messages.success(request, '¡Correo verificado con éxito! Tu cuenta docente ha sido liberada y activada automáticamente. Ya puedes iniciar sesión ahora mismo con tus credenciales.')
+        if es_cuenta_autoactivable:
+            registrar_auditoria(None, "Liberación Instantánea de Cuenta",
+                                f"La cuenta {user.username} ({user.email}) [{tipo_perfil_nombre}] autenticó su correo mediante código OTP y fue activada automáticamente según las políticas de acceso del sistema.")
+            messages.success(request, f'¡Correo verificado con éxito! Tu cuenta de {tipo_perfil_nombre} ha sido activada automáticamente. Ya puedes iniciar sesión ahora mismo con tus credenciales.')
         elif autor.es_auxiliar:
             registrar_auditoria(None, "Autenticación de Correo Exitosa",
                                 f"El usuario {user.username} ({user.email}) autenticó exitosamente su correo mediante código OTP.")
@@ -4077,6 +4084,65 @@ def panel_usuarios_view(request):
     porcentaje_doi = int((total_con_doi_metric / total_obras_aprobadas_metric * 100)) if total_obras_aprobadas_metric > 0 else 0
     total_docentes_con_obras = Autor.objects.filter(documentos__estado='aprobado', documentos__en_papelera=False).distinct().count()
 
+    # Métricas avanzadas para el Centro de Analítica Institucional
+    obras_aprobadas_qs = Articulo.objects.filter(en_papelera=False, estado='aprobado')
+    metric_total_con_pdf = obras_aprobadas_qs.exclude(pdf='').exclude(pdf__isnull=True).count()
+    metric_porcentaje_pdf = round((metric_total_con_pdf / total_obras_aprobadas_metric * 100), 1) if total_obras_aprobadas_metric > 0 else 0
+    metric_total_con_isbn = obras_aprobadas_qs.exclude(isbn_issn='').exclude(isbn_issn__isnull=True).count()
+    metric_porcentaje_isbn = round((metric_total_con_isbn / total_obras_aprobadas_metric * 100), 1) if total_obras_aprobadas_metric > 0 else 0
+    metric_total_propiedad = obras_aprobadas_qs.filter(Q(tipo_contenido__nombre__icontains='propiedad') | Q(tipo_contenido__nombre__icontains='desarrollo')).count()
+
+    # Coautoría y Colaboración
+    metric_total_participaciones = Articulo.autor.through.objects.filter(articulo__in=obras_aprobadas_qs).count()
+    metric_obras_en_equipo = obras_aprobadas_qs.annotate(num_autores=Count('autor')).filter(num_autores__gt=1).count()
+    metric_porcentaje_equipo = round((metric_obras_en_equipo / total_obras_aprobadas_metric * 100), 1) if total_obras_aprobadas_metric > 0 else 0
+    metric_promedio_autores = round(metric_total_participaciones / total_obras_aprobadas_metric, 1) if total_obras_aprobadas_metric > 0 else 1.0
+
+    # Claustro Docente y Salud de Perfiles
+    docentes_con_cuenta_qs = Autor.objects.filter(usuario__isnull=False)
+    metric_total_docentes_cuenta = docentes_con_cuenta_qs.count()
+    metric_docentes_con_foto = docentes_con_cuenta_qs.exclude(foto_perfil='').exclude(foto_perfil__isnull=True).count()
+    metric_porcentaje_foto = round((metric_docentes_con_foto / metric_total_docentes_cuenta * 100), 1) if metric_total_docentes_cuenta > 0 else 0
+    metric_docentes_con_semblanza = docentes_con_cuenta_qs.filter(estado_semblanza='aprobada').count()
+
+    # Matriz completa de los tipos de obra activos en acervo
+    metricas_tipos_todos = []
+    for t in TipoContenido.objects.all():
+        c = obras_aprobadas_qs.filter(tipo_contenido=t).count()
+        if c > 0:
+            doi_c = obras_aprobadas_qs.filter(tipo_contenido=t).exclude(doi_enlace='').exclude(doi_enlace__isnull=True).count()
+            metricas_tipos_todos.append({
+                'nombre': t.nombre,
+                'count': c,
+                'porcentaje': round(c / total_obras_aprobadas_metric * 100, 1) if total_obras_aprobadas_metric > 0 else 0,
+                'con_doi': doi_c
+            })
+    metricas_tipos_todos.sort(key=lambda x: x['count'], reverse=True)
+
+    # Matriz completa de las 11 áreas de conocimiento activas
+    metricas_areas_todas = []
+    for a in Area.objects.all():
+        c = obras_aprobadas_qs.filter(area=a).count()
+        if c > 0:
+            metricas_areas_todas.append({
+                'nombre': a.nombre,
+                'count': c,
+                'porcentaje': round(c / total_obras_aprobadas_metric * 100, 1) if total_obras_aprobadas_metric > 0 else 0
+            })
+    metricas_areas_todas.sort(key=lambda x: x['count'], reverse=True)
+
+    # Comparativa de evolución en los últimos 4 semestres
+    semestres_comparativa = []
+    for y, s in [(2025, 1), (2025, 2), (2026, 1), (2026, 2)]:
+        m = calcular_metricas_semestre(y, s)
+        semestres_comparativa.append({
+            'periodo': f"{y}-{s}",
+            'aprobadas': m['obras_aprobadas'],
+            'registradas': m['obras_registradas'],
+            'tasa': m['tasa_aprobacion'],
+            'doi': m['obras_con_doi']
+        })
+
     ultimo_doc_id = Articulo.objects.order_by('-id').values_list('id', flat=True).first() or 0
 
     # Métricas de Personal y Roles de la plantilla (todos los usuarios no-superadmin)
@@ -4155,6 +4221,23 @@ def panel_usuarios_view(request):
         'metric_total_con_doi': total_con_doi_metric,
         'metric_porcentaje_doi': porcentaje_doi,
         'metric_docentes_activos': total_docentes_con_obras,
+        # Métricas analíticas avanzadas
+        'metric_total_con_pdf': metric_total_con_pdf,
+        'metric_porcentaje_pdf': metric_porcentaje_pdf,
+        'metric_total_con_isbn': metric_total_con_isbn,
+        'metric_porcentaje_isbn': metric_porcentaje_isbn,
+        'metric_total_propiedad': metric_total_propiedad,
+        'metric_total_participaciones': metric_total_participaciones,
+        'metric_obras_en_equipo': metric_obras_en_equipo,
+        'metric_porcentaje_equipo': metric_porcentaje_equipo,
+        'metric_promedio_autores': metric_promedio_autores,
+        'metric_total_docentes_cuenta': metric_total_docentes_cuenta,
+        'metric_docentes_con_foto': metric_docentes_con_foto,
+        'metric_porcentaje_foto': metric_porcentaje_foto,
+        'metric_docentes_con_semblanza': metric_docentes_con_semblanza,
+        'metricas_tipos_todos': metricas_tipos_todos,
+        'metricas_areas_todas': metricas_areas_todas,
+        'semestres_comparativa': semestres_comparativa,
         # Variables globales añadidas para visualización fiel y sincronización
         'total_docs_global': total_docs_global,
         'total_docs_aprobados_global': total_docs_aprobados_global,
@@ -4320,39 +4403,45 @@ def sync_panel_usuarios_ajax_view(request):
 @user_passes_test(es_superusuario, login_url='/login/')
 def toggle_politica_acceso_view(request):
     """
-    Permite activar/desactivar en tiempo real:
-    1. Aprobación automática de docentes UABC (autoaprobar_docentes_uabc).
-    2. Recepción de nuevas solicitudes de cuenta (solicitudes_registro_abiertas).
+    Permite activar/desactivar en tiempo real las políticas de admisión:
+    - 6 tipos de cuentas institucionales (Docentes, Auxiliares, Externos, Investigadores, Administrativos, Soporte).
+    - Apertura/cierre general de nuevas solicitudes de registro.
     """
     if request.method != 'POST':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
     politica = request.POST.get('politica', '').strip()
     valor = request.POST.get('valor') in ['true', 'True', '1', True]
 
     config = ConfiguracionSistema.get_solo()
-    mensaje_accion = ''
 
-    if politica == 'autoaprobar_docentes':
-        config.autoaprobar_docentes_uabc = valor
-        config.save()
-        estado_txt = 'ACTIVADA' if valor else 'DESACTIVADA (Revisión manual obligatoria)'
-        mensaje_accion = f"Aprobación automática de docentes UABC: {estado_txt}"
-    elif politica == 'solicitudes_abiertas':
-        config.solicitudes_registro_abiertas = valor
-        config.save()
-        estado_txt = 'ABIERTAS' if valor else 'PAUSADAS TEMPORALMENTE'
-        mensaje_accion = f"Recepción de nuevas solicitudes de cuenta: {estado_txt}"
+    politica_map = {
+        'solicitudes_abiertas': ('solicitudes_registro_abiertas', 'Recepción de Nuevas Solicitudes'),
+        'autoaprobar_docentes': ('autoaprobar_docentes_uabc', 'Autoaprobación Docentes UABC'),
+        'autoaprobar_auxiliares': ('autoaprobar_auxiliares', 'Autoaprobación Auxiliares FCA'),
+        'autoaprobar_externos': ('autoaprobar_externos', 'Autoaprobación Colaboradores Externos'),
+        'autoaprobar_independientes': ('autoaprobar_independientes', 'Autoaprobación Investigadores Independientes'),
+        'autoaprobar_administrativos': ('autoaprobar_administrativos', 'Autoaprobación Personal Administrativo'),
+        'autoaprobar_soporte': ('autoaprobar_soporte', 'Autoaprobación Soporte Técnico'),
+    }
+
+    if politica not in politica_map:
+        return JsonResponse({'status': 'error', 'message': f'Política no reconocida: {politica}', 'mensaje': f'Política no reconocida: {politica}'}, status=400)
+
+    attr_name, display_name = politica_map[politica]
+    setattr(config, attr_name, valor)
+    config.save()
+
+    if politica == 'solicitudes_abiertas':
+        estado_txt = 'ABIERTAS AL PÚBLICO' if valor else 'PAUSADAS TEMPORALMENTE'
     else:
-        return JsonResponse({'error': 'Política no reconocida'}, status=400)
+        estado_txt = 'ACTIVADA (Automática)' if valor else 'DESACTIVADA (Revisión Manual Obligatoria)'
+
+    mensaje_accion = f"{display_name}: {estado_txt}"
 
     try:
-        RegistroAuditoria.objects.create(
-            usuario=request.user,
-            modulo='CONFIGURACION',
-            accion='CAMBIO_POLITICA_ACCESO',
-            descripcion=f"{mensaje_accion} por {request.user.username}"
-        )
+        registrar_auditoria(request.user, "Cambio de Política de Acceso",
+                            f"{mensaje_accion} por el administrador {request.user.username}.")
     except Exception:
         pass
 
@@ -4360,9 +4449,18 @@ def toggle_politica_acceso_view(request):
         'status': 'ok',
         'politica': politica,
         'valor': valor,
+        'nuevo_valor': valor,
         'mensaje': mensaje_accion,
-        'autoaprobar_docentes': config.autoaprobar_docentes_uabc,
-        'solicitudes_abiertas': config.solicitudes_registro_abiertas,
+        'message': mensaje_accion,
+        'config': {
+            'solicitudes_registro_abiertas': config.solicitudes_registro_abiertas,
+            'autoaprobar_docentes_uabc': config.autoaprobar_docentes_uabc,
+            'autoaprobar_auxiliares': config.autoaprobar_auxiliares,
+            'autoaprobar_externos': config.autoaprobar_externos,
+            'autoaprobar_independientes': config.autoaprobar_independientes,
+            'autoaprobar_administrativos': config.autoaprobar_administrativos,
+            'autoaprobar_soporte': config.autoaprobar_soporte,
+        }
     })
 
 
@@ -4371,10 +4469,25 @@ def obtener_metricas_semestre_api(request):
     """
     Devuelve las métricas en JSON para prellenar dinámicamente el modal de registro de auditoría semestral.
     """
-    anio = request.GET.get('anio')
-    semestre = request.GET.get('semestre')
+    anio_param = request.GET.get('anio')
+    semestre_param = request.GET.get('semestre')
+
+    try:
+        anio = int(anio_param) if anio_param else timezone.localdate().year
+    except (ValueError, TypeError):
+        anio = timezone.localdate().year
+
+    semestre = str(semestre_param) if semestre_param in ['1', '2'] else ('1' if timezone.localdate().month <= 6 else '2')
+    periodo = f"{anio}-{semestre}"
+
     metricas = calcular_metricas_semestre(anio, semestre)
-    return JsonResponse({'status': 'ok', 'metricas': metricas})
+    return JsonResponse({
+        'status': 'ok',
+        'anio': anio,
+        'semestre': semestre,
+        'periodo': periodo,
+        'metricas': metricas
+    })
 
 
 @user_passes_test(es_superusuario, login_url='/login/')

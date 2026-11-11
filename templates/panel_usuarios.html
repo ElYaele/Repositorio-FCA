@@ -2209,41 +2209,179 @@
 
             <!-- PESTAÑA 3: SOLICITUDES PENDIENTES (FILTRADO Y CONTADORES COMPLETOS) -->
             <div class="tab-pane fade" id="pendientes" role="tabpanel">
-                <!-- CONTROL MAESTRO DE POLÍTICAS DE ACCESO Y SOLICITUDES -->
-                <div class="card border-0 shadow-sm rounded-4 mb-3" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #006633 !important;">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <!-- CONTROL MAESTRO DE POLÍTICAS DE ACCESO Y SOLICITUDES (MATRIZ DE 6 TIPOS DE CUENTA) -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #006633 !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
                             <div>
-                                <h6 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                                    <i class="fas fa-shield-alt text-success"></i> Políticas de Registro y Aprobación de Cuentas
-                                </h6>
-                                <small class="text-muted">Controla si los nuevos docentes UABC requieren visto bueno administrativo obligatorio y si el formulario de registro está abierto al público.</small>
+                                <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                    <i class="fas fa-sliders-h text-success"></i> Matriz de Políticas de Registro y Aprobación de Cuentas
+                                </h5>
+                                <small class="text-muted">Configura el modo de admisión para cada uno de los 6 tipos de perfiles institucionales: autoaprobación inmediata al verificar correo OTP o revisión manual obligatoria por administradores.</small>
                             </div>
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <!-- Toggle 1: Aprobación Automática Docentes UABC -->
-                                <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-xs border">
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
-                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarDocentes" {% if config_sistema.autoaprobar_docentes_uabc %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_docentes', this.checked)">
-                                        <label class="form-check-label fw-bold small text-dark mb-0" for="switchAutoaprobarDocentes" style="cursor: pointer;">
-                                            Autoaprobar Docentes UABC
-                                        </label>
-                                    </div>
-                                    <span class="badge ms-2 {% if config_sistema.autoaprobar_docentes_uabc %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarDocentes">
-                                        {% if config_sistema.autoaprobar_docentes_uabc %}Activa{% else %}Inactiva (Revisión Manual){% endif %}
-                                    </span>
+                            <!-- Switch Maestro: Apertura de Nuevas Solicitudes -->
+                            <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-xs border">
+                                <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="checkbox" id="switchSolicitudesAbiertas" {% if config_sistema.solicitudes_registro_abiertas %}checked{% endif %} onchange="togglePoliticaAcceso('solicitudes_abiertas', this.checked)">
+                                    <label class="form-check-label fw-bold small text-dark mb-0" for="switchSolicitudesAbiertas" style="cursor: pointer;">
+                                        <i class="fas fa-door-open me-1 text-primary"></i>Recepción de Solicitudes
+                                    </label>
                                 </div>
+                                <span class="badge ms-2 {% if config_sistema.solicitudes_registro_abiertas %}bg-primary{% else %}bg-danger{% endif %}" id="badgeSolicitudesAbiertas">
+                                    {% if config_sistema.solicitudes_registro_abiertas %}Abierto al Público{% else %}Pausado Temporalmente{% endif %}
+                                </span>
+                            </div>
+                        </div>
 
-                                <!-- Toggle 2: Apertura de Nuevas Solicitudes -->
-                                <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-xs border">
-                                    <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
-                                        <input class="form-check-input" type="checkbox" id="switchSolicitudesAbiertas" {% if config_sistema.solicitudes_registro_abiertas %}checked{% endif %} onchange="togglePoliticaAcceso('solicitudes_abiertas', this.checked)">
-                                        <label class="form-check-label fw-bold small text-dark mb-0" for="switchSolicitudesAbiertas" style="cursor: pointer;">
-                                            Recepción de Solicitudes
-                                        </label>
+                        <!-- GRID CON LOS 6 TIPOS DE CUENTA -->
+                        <div class="row g-3">
+                            <!-- 1. Docentes UABC -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 fs-6">
+                                                <i class="fas fa-chalkboard-teacher"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Docentes UABC</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Correo @uabc.edu.mx</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_docentes_uabc %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarDocentes">
+                                            {% if config_sistema.autoaprobar_docentes_uabc %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
                                     </div>
-                                    <span class="badge ms-2 {% if config_sistema.solicitudes_registro_abiertas %}bg-primary{% else %}bg-danger{% endif %}" id="badgeSolicitudesAbiertas">
-                                        {% if config_sistema.solicitudes_registro_abiertas %}Abiertas{% else %}Pausadas{% endif %}
-                                    </span>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Profesores de tiempo completo y asignatura con correo oficial de la facultad.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarDocentes" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarDocentes" {% if config_sistema.autoaprobar_docentes_uabc %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_docentes', this.checked)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Auxiliares de Investigación FCA -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 fs-6">
+                                                <i class="fas fa-hands-helping"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Auxiliares FCA</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Estudiantes / Servicio Social</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_auxiliares %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarAuxiliares">
+                                            {% if config_sistema.autoaprobar_auxiliares %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Alumnos de prácticas o servicio social asignados a un profesor tutor.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarAuxiliares" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarAuxiliares" {% if config_sistema.autoaprobar_auxiliares %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_auxiliares', this.checked)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Colaboradores Externos -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-info bg-opacity-10 text-info p-2 fs-6">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Colaboradores Externos</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">UNAM, IPN, UDG, etc.</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_externos %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarExternos">
+                                            {% if config_sistema.autoaprobar_externos %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Investigadores y docentes adscritos a otras universidades nacionales o extranjeras.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarExternos" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarExternos" {% if config_sistema.autoaprobar_externos %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_externos', this.checked)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Investigadores Independientes -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle p-2 fs-6" style="background: rgba(111, 66, 193, 0.1); color: #6f42c1;">
+                                                <i class="fas fa-flask"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Investigadores Indep.</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Sin adscripción fija</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_independientes %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarIndependientes">
+                                            {% if config_sistema.autoaprobar_independientes %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Especialistas, consultores o investigadores libres que colaboran con la facultad.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarIndependientes" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarIndependientes" {% if config_sistema.autoaprobar_independientes %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_independientes', this.checked)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. Personal Administrativo FCA -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary p-2 fs-6">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Personal Administrativo</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Apoyo a la Investigación</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_administrativos %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarAdministrativos">
+                                            {% if config_sistema.autoaprobar_administrativos %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Personal de apoyo y coordinación académica de la facultad.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarAdministrativos" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarAdministrativos" {% if config_sistema.autoaprobar_administrativos %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_administrativos', this.checked)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 6. Personal de Soporte Técnico -->
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card p-3 border bg-white rounded-3 shadow-2xs h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-warning bg-opacity-10 text-dark p-2 fs-6">
+                                                <i class="fas fa-headset text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Soporte Técnico</h6>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Aspirantes y Asistentes</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge {% if config_sistema.autoaprobar_soporte %}bg-success{% else %}bg-secondary{% endif %}" id="badgeAutoaprobarSoporte">
+                                            {% if config_sistema.autoaprobar_soporte %}Autoaprobación Activa{% else %}Revisión Manual{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mb-3 d-block" style="font-size: 0.78rem;">Cuentas con atribuciones técnicas de soporte y atención a usuarios.</small>
+                                    <div class="form-check form-switch mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <label class="form-check-label small fw-semibold text-dark mb-0" for="switchAutoaprobarSoporte" style="cursor: pointer;">Autoaprobar al verificar OTP</label>
+                                        <input class="form-check-input" type="checkbox" id="switchAutoaprobarSoporte" {% if config_sistema.autoaprobar_soporte %}checked{% endif %} onchange="togglePoliticaAcceso('autoaprobar_soporte', this.checked)">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4111,6 +4249,266 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- FILA 3: ACCESO ABIERTO, PRESERVACIÓN E IDENTIFICADORES PERSISTENTES -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 5px solid #16a34a !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Acceso Abierto (PDF)</div>
+                                    <h3 class="fw-bold text-success mb-0">{{ metric_total_con_pdf }} <small class="fs-6 text-muted">({{ metric_porcentaje_pdf }}%)</small></h3>
+                                    <small class="text-success fw-semibold"><i class="fas fa-file-pdf me-1"></i>Texto completo preservado</small>
+                                </div>
+                                <div class="bg-success bg-opacity-20 text-success p-3 rounded-4 fs-3">
+                                    <i class="fas fa-unlock-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%); border-left: 5px solid #ca8a04 !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Indexación con DOI</div>
+                                    <h3 class="fw-bold text-warning text-dark mb-0">{{ metric_total_con_doi }} <small class="fs-6 text-muted">({{ metric_porcentaje_doi }}%)</small></h3>
+                                    <small class="text-dark fw-semibold"><i class="fas fa-fingerprint me-1"></i>Identificador persistente global</small>
+                                </div>
+                                <div class="bg-warning bg-opacity-20 text-dark p-3 rounded-4 fs-3">
+                                    <i class="fas fa-globe-americas"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 5px solid #0284c7 !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">ISBN / ISSN Editorial</div>
+                                    <h3 class="fw-bold text-primary mb-0">{{ metric_total_con_isbn }} <small class="fs-6 text-muted">({{ metric_porcentaje_isbn }}%)</small></h3>
+                                    <small class="text-primary fw-semibold"><i class="fas fa-barcode me-1"></i>Arbitradas con registro oficial</small>
+                                </div>
+                                <div class="bg-primary bg-opacity-20 text-primary p-3 rounded-4 fs-3">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100" style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border-left: 5px solid #9333ea !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Propiedad Intelectual</div>
+                                    <h3 class="fw-bold mb-0" style="color: #9333ea;">{{ metric_total_propiedad }}</h3>
+                                    <small class="fw-semibold" style="color: #9333ea;"><i class="fas fa-shield-alt me-1"></i>Software & Patentes INDAUTOR</small>
+                                </div>
+                                <div class="p-3 rounded-4 fs-3" style="background: rgba(147, 51, 234, 0.2); color: #9333ea;">
+                                    <i class="fas fa-laptop-code"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILA 4: DINÁMICA DE COAUTORÍA, REDES Y CLAUSTRO ACADÉMICO -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Producción en Equipo</div>
+                                    <h3 class="fw-bold text-info mb-0">{{ metric_obras_en_equipo }} <small class="fs-6 text-muted">({{ metric_porcentaje_equipo }}%)</small></h3>
+                                    <small class="text-muted"><i class="fas fa-users-cog me-1"></i>Obras con >1 autor</small>
+                                </div>
+                                <div class="bg-info bg-opacity-10 text-info p-3 rounded-4 fs-4">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-success">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Promedio Autores / Obra</div>
+                                    <h3 class="fw-bold text-success mb-0">{{ metric_promedio_autores }}</h3>
+                                    <small class="text-muted"><i class="fas fa-user-friends me-1"></i>Investigadores por publicación</small>
+                                </div>
+                                <div class="bg-success bg-opacity-10 text-success p-3 rounded-4 fs-4">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-primary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Firmas y Colaboraciones</div>
+                                    <h3 class="fw-bold text-primary mb-0">{{ metric_total_participaciones }}</h3>
+                                    <small class="text-muted"><i class="fas fa-signature me-1"></i>Vínculos autor-obra activos</small>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4 fs-4">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card p-3 border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small fw-bold text-uppercase">Foto Verificada Claustro</div>
+                                    <h3 class="fw-bold text-dark mb-0">{{ metric_docentes_con_foto }} <small class="fs-6 text-muted">/ {{ metric_total_docentes_cuenta }}</small></h3>
+                                    <small class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>{{ metric_porcentaje_foto }}% con fotografía</small>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-4 fs-4">
+                                    <i class="fas fa-portrait"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILA 5: MATRIZ COMPLETA DE TIPOLOGÍAS Y ÁREAS DE CONOCIMIENTO -->
+                <div class="row g-4 mb-4">
+                    <!-- Panel Izquierdo: Desglose Exhaustivo de Tipos de Contenido -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-layer-group text-warning me-2"></i>Desglose Integral por Tipología de Obra</h6>
+                                    <small class="text-muted">Distribución porcentual de las publicaciones activas en el acervo</small>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill px-3 py-1">{{ metricas_tipos_todos|length }} Tipologías</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light text-muted small">
+                                            <tr>
+                                                <th class="ps-4">Tipo de Contenido</th>
+                                                <th class="text-center" style="width: 80px;">Obras</th>
+                                                <th>Participación %</th>
+                                                <th class="text-end pe-4" style="width: 100px;">Con DOI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for tipo_item in metricas_tipos_todos %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <span class="fw-bold text-dark">{{ tipo_item.nombre }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fw-bold">
+                                                        {{ tipo_item.count }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ tipo_item.porcentaje }}%;" aria-valuenow="{{ tipo_item.porcentaje }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small class="text-muted fw-bold" style="width: 45px;">{{ tipo_item.porcentaje }}%</small>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    {% if tipo_item.con_doi > 0 %}
+                                                        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning px-2 py-1 small">
+                                                            <i class="fas fa-globe me-1"></i>{{ tipo_item.con_doi }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="text-muted small">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Derecho: Desglose Integral de Áreas de Conocimiento -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-cubes text-primary me-2"></i>Distribución Temática por Áreas de Conocimiento</h6>
+                                    <small class="text-muted">Alineación de publicaciones con los campos disciplinares de la FCA</small>
+                                </div>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1">{{ metricas_areas_todas|length }} Áreas Activas</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light text-muted small">
+                                            <tr>
+                                                <th class="ps-4">Área de Conocimiento</th>
+                                                <th class="text-center" style="width: 80px;">Obras</th>
+                                                <th class="pe-4">Participación %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for area_item in metricas_areas_todas %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <span class="fw-semibold text-dark text-truncate d-inline-block" style="max-width: 260px;" title="{{ area_item.nombre }}">{{ area_item.nombre }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 fw-bold">
+                                                        {{ area_item.count }}
+                                                    </span>
+                                                </td>
+                                                <td class="pe-4">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ area_item.porcentaje }}%;" aria-valuenow="{{ area_item.porcentaje }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small class="text-muted fw-bold" style="width: 45px;">{{ area_item.porcentaje }}%</small>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILA 6: EVOLUCIÓN HISTÓRICA POR SEMESTRES ACADÉMICOS -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-history text-success me-2"></i>Evolución y Ritmo de Producción por Semestre Académico</h6>
+                            <small class="text-muted">Desempeño y volumen de publicaciones arbitradas en los últimos ciclos escolares</small>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1">Ciclos 2025 - 2026</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            {% for sem_item in semestres_comparativa %}
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="p-3 rounded-4 border bg-light text-center h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-dark font-monospace px-2 py-1">{{ sem_item.periodo }}</span>
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill small">{{ sem_item.tasa }}% efectividad</span>
+                                    </div>
+                                    <div class="fs-2 fw-bold text-success mb-1">{{ sem_item.aprobadas }}</div>
+                                    <div class="small text-muted mb-2">de {{ sem_item.registradas }} obras registradas</div>
+                                    <div class="pt-2 border-top d-flex justify-content-between align-items-center small text-muted">
+                                        <span><i class="fas fa-globe text-warning me-1"></i>Con DOI:</span>
+                                        <strong class="text-dark">{{ sem_item.doi }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ============================================================================== -->
@@ -4292,8 +4690,9 @@
     <!-- ============================================================================== -->
     <div class="modal fade" id="modalNuevaAuditoriaSemestral" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #006633 0%, #004d26 100%); border-bottom: 3px solid #dd971a;">
+            <form method="POST" action="{% url 'registrar_auditoria_semestral' %}" id="formNuevaAuditoriaSemestral" class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                {% csrf_token %}
+                <div class="modal-header text-white py-3 px-4 flex-shrink-0" style="background: linear-gradient(135deg, #006633 0%, #004d26 100%); border-bottom: 3px solid #dd971a;">
                     <div class="d-flex align-items-center gap-2">
                         <div class="bg-white bg-opacity-20 p-2 rounded-circle">
                             <i class="fas fa-file-signature fa-lg text-warning"></i>
@@ -4305,127 +4704,124 @@
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <form method="POST" action="{% url 'registrar_auditoria_semestral' %}" id="formNuevaAuditoriaSemestral">
-                    {% csrf_token %}
-                    <div class="modal-body p-4">
-                        <!-- SECCIÓN 1: PERIODO Y RESPONSABLE -->
-                        <div class="bg-light p-3 rounded-4 mb-3 border">
-                            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                                <i class="fas fa-calendar-alt text-success"></i> Periodo Académico y Datos del Evaluador
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-sm-4">
-                                    <label class="form-label small fw-bold text-muted mb-1">Año Académico</label>
-                                    <input type="number" class="form-control rounded-3" name="anio" id="auditoriaAnio" value="2026" min="2020" max="2035" required onchange="cargarMetricasSemestreModal()">
-                                </div>
-                                <div class="col-sm-4">
-                                    <label class="form-label small fw-bold text-muted mb-1">Semestre</label>
-                                    <select class="form-select rounded-3" name="semestre" id="auditoriaSemestre" required onchange="cargarMetricasSemestreModal()">
-                                        <option value="1">1 (Enero - Junio)</option>
-                                        <option value="2" selected>2 (Julio - Diciembre)</option>
-                                    </select>
-                                </div>
-                                <div class="col-sm-4 d-flex align-items-end">
-                                    <button type="button" class="btn btn-outline-success w-100 rounded-3 fw-bold" id="btnCargarMetricasModal" onclick="cargarMetricasSemestreModal()">
-                                        <i class="fas fa-bolt me-1"></i> Actualizar Métricas
-                                    </button>
-                                </div>
-                                <div class="col-sm-6">
-                                    <label class="form-label small fw-bold text-muted mb-1">Profesor / Responsable Evaluador</label>
-                                    <input type="text" class="form-control rounded-3" name="nombre_responsable" value="{{ request.user.autor.nombre|default:request.user.get_full_name|default:request.user.username }}" required>
-                                </div>
-                                <div class="col-sm-6">
-                                    <label class="form-label small fw-bold text-muted mb-1">Cargo Académico / Institucional</label>
-                                    <input type="text" class="form-control rounded-3" name="cargo_responsable" value="Profesor Responsable del Repositorio Institucional FCA" required>
-                                </div>
+                <div class="modal-body p-4" style="max-height: calc(85vh - 140px); overflow-y: auto;">
+                    <!-- SECCIÓN 1: PERIODO Y RESPONSABLE -->
+                    <div class="bg-light p-3 rounded-4 mb-3 border">
+                        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                            <i class="fas fa-calendar-alt text-success"></i> Periodo Académico y Datos del Evaluador
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold text-muted mb-1">Año Académico</label>
+                                <input type="number" class="form-control rounded-3" name="anio" id="auditoriaAnio" value="2026" min="2020" max="2035" required onchange="cargarMetricasSemestreModal()">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold text-muted mb-1">Semestre</label>
+                                <select class="form-select rounded-3" name="semestre" id="auditoriaSemestre" required onchange="cargarMetricasSemestreModal()">
+                                    <option value="1">1 (Enero - Junio)</option>
+                                    <option value="2" selected>2 (Julio - Diciembre)</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-success w-100 rounded-3 fw-bold" id="btnCargarMetricasModal" onclick="cargarMetricasSemestreModal()">
+                                    <i class="fas fa-bolt me-1"></i> Actualizar Métricas
+                                </button>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-muted mb-1">Profesor / Responsable Evaluador</label>
+                                <input type="text" class="form-control rounded-3" name="nombre_responsable" value="{{ request.user.autor.nombre|default:request.user.get_full_name|default:request.user.username }}" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-muted mb-1">Cargo Académico / Institucional</label>
+                                <input type="text" class="form-control rounded-3" name="cargo_responsable" value="Profesor Responsable del Repositorio Institucional FCA" required>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- SECCIÓN 2: MÉTRICAS EN VIVO DEL PERIODO SELECCIONADO -->
-                        <div class="card border border-success border-opacity-25 rounded-4 mb-3" style="background: #f0fdf4;">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="small fw-bold text-success text-uppercase">
-                                        <i class="fas fa-calculator me-1"></i>Métricas Calculadas para el Periodo <span id="metricPreviewPeriodo">2026-2</span>
-                                    </span>
-                                    <span class="badge bg-success text-white rounded-pill px-2 py-1 small">En Vivo</span>
+                    <!-- SECCIÓN 2: MÉTRICAS EN VIVO DEL PERIODO SELECCIONADO -->
+                    <div class="card border border-success border-opacity-25 rounded-4 mb-3" style="background: #f0fdf4;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-bold text-success text-uppercase">
+                                    <i class="fas fa-calculator me-1"></i>Métricas Calculadas para el Periodo <span id="metricPreviewPeriodo">2026-2</span>
+                                </span>
+                                <span class="badge bg-success text-white rounded-pill px-2 py-1 small">En Vivo</span>
+                            </div>
+                            <div class="row g-2 text-center">
+                                <div class="col">
+                                    <div class="bg-white p-2 rounded-3 border">
+                                        <div class="small text-muted">Aprobadas</div>
+                                        <strong class="text-success fs-5" id="metricPreviewAprobadas">{{ metricas_semestre_actual.obras_aprobadas }}</strong>
+                                    </div>
                                 </div>
-                                <div class="row g-2 text-center">
-                                    <div class="col">
-                                        <div class="bg-white p-2 rounded-3 border">
-                                            <div class="small text-muted">Aprobadas</div>
-                                            <strong class="text-success fs-5" id="metricPreviewAprobadas">{{ metricas_semestre_actual.obras_aprobadas }}</strong>
-                                        </div>
+                                <div class="col">
+                                    <div class="bg-white p-2 rounded-3 border">
+                                        <div class="small text-muted">Registradas</div>
+                                        <strong class="text-dark fs-5" id="metricPreviewRegistradas">{{ metricas_semestre_actual.obras_registradas }}</strong>
                                     </div>
-                                    <div class="col">
-                                        <div class="bg-white p-2 rounded-3 border">
-                                            <div class="small text-muted">Registradas</div>
-                                            <strong class="text-dark fs-5" id="metricPreviewRegistradas">{{ metricas_semestre_actual.obras_registradas }}</strong>
-                                        </div>
+                                </div>
+                                <div class="col">
+                                    <div class="bg-white p-2 rounded-3 border">
+                                        <div class="small text-muted">Tasa Éxito</div>
+                                        <strong class="text-primary fs-5" id="metricPreviewTasa">{{ metricas_semestre_actual.tasa_aprobacion }}%</strong>
                                     </div>
-                                    <div class="col">
-                                        <div class="bg-white p-2 rounded-3 border">
-                                            <div class="small text-muted">Tasa Éxito</div>
-                                            <strong class="text-primary fs-5" id="metricPreviewTasa">{{ metricas_semestre_actual.tasa_aprobacion }}%</strong>
-                                        </div>
+                                </div>
+                                <div class="col">
+                                    <div class="bg-white p-2 rounded-3 border">
+                                        <div class="small text-muted">Nuevos Autores</div>
+                                        <strong class="text-info fs-5" id="metricPreviewAutores">+{{ metricas_semestre_actual.nuevos_autores }}</strong>
                                     </div>
-                                    <div class="col">
-                                        <div class="bg-white p-2 rounded-3 border">
-                                            <div class="small text-muted">Nuevos Autores</div>
-                                            <strong class="text-info fs-5" id="metricPreviewAutores">+{{ metricas_semestre_actual.nuevos_autores }}</strong>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="bg-white p-2 rounded-3 border">
-                                            <div class="small text-muted">Con DOI</div>
-                                            <strong class="text-purple fs-5" id="metricPreviewDoi" style="color: #6f42c1;">{{ metricas_semestre_actual.obras_con_doi }}</strong>
-                                        </div>
+                                </div>
+                                <div class="col">
+                                    <div class="bg-white p-2 rounded-3 border">
+                                        <div class="small text-muted">Con DOI</div>
+                                        <strong class="text-purple fs-5" id="metricPreviewDoi" style="color: #6f42c1;">{{ metricas_semestre_actual.obras_con_doi }}</strong>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- SECCIÓN 3: DICTAMEN DE AVAL -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark mb-1">
-                                <i class="fas fa-stamp text-warning me-1"></i> Sentido del Dictamen / Aval Institucional
-                            </label>
-                            <select class="form-select rounded-3 fw-bold" name="resultado_aval" required>
-                                <option value="FAVORABLE" selected>Aval Favorable Pleno (Cumplimiento de estándares de calidad y preservación)</option>
-                                <option value="CONDICIONADO">Aval Condicionado a Solventación de Observaciones</option>
-                                <option value="NO_FAVORABLE">No Favorable (Incumplimiento o suspensión de aval)</option>
-                            </select>
-                        </div>
-
-                        <!-- SECCIÓN 4: INFORMES CUALITATIVOS -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark mb-1">1. Resumen Ejecutivo del Periodo</label>
-                            <textarea class="form-control rounded-3" name="resumen_ejecutivo" rows="3" required placeholder="Describe brevemente el volumen de producción, participación de los cuerpos académicos y desempeño editorial del periodo..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark mb-1">2. Mejoras Técnicas, Arquitectónicas y de Seguridad Implementadas</label>
-                            <textarea class="form-control rounded-3" name="mejoras_tecnicas" rows="3" required placeholder="Detalla los avances técnicos implementados (e.g. optimización de flujo editorial, deduplicación de autores, sellos criptográficos SHA-256, políticas de moderación)..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark mb-1">3. Metas y Compromisos para el Siguiente Periodo</label>
-                            <textarea class="form-control rounded-3" name="metas_siguiente_periodo" rows="2" required placeholder="Acciones comprometidas para el próximo semestre institucional..."></textarea>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold text-dark mb-1">4. Conclusiones Oficiales y Certificación de Aval</label>
-                            <textarea class="form-control rounded-3" name="conclusiones_dictamen" rows="2" required placeholder="Texto formal del dictamen que certifica que el repositorio cumple con los lineamientos de acreditación institucional..."></textarea>
-                        </div>
                     </div>
-                    <div class="modal-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow">
-                            <i class="fas fa-file-signature me-1"></i>Emitir y Firmar Dictamen Oficial
-                        </button>
+
+                    <!-- SECCIÓN 3: DICTAMEN DE AVAL -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">
+                            <i class="fas fa-stamp text-warning me-1"></i> Sentido del Dictamen / Aval Institucional
+                        </label>
+                        <select class="form-select rounded-3 fw-bold" name="resultado_aval" required>
+                            <option value="FAVORABLE" selected>Aval Favorable Pleno (Cumplimiento de estándares de calidad y preservación)</option>
+                            <option value="CONDICIONADO">Aval Condicionado a Solventación de Observaciones</option>
+                            <option value="NO_FAVORABLE">No Favorable (Incumplimiento o suspensión de aval)</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+
+                    <!-- SECCIÓN 4: INFORMES CUALITATIVOS -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">1. Resumen Ejecutivo del Periodo</label>
+                        <textarea class="form-control rounded-3" name="resumen_ejecutivo" rows="3" required placeholder="Describe brevemente el volumen de producción, participación de los cuerpos académicos y desempeño editorial del periodo..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">2. Mejoras Técnicas, Arquitectónicas y de Seguridad Implementadas</label>
+                        <textarea class="form-control rounded-3" name="mejoras_tecnicas" rows="3" required placeholder="Detalla los avances técnicos implementados (e.g. optimización de flujo editorial, deduplicación de autores, sellos criptográficos SHA-256, políticas de moderación)..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">3. Metas y Compromisos para el Siguiente Periodo</label>
+                        <textarea class="form-control rounded-3" name="metas_siguiente_periodo" rows="2" required placeholder="Acciones comprometidas para el próximo semestre institucional..."></textarea>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-dark mb-1">4. Conclusiones Oficiales y Certificación de Aval</label>
+                        <textarea class="form-control rounded-3" name="conclusiones_dictamen" rows="2" required placeholder="Texto formal del dictamen que certifica que el repositorio cumple con los lineamientos de acreditación institucional..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center flex-shrink-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow">
+                        <i class="fas fa-file-signature me-1"></i>Emitir y Firmar Dictamen Oficial
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -4436,7 +4832,7 @@
     <div class="modal fade" id="modalVerAuditoria{{ aud.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
+                <div class="modal-header text-white py-3 px-4 flex-shrink-0" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <span class="badge bg-warning text-dark font-monospace fw-bold">{{ aud.folio }}</span>
@@ -4446,7 +4842,7 @@
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-4" style="max-height: calc(85vh - 140px); overflow-y: auto;">
                     <!-- RESPONSABLE Y DICTAMEN -->
                     <div class="d-flex justify-content-between align-items-center p-3 rounded-4 mb-3 border bg-light flex-wrap gap-2">
                         <div>
@@ -6334,514 +6730,7 @@
                                 </div>
                             </div>
 
-                            <!-- PANE 2: BITÁCORA INDIVIDUAL DE ACTIVIDAD Y AUDITORÍA (IDEA 11) -->
-                            <div class="tab-pane fade" id="pane-perfil-bitacora" role="tabpanel">
-                                <div id="bitacoraLoadingSpinner" class="text-center py-4">
-                                    <div class="spinner-border text-success" role="status"></div>
-                                    <p class="text-muted small mt-2 mb-0">Cargando registros de auditoría y obras...</p>
-                                </div>
-
-                                <div id="bitacoraContenidoUsuario" style="display: none;">
-                                    <!-- RESUMEN DE TRAZABILIDAD -->
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-6 col-md-3">
-                                            <div class="p-2 rounded-3 bg-light border text-center h-100">
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="fas fa-calendar-plus me-1 text-primary"></i>Alta en Sistema</small>
-                                                <strong class="text-dark small" id="bitacoraFechaRegistro">--</strong>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="p-2 rounded-3 bg-light border text-center h-100">
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="fas fa-sign-in-alt me-1 text-info"></i>Último Acceso</small>
-                                                <strong class="text-dark small" id="bitacoraUltimoLogin">--</strong>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="p-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 text-center h-100">
-                                                <small class="text-success d-block" style="font-size: 0.72rem;"><i class="fas fa-history me-1"></i>Acciones Registradas</small>
-                                                <strong class="text-success small fs-6" id="bitacoraTotalReg">0</strong>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 text-center h-100">
-                                                <small class="text-primary d-block" style="font-size: 0.72rem;"><i class="fas fa-book me-1"></i>Obras Subidas</small>
-                                                <strong class="text-primary small fs-6" id="bitacoraTotalObras">0</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- ACCIONES Y EVENTOS AUDITADOS -->
-                                    <div class="mb-3">
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <h6 class="fw-bold text-dark mb-0 small">
-                                                <i class="fas fa-shield-alt text-success me-1"></i>Historial de Acciones y Seguridad:
-                                            </h6>
-                                            <span class="badge bg-light text-secondary border small">Últimos 40 eventos</span>
-                                        </div>
-                                        <div class="list-group list-group-flush border rounded-3 shadow-2xs overflow-auto" id="listaBitacoraRegistros" style="max-height: 200px;">
-                                            <!-- Poblado vía AJAX -->
-                                        </div>
-                                    </div>
-
-                                    <!-- PUBLICACIONES Y OBRAS ACADÉMICAS -->
-                                    <div>
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <h6 class="fw-bold text-dark mb-0 small">
-                                                <i class="fas fa-book-open text-primary me-1"></i>Publicaciones Registradas por este Usuario:
-                                            </h6>
-                                            <span class="badge bg-light text-secondary border small">Catálogo reciente</span>
-                                        </div>
-                                        <div class="list-group list-group-flush border rounded-3 shadow-2xs overflow-auto" id="listaBitacoraObras" style="max-height: 180px;">
-                                            <!-- Poblado vía AJAX -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer bg-light border-0 py-3 px-4 justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cerrar</button>
-                        <div>
-                            {% if user.is_superuser %}
-                            <button type="button" id="btnActivarEdicionFicha" class="btn btn-outline-primary btn-sm rounded-pill px-3 me-1" onclick="toggleModoEdicionFicha(true)">
-                                <i class="fas fa-edit me-1"></i>Modificar Datos
-                            </button>
-                            {% endif %}
-                            <button type="submit" id="btnGuardarFichaAdmin" class="btn btn-success btn-sm rounded-pill px-3" style="display: none;">
-                                <i class="fas fa-save me-1"></i>Guardar Cambios
-                            </button>
-                            <button type="button" id="btnCancelarEdicionFicha" class="btn btn-outline-secondary btn-sm rounded-pill px-3" style="display: none;" onclick="toggleModoEdicionFicha(false)">
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALES DE GESTIÓN DE SOPORTE TÉCNICO -->
-    <!-- 1. MODAL APROBAR CUENTA DE SOPORTE -->
-    <div class="modal fade" id="modalAprobarCuentaSoporte" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formAprobarCuentaSoporte" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header py-3 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fas fa-headset me-2 text-warning"></i>Autorizar Cuenta de Soporte Técnico
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-warning">
-                            <i class="fas fa-user-shield fa-3x"></i>
-                        </div>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded-3 border mb-3" id="soporteModalUsername">Usuario</h6>
-
-                        {% if es_principal %}
-                            <!-- VISTA PARA ADMINISTRADOR INICIAL (DIRECTO SIN CONTRASEÑA) -->
-                            <div class="alert alert-success border-0 bg-success bg-opacity-10 text-dark small text-start mb-3">
-                                <i class="fas fa-crown text-warning me-1"></i><strong>Facultad de Administrador Inicial:</strong>
-                                Tienes privilegios para autorizar y activar esta cuenta de soporte en <strong>Modo Lectura</strong> inmediatamente con un solo clic, sin requerir contraseña ni segundas firmas.
-                            </div>
-                        {% else %}
-                            <!-- VISTA PARA SOPORTE SECUNDARIO (REQUIERE CONTRASEÑA Y 2 FIRMAS) -->
-                            <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark small text-start mb-3" id="soporteModalFirmasInfo">
-                                <i class="fas fa-shield-alt text-warning me-1"></i><strong>Doble Autorización Institucional Requerida:</strong>
-                                Para validar esta cuenta de soporte en Modo Lectura se requiere la aprobación de <strong>2 personas</strong> con su contraseña institucional.
-                            </div>
-
-                            <div class="form-group mb-2 text-start">
-                                <label class="form-label fw-bold text-dark small">
-                                    <i class="fas fa-key me-1 text-warning"></i>Tu Contraseña Actual (Confirmación Obligatoria):
-                                </label>
-                                <input type="password" name="password_confirmacion" class="form-control" placeholder="Ingresa tu contraseña de acceso institucional..." required autocomplete="current-password">
-                                <small class="text-muted" style="font-size: 0.72rem;">Tu firma quedará registrada en la bitácora de auditoría institucional.</small>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-dark px-4 rounded-pill shadow-sm">
-                            <i class="fas fa-check me-1 text-warning"></i>Confirmar Autorización
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. MODAL RECHAZAR CUENTA DE SOPORTE -->
-    <div class="modal fade" id="modalRechazarCuentaSoporte" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formRechazarCuentaSoporte" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-danger text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-user-times me-2"></i>Rechazar Solicitud de Soporte</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-danger">
-                            <i class="fas fa-trash-alt fa-3x"></i>
-                        </div>
-                        <p class="text-muted mb-2">¿Estás seguro de rechazar y descartar la solicitud de cuenta de soporte de:</p>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="soporteRechazarModalUsername">Usuario</h6>
-
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña para Confirmar:</label>
-                            <input type="password" name="password_confirmacion" class="form-control form-control-sm" required autocomplete="current-password">
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Rechazar y Eliminar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. MODAL DESACTIVAR CUENTA DE SOPORTE ACTIVA -->
-    <div class="modal fade" id="modalDesactivarCuentaSoporte" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formDesactivarCuentaSoporte" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-warning py-3">
-                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta de Soporte</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-warning">
-                            <i class="fas fa-exclamation-triangle fa-3x"></i>
-                        </div>
-                        <p class="text-muted mb-2">La siguiente cuenta de soporte será colocada en estado <strong>Desactivado</strong> y requerirá un nuevo proceso de autorización para reactivarse:</p>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="soporteDesactivarModalUsername">Usuario</h6>
-
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-dark small">Tu Contraseña de Soporte:</label>
-                            <input type="password" name="password_confirmacion" class="form-control form-control-sm" required autocomplete="current-password">
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning px-4 rounded-pill shadow-sm fw-bold">Sí, Desactivar Cuenta</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL APROBAR USUARIO (SOLICITUDES PENDIENTES) -->
-    <div class="modal fade" id="modalConfirmarAprobarUsuario" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formAprobarUsuario" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-success text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i>Aprobar Solicitud de Usuario</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-success">
-                            <i class="fas fa-user-check fa-3x"></i>
-                        </div>
-                        <p class="text-muted mb-2">¿Estás seguro de autorizar y activar la cuenta de:</p>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="aprobarUserModal">Usuario</h6>
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
-                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm">Sí, Aprobar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL SUSPENDER USUARIO AVANZADO (MOTIVO Y TIEMPO) -->
-    <div class="modal fade" id="modalSuspenderUsuarioAvanzado" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formSuspenderUsuarioAvanzado" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-warning py-3">
-                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-slash me-2"></i>Suspender Cuenta de Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="alert alert-warning py-2 px-3 small border-0 shadow-sm mb-3">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Al suspender la cuenta, el usuario no podrá iniciar sesión durante el tiempo establecido. Sus publicaciones seguirán intactas.
-                        </div>
-
-                        <p class="mb-2">Usuario a suspender: <strong id="suspenderTargetUser" class="text-danger fs-6"></strong></p>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Duración de la Suspensión *</label>
-                            <select name="duracion" id="selectDuracionSuspension" class="form-select form-select-sm" required>
-                                <option value="2h">2 Horas</option>
-                                <option value="5h">5 Horas</option>
-                                <option value="24h" selected>24 Horas (1 Día)</option>
-                                <option value="3d">3 Días</option>
-                                <option value="7d">7 Días (1 Semana)</option>
-                                <option value="30d">30 Días (1 Mes)</option>
-                                <option value="indefinida">Tiempo Indefinido (Hasta reactivación manual)</option>
-                            </select>
-                            <small class="text-muted" style="font-size: 0.72rem;">Si se elige un tiempo definido, el sistema reactivará la cuenta automáticamente al expirar el plazo.</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Motivo de la Suspensión * <span class="text-danger">(Obligatorio)</span></label>
-                            <textarea name="motivo_suspension" class="form-control form-control-sm" rows="3" placeholder="Ej. Solicitud de revisión de credenciales, conducta inapropiada en publicaciones, etc..." required></textarea>
-                            <small class="text-muted" style="font-size: 0.72rem;">Este motivo quedará visible para todos los administradores en el panel de auditoría.</small>
-                        </div>
-
-                        {% if not es_principal %}
-                        <div class="mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador para confirmar:</label>
-                            <input type="password" name="admin_password" class="form-control form-control-sm" placeholder="Contraseña de superusuario" required>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold shadow-sm">
-                            <i class="fas fa-user-slash me-1"></i>Aplicar Suspensión
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL REACTIVAR CUENTA -->
-    <div class="modal fade" id="modalConfirmarReactivar" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formReactivarUsuario" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-success text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-user-check me-2"></i>Reactivar Cuenta de Usuario</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-success">
-                            <i class="fas fa-unlock-alt fa-3x"></i>
-                        </div>
-                        <p class="text-muted mb-2">¿Deseas restaurar inmediatamente el acceso al portal de:</p>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="reactivarTargetUser"></h6>
-                        <div id="reactivarSolicitudAlerta" class="alert alert-warning py-2 small mb-3 text-start rounded-3 border-warning" style="display: none;"></div>
-                        <small class="text-muted d-block mb-3">La suspensión se dará por concluida y el usuario podrá iniciar sesión con normalidad.</small>
-
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador para confirmar:</label>
-                            <input type="password" name="admin_password" class="form-control form-control-sm" placeholder="Contraseña de superusuario" required>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4 rounded-pill fw-bold shadow-sm">
-                            <i class="fas fa-check me-1"></i>Sí, Reactivar Cuenta
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CAMBIAR ROL -->
-    <div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formCambiarRol" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-primary text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-user-cog me-2"></i>Modificar Rol de Usuario</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <p class="mb-2">Usuario: <strong id="cambiarRolTargetUser"></strong></p>
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold small">Nuevo Rol *</label>
-                            <select name="nuevo_rol" id="selectNuevoRol" class="form-select" required>
-                                <option value="docente">Docente UABC</option>
-                                <option value="administrativo">Administrativo</option>
-                                <option value="externo">Colaborador Externo</option>
-                                <option value="independiente">Investigador</option>
-                                <option value="auxiliar">Auxiliar de Investigación FCA</option>
-                                <option value="operador">Operador Técnico / Depurador de Contenidos</option>
-                                <option value="soporte">Soporte Técnico (Modo Lector)</option>
-                                <option value="superuser">Superusuario</option>
-                            </select>
-                        </div>
-                        {% if not es_principal %}
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
-                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm">Guardar Rol</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL TOGGLE SUPERUSUARIO (ASCENDER / REVOCAR) -->
-    <div class="modal fade" id="modalToggleSuperuser" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formToggleSuperuser" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-dark text-white py-3" id="toggleSuperHeader">
-                        <h5 class="modal-title fw-bold" id="toggleSuperTitle"><i class="fas fa-shield-alt me-2 text-warning"></i>Gestionar Privilegios de Superusuario</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="rounded-circle d-inline-flex p-3 bg-light border shadow-sm mb-3">
-                            <i class="fas fa-shield-alt fa-3x text-warning" id="toggleSuperIcon"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2 text-dark" id="toggleSuperActionText">¿Deseas modificar los privilegios?</h5>
-                        <div class="p-2 bg-light rounded border mb-3">
-                            <span class="text-muted small">Usuario seleccionado:</span>
-                            <h6 class="fw-bold text-dark mb-0" id="toggleSuperUsername"></h6>
-                        </div>
-
-                        <div class="alert alert-warning border-0 small text-start mb-3" id="toggleSuperWarning">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            <strong>Atención:</strong> Un Superusuario tiene control global del sistema, gestión de cuentas, moderación de obras y acceso a la configuración del repositorio institucional.
-                        </div>
-
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">
-                                <i class="fas fa-lock me-1"></i>Tu Contraseña de Administrador (Requerida):
-                            </label>
-                            <input type="password" name="admin_password" id="toggleSuperAdminPass" class="form-control" required placeholder="Ingresa tu contraseña para autorizar">
-                            <small class="text-muted" style="font-size: 0.75rem;">Como superadministrador secundario, es obligatorio validar tu contraseña para realizar esta acción.</small>
-                        </div>
-                        {% else %}
-                        <div class="p-2 bg-light rounded text-center small text-muted mb-2 border">
-                            <i class="fas fa-check-circle text-success me-1"></i>Autorización directa de Superadministrador Principal.
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm" id="toggleSuperSubmitBtn">Confirmar Cambio</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIRMAR CAMBIO DE LICENCIA DE CONFIANZA -->
-    <div class="modal fade" id="modalConfirmarConfianza" tabindex="-1" aria-labelledby="modalConfirmarConfianzaLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header border-bottom py-3" id="confianzaModalHeaderBg">
-                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalConfirmarConfianzaLabel">
-                        <i id="confianzaModalIcon" class="fas fa-shield-alt fa-lg text-success"></i>
-                        <span id="confianzaModalTitulo" class="text-dark">Confirmar Cambio de Licencia</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="d-flex align-items-start gap-3 mb-3">
-                        <div id="confianzaModalIconBox" class="p-3 rounded-circle shadow-xs flex-shrink-0" style="background-color: #dcfce7;">
-                            <i id="confianzaModalBigIcon" class="fas fa-shield-alt fa-2x text-success"></i>
-                        </div>
-                        <div>
-                            <p class="mb-1 text-muted small">Usuario seleccionado:</p>
-                            <h6 id="confianzaModalUsuario" class="fw-bold text-dark mb-2 fs-6">@usuario</h6>
-                            <p class="mb-0 text-secondary" id="confianzaModalSubtexto" style="font-size: 0.92rem; line-height: 1.45;">
-                                Se modificará el esquema de acreditación y bypass de moderación de este autor.
-                            </p>
-                        </div>
-                    </div>
-                    <div id="confianzaModalExplicacion" class="alert alert-light border small text-secondary mb-0 p-3 rounded-3" style="line-height: 1.5;">
-                        <!-- Texto dinámico inyectado por JS -->
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0 py-3 justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn rounded-pill px-4 fw-bold shadow-sm" id="btnEjecutarCambioConfianza">
-                        <i id="btnConfianzaIcon" class="fas fa-check me-1"></i>
-                        <span id="btnConfianzaText">Confirmar</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL ELIMINAR USUARIO ELEGANTE -->
-    <div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formEliminarUsuario" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-danger text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Eliminar Cuenta de Usuario</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3 text-danger">
-                            <i class="fas fa-trash-alt fa-3x"></i>
-                        </div>
-                        <p class="text-danger fw-bold mb-1">¡Atención! Acción irreversible.</p>
-                        <p class="text-muted mb-2">¿Deseas eliminar permanentemente al usuario:</p>
-                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="eliminarUserModal"></h6>
-                        {% if not es_principal %}
-                        <div class="form-group mb-2 text-start">
-                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
-                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Eliminar Cuenta</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL RESTABLECER CONTRASEÑA -->
-    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form id="formCambiarPassword" method="post" action="">
-                    {% csrf_token %}
-                    <div class="modal-header bg-success text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i>Restablecer Contraseña</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <p class="mb-2">Asignar nueva clave para: <strong id="usuarioPasswordModal" class="text-success"></strong></p>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Nueva Contraseña:</label>
-                            <div class="input-group">
-                                <input type="text" name="nueva_password" id="inputNuevaClave" class="form-control" placeholder="Clave generada" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="generarClaveSegura()"><i class="fas fa-magic"></i></button>
+                            <!-- PANE 2: BITÁCORA INDIVIDUAL DE ACTIVIDAD Y AUDIT
                             </div>
                         </div>
                         {% if not es_principal %}
@@ -7876,20 +7765,68 @@
                 });
             });
 
-            // GESTIÓN DE POLÍTICAS DE ACCESO Y SOLICITUDES
+            // GESTIÓN DE POLÍTICAS DE ACCESO Y SOLICITUDES (6 TIPOS DE CUENTA + MAESTRO)
             window.togglePoliticaAcceso = function(politica, valor) {
                 const badgeMap = {
                     'autoaprobar_docentes': {
-                        badge: document.getElementById('badgeAutoaprobarDocentes'),
-                        activeText: 'Activa',
-                        inactiveText: 'Inactiva (Revisión Manual)'
+                        badgeId: 'badgeAutoaprobarDocentes',
+                        switchId: 'switchAutoaprobarDocentes',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
+                    },
+                    'autoaprobar_auxiliares': {
+                        badgeId: 'badgeAutoaprobarAuxiliares',
+                        switchId: 'switchAutoaprobarAuxiliares',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
+                    },
+                    'autoaprobar_externos': {
+                        badgeId: 'badgeAutoaprobarExternos',
+                        switchId: 'switchAutoaprobarExternos',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
+                    },
+                    'autoaprobar_independientes': {
+                        badgeId: 'badgeAutoaprobarIndependientes',
+                        switchId: 'switchAutoaprobarIndependientes',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
+                    },
+                    'autoaprobar_administrativos': {
+                        badgeId: 'badgeAutoaprobarAdministrativos',
+                        switchId: 'switchAutoaprobarAdministrativos',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
+                    },
+                    'autoaprobar_soporte': {
+                        badgeId: 'badgeAutoaprobarSoporte',
+                        switchId: 'switchAutoaprobarSoporte',
+                        activeText: 'Autoaprobación Activa',
+                        inactiveText: 'Revisión Manual',
+                        activeClass: 'badge bg-success',
+                        inactiveClass: 'badge bg-secondary'
                     },
                     'solicitudes_abiertas': {
-                        badge: document.getElementById('badgeSolicitudesAbiertas'),
+                        badgeId: 'badgeSolicitudesAbiertas',
+                        switchId: 'switchSolicitudesAbiertas',
                         activeText: 'Abierto al Público',
-                        inactiveText: 'Pausado Temporalmente'
+                        inactiveText: 'Pausado Temporalmente',
+                        activeClass: 'badge ms-2 bg-primary',
+                        inactiveClass: 'badge ms-2 bg-danger'
                     }
                 };
+
+                const item = badgeMap[politica];
 
                 fetch('{% url "toggle_politica_acceso" %}', {
                     method: 'POST',
@@ -7905,27 +7842,35 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok') {
-                        mostrarToast(data.message, 'success');
-                        const cfg = badgeMap[politica];
-                        if (cfg && cfg.badge) {
-                            if (data.nuevo_valor) {
-                                cfg.badge.className = 'badge ms-2 bg-success';
-                                cfg.badge.textContent = cfg.activeText;
-                            } else {
-                                cfg.badge.className = 'badge ms-2 bg-secondary';
-                                cfg.badge.textContent = cfg.inactiveText;
+                        const notifText = data.message || data.mensaje || 'Política actualizada con éxito';
+                        mostrarToast(notifText, 'success');
+                        if (item) {
+                            const badgeEl = document.getElementById(item.badgeId);
+                            if (badgeEl) {
+                                if (data.nuevo_valor || data.valor) {
+                                    badgeEl.className = item.activeClass;
+                                    badgeEl.textContent = item.activeText;
+                                } else {
+                                    badgeEl.className = item.inactiveClass;
+                                    badgeEl.textContent = item.inactiveText;
+                                }
                             }
                         }
                     } else {
-                        mostrarToast(data.message || 'Error al actualizar política', 'error');
-                        const switchEl = (politica === 'autoaprobar_docentes') ? document.getElementById('switchAutoaprobarDocentes') : document.getElementById('switchSolicitudesAbiertas');
-                        if (switchEl) switchEl.checked = !valor;
+                        const errorMsg = data.message || data.mensaje || 'Error al actualizar política';
+                        mostrarToast(errorMsg, 'danger');
+                        if (item) {
+                            const switchEl = document.getElementById(item.switchId);
+                            if (switchEl) switchEl.checked = !valor;
+                        }
                     }
                 })
                 .catch(err => {
-                    mostrarToast('Error de conexión al guardar política', 'error');
-                    const switchEl = (politica === 'autoaprobar_docentes') ? document.getElementById('switchAutoaprobarDocentes') : document.getElementById('switchSolicitudesAbiertas');
-                    if (switchEl) switchEl.checked = !valor;
+                    mostrarToast('Error de conexión al guardar la política', 'danger');
+                    if (item) {
+                        const switchEl = document.getElementById(item.switchId);
+                        if (switchEl) switchEl.checked = !valor;
+                    }
                 });
             };
 
@@ -7959,15 +7904,15 @@
                         if (elTasa) elTasa.textContent = m.tasa_aprobacion + '%';
                         if (elAut) elAut.textContent = '+' + m.nuevos_autores;
                         if (elDoi) elDoi.textContent = m.obras_con_doi;
-                        if (elPeriodo) elPeriodo.textContent = `${data.anio}-${data.semestre}`;
+                        if (elPeriodo) elPeriodo.textContent = data.periodo || `${data.anio}-${data.semestre}`;
 
-                        mostrarToast(`Métricas actualizadas para ciclo ${data.periodo}`, 'info');
+                        mostrarToast(data.message || data.mensaje || `Métricas actualizadas para ciclo ${data.periodo}`, 'info');
                     } else {
-                        mostrarToast(data.message || 'Error al calcular métricas', 'error');
+                        mostrarToast(data.message || data.mensaje || 'Error al calcular métricas', 'danger');
                     }
                 })
                 .catch(err => {
-                    mostrarToast('Error de red al consultar métricas', 'error');
+                    mostrarToast('Error de red al consultar métricas', 'danger');
                 })
                 .finally(() => {
                     if (btn) {
