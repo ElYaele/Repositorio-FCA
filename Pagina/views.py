@@ -3395,6 +3395,8 @@ def restablecer_semblanza_admin_view(request, autor_id):
         autor.biografia_borrador = ''
         autor.biografia_extendida = ''
         autor.biografia_extendida_borrador = ''
+        autor.lineas_investigacion = ''
+        autor.lineas_investigacion_borrador = ''
         autor.foto_perfil = None
         autor.foto_perfil_borrador = None
         autor.reconocimiento_pdf = None
@@ -3428,6 +3430,7 @@ def editar_semblanza_admin_view(request, autor_id):
         # Obtenemos los campos de texto del formulario modal
         biografia = request.POST.get('biografia_borrador', '').strip()
         biografia_extendida = request.POST.get('biografia_extendida_borrador', '').strip()
+        lineas_investigacion = request.POST.get('lineas_investigacion', '').strip()
 
         if nombre:
             autor.nombre = nombre
@@ -3439,6 +3442,8 @@ def editar_semblanza_admin_view(request, autor_id):
         autor.biografia_borrador = biografia
         autor.biografia_extendida = biografia_extendida
         autor.biografia_extendida_borrador = biografia_extendida
+        autor.lineas_investigacion = lineas_investigacion
+        autor.lineas_investigacion_borrador = lineas_investigacion
 
         # Aprobamos la semblanza automáticamente al editar
         autor.estado_semblanza = 'aprobado'

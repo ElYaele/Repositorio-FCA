@@ -2048,6 +2048,11 @@
                                                                 <i class="fas fa-pen-nib me-1"></i>Borrador Pendiente
                                                             </span>
                                                         {% endif %}
+                                                        {% if aut.lineas_investigacion_borrador and aut.lineas_investigacion_borrador != aut.lineas_investigacion %}
+                                                            <span class="badge bg-warning bg-opacity-20 text-dark border border-warning" style="font-size: 0.68rem;" title="Líneas de investigación con cambios pendientes de revisión">
+                                                                <i class="fas fa-tags me-1"></i>Líneas por Revisar
+                                                            </span>
+                                                        {% endif %}
                                                         {% if aut.horario_pdf_borrador or aut.horario_pdf %}
                                                             <span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.68rem;" title="Horario Oficial cargado">
                                                                 <i class="fas fa-calendar-alt me-1"></i>Con Horario
@@ -2059,6 +2064,18 @@
                                                             </span>
                                                         {% endif %}
                                                     </div>
+                                                    {% if aut.lista_lineas_investigacion %}
+                                                        <div class="d-flex flex-wrap gap-1 mt-1 align-items-center">
+                                                            {% for tag in aut.lista_lineas_investigacion|slice:":4" %}
+                                                                <span class="badge rounded-pill bg-light text-secondary border shadow-2xs" style="font-size: 0.65rem; font-weight: 500;" title="Línea de investigación">
+                                                                    <i class="fas fa-hashtag text-success me-0.5" style="font-size: 0.55rem;"></i>{{ tag }}
+                                                                </span>
+                                                            {% endfor %}
+                                                            {% if aut.lista_lineas_investigacion|length > 4 %}
+                                                                <span class="badge rounded-pill bg-light text-muted border" style="font-size: 0.62rem;">+{{ aut.lista_lineas_investigacion|length|add:"-4" }} más</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </td>
@@ -2089,6 +2106,7 @@
                                                     data-fnac="{{ aut.fecha_nacimiento|date:'d/m/Y'|default:'No registrada' }}"
                                                     data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'Sin semblanza corta.' }}"
                                                     data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'Sin semblanza detallada registrada.' }}"
+                                                    data-lineas="{{ aut.lista_lineas_investigacion|join:', ' }}"
                                                     data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
                                                     data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
                                                     data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
@@ -2115,6 +2133,7 @@
                                                     data-fnac="{% if aut.fecha_nacimiento %}{{ aut.fecha_nacimiento|date:'Y-m-d' }}{% else %}{% endif %}"
                                                     data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'' }}"
                                                     data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'' }}"
+                                                    data-lineas="{{ aut.lista_lineas_investigacion|join:', ' }}"
                                                     data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
                                                     data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
                                                     data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
@@ -2232,6 +2251,9 @@
                                             {% if aut.biografia_borrador or aut.biografia_extendida_borrador %}
                                                 <span class="badge bg-warning bg-opacity-20 text-dark border border-warning" style="font-size: 0.65rem;"><i class="fas fa-pen-nib me-1"></i>Borrador Pendiente</span>
                                             {% endif %}
+                                            {% if aut.lineas_investigacion_borrador and aut.lineas_investigacion_borrador != aut.lineas_investigacion %}
+                                                <span class="badge bg-warning bg-opacity-20 text-dark border border-warning" style="font-size: 0.65rem;" title="Líneas de investigación con propuesta pendiente"><i class="fas fa-tags me-1"></i>Líneas por Revisar</span>
+                                            {% endif %}
                                             {% if aut.horario_pdf_borrador or aut.horario_pdf %}
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem;"><i class="fas fa-calendar-alt me-1"></i>Horario</span>
                                             {% endif %}
@@ -2239,6 +2261,20 @@
                                                 <span class="badge border" style="font-size: 0.65rem; color: #6f42c1 !important; background-color: #f3e8ff !important; border-color: #d8b4fe !important;"><i class="fas fa-award me-1"></i>Distinción</span>
                                             {% endif %}
                                         </div>
+
+                                        <!-- Líneas de Investigación y Áreas de Especialidad -->
+                                        {% if aut.lista_lineas_investigacion %}
+                                        <div class="d-flex flex-wrap gap-1 mb-2 align-items-center">
+                                            {% for tag in aut.lista_lineas_investigacion|slice:":3" %}
+                                                <span class="badge rounded-pill bg-light text-secondary border shadow-2xs" style="font-size: 0.65rem; font-weight: 500;" title="Línea de investigación">
+                                                    <i class="fas fa-hashtag text-success me-0.5" style="font-size: 0.55rem;"></i>{{ tag }}
+                                                </span>
+                                            {% endfor %}
+                                            {% if aut.lista_lineas_investigacion|length > 3 %}
+                                                <span class="badge rounded-pill bg-light text-muted border" style="font-size: 0.62rem;">+{{ aut.lista_lineas_investigacion|length|add:"-3" }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
 
                                         <!-- Extracto de Semblanza / Resumen Académico -->
                                         {% if aut.biografia_borrador or aut.biografia %}
@@ -2273,6 +2309,7 @@
                                                         data-fnac="{{ aut.fecha_nacimiento|date:'d/m/Y'|default:'No registrada' }}"
                                                         data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'Sin semblanza corta.' }}"
                                                         data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'Sin semblanza detallada registrada.' }}"
+                                                        data-lineas="{{ aut.lista_lineas_investigacion|join:', ' }}"
                                                         data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
                                                         data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
                                                         data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
@@ -2301,6 +2338,7 @@
                                                         data-fnac="{% if aut.fecha_nacimiento %}{{ aut.fecha_nacimiento|date:'Y-m-d' }}{% else %}{% endif %}"
                                                         data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'' }}"
                                                         data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'' }}"
+                                                        data-lineas="{{ aut.lista_lineas_investigacion|join:', ' }}"
                                                         data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
                                                         data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
                                                         data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
@@ -6733,6 +6771,7 @@
                                         <div id="prevCardRoles" class="mb-2 d-flex flex-wrap justify-content-center gap-1"></div>
                                     </div>
                                     <p class="text-muted small mb-0" style="line-height: 1.5; min-height: 55px;" id="prevCardBio">Sin semblanza corta.</p>
+                                    <div id="prevCardLineasContainer" class="mt-2 d-flex flex-wrap justify-content-center gap-1" style="display: none;"></div>
                                     <div id="prevCardHorarioBadge" class="mt-2 text-center" style="display: none;">
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1" style="font-size: 0.72rem;">
                                             <i class="fas fa-calendar-alt me-1"></i>Horario Oficial Disponible
@@ -6770,6 +6809,14 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (PREVISUALIZACIÓN) -->
+                        <div id="prevDetalleLineasContainer" class="bg-white p-4 rounded-4 shadow-sm border mb-4">
+                            <h5 class="fw-bold text-success border-bottom pb-2 mb-3">
+                                <i class="fas fa-tags me-2"></i>Líneas de Investigación y Áreas de Especialidad
+                            </h5>
+                            <div class="d-flex flex-wrap gap-2" id="prevDetalleListaLineas"></div>
                         </div>
 
                         <!-- SEMBLANZA ACADÉMICA DETALLADA (RENDERIZA EL HTML DE QUILL DE FORMA SEGURA) -->
@@ -6989,6 +7036,41 @@
                                 <label class="form-label fw-bold small">Semblanza Corta (Resumen para Tarjeta):</label>
                                 <textarea name="biografia_borrador" id="adminEditBio" class="form-control" rows="3"></textarea>
                             </div>
+
+                            <!-- LÍNEAS DE INVESTIGACIÓN Y ESPECIALIDAD (GESTIÓN ADMIN) -->
+                            <div class="col-12 p-2 rounded" id="adminSeccionLineasInvestigacion">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-bold small mb-0">
+                                        <i class="fas fa-tags text-success me-1"></i>Líneas de Investigación y Áreas de Especialidad:
+                                    </label>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Máx. 10 líneas</small>
+                                </div>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text bg-white border-end-0 text-success"><i class="fas fa-hashtag"></i></span>
+                                        <input type="text" id="adminInputNuevaLinea" class="form-control border-start-0" placeholder="Ej. Finanzas Corporativas, Auditoría Forense, Inteligencia Artificial..." maxlength="50" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); adminAgregarChipLinea(); }">
+                                        <button type="button" class="btn btn-success px-3 fw-bold" onclick="adminAgregarChipLinea()">
+                                            <i class="fas fa-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+                                    <div id="adminContenedorChipsLineas" class="d-flex flex-wrap gap-2 py-1 align-items-center" style="min-height: 38px;"></div>
+                                    <div class="mt-2 pt-2 border-top">
+                                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 0.72rem;"><i class="fas fa-lightbulb text-warning me-1"></i>Sugerencias frecuentes FCA (haz clic para añadir):</small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Auditoría y Fiscal')">+ Auditoría y Fiscal</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Finanzas Corporativas')">+ Finanzas Corporativas</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Inteligencia Artificial')">+ Inteligencia Artificial</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Sistemas de Información')">+ Sistemas de Información</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Gestión del Talento')">+ Gestión del Talento</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Emprendimiento')">+ Emprendimiento</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Comercio Internacional')">+ Comercio Internacional</button>
+                                            <button type="button" class="btn btn-sm btn-white border py-0 px-2 rounded-pill shadow-xs" style="font-size: 0.7rem;" onclick="adminSugerirChipLinea('Marketing Digital')">+ Marketing Digital</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="lineas_investigacion" id="adminInputHiddenLineasInvestigacion" value="">
+                                </div>
+                            </div>
+
                             <div class="col-12 p-2 rounded">
                                 <label class="form-label fw-bold small">Semblanza Académica Detallada Completa (Editor Enriquecido):</label>
                                 <textarea name="biografia_extendida_borrador" id="hidden_adminEditBioExt" style="display: none;"></textarea>
@@ -7087,6 +7169,10 @@
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" name="motivo_checks" value="Semblanza Académica (corta o detallada) requiere corrección." id="chkSemblanzaTexto">
                             <label class="form-check-label small" for="chkSemblanzaTexto">Semblanza académica (corta o detallada) requiere corrección</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="motivo_checks" value="Líneas de investigación o áreas de especialidad incorrectas, incompletas o inapropiadas." id="chkSemblanzaLineas">
+                            <label class="form-check-label small" for="chkSemblanzaLineas">Líneas de investigación o áreas de especialidad incorrectas, incompletas o inapropiadas</label>
                         </div>
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" name="motivo_checks" value="Enlaces Profesionales y Redes incorrectos o rotos." id="chkSemblanzaLinks">
@@ -9343,6 +9429,37 @@
                         detalleWrapper.innerHTML = `<div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center shadow" style="width: 125px; height: 125px; font-size: 3rem; margin: 0 auto;"><i class="fas fa-user"></i></div>`;
                     }
 
+                    // Renderizado de Líneas de Investigación en Preview
+                    const lineasStr = btn.getAttribute('data-lineas') || '';
+                    const lineasArr = lineasStr ? lineasStr.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+
+                    // En Tarjeta Credencial
+                    const prevCardLineasCont = document.getElementById('prevCardLineasContainer');
+                    if (prevCardLineasCont) {
+                        if (lineasArr.length > 0) {
+                            prevCardLineasCont.style.display = 'flex';
+                            prevCardLineasCont.innerHTML = lineasArr.map(tag => `
+                                <span class="badge rounded-pill shadow-xs" style="background-color: rgba(0, 102, 51, 0.1); color: #006633; border: 1px solid #006633; font-size: 0.65rem;">#${tag}</span>
+                            `).join('');
+                        } else {
+                            prevCardLineasCont.style.display = 'none';
+                        }
+                    }
+
+                    // En Ficha Detallada
+                    const prevDetalleListaLineas = document.getElementById('prevDetalleListaLineas');
+                    if (prevDetalleListaLineas) {
+                        if (lineasArr.length > 0) {
+                            prevDetalleListaLineas.innerHTML = lineasArr.map(tag => `
+                                <span class="badge rounded-pill px-3 py-2 shadow-xs" style="background-color: rgba(0, 102, 51, 0.08); color: #006633; border: 1px solid rgba(0, 102, 51, 0.25); font-size: 0.82rem; font-weight: 600;">
+                                    <i class="fas fa-hashtag me-1 opacity-50"></i>${tag}
+                                </span>
+                            `).join('');
+                        } else {
+                            prevDetalleListaLineas.innerHTML = `<span class="text-muted small fst-italic"><i class="fas fa-info-circle me-1"></i>Sin líneas de investigación registradas actualmente.</span>`;
+                        }
+                    }
+
                     const enlacesContainer = document.getElementById('prevDetalleEnlacesContainer');
                     const listaEnlaces = document.getElementById('prevDetalleListaEnlaces');
                     if (enlacesArr.length > 0) {
@@ -9595,6 +9712,140 @@
             }
 
             // ========================================================
+            // GESTIÓN DE CHIPS DE LÍNEAS DE INVESTIGACIÓN (ADMIN)
+            // ========================================================
+            function adminObtenerArrayLineas() {
+                const hidden = document.getElementById('adminInputHiddenLineasInvestigacion');
+                if (!hidden || !hidden.value.trim()) return [];
+                return hidden.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            }
+
+            function adminGuardarArrayLineas(arr) {
+                const hidden = document.getElementById('adminInputHiddenLineasInvestigacion');
+                if (hidden) {
+                    hidden.value = arr.join(', ');
+                }
+                adminRenderizarChipsLineas();
+            }
+
+            function adminRenderizarChipsLineas() {
+                const contenedor = document.getElementById('adminContenedorChipsLineas');
+                if (!contenedor) return;
+                const lineas = adminObtenerArrayLineas();
+                if (lineas.length === 0) {
+                    contenedor.innerHTML = '<span class="text-muted small fst-italic" style="font-size: 0.75rem;"><i class="fas fa-info-circle me-1"></i>Sin líneas asignadas aún. Escribe arriba o elige una sugerencia.</span>';
+                    return;
+                }
+                contenedor.innerHTML = lineas.map(tag => `
+                    <span class="badge rounded-pill shadow-xs d-inline-flex align-items-center gap-1 px-3 py-2" style="background-color: rgba(0, 102, 51, 0.12); color: #006633; border: 1px solid #006633; font-size: 0.78rem; font-weight: 600;">
+                        <span>#${tag}</span>
+                        <button type="button" class="btn-close btn-close-sm p-0 ms-1" style="font-size: 0.55rem;" onclick="adminEliminarChipLinea('${tag.replace(/'/g, "\\'")}')" title="Eliminar ${tag}"></button>
+                    </span>
+                `).join('');
+            }
+
+            function adminAgregarChipLineaConTexto(texto) {
+                if (!texto) return;
+                const tagLimpio = texto.trim().replace(/^#+/, '').trim();
+                if (!tagLimpio) return;
+                const lineas = adminObtenerArrayLineas();
+                if (lineas.some(l => l.toLowerCase() === tagLimpio.toLowerCase())) {
+                    return;
+                }
+                if (lineas.length >= 10) {
+                    alert('Puedes registrar hasta un máximo de 10 líneas de investigación.');
+                    return;
+                }
+                lineas.push(tagLimpio);
+                adminGuardarArrayLineas(lineas);
+            }
+
+            window.adminAgregarChipLinea = function() {
+                const input = document.getElementById('adminInputNuevaLinea');
+                if (!input) return;
+                adminAgregarChipLineaConTexto(input.value);
+                input.value = '';
+                input.focus();
+            };
+
+            window.adminSugerirChipLinea = function(texto) {
+                adminAgregarChipLineaConTexto(texto);
+            };
+
+            window.adminEliminarChipLinea = function(tagAEliminar) {
+                let lineas = adminObtenerArrayLineas();
+                lineas = lineas.filter(l => l.toLowerCase() !== tagAEliminar.toLowerCase());
+                adminGuardarArrayLineas(lineas);
+            };
+
+            // ========================================================
+            // GESTIÓN DE CHIPS DE LÍNEAS DE INVESTIGACIÓN (ADMIN)
+            // ========================================================
+            function adminObtenerArrayLineas() {
+                const hidden = document.getElementById('adminInputHiddenLineasInvestigacion');
+                if (!hidden || !hidden.value.trim()) return [];
+                return hidden.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            }
+
+            function adminGuardarArrayLineas(arr) {
+                const hidden = document.getElementById('adminInputHiddenLineasInvestigacion');
+                if (hidden) {
+                    hidden.value = arr.join(', ');
+                }
+                adminRenderizarChipsLineas();
+            }
+
+            function adminRenderizarChipsLineas() {
+                const contenedor = document.getElementById('adminContenedorChipsLineas');
+                if (!contenedor) return;
+                const lineas = adminObtenerArrayLineas();
+                if (lineas.length === 0) {
+                    contenedor.innerHTML = '<span class="text-muted small fst-italic" style="font-size: 0.75rem;"><i class="fas fa-info-circle me-1"></i>Sin líneas asignadas aún. Escribe arriba o elige una sugerencia.</span>';
+                    return;
+                }
+                contenedor.innerHTML = lineas.map(tag => `
+                    <span class="badge rounded-pill shadow-xs d-inline-flex align-items-center gap-1 px-3 py-2" style="background-color: rgba(0, 102, 51, 0.12); color: #006633; border: 1px solid #006633; font-size: 0.78rem; font-weight: 600;">
+                        <span>#${tag}</span>
+                        <button type="button" class="btn-close btn-close-sm p-0 ms-1" style="font-size: 0.55rem;" onclick="adminEliminarChipLinea('${tag.replace(/'/g, "\\'")}')" title="Eliminar ${tag}"></button>
+                    </span>
+                `).join('');
+            }
+
+            function adminAgregarChipLineaConTexto(texto) {
+                if (!texto) return;
+                const tagLimpio = texto.trim().replace(/^#+/, '').trim();
+                if (!tagLimpio) return;
+                const lineas = adminObtenerArrayLineas();
+                if (lineas.some(l => l.toLowerCase() === tagLimpio.toLowerCase())) {
+                    return;
+                }
+                if (lineas.length >= 10) {
+                    alert('Puedes registrar hasta un máximo de 10 líneas de investigación.');
+                    return;
+                }
+                lineas.push(tagLimpio);
+                adminGuardarArrayLineas(lineas);
+            }
+
+            window.adminAgregarChipLinea = function() {
+                const input = document.getElementById('adminInputNuevaLinea');
+                if (!input) return;
+                adminAgregarChipLineaConTexto(input.value);
+                input.value = '';
+                input.focus();
+            };
+
+            window.adminSugerirChipLinea = function(texto) {
+                adminAgregarChipLineaConTexto(texto);
+            };
+
+            window.adminEliminarChipLinea = function(tagAEliminar) {
+                let lineas = adminObtenerArrayLineas();
+                lineas = lineas.filter(l => l.toLowerCase() !== tagAEliminar.toLowerCase());
+                adminGuardarArrayLineas(lineas);
+            };
+
+            // ========================================================
             // INICIALIZACIÓN DEL EDITOR QUILL.JS (MODAL EDICIÓN ADMIN)
             // ========================================================
             let quillAdminSemblanza = null;
@@ -9661,6 +9912,13 @@
 
                     if (quillAdminSemblanza) {
                         quillAdminSemblanza.root.innerHTML = bioext || '';
+                    }
+
+                    const lineasAdminStr = btn.getAttribute('data-lineas') || '';
+                    const adminHiddenLineas = document.getElementById('adminInputHiddenLineasInvestigacion');
+                    if (adminHiddenLineas) {
+                        adminHiddenLineas.value = lineasAdminStr;
+                        adminRenderizarChipsLineas();
                     }
 
                     const cargoCustom = btn.getAttribute('data-cargo-custom') || '';
