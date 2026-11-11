@@ -851,7 +851,7 @@
                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBuzonAuditoria">
                     <i class="fas fa-history me-1"></i>Buzón de Auditoría
                 </button>
-                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" id="btnCopiasSeguridadTop" onclick="abrirModalCentroRespaldos()" data-bs-toggle="modal" data-bs-target="#modalCentroRespaldos" title="Centro de Copias de Seguridad y Restauración">
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" id="btnCopiasSeguridadTop" data-bs-toggle="modal" data-bs-target="#modalCentroRespaldos" title="Centro de Copias de Seguridad y Restauración">
                     <i class="fas fa-database me-1"></i>Copias de Seguridad
                     {% if alerta_respaldo_pendiente %}
                         <span class="badge bg-warning text-dark rounded-pill ms-1 font-monospace" title="Alerta: Hace {{ dias_sin_respaldo }} días no se genera un respaldo">!</span>
@@ -2155,48 +2155,48 @@
                                                 {% endif %}
                                             </div>
                                             <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-outline-info" title="Ver semblanza pública"
-                                                        data-bs-toggle="modal" data-bs-target="#modalSemblanzaCompleta"
+                                                <button type="button" class="btn btn-outline-info btn-preview-semblanza" title="Previsualizar Ficha Completa"
+                                                        data-bs-toggle="modal" data-bs-target="#modalPreviewSemblanza"
                                                         data-nombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
-                                                        data-usuario="{{ aut.usuario.username|default:'' }}"
-                                                        data-correo="{{ aut.correo|default:'' }}"
-                                                        data-origen="{{ aut.institucion_origen|default:'UABC' }}"
-                                                        data-roles="{% for nom in aut.nombramientos.all %}{{ nom.get_rol_display_text }}{% if not forloop.last %}, {% endif %}{% empty %}{{ aut.get_rol_facultad_display }}{% endfor %}"
-                                                        data-foto="{% if aut.foto_perfil %}{{ aut.foto_perfil.url }}{% elif aut.foto_personal %}{{ aut.foto_personal.url }}{% endif %}"
-                                                        data-biografia="{{ aut.biografia|default:'' }}"
-                                                        data-bioext="{{ aut.biografia_extendida|default:'' }}"
-                                                        data-horariopdf="{% if aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
-                                                        data-reconocimientopdf="{% if aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}">
+                                                        data-correo="{{ aut.correo|default:'N/A' }}"
+                                                        data-institucion="{{ aut.institucion_origen }}"
+                                                        data-genero="{{ aut.get_genero_display|default:'No especificado' }}"
+                                                        data-fnac="{{ aut.fecha_nacimiento|date:'d/m/Y'|default:'No registrada' }}"
+                                                        data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'Sin semblanza corta.' }}"
+                                                        data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'Sin semblanza detallada registrada.' }}"
+                                                        data-foto="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% elif aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
+                                                        data-pdf="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% elif aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
+                                                        data-horario="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% elif aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
+                                                        data-roles='[{% for nom in aut.nombramientos.all %}"{{ nom.get_rol_display_text }}"{% if not forloop.last %},{% endif %}{% empty %}"{{ aut.get_rol_facultad_display }}"{% endfor %}]'
+                                                        data-enlaces='[{% for enla in aut.enlaces_profesionales.all %}{"plataforma":"{{ enla.plataforma }}","url":"{{ enla.url }}","emoji":"{{ enla.emoji }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                                        data-obras="{{ aut.documentos.count }}">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-outline-primary" title="Gestionar y editar semblanza"
-                                                        data-bs-toggle="modal" data-bs-target="#modalEditarSemblanza"
-                                                        data-autid="{{ aut.id }}"
-                                                        data-autnombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
-                                                        data-fotoborrador="{% if aut.foto_perfil_borrador %}{{ aut.foto_perfil_borrador.url }}{% endif %}"
-                                                        data-fotovigente="{% if aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
-                                                        data-bioborrador="{{ aut.biografia_borrador|default:''|escapejs }}"
-                                                        data-biovigente="{{ aut.biografia|default:''|escapejs }}"
-                                                        data-bioextborrador="{{ aut.biografia_extendida_borrador|default:''|escapejs }}"
-                                                        data-bioextvigente="{{ aut.biografia_extendida|default:''|escapejs }}"
-                                                        data-horarioborrador="{% if aut.horario_pdf_borrador %}{{ aut.horario_pdf_borrador.url }}{% endif %}"
-                                                        data-horariovigente="{% if aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
-                                                        data-reconocimientoborrador="{% if aut.reconocimiento_pdf_borrador %}{{ aut.reconocimiento_pdf_borrador.url }}{% endif %}"
-                                                        data-reconocimientovigente="{% if aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
-                                                        data-motivorechazo="{{ aut.motivo_rechazo_semblanza|default:''|escapejs }}"
-                                                        data-estado="{{ aut.estado_semblanza }}">
+                                                <button type="button" class="btn btn-outline-primary btn-editar-semblanza" title="Gestionar y editar semblanza"
+                                                        data-bs-toggle="modal" data-bs-target="#modalEditarSemblanzaAdmin"
+                                                        data-id="{{ aut.id }}"
+                                                        data-nombre="{{ aut.nombre }}"
+                                                        data-genero="{{ aut.genero|default:'NE' }}"
+                                                        data-roles='[{% for nom in aut.nombramientos.all %}"{{ nom.rol }}"{% if not forloop.last %},{% endif %}{% empty %}"{{ aut.rol_facultad }}"{% endfor %}]'
+                                                        data-fnac="{% if aut.fecha_nacimiento %}{{ aut.fecha_nacimiento|date:'Y-m-d' }}{% else %}{% endif %}"
+                                                        data-bio="{{ aut.biografia_borrador|default:aut.biografia|default:'' }}"
+                                                        data-bioext="{{ aut.biografia_extendida_borrador|default:aut.biografia_extendida|default:'' }}"
+                                                        data-foto="{% if aut.foto_perfil %}{{ aut.foto_perfil.url }}{% endif %}"
+                                                        data-pdf="{% if aut.reconocimiento_pdf %}{{ aut.reconocimiento_pdf.url }}{% endif %}"
+                                                        data-horario="{% if aut.horario_pdf %}{{ aut.horario_pdf.url }}{% endif %}"
+                                                        data-cargo-custom="{{ aut.cargo_personalizado|default:'' }}"
+                                                        data-enlaces='[{% for enla in aut.enlaces_profesionales.all %}{"plataforma":"{{ enla.plataforma }}","url":"{{ enla.url }}","emoji":"{{ enla.emoji }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
                                                     <i class="fas fa-user-edit"></i>
                                                 </button>
-                                                {% if aut.estado_semblanza == 'pendiente' %}
-                                                    <form method="post" action="{% url 'aprobar_semblanza' aut.id %}" class="d-inline">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-success" title="Aprobar cambios inmediatamente"><i class="fas fa-check"></i></button>
-                                                    </form>
+                                                {% if aut.estado_semblanza != 'aprobado' %}
+                                                    <a href="{% url 'aprobar_semblanza' aut.id %}" class="btn btn-success" title="Aprobar y Publicar en Claustro">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
                                                 {% endif %}
                                                 <button type="button" class="btn btn-outline-danger btn-eliminar-semblanza"
                                                         data-bs-toggle="modal" data-bs-target="#modalEliminarSemblanza"
-                                                        data-autid="{{ aut.id }}"
-                                                        data-autnombre="{{ aut.nombre_con_titulo|default:aut.nombre }}"
+                                                        data-id="{{ aut.id }}"
+                                                        data-nombre="{{ aut.nombre }}"
                                                         title="Vaciar y restablecer semblanza">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -7110,7 +7110,514 @@
                                 </div>
                             </div>
 
-                            <!-- PANE 2: BITÁCORA INDIVIDUAL DE ACTIVIDAD Y AUDIT
+                            <!-- PANE 2: BITÁCORA INDIVIDUAL DE ACTIVIDAD Y AUDITORÍA (IDEA 11) -->
+                            <div class="tab-pane fade" id="pane-perfil-bitacora" role="tabpanel">
+                                <div id="bitacoraLoadingSpinner" class="text-center py-4">
+                                    <div class="spinner-border text-success" role="status"></div>
+                                    <p class="text-muted small mt-2 mb-0">Cargando registros de auditoría y obras...</p>
+                                </div>
+
+                                <div id="bitacoraContenidoUsuario" style="display: none;">
+                                    <!-- RESUMEN DE TRAZABILIDAD -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 rounded-3 bg-light border text-center h-100">
+                                                <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="fas fa-calendar-plus me-1 text-primary"></i>Alta en Sistema</small>
+                                                <strong class="text-dark small" id="bitacoraFechaRegistro">--</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 rounded-3 bg-light border text-center h-100">
+                                                <small class="text-muted d-block" style="font-size: 0.72rem;"><i class="fas fa-sign-in-alt me-1 text-info"></i>Último Acceso</small>
+                                                <strong class="text-dark small" id="bitacoraUltimoLogin">--</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 text-center h-100">
+                                                <small class="text-success d-block" style="font-size: 0.72rem;"><i class="fas fa-history me-1"></i>Acciones Registradas</small>
+                                                <strong class="text-success small fs-6" id="bitacoraTotalReg">0</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 text-center h-100">
+                                                <small class="text-primary d-block" style="font-size: 0.72rem;"><i class="fas fa-book me-1"></i>Obras Subidas</small>
+                                                <strong class="text-primary small fs-6" id="bitacoraTotalObras">0</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ACCIONES Y EVENTOS AUDITADOS -->
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="fw-bold text-dark mb-0 small">
+                                                <i class="fas fa-shield-alt text-success me-1"></i>Historial de Acciones y Seguridad:
+                                            </h6>
+                                            <span class="badge bg-light text-secondary border small">Últimos 40 eventos</span>
+                                        </div>
+                                        <div class="list-group list-group-flush border rounded-3 shadow-2xs overflow-auto" id="listaBitacoraRegistros" style="max-height: 200px;">
+                                            <!-- Poblado vía AJAX -->
+                                        </div>
+                                    </div>
+
+                                    <!-- PUBLICACIONES Y OBRAS ACADÉMICAS -->
+                                    <div>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="fw-bold text-dark mb-0 small">
+                                                <i class="fas fa-book-open text-primary me-1"></i>Publicaciones Registradas por este Usuario:
+                                            </h6>
+                                            <span class="badge bg-light text-secondary border small">Catálogo reciente</span>
+                                        </div>
+                                        <div class="list-group list-group-flush border rounded-3 shadow-2xs overflow-auto" id="listaBitacoraObras" style="max-height: 180px;">
+                                            <!-- Poblado vía AJAX -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light border-0 py-3 px-4 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+                        <div>
+                            {% if user.is_superuser %}
+                            <button type="button" id="btnActivarEdicionFicha" class="btn btn-outline-primary btn-sm rounded-pill px-3 me-1" onclick="toggleModoEdicionFicha(true)">
+                                <i class="fas fa-edit me-1"></i>Modificar Datos
+                            </button>
+                            {% endif %}
+                            <button type="submit" id="btnGuardarFichaAdmin" class="btn btn-success btn-sm rounded-pill px-3" style="display: none;">
+                                <i class="fas fa-save me-1"></i>Guardar Cambios
+                            </button>
+                            <button type="button" id="btnCancelarEdicionFicha" class="btn btn-outline-secondary btn-sm rounded-pill px-3" style="display: none;" onclick="toggleModoEdicionFicha(false)">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES DE GESTIÓN DE SOPORTE TÉCNICO -->
+    <!-- 1. MODAL APROBAR CUENTA DE SOPORTE -->
+    <div class="modal fade" id="modalAprobarCuentaSoporte" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formAprobarCuentaSoporte" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header py-3 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-headset me-2 text-warning"></i>Autorizar Cuenta de Soporte Técnico
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-warning">
+                            <i class="fas fa-user-shield fa-3x"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded-3 border mb-3" id="soporteModalUsername">Usuario</h6>
+
+                        {% if es_principal %}
+                            <!-- VISTA PARA ADMINISTRADOR INICIAL (DIRECTO SIN CONTRASEÑA) -->
+                            <div class="alert alert-success border-0 bg-success bg-opacity-10 text-dark small text-start mb-3">
+                                <i class="fas fa-crown text-warning me-1"></i><strong>Facultad de Administrador Inicial:</strong>
+                                Tienes privilegios para autorizar y activar esta cuenta de soporte en <strong>Modo Lectura</strong> inmediatamente con un solo clic, sin requerir contraseña ni segundas firmas.
+                            </div>
+                        {% else %}
+                            <!-- VISTA PARA SOPORTE SECUNDARIO (REQUIERE CONTRASEÑA Y 2 FIRMAS) -->
+                            <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark small text-start mb-3" id="soporteModalFirmasInfo">
+                                <i class="fas fa-shield-alt text-warning me-1"></i><strong>Doble Autorización Institucional Requerida:</strong>
+                                Para validar esta cuenta de soporte en Modo Lectura se requiere la aprobación de <strong>2 personas</strong> con su contraseña institucional.
+                            </div>
+
+                            <div class="form-group mb-2 text-start">
+                                <label class="form-label fw-bold text-dark small">
+                                    <i class="fas fa-key me-1 text-warning"></i>Tu Contraseña Actual (Confirmación Obligatoria):
+                                </label>
+                                <input type="password" name="password_confirmacion" class="form-control" placeholder="Ingresa tu contraseña de acceso institucional..." required autocomplete="current-password">
+                                <small class="text-muted" style="font-size: 0.72rem;">Tu firma quedará registrada en la bitácora de auditoría institucional.</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-dark px-4 rounded-pill shadow-sm">
+                            <i class="fas fa-check me-1 text-warning"></i>Confirmar Autorización
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MODAL RECHAZAR CUENTA DE SOPORTE -->
+    <div class="modal fade" id="modalRechazarCuentaSoporte" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formRechazarCuentaSoporte" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-danger text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-user-times me-2"></i>Rechazar Solicitud de Soporte</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-danger">
+                            <i class="fas fa-trash-alt fa-3x"></i>
+                        </div>
+                        <p class="text-muted mb-2">¿Estás seguro de rechazar y descartar la solicitud de cuenta de soporte de:</p>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="soporteRechazarModalUsername">Usuario</h6>
+
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña para Confirmar:</label>
+                            <input type="password" name="password_confirmacion" class="form-control form-control-sm" required autocomplete="current-password">
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Rechazar y Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MODAL DESACTIVAR CUENTA DE SOPORTE ACTIVA -->
+    <div class="modal fade" id="modalDesactivarCuentaSoporte" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formDesactivarCuentaSoporte" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-warning py-3">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-slash me-2"></i>Desactivar Cuenta de Soporte</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-warning">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        </div>
+                        <p class="text-muted mb-2">La siguiente cuenta de soporte será colocada en estado <strong>Desactivado</strong> y requerirá un nuevo proceso de autorización para reactivarse:</p>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="soporteDesactivarModalUsername">Usuario</h6>
+
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-dark small">Tu Contraseña de Soporte:</label>
+                            <input type="password" name="password_confirmacion" class="form-control form-control-sm" required autocomplete="current-password">
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning px-4 rounded-pill shadow-sm fw-bold">Sí, Desactivar Cuenta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL APROBAR USUARIO (SOLICITUDES PENDIENTES) -->
+    <div class="modal fade" id="modalConfirmarAprobarUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formAprobarUsuario" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-success text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i>Aprobar Solicitud de Usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-success">
+                            <i class="fas fa-user-check fa-3x"></i>
+                        </div>
+                        <p class="text-muted mb-2">¿Estás seguro de autorizar y activar la cuenta de:</p>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="aprobarUserModal">Usuario</h6>
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
+                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm">Sí, Aprobar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUSPENDER USUARIO AVANZADO (MOTIVO Y TIEMPO) -->
+    <div class="modal fade" id="modalSuspenderUsuarioAvanzado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formSuspenderUsuarioAvanzado" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-warning py-3">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-slash me-2"></i>Suspender Cuenta de Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-warning py-2 px-3 small border-0 shadow-sm mb-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Al suspender la cuenta, el usuario no podrá iniciar sesión durante el tiempo establecido. Sus publicaciones seguirán intactas.
+                        </div>
+
+                        <p class="mb-2">Usuario a suspender: <strong id="suspenderTargetUser" class="text-danger fs-6"></strong></p>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Duración de la Suspensión *</label>
+                            <select name="duracion" id="selectDuracionSuspension" class="form-select form-select-sm" required>
+                                <option value="2h">2 Horas</option>
+                                <option value="5h">5 Horas</option>
+                                <option value="24h" selected>24 Horas (1 Día)</option>
+                                <option value="3d">3 Días</option>
+                                <option value="7d">7 Días (1 Semana)</option>
+                                <option value="30d">30 Días (1 Mes)</option>
+                                <option value="indefinida">Tiempo Indefinido (Hasta reactivación manual)</option>
+                            </select>
+                            <small class="text-muted" style="font-size: 0.72rem;">Si se elige un tiempo definido, el sistema reactivará la cuenta automáticamente al expirar el plazo.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Motivo de la Suspensión * <span class="text-danger">(Obligatorio)</span></label>
+                            <textarea name="motivo_suspension" class="form-control form-control-sm" rows="3" placeholder="Ej. Solicitud de revisión de credenciales, conducta inapropiada en publicaciones, etc..." required></textarea>
+                            <small class="text-muted" style="font-size: 0.72rem;">Este motivo quedará visible para todos los administradores en el panel de auditoría.</small>
+                        </div>
+
+                        {% if not es_principal %}
+                        <div class="mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador para confirmar:</label>
+                            <input type="password" name="admin_password" class="form-control form-control-sm" placeholder="Contraseña de superusuario" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold shadow-sm">
+                            <i class="fas fa-user-slash me-1"></i>Aplicar Suspensión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REACTIVAR CUENTA -->
+    <div class="modal fade" id="modalConfirmarReactivar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formReactivarUsuario" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-success text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-user-check me-2"></i>Reactivar Cuenta de Usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-success">
+                            <i class="fas fa-unlock-alt fa-3x"></i>
+                        </div>
+                        <p class="text-muted mb-2">¿Deseas restaurar inmediatamente el acceso al portal de:</p>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="reactivarTargetUser"></h6>
+                        <div id="reactivarSolicitudAlerta" class="alert alert-warning py-2 small mb-3 text-start rounded-3 border-warning" style="display: none;"></div>
+                        <small class="text-muted d-block mb-3">La suspensión se dará por concluida y el usuario podrá iniciar sesión con normalidad.</small>
+
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador para confirmar:</label>
+                            <input type="password" name="admin_password" class="form-control form-control-sm" placeholder="Contraseña de superusuario" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success px-4 rounded-pill fw-bold shadow-sm">
+                            <i class="fas fa-check me-1"></i>Sí, Reactivar Cuenta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIAR ROL -->
+    <div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formCambiarRol" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-primary text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-user-cog me-2"></i>Modificar Rol de Usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="mb-2">Usuario: <strong id="cambiarRolTargetUser"></strong></p>
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold small">Nuevo Rol *</label>
+                            <select name="nuevo_rol" id="selectNuevoRol" class="form-select" required>
+                                <option value="docente">Docente UABC</option>
+                                <option value="administrativo">Administrativo</option>
+                                <option value="externo">Colaborador Externo</option>
+                                <option value="independiente">Investigador</option>
+                                <option value="auxiliar">Auxiliar de Investigación FCA</option>
+                                <option value="operador">Operador Técnico / Depurador de Contenidos</option>
+                                <option value="soporte">Soporte Técnico (Modo Lector)</option>
+                                <option value="superuser">Superusuario</option>
+                            </select>
+                        </div>
+                        {% if not es_principal %}
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
+                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm">Guardar Rol</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TOGGLE SUPERUSUARIO (ASCENDER / REVOCAR) -->
+    <div class="modal fade" id="modalToggleSuperuser" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formToggleSuperuser" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-dark text-white py-3" id="toggleSuperHeader">
+                        <h5 class="modal-title fw-bold" id="toggleSuperTitle"><i class="fas fa-shield-alt me-2 text-warning"></i>Gestionar Privilegios de Superusuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="rounded-circle d-inline-flex p-3 bg-light border shadow-sm mb-3">
+                            <i class="fas fa-shield-alt fa-3x text-warning" id="toggleSuperIcon"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2 text-dark" id="toggleSuperActionText">¿Deseas modificar los privilegios?</h5>
+                        <div class="p-2 bg-light rounded border mb-3">
+                            <span class="text-muted small">Usuario seleccionado:</span>
+                            <h6 class="fw-bold text-dark mb-0" id="toggleSuperUsername"></h6>
+                        </div>
+
+                        <div class="alert alert-warning border-0 small text-start mb-3" id="toggleSuperWarning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>Atención:</strong> Un Superusuario tiene control global del sistema, gestión de cuentas, moderación de obras y acceso a la configuración del repositorio institucional.
+                        </div>
+
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">
+                                <i class="fas fa-lock me-1"></i>Tu Contraseña de Administrador (Requerida):
+                            </label>
+                            <input type="password" name="admin_password" id="toggleSuperAdminPass" class="form-control" required placeholder="Ingresa tu contraseña para autorizar">
+                            <small class="text-muted" style="font-size: 0.75rem;">Como superadministrador secundario, es obligatorio validar tu contraseña para realizar esta acción.</small>
+                        </div>
+                        {% else %}
+                        <div class="p-2 bg-light rounded text-center small text-muted mb-2 border">
+                            <i class="fas fa-check-circle text-success me-1"></i>Autorización directa de Superadministrador Principal.
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm" id="toggleSuperSubmitBtn">Confirmar Cambio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR CAMBIO DE LICENCIA DE CONFIANZA -->
+    <div class="modal fade" id="modalConfirmarConfianza" tabindex="-1" aria-labelledby="modalConfirmarConfianzaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-bottom py-3" id="confianzaModalHeaderBg">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalConfirmarConfianzaLabel">
+                        <i id="confianzaModalIcon" class="fas fa-shield-alt fa-lg text-success"></i>
+                        <span id="confianzaModalTitulo" class="text-dark">Confirmar Cambio de Licencia</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div id="confianzaModalIconBox" class="p-3 rounded-circle shadow-xs flex-shrink-0" style="background-color: #dcfce7;">
+                            <i id="confianzaModalBigIcon" class="fas fa-shield-alt fa-2x text-success"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-muted small">Usuario seleccionado:</p>
+                            <h6 id="confianzaModalUsuario" class="fw-bold text-dark mb-2 fs-6">@usuario</h6>
+                            <p class="mb-0 text-secondary" id="confianzaModalSubtexto" style="font-size: 0.92rem; line-height: 1.45;">
+                                Se modificará el esquema de acreditación y bypass de moderación de este autor.
+                            </p>
+                        </div>
+                    </div>
+                    <div id="confianzaModalExplicacion" class="alert alert-light border small text-secondary mb-0 p-3 rounded-3" style="line-height: 1.5;">
+                        <!-- Texto dinámico inyectado por JS -->
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn rounded-pill px-4 fw-bold shadow-sm" id="btnEjecutarCambioConfianza">
+                        <i id="btnConfianzaIcon" class="fas fa-check me-1"></i>
+                        <span id="btnConfianzaText">Confirmar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ELIMINAR USUARIO ELEGANTE -->
+    <div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formEliminarUsuario" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-danger text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Eliminar Cuenta de Usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3 text-danger">
+                            <i class="fas fa-trash-alt fa-3x"></i>
+                        </div>
+                        <p class="text-danger fw-bold mb-1">¡Atención! Acción irreversible.</p>
+                        <p class="text-muted mb-2">¿Deseas eliminar permanentemente al usuario:</p>
+                        <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded border mb-3" id="eliminarUserModal"></h6>
+                        {% if not es_principal %}
+                        <div class="form-group mb-2 text-start">
+                            <label class="form-label fw-bold text-danger small">Tu Contraseña de Administrador:</label>
+                            <input type="password" name="admin_password" class="form-control form-control-sm" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Sí, Eliminar Cuenta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RESTABLECER CONTRASEÑA -->
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <form id="formCambiarPassword" method="post" action="">
+                    {% csrf_token %}
+                    <div class="modal-header bg-success text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i>Restablecer Contraseña</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="mb-2">Asignar nueva clave para: <strong id="usuarioPasswordModal" class="text-success"></strong></p>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Nueva Contraseña:</label>
+                            <div class="input-group">
+                                <input type="text" name="nueva_password" id="inputNuevaClave" class="form-control" placeholder="Clave generada" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="generarClaveSegura()"><i class="fas fa-magic"></i></button>
                             </div>
                         </div>
                         {% if not es_principal %}
@@ -7128,6 +7635,8 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL VISTA PREVIA CON LAS 3 PESTAÑAS (DOCUMENTOS) -->
 
     <!-- MODAL VISTA PREVIA CON LAS 3 PESTAÑAS (DOCUMENTOS) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
@@ -8060,6 +8569,7 @@
                 '#administrativos': 'usuarios',
                 '#usuarios-confianza': 'usuarios',
                 '#supers': 'usuarios',
+                '#moderadores': 'usuarios',
                 '#suspendidas': 'usuarios',
                 '#autores-fusion': 'claustro',
                 '#dashboard-analitica': 'estadisticas',
@@ -8597,21 +9107,24 @@
             const modalPreviewSemblanza = document.getElementById('modalPreviewSemblanza');
             if (modalPreviewSemblanza) {
                 modalPreviewSemblanza.addEventListener('show.bs.modal', function(event) {
-                    const btn = event.relatedTarget;
-                    if (!btn) return;
+                    try {
+                        const btn = event.relatedTarget;
+                        if (!btn) return;
 
-                    const nombre = btn.getAttribute('data-nombre') || '';
-                    const correo = btn.getAttribute('data-correo') || 'N/A';
-                    const institucion = btn.getAttribute('data-institucion') || 'UABC';
-                    const genero = btn.getAttribute('data-genero') || 'No especificado';
-                    const fnac = btn.getAttribute('data-fnac') || 'No registrada';
-                    const bio = btn.getAttribute('data-bio') || 'Sin semblanza corta.';
-                    const bioext = btn.getAttribute('data-bioext') || 'Sin semblanza detallada registrada.';
-                    const fotoUrl = btn.getAttribute('data-foto');
-                    const pdfUrl = btn.getAttribute('data-pdf');
-                    const rolesArr = JSON.parse(btn.getAttribute('data-roles') || '[]');
-                    const enlacesArr = JSON.parse(btn.getAttribute('data-enlaces') || '[]');
-                    const obras = btn.getAttribute('data-obras') || '0';
+                        const nombre = btn.getAttribute('data-nombre') || '';
+                        const correo = btn.getAttribute('data-correo') || 'N/A';
+                        const institucion = btn.getAttribute('data-institucion') || 'UABC';
+                        const genero = btn.getAttribute('data-genero') || 'No especificado';
+                        const fnac = btn.getAttribute('data-fnac') || 'No registrada';
+                        const bio = btn.getAttribute('data-bio') || 'Sin semblanza corta.';
+                        const bioext = btn.getAttribute('data-bioext') || 'Sin semblanza detallada registrada.';
+                        const fotoUrl = btn.getAttribute('data-foto');
+                        const pdfUrl = btn.getAttribute('data-pdf');
+                        let rolesArr = [];
+                        try { rolesArr = JSON.parse(btn.getAttribute('data-roles') || '[]'); } catch(e) { rolesArr = []; }
+                        let enlacesArr = [];
+                        try { enlacesArr = JSON.parse(btn.getAttribute('data-enlaces') || '[]'); } catch(e) { enlacesArr = []; }
+                        const obras = btn.getAttribute('data-obras') || '0';
 
                     // Tarjeta Credencial
                     document.getElementById('prevModalTituloNombre').textContent = nombre;
@@ -8727,6 +9240,9 @@
                     }
 
                     cambiarVistaPreview('tarjeta');
+                    } catch(err) {
+                        console.error('Error al mostrar vista previa de semblanza:', err);
+                    }
                 });
             }
 
@@ -8940,18 +9456,21 @@
             const modalEditarSemblanzaAdmin = document.getElementById('modalEditarSemblanzaAdmin');
             if (modalEditarSemblanzaAdmin) {
                 modalEditarSemblanzaAdmin.addEventListener('show.bs.modal', function(event) {
-                    const btn = event.relatedTarget;
-                    if (!btn) return;
-                    const autorId = btn.getAttribute('data-id');
-                    const nombre = btn.getAttribute('data-nombre');
-                    const genero = btn.getAttribute('data-genero');
-                    const rolesArr = JSON.parse(btn.getAttribute('data-roles') || '[]');
-                    const fnac = btn.getAttribute('data-fnac');
-                    const bio = btn.getAttribute('data-bio');
-                    const bioext = btn.getAttribute('data-bioext');
-                    const fotoUrl = btn.getAttribute('data-foto');
-                    const pdfUrl = btn.getAttribute('data-pdf');
-                    const enlacesArr = JSON.parse(btn.getAttribute('data-enlaces') || '[]');
+                    try {
+                        const btn = event.relatedTarget;
+                        if (!btn) return;
+                        const autorId = btn.getAttribute('data-id');
+                        const nombre = btn.getAttribute('data-nombre');
+                        const genero = btn.getAttribute('data-genero');
+                        let rolesArr = [];
+                        try { rolesArr = JSON.parse(btn.getAttribute('data-roles') || '[]'); } catch(e) { rolesArr = []; }
+                        const fnac = btn.getAttribute('data-fnac');
+                        const bio = btn.getAttribute('data-bio');
+                        const bioext = btn.getAttribute('data-bioext');
+                        const fotoUrl = btn.getAttribute('data-foto');
+                        const pdfUrl = btn.getAttribute('data-pdf');
+                        let enlacesArr = [];
+                        try { enlacesArr = JSON.parse(btn.getAttribute('data-enlaces') || '[]'); } catch(e) { enlacesArr = []; }
 
                     document.getElementById('adminEditNombreTitulo').textContent = `"${nombre}"`;
                     document.getElementById('formEditarSemblanzaAdmin').action = `/gestion-semblanzas/editar/${autorId}/`;
@@ -9052,6 +9571,9 @@
                                 }
                             }
                         }).catch(() => {});
+                    }
+                    } catch(err) {
+                        console.error('Error al abrir modal edición semblanza:', err);
                     }
                 });
 
@@ -10246,8 +10768,9 @@
             const modalDetalle = document.getElementById('modalDetalleObra');
             if (modalDetalle) {
                 modalDetalle.addEventListener('show.bs.modal', function(event) {
-                    const btn = event.relatedTarget;
-                    if (!btn) return;
+                    try {
+                        const btn = event.relatedTarget;
+                        if (!btn) return;
 
                     const titulo = btn.getAttribute('data-titulo') || '';
                     const autores = btn.getAttribute('data-autores') || 'Sin autores';
@@ -10435,7 +10958,7 @@
                     const pubCanvas = document.getElementById('modalPublicoPdfCanvas');
                     const pubLoading = document.getElementById('modalPublicoPdfLoading');
 
-                    if (pdfUrl && pdfUrl.trim() !== '') {
+                    if (typeof pdfjsLib !== 'undefined' && pdfjsLib.getDocument && pdfUrl && pdfUrl.trim() !== '') {
                         pubPdfWrapper.style.display = 'block';
                         pubPdfLink.href = pdfUrl;
                         pubLoading.style.display = 'block';
@@ -10461,6 +10984,9 @@
                         pubLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin archivo PDF adjunto</span>';
                         pubLoading.style.display = 'block';
                         pubCanvas.style.display = 'none';
+                    }
+                    } catch(err) {
+                        console.error('Error al inicializar modal detalle obra:', err);
                     }
                 });
             }
