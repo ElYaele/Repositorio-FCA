@@ -596,7 +596,9 @@ class Autor(models.Model):
         if self.rol_facultad == 'INV_IND' or 'independiente' in (self.institucion_origen or '').lower() or (self.institucion_origen or '').lower().startswith('investigador'):
             return 'INV'
         inst = (self.institucion_origen or '').strip()
-        if not inst or inst.upper() == 'UABC' or not self.es_externo:
+        if not inst or inst.upper() == 'UABC' or 'FACULTAD DE CONTADUR' in inst.upper() or 'FCA' in inst.upper():
+            return 'FCA'
+        if 'UABC' in inst.upper() and not self.es_externo and 'OTRA' not in inst.upper():
             return 'FCA'
         # Buscar acrónimo entre paréntesis, ej: 'Universidad Nacional Autónoma de México (UNAM)' -> 'UNAM'
         match = re.search(r'\(([A-Za-z0-9\-_]+)\)', inst)
@@ -619,6 +621,14 @@ class Autor(models.Model):
             if not self.nombre:
                 self.nombre = " ".join(partes)
 
+        # Si la adscripción pertenece a otra universidad y no es UABC ni investigador independiente, marcar es_externo
+        inst_limpia = (self.institucion_origen or '').strip()
+        if inst_limpia and inst_limpia.upper() != 'UABC' and 'FACULTAD DE CONTADUR' not in inst_limpia.upper() and 'FCA' not in inst_limpia.upper() and self.rol_facultad != 'INV_IND':
+            if not self.usuario or not self.usuario.is_superuser:
+                self.es_externo = True
+        elif 'FCA' in inst_limpia.upper() or 'UABC' in inst_limpia.upper():
+            self.es_externo = False
+
         # Generación garantizada de código institucional único (FCA-ID, UNAM-ID, INV-ID, etc.)
         prefijo = self.obtener_prefijo_codigo_institucional()
         if not self.codigo_institucional:
@@ -631,16 +641,19 @@ class Autor(models.Model):
                 offset += 1
             self.codigo_institucional = candidato
         elif '-' in self.codigo_institucional:
-            # Sincronizar prefijo si el rol o procedencia institucional cambió (ej. FCA-1212 -> INV-1212)
+            # Sincronizar prefijo si el rol o procedencia institucional cambió (ej. FCA-1209 -> UNAM-1209 / INV-1212)
             prefijo_actual, num_actual = self.codigo_institucional.split('-', 1)
-            if prefijo == 'INV' and prefijo_actual != 'INV':
-                candidato = f"INV-{num_actual}"
+            if prefijo != prefijo_actual:
+                candidato = f"{prefijo}-{num_actual}"
                 if not Autor.objects.filter(codigo_institucional=candidato).exclude(pk=self.pk).exists():
                     self.codigo_institucional = candidato
-            elif prefijo == 'FCA' and prefijo_actual != 'FCA' and not self.es_externo and self.rol_facultad != 'INV_IND':
-                candidato = f"FCA-{num_actual}"
-                if not Autor.objects.filter(codigo_institucional=candidato).exclude(pk=self.pk).exists():
-                    self.codigo_institucional = candidato
+                else:
+                    offset = 1
+                    nuevo_candidato = f"{prefijo}-{num_actual}_{offset}"
+                    while Autor.objects.filter(codigo_institucional=nuevo_candidato).exclude(pk=self.pk).exists():
+                        offset += 1
+                        nuevo_candidato = f"{prefijo}-{num_actual}_{offset}"
+                    self.codigo_institucional = nuevo_candidato
 
         # Superadministradores nunca deben marcarse como docentes académicos
         if self.usuario and self.usuario.is_superuser:

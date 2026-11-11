@@ -1248,7 +1248,7 @@
                             <!-- ESCUDO Y MONOGRAMA HERÁLDICO PARA UNIVERSIDADES EXTERNAS (IDEA 16) -->
                             {% if user.autor and user.autor.institucion_origen and user.autor.institucion_origen.upper != 'UABC' and 'FACULTAD DE CONTADUR' not in user.autor.institucion_origen.upper %}
                                 <span class="badge shadow-xs px-3 py-1 d-inline-flex align-items-center gap-1" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border-radius: 20px; font-weight: 700;" title="Institución de Procedencia Acreditada: {{ user.autor.institucion_origen }}">
-                                    <i class="fas fa-university"></i>
+                                    <i class="fas fa-shield-alt me-1"></i>
                                     <span>{{ user.autor.siglas_institucion }}</span>
                                     <span style="opacity: 0.85; font-weight: 400; font-size: 0.72rem;">&bull; {{ user.autor.institucion_origen|truncatechars:28 }}</span>
                                 </span>
@@ -1668,16 +1668,23 @@
                         </div>
                     </div>
 
-                    <!-- FILTRO POR TIPO DE RECURSO ACADÉMICO (FASE 1: IDEA 3) -->
+                    <!-- FILTRO POR TIPO DE RECURSO ACADÉMICO (13 TIPOS INSTITUCIONALES) -->
                     <div class="px-3 py-2 border-bottom bg-light d-flex flex-wrap align-items-center gap-1" id="filterPillsTipoRecurso">
                         <span class="small fw-bold text-muted me-2"><i class="fas fa-filter me-1"></i>Tipo de Obra:</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0 filter-tipo-btn active" data-tipo="all">Todos</button>
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="artículo">Artículos</button>
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="tesis">Tesis</button>
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="libro">Libros</button>
-                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="capítulo">Capítulos</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="ponencia">Ponencias</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-0 filter-tipo-btn" data-tipo="propiedad">Prop. Intelectual</button>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="articulo" title="Artículos Científicos y de Revista">Artículos</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="tesis" title="Tesis de Grado y Posgrado">Tesis</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="libro" title="Libros">Libros</button>
+                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="capitulo" title="Capítulos de Libro">Capítulos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="ponencia" title="Ponencias y Memorias">Ponencias</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="reporte" title="Reportes de Investigación">Reportes Inv.</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="propiedad" title="Propiedad Intelectual (INDAUTOR / IMPI)">Prop. Intelectual</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="desarrollo" title="Desarrollo Tecnológico e Innovación">Desarrollo Tec.</button>
+                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="transferencia" title="Transferencia Tecnológica">Transferencia</button>
+                        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="traduccion" title="Traducción Científica">Traducciones</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="informe" title="Informe Técnico Especializado">Informes Téc.</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="dossier" title="Dossier / Antología">Dossiers</button>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0 filter-tipo-btn" data-tipo="prologo" title="Prólogo / Estudio Introductorio">Prólogos / Intro.</button>
                     </div>
 
                     <div class="card-body p-0">
@@ -4180,7 +4187,7 @@
     <div class="modal fade" id="modalActualizarDatosCuenta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form method="post" action="{% url 'actualizar_datos_cuenta' %}" class="d-flex flex-column m-0" style="max-height: 90vh; overflow: hidden;">
+                <form method="post" action="{% url 'actualizar_datos_cuenta' %}" autocomplete="off" class="d-flex flex-column m-0" style="max-height: 90vh; overflow: hidden;">
                     {% csrf_token %}
                     <div class="modal-header py-3 text-white flex-shrink-0" style="background-color: var(--theme-primary);">
                         <h5 class="modal-title fw-bold">
@@ -4296,8 +4303,8 @@
                                     </div>
                                     {% else %}
                                     <div class="col-md-6">
-                                        <label class="form-label fw-bold small text-dark mb-1">Número de Empleado Institucional:</label>
-                                        <input type="text" name="numero_empleado" class="form-control" placeholder="Ej. 001234" value="{{ user.autor.numero_empleado|default:'' }}">
+                                        <label class="form-label fw-bold small text-dark mb-1">Clave o N° de Empleado Institucional:</label>
+                                        <input type="text" name="clave_empleado" id="inputClaveEmpleadoCuenta" class="form-control" placeholder="Ej. EMP-001234" value="{{ user.autor.numero_empleado|default:'' }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
                                         <small class="text-muted" style="font-size: 0.72rem;">Número oficial asignado por la institución.</small>
                                     </div>
                                     {% endif %}
@@ -5704,25 +5711,30 @@
             let estadoActual = 'all';
             let tipoActual = 'all';
 
+            function normalizarTextoFiltro(str) {
+                return (str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            }
+
             function aplicarFiltrosMisTrabajos() {
-                const query = (searchInputTrabajos ? searchInputTrabajos.value : '').toLowerCase().trim();
+                const query = normalizarTextoFiltro(searchInputTrabajos ? searchInputTrabajos.value : '');
+                const targetTipo = normalizarTextoFiltro(tipoActual);
 
                 document.querySelectorAll('.doc-row-docente').forEach(row => {
                     const rowEstado = row.getAttribute('data-estado');
-                    const rowTipo = (row.getAttribute('data-tipo') || '').toLowerCase();
-                    const rowSearch = (row.getAttribute('data-search') || '').toLowerCase();
+                    const rowTipo = normalizarTextoFiltro(row.getAttribute('data-tipo'));
+                    const rowSearch = normalizarTextoFiltro(row.getAttribute('data-search'));
                     const coincideEstado = (estadoActual === 'all' || rowEstado === estadoActual);
-                    const coincideTipo = (tipoActual === 'all' || rowTipo.includes(tipoActual));
+                    const coincideTipo = (targetTipo === 'all' || rowTipo.includes(targetTipo));
                     const coincideTexto = !query || rowSearch.includes(query);
                     row.style.display = (coincideEstado && coincideTipo && coincideTexto) ? '' : 'none';
                 });
 
                 document.querySelectorAll('.doc-card-docente').forEach(card => {
                     const cardEstado = card.getAttribute('data-estado');
-                    const cardTipo = (card.getAttribute('data-tipo') || '').toLowerCase();
-                    const cardSearch = (card.getAttribute('data-search') || '').toLowerCase();
+                    const cardTipo = normalizarTextoFiltro(card.getAttribute('data-tipo'));
+                    const cardSearch = normalizarTextoFiltro(card.getAttribute('data-search'));
                     const coincideEstado = (estadoActual === 'all' || cardEstado === estadoActual);
-                    const coincideTipo = (tipoActual === 'all' || cardTipo.includes(tipoActual));
+                    const coincideTipo = (targetTipo === 'all' || cardTipo.includes(targetTipo));
                     const coincideTexto = !query || cardSearch.includes(query);
                     card.style.display = (coincideEstado && coincideTipo && coincideTexto) ? '' : 'none';
                 });

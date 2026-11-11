@@ -1861,7 +1861,7 @@ def actualizar_datos_cuenta_view(request):
             if modalidad:
                 mi_autor.modalidad_auxiliar = modalidad
         else:
-            numero_emp = request.POST.get('numero_empleado', '').strip()
+            numero_emp = (request.POST.get('clave_empleado') or request.POST.get('numero_empleado') or '').strip()
             if numero_emp:
                 mi_autor.numero_empleado = numero_emp
 
