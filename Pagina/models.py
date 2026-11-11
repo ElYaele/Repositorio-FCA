@@ -348,6 +348,69 @@ class Autor(models.Model):
         verbose_name="Fecha de segunda aprobación de soporte"
     )
 
+    # --- JERARQUÍA ADMINISTRATIVA Y PERMISOS GRANULARES DE MODERADOR (IDEAS 5 Y 7) ---
+    NIVELES_ADMIN = [
+        ('NIVEL_1', 'Nivel 1 — Superadministrador Maestro'),
+        ('NIVEL_2', 'Nivel 2 — Administrador Institucional'),
+        ('NIVEL_3', 'Nivel 3 — Moderador Operativo'),
+        ('NINGUNO', 'Sin Rol Administrativo'),
+    ]
+    nivel_administrador = models.CharField(
+        max_length=20,
+        choices=NIVELES_ADMIN,
+        default='NINGUNO',
+        verbose_name="Jerarquía Administrativa"
+    )
+    permiso_soporte = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Atención en Mesa de Soporte"
+    )
+    permiso_moderar_obras = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Moderación de Obras y Cola"
+    )
+    permiso_gestionar_usuarios = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Gestión y Admisión de Cuentas"
+    )
+    permiso_revisar_semblanzas = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Revisión de Semblanzas y Claustro"
+    )
+    permiso_emitir_auditorias = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Emisión de Auditorías y Dictámenes"
+    )
+    permiso_descargar_respaldos = models.BooleanField(
+        default=True,
+        verbose_name="Permiso: Descarga de Copias de Seguridad"
+    )
+
+    def get_nivel_admin_efectivo(self):
+        if not self.usuario:
+            return 'NINGUNO'
+        if self.usuario.id == 1 or self.usuario.username.lower() == 'yaele':
+            return 'NIVEL_1'
+        if self.nivel_administrador in ['NIVEL_1', 'NIVEL_2', 'NIVEL_3']:
+            return self.nivel_administrador
+        if self.usuario.is_superuser:
+            return 'NIVEL_1'
+        if self.usuario.is_staff or self.es_soporte or self.es_operador_tecnico:
+            return 'NIVEL_3'
+        return 'NINGUNO'
+
+    @property
+    def es_admin_nivel_1(self):
+        return self.get_nivel_admin_efectivo() == 'NIVEL_1'
+
+    @property
+    def es_admin_nivel_2(self):
+        return self.get_nivel_admin_efectivo() == 'NIVEL_2'
+
+    @property
+    def es_admin_nivel_3(self):
+        return self.get_nivel_admin_efectivo() == 'NIVEL_3'
+
     @property
     def puede_tener_semblanza(self):
         """
@@ -1285,6 +1348,11 @@ class ConfiguracionSistema(models.Model):
         verbose_name="Aprobación Automática de Soporte Técnico",
         help_text="Si está activo, aspirantes de soporte técnico quedan activos automáticamente tras verificar su correo."
     )
+    fecha_ultimo_respaldo = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha del Último Respaldo Generado"
+    )
 
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última Actualización")
 
@@ -1591,4 +1659,60 @@ class AuditoriaSemestral(models.Model):
             raw = f"FCA-AUDITORIA-SEMESTRAL|FOLIO:{self.folio}|PERIODO:{self.periodo}|APROBADAS:{self.obras_aprobadas}|RESPONSABLE:{self.nombre_responsable}|TS:{timezone.now().isoformat()}"
             self.sello_digital = hashlib.sha256(raw.encode('utf-8')).hexdigest()
         super().save(*args, **kwargs)
+
+
+class PresenciaAdministrador(models.Model):
+    """
+    Control de presencia colaborativa en tiempo real para administradores (Idea 5).
+    Señala en la interfaz cuántos y cuáles administradores están navegando o trabajando
+    en áreas críticas (Mesa de Soporte, Herramienta de Fusión, Limpiar Huérfanos, Moderación)
+    sin prohibir el acceso, previniendo colisiones operativas.
+    """
+    AREAS_SISTEMA = [
+        ('SOPORTE', 'Mesa de Soporte FCA'),
+        ('FUSION', 'Herramienta de Fusión y Deduplicación'),
+        ('HUERFANOS', 'Limpieza de Huérfanos y Depuración'),
+        ('MODERACION_DOCS', 'Cola de Moderación de Obras'),
+        ('GESTION_USUARIOS', 'Gestión de Cuentas y Accesos'),
+    ]
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='presencias_activas')
+    area = models.CharField(max_length=30, choices=AREAS_SISTEMA)
+    recurso_id = models.PositiveIntegerField(null=True, blank=True)
+    ultima_actividad = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('admin', 'area')
+        verbose_name = "Presencia de Administrador"
+        verbose_name_plural = "Presencias de Administradores"
+
+    def __str__(self):
+        return f"@{self.admin.username} en {self.area}"
+
+
+class BloqueoConcurrencia(models.Model):
+    """
+    Candado de revisión individual en tiempo real (Idea 5).
+    Cuando un moderador abre una obra o semblanza para dictaminar o agregar observaciones,
+    se emite un bloqueo suave temporal (ej. 10 minutos) que señaliza a los demás
+    moderadores que la pieza está en evaluación activa para evitar duplicidad de dictámenes.
+    """
+    TIPOS_RECURSO = [
+        ('DOCUMENTO', 'Obra / Documento Académico'),
+        ('SEMBLANZA', 'Ficha / Semblanza Docente'),
+        ('SOLICITUD', 'Solicitud de Cuenta Nueva'),
+    ]
+    recurso_tipo = models.CharField(max_length=20, choices=TIPOS_RECURSO)
+    recurso_id = models.PositiveIntegerField()
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bloqueos_concurrencia')
+    creado_en = models.DateTimeField(auto_now=True)
+    expira_en = models.DateTimeField()
+
+    class Meta:
+        unique_together = ('recurso_tipo', 'recurso_id')
+        verbose_name = "Bloqueo de Concurrencia"
+        verbose_name_plural = "Bloqueos de Concurrencia"
+
+    def __str__(self):
+        return f"{self.recurso_tipo} #{self.recurso_id} bloqueado por @{self.admin.username}"
+
 

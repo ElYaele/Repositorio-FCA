@@ -851,14 +851,22 @@
                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBuzonAuditoria">
                     <i class="fas fa-history me-1"></i>Buzón de Auditoría
                 </button>
-                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalCentroRespaldos" title="Centro de Copias de Seguridad y Restauración">
+                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-bold" id="btnCopiasSeguridadTop" onclick="abrirModalCentroRespaldos()" data-bs-toggle="modal" data-bs-target="#modalCentroRespaldos" title="Centro de Copias de Seguridad y Restauración">
                     <i class="fas fa-database me-1"></i>Copias de Seguridad
+                    {% if alerta_respaldo_pendiente %}
+                        <span class="badge bg-warning text-dark rounded-pill ms-1 font-monospace" title="Alerta: Hace {{ dias_sin_respaldo }} días no se genera un respaldo">!</span>
+                    {% endif %}
                 </button>
-                {% if es_superadmin_principal or es_principal %}
-                <a href="/admin/" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-sm">
-                    <i class="fas fa-tools me-1"></i>Ir a Django Admin
+                {% if es_admin_nivel_1 %}
+                <a href="/admin/" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-sm" title="Panel Nativo de Django (Exclusivo Superadmin Maestro)">
+                    <i class="fas fa-crown text-warning me-1"></i>Ir a Django Admin
                 </a>
                 {% endif %}
+                <!-- INDICADOR EN VIVO DE PRESENCIA DE ADMINISTRADORES (IDEA 5) -->
+                <div id="topbarPresenciaBadge" class="badge bg-white text-muted border px-3 py-1 rounded-pill small fw-normal d-none d-md-inline-flex align-items-center gap-1 shadow-2xs" title="Administradores activos en el panel">
+                    <i class="fas fa-users text-success me-1"></i>
+                    <span id="topbarPresenciaTexto">Conectando...</span>
+                </div>
             </div>
         </div>
 
@@ -866,6 +874,29 @@
             <div id="djangoMessagesData" style="display: none;">
                 {% for m in messages %}<div data-tag="{{ m.tags }}">{{ m }}</div>{% endfor %}
             </div>
+        {% endif %}
+
+        <!-- ALERTA PREVENTIVA: RESPALDO INSTITUCIONAL REQUERIDO CADA 15 DÍAS -->
+        {% if alerta_respaldo_pendiente %}
+        <div class="alert alert-warning border-0 shadow-xs rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 animate__animated animate__fadeIn">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning text-dark p-2 rounded-circle fs-5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; min-width: 44px;">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div>
+                    <strong class="text-dark d-flex align-items-center gap-2">
+                        <i class="fas fa-exclamation-triangle text-warning"></i> Recordatorio Preventivo de Copias de Seguridad (15 Días)
+                    </strong>
+                    <div class="small text-muted mt-1">
+                        {% if dias_sin_respaldo == 16 %}No se ha registrado una copia de seguridad reciente del sistema.{% else %}Han transcurrido <strong>{{ dias_sin_respaldo }} días</strong> desde la última copia de seguridad institucional.{% endif %}
+                        Se recomienda descargar un respaldo completo (.ZIP) para proteger las obras, fotos del claustro y la base de datos.
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-warning btn-sm rounded-pill px-4 fw-bold text-dark shadow-xs" onclick="abrirModalCentroRespaldos()">
+                <i class="fas fa-cloud-download-alt me-1"></i> Respaldar Ahora
+            </button>
+        </div>
         {% endif %}
 
         <!-- NAVEGACIÓN PRINCIPAL: 3 PILARES MODULARES -->
@@ -959,6 +990,12 @@
                             {% if total_soporte_pendientes > 0 %}
                                 <span class="badge bg-warning text-dark ms-1 pulse-badge" id="badge-soporte-pendientes" title="{{ total_soporte_pendientes }} solicitudes de soporte pendientes">{{ total_soporte_pendientes }} por autorizar</span>
                             {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="moderadores-tab" data-bs-target="#moderadores" type="button">
+                            <i class="fas fa-user-shield me-2 text-warning"></i>Jerarquía y Permisos
+                            <span class="badge bg-warning text-dark ms-1 count-anim" data-count="{{ moderadores_gestion.count }}">{{ moderadores_gestion.count }}</span>
                         </button>
                     </li>
                     <li class="nav-item">
@@ -3767,7 +3804,220 @@
 
             </div>
 
-            <!-- PESTAÑA 7: DIRECTORIO Y FUSIÓN DE AUTORES -->
+            <!-- ============================================================================== -->
+            <!-- PESTAÑA: MATRIZ DE JERARQUÍAS Y PERMISOS GRANULARES DE MODERADOR (IDEAS 5 Y 7) -->
+            <!-- ============================================================================== -->
+            <div class="tab-pane fade" id="moderadores" role="tabpanel">
+                <!-- BANNER DE JERARQUÍAS -->
+                <div class="card border-0 mb-4 shadow-sm rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #1b2838 0%, #0d1b2a 100%); color: #ffffff;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-20 shadow-xs" style="width: 58px; height: 58px; min-width: 58px;">
+                                    <i class="fas fa-user-shield fa-2x text-warning"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-white d-flex align-items-center gap-2">
+                                        Matriz de Jerarquías y Permisos Granulares de Moderación
+                                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.72rem;">Control por Módulos</span>
+                                    </h5>
+                                    <p class="text-white-50 small mb-0" style="max-width: 720px;">
+                                        Regula selectivamente el acceso a los 6 módulos de la plataforma por moderador. Si un colaborador comete faltas en un área (ej. contesta inadecuadamente en soporte), sus facultades pueden ser revocadas individualmente sin dar de baja su cuenta institucional.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small text-white-50 mb-1">Tu Nivel Administrativo Actual:</div>
+                                {% if es_admin_nivel_1 %}
+                                    <span class="badge bg-warning text-dark px-3 py-2 fw-bold fs-6 shadow-xs">
+                                        <i class="fas fa-crown me-1 text-dark"></i>Nivel 1 — Superadmin Maestro
+                                    </span>
+                                {% elif es_admin_nivel_2 %}
+                                    <span class="badge bg-success text-white px-3 py-2 fw-bold fs-6 shadow-xs">
+                                        <i class="fas fa-star me-1 text-warning"></i>Nivel 2 — Admin Institucional
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark px-3 py-2 fw-bold fs-6 shadow-xs">
+                                        <i class="fas fa-shield-alt me-1 text-primary"></i>Nivel 3 — Moderador Operativo
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GUÍA EXPLICATIVA DE LOS 3 NIVELES -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-xs rounded-4 p-3 bg-white border-top border-4 border-warning">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-warning text-dark rounded-circle p-2"><i class="fas fa-crown"></i></span>
+                                <h6 class="fw-bold text-dark mb-0">Nivel 1: Superadmin Maestro</h6>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                Cuenta de mando total (@yaele / ID 1). <strong>Único con acceso y enlace al panel nativo de Django Admin (/admin/)</strong>. Puede activar, revocar permisos y cambiar la jerarquía de cualquier usuario.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-xs rounded-4 p-3 bg-white border-top border-4 border-success">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-success text-white rounded-circle p-2"><i class="fas fa-star"></i></span>
+                                <h6 class="fw-bold text-dark mb-0">Nivel 2: Admin Institucional</h6>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                Poder administrativo amplio (moderar, dictaminar, emitir auditorías y regular Nivel 3). <strong>Acceso a Django Admin totalmente bloqueado y oculto por seguridad</strong>. No puede alterar a Nivel 1.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-xs rounded-4 p-3 bg-white border-top border-4 border-info">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-info text-dark rounded-circle p-2"><i class="fas fa-shield-alt"></i></span>
+                                <h6 class="fw-bold text-dark mb-0">Nivel 3: Moderador Operativo</h6>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                Colaboradores de soporte, becarios y capturistas. Sus facultades dependen estrictamente de los interruptores que sus superiores les mantengan activos a continuación.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLA DE MODERADORES Y SWITCHES DE PERMISOS -->
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sliders-h text-primary me-2"></i>Matriz de Asignación y Revocación de Facultades</h6>
+                            <small class="text-muted">Por defecto, las cuentas inician con todos los permisos activos. Haz clic en cualquier interruptor para revocar o restituir un módulo.</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill px-3 py-1 font-monospace">
+                            {{ moderadores_gestion.count }} cuenta{{ moderadores_gestion.count|pluralize:"s" }} de moderación
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light text-muted small text-uppercase">
+                                    <tr>
+                                        <th class="ps-4">Moderador / Usuario</th>
+                                        <th>Jerarquía</th>
+                                        <th class="text-center" title="Atención y respuesta de tickets en Mesa de Soporte">🎧 Soporte</th>
+                                        <th class="text-center" title="Aprobar, rechazar o solicitar correcciones a obras">📄 Obras</th>
+                                        <th class="text-center" title="Admitir o suspender cuentas de usuario">👥 Usuarios</th>
+                                        <th class="text-center" title="Validar semblanzas y fotos del Claustro">🎓 Semblanzas</th>
+                                        <th class="text-center" title="Emitir dictámenes oficiales de auditoría semestral">📜 Auditoría</th>
+                                        <th class="text-center" title="Descargar copias de seguridad .ZIP y .JSON">💾 Respaldos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mod_user in moderadores_gestion %}
+                                    {% with autor=mod_user.autor %}
+                                    <tr id="fila-moderador-{{ mod_user.id }}">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="avatar-sm rounded-circle bg-light border d-flex align-items-center justify-content-center text-dark fw-bold" style="width: 38px; height: 38px;">
+                                                    {% if autor and autor.foto_perfil %}
+                                                        <img src="{{ autor.foto_perfil.url }}" alt="@{{ mod_user.username }}" class="rounded-circle w-100 h-100" style="object-fit: cover;">
+                                                    {% else %}
+                                                        {{ mod_user.username|slice:":1"|upper }}
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-dark font-monospace small">@{{ mod_user.username }}</div>
+                                                    <div class="text-muted small text-truncate" style="max-width: 170px;">
+                                                        {% if autor and autor.nombre %}{{ autor.nombre }}{% else %}{{ mod_user.get_full_name|default:mod_user.email }}{% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if es_admin_nivel_1 and mod_user.id != request.user.id %}
+                                                <select class="form-select form-select-sm rounded-pill fw-bold border" onchange="cambiarNivelJerarquico({{ mod_user.id }}, this.value)">
+                                                    <option value="NIVEL_1" {% if autor.get_nivel_admin_efectivo == 'NIVEL_1' %}selected{% endif %}>👑 Nivel 1 (Maestro)</option>
+                                                    <option value="NIVEL_2" {% if autor.get_nivel_admin_efectivo == 'NIVEL_2' %}selected{% endif %}>⭐ Nivel 2 (Institucional)</option>
+                                                    <option value="NIVEL_3" {% if autor.get_nivel_admin_efectivo == 'NIVEL_3' %}selected{% endif %}>🛡️ Nivel 3 (Operativo)</option>
+                                                </select>
+                                            {% elif es_admin_nivel_2 and autor.get_nivel_admin_efectivo == 'NIVEL_3' %}
+                                                <span class="badge bg-info text-dark rounded-pill px-3 py-1">🛡️ Nivel 3 (Operativo)</span>
+                                            {% else %}
+                                                {% if autor.get_nivel_admin_efectivo == 'NIVEL_1' %}
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fas fa-crown me-1"></i>Nivel 1</span>
+                                                {% elif autor.get_nivel_admin_efectivo == 'NIVEL_2' %}
+                                                    <span class="badge bg-success text-white rounded-pill px-3 py-1"><i class="fas fa-star me-1"></i>Nivel 2</span>
+                                                {% else %}
+                                                    <span class="badge bg-info text-dark rounded-pill px-3 py-1"><i class="fas fa-shield-alt me-1"></i>Nivel 3</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <!-- SWITCH 1: SOPORTE -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-soporte-{{ mod_user.id }}"
+                                                       {% if autor.permiso_soporte %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'soporte', this.checked)">
+                                            </div>
+                                        </td>
+                                        <!-- SWITCH 2: OBRAS -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-moderar_obras-{{ mod_user.id }}"
+                                                       {% if autor.permiso_moderar_obras %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'moderar_obras', this.checked)">
+                                            </div>
+                                        </td>
+                                        <!-- SWITCH 3: USUARIOS -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-gestionar_usuarios-{{ mod_user.id }}"
+                                                       {% if autor.permiso_gestionar_usuarios %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'gestionar_usuarios', this.checked)">
+                                            </div>
+                                        </td>
+                                        <!-- SWITCH 4: SEMBLANZAS -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-revisar_semblanzas-{{ mod_user.id }}"
+                                                       {% if autor.permiso_revisar_semblanzas %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'revisar_semblanzas', this.checked)">
+                                            </div>
+                                        </td>
+                                        <!-- SWITCH 5: AUDITORÍA -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-emitir_auditorias-{{ mod_user.id }}"
+                                                       {% if autor.permiso_emitir_auditorias %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'emitir_auditorias', this.checked)">
+                                            </div>
+                                        </td>
+                                        <!-- SWITCH 6: RESPALDOS -->
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="switch-descargar_respaldos-{{ mod_user.id }}"
+                                                       {% if autor.permiso_descargar_respaldos %}checked{% endif %}
+                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       onchange="cambiarPermisoModerador({{ mod_user.id }}, 'descargar_respaldos', this.checked)">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endwith %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="tab-pane fade" id="autores-fusion" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4 rounded-3 overflow-hidden">
                     <div class="card-header bg-white py-3 border-bottom">
@@ -5050,6 +5300,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
+                        <div id="presenciaFusionBadge" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-40 px-2.5 py-1 rounded-pill small fw-normal d-inline-flex align-items-center gap-1 shadow-2xs" title="Administradores en esta herramienta">
+                            <i class="fas fa-users text-warning me-1"></i>
+                            <span id="presenciaFusionTexto">Solo tú en Fusión</span>
+                        </div>
                         <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold shadow-xs" data-bs-toggle="modal" data-bs-target="#modalFusionesDelDia" title="Consultar fusiones realizadas hoy e historial">
                             <i class="fas fa-history me-1"></i>Fusiones del Día
                             {% if total_fusiones_hoy > 0 %}
@@ -5714,6 +5968,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
+                        <div id="splitViewBloqueoBadge" class="badge bg-warning text-dark border border-warning px-2.5 py-1 rounded-pill small fw-bold d-none align-items-center gap-1 shadow-2xs">
+                            <i class="fas fa-user-lock me-1"></i>
+                            <span id="splitViewBloqueoTexto">En revisión activa</span>
+                        </div>
                         <span id="splitViewBadgeEstado" class="badge bg-warning text-dark rounded-pill px-3 py-1">En Revisión</span>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -5831,11 +6089,21 @@
     <div class="modal fade" id="modalLimpiarHuerfanos" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);">
-                    <h5 class="modal-title fw-bold mb-0">
-                        <i class="fas fa-broom me-2"></i>Depuración del Catálogo — Autores Huérfanos
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header text-white py-3 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-broom fa-lg"></i>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0">Depuración del Catálogo — Autores Huérfanos</h5>
+                            <small class="text-white text-opacity-75">Limpieza segura de perfiles sin asociar</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div id="presenciaHuerfanosBadge" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-40 px-2.5 py-1 rounded-pill small fw-normal d-inline-flex align-items-center gap-1 shadow-2xs" title="Administradores en esta herramienta">
+                            <i class="fas fa-users text-warning me-1"></i>
+                            <span id="presenciaHuerfanosTexto">Solo tú en Huérfanos</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
                 <div class="modal-body p-4">
                     <!-- Tarjeta Explicativa Compacta -->
@@ -6219,9 +6487,15 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <form id="formRechazarDoc" method="post" action="">
                     {% csrf_token %}
-                    <div class="modal-header bg-warning py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2"></i> Indicar Correcciones Requeridas</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header bg-warning py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="modal-title fw-bold mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Indicar Correcciones Requeridas</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <div id="rechazarBloqueoBadge" class="badge bg-danger text-white border border-danger px-2.5 py-1 rounded-pill small fw-bold d-none align-items-center gap-1 shadow-2xs">
+                                <i class="fas fa-user-lock me-1"></i>
+                                <span id="rechazarBloqueoTexto">En revisión activa</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
                     </div>
                     <div class="modal-body p-4">
                         <p class="mb-3 small text-muted">Selecciona los elementos que necesitan corrección en la obra <strong id="docTituloModal"></strong>:</p>
@@ -6477,9 +6751,17 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <form id="formEditarSemblanzaAdmin" method="post" action="" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="modal-header bg-success text-white py-3">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-user-edit me-2"></i>Editar Ficha Académica y Semblanza: <span id="adminEditNombreTitulo" class="text-warning"></span></h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="modal-title fw-bold mb-0"><i class="fas fa-user-edit me-2"></i>Editar Ficha Académica y Semblanza: <span id="adminEditNombreTitulo" class="text-warning"></span></h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div id="adminEditSemblanzaBloqueoBadge" class="badge bg-warning text-dark border border-warning px-2.5 py-1 rounded-pill small fw-bold d-none align-items-center gap-1 shadow-2xs">
+                                <i class="fas fa-user-lock me-1"></i>
+                                <span id="adminEditSemblanzaBloqueoTexto">En edición activa</span>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
                     </div>
                     <div class="modal-body p-4">
                         <!-- BLOQUE 1: DATOS GENERALES -->
@@ -8267,8 +8549,36 @@
                 modalRechazo.addEventListener('show.bs.modal', function(event) {
                     const btn = event.relatedTarget;
                     if (!btn) return;
+                    const docId = btn.getAttribute('data-docid');
                     document.getElementById('docTituloModal').textContent = `"${btn.getAttribute('data-doctitulo')}"`;
-                    document.getElementById('formRechazarDoc').action = `/gestion-documentos/rechazar/${btn.getAttribute('data-docid')}/`;
+                    document.getElementById('formRechazarDoc').action = `/gestion-documentos/rechazar/${docId}/`;
+
+                    if (docId) {
+                        modalRechazo._currentDocId = docId;
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=bloquear&recurso_tipo=DOCUMENTO&recurso_id=${docId}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const badgeBloqueo = document.getElementById('rechazarBloqueoBadge');
+                            const textoBloqueo = document.getElementById('rechazarBloqueoTexto');
+                            if (badgeBloqueo && textoBloqueo) {
+                                if (data.status === 'bloqueado_por_otro') {
+                                    textoBloqueo.textContent = `En revisión activa por @${data.admin_username}`;
+                                    badgeBloqueo.classList.remove('d-none');
+                                    badgeBloqueo.classList.add('d-inline-flex');
+                                } else {
+                                    badgeBloqueo.classList.add('d-none');
+                                    badgeBloqueo.classList.remove('d-inline-flex');
+                                }
+                            }
+                        }).catch(() => {});
+                    }
+                });
+                modalRechazo.addEventListener('hidden.bs.modal', function() {
+                    if (modalRechazo._currentDocId) {
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=liberar&recurso_tipo=DOCUMENTO&recurso_id=${modalRechazo._currentDocId}`)
+                        .catch(() => {});
+                        modalRechazo._currentDocId = null;
+                    }
                 });
             }
 
@@ -8723,6 +9033,34 @@
                     });
 
                     actualizarVisibilidadCabecerasAdmin();
+
+                    if (autorId) {
+                        modalEditarSemblanzaAdmin._currentAutorId = autorId;
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=bloquear&recurso_tipo=SEMBLANZA&recurso_id=${autorId}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const badgeBloqueo = document.getElementById('adminEditSemblanzaBloqueoBadge');
+                            const textoBloqueo = document.getElementById('adminEditSemblanzaBloqueoTexto');
+                            if (badgeBloqueo && textoBloqueo) {
+                                if (data.status === 'bloqueado_por_otro') {
+                                    textoBloqueo.textContent = `En edición por @${data.admin_username}`;
+                                    badgeBloqueo.classList.remove('d-none');
+                                    badgeBloqueo.classList.add('d-inline-flex');
+                                } else {
+                                    badgeBloqueo.classList.add('d-none');
+                                    badgeBloqueo.classList.remove('d-inline-flex');
+                                }
+                            }
+                        }).catch(() => {});
+                    }
+                });
+
+                modalEditarSemblanzaAdmin.addEventListener('hidden.bs.modal', function() {
+                    if (modalEditarSemblanzaAdmin._currentAutorId) {
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=liberar&recurso_tipo=SEMBLANZA&recurso_id=${modalEditarSemblanzaAdmin._currentAutorId}`)
+                        .catch(() => {});
+                        modalEditarSemblanzaAdmin._currentAutorId = null;
+                    }
                 });
             }
 
@@ -10923,6 +11261,34 @@
                         if (noFile) noFile.classList.remove('d-none');
                         if (btnOpenNewTab) btnOpenNewTab.style.display = 'none';
                     }
+
+                    if (docId) {
+                        modalSplitEl._currentDocId = docId;
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=bloquear&recurso_tipo=DOCUMENTO&recurso_id=${docId}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const badgeBloqueo = document.getElementById('splitViewBloqueoBadge');
+                            const textoBloqueo = document.getElementById('splitViewBloqueoTexto');
+                            if (badgeBloqueo && textoBloqueo) {
+                                if (data.status === 'bloqueado_por_otro') {
+                                    textoBloqueo.textContent = `En revisión activa por @${data.admin_username}`;
+                                    badgeBloqueo.classList.remove('d-none');
+                                    badgeBloqueo.classList.add('d-inline-flex');
+                                } else {
+                                    badgeBloqueo.classList.add('d-none');
+                                    badgeBloqueo.classList.remove('d-inline-flex');
+                                }
+                            }
+                        }).catch(() => {});
+                    }
+                });
+
+                modalSplitEl.addEventListener('hidden.bs.modal', function() {
+                    if (modalSplitEl._currentDocId) {
+                        fetch(`{% url 'api_bloqueo_concurrencia' %}?accion=liberar&recurso_tipo=DOCUMENTO&recurso_id=${modalSplitEl._currentDocId}`)
+                        .catch(() => {});
+                        modalSplitEl._currentDocId = null;
+                    }
                 });
             }
 
@@ -11250,6 +11616,165 @@
             document.getElementById('soporteDesactivarModalUsername').textContent = '@' + username;
             const modal = new bootstrap.Modal(document.getElementById('modalDesactivarCuentaSoporte'));
             modal.show();
+        }
+
+        // ==============================================================================
+        // GESTIÓN DE PERMISOS GRANULARES Y JERARQUÍAS (IDEAS 5 Y 7)
+        // ==============================================================================
+        window.abrirModalCentroRespaldos = function() {
+            const el = document.getElementById('modalCentroRespaldos');
+            if (el) {
+                if (window.bootstrap && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(el).show();
+                } else if (window.$) {
+                    $('#modalCentroRespaldos').modal('show');
+                }
+            }
+        };
+
+        window.cambiarPermisoModerador = function(userId, permiso, nuevoEstado) {
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            fd.append('permiso', permiso);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch("{% url 'toggle_permiso_moderador' %}", {
+                method: 'POST',
+                body: fd
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    mostrarToast(data.mensaje, data.nuevo_valor ? 'success' : 'warning');
+                } else {
+                    const sw = document.getElementById(`switch-${permiso}-${userId}`);
+                    if (sw) sw.checked = !nuevoEstado;
+                    mostrarToast(data.message || 'Error al cambiar permiso', 'danger');
+                }
+            })
+            .catch(err => {
+                const sw = document.getElementById(`switch-${permiso}-${userId}`);
+                if (sw) sw.checked = !nuevoEstado;
+                mostrarToast('Error de red al actualizar permisos', 'danger');
+            });
+        };
+
+        window.cambiarNivelJerarquico = function(userId, nuevoNivel) {
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            fd.append('nuevo_nivel', nuevoNivel);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch("{% url 'toggle_permiso_moderador' %}", {
+                method: 'POST',
+                body: fd
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    mostrarToast(data.mensaje, 'success');
+                } else {
+                    mostrarToast(data.message || 'No autorizado para cambiar jerarquía', 'danger');
+                }
+            })
+            .catch(err => {
+                mostrarToast('Error de red al actualizar jerarquía', 'danger');
+            });
+        };
+
+        // PRESENCIA DE ADMINISTRADORES EN TIEMPO REAL (IDEA 5)
+        window.pingPresenciaArea = function(areaNombre) {
+            fetch(`{% url 'api_presencia_heartbeat' %}?area=${encodeURIComponent(areaNombre)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    // Actualizar barra superior general
+                    const badge = document.getElementById('topbarPresenciaTexto');
+                    if (badge && badge.parentElement) {
+                        if (data.otros_total > 0) {
+                            const nombres = data.otros.map(o => '@' + o.username).join(', ');
+                            badge.innerHTML = `<strong>${data.total_activos}</strong> admins activos (tú y ${nombres})`;
+                            badge.parentElement.classList.remove('bg-white', 'text-muted');
+                            badge.parentElement.classList.add('bg-success', 'bg-opacity-10', 'text-success', 'border-success');
+                        } else {
+                            badge.textContent = `1 admin activo (tú)`;
+                            badge.parentElement.classList.remove('bg-success', 'bg-opacity-10', 'text-success', 'border-success');
+                            badge.parentElement.classList.add('bg-white', 'text-muted');
+                        }
+                    }
+
+                    // Actualizar badge de Fusión si el área es FUSION
+                    if (areaNombre === 'FUSION') {
+                        const fBadge = document.getElementById('presenciaFusionBadge');
+                        const fText = document.getElementById('presenciaFusionTexto');
+                        if (fBadge && fText) {
+                            if (data.otros_total > 0) {
+                                const nombres = data.otros.map(o => '@' + o.username).join(', ');
+                                fText.innerHTML = `<strong>${data.total_activos}</strong> en Fusión (tú y ${nombres})`;
+                                fBadge.classList.remove('bg-white', 'bg-opacity-20');
+                                fBadge.classList.add('bg-warning', 'text-dark', 'fw-bold');
+                            } else {
+                                fText.textContent = `Solo tú en Fusión`;
+                                fBadge.classList.remove('bg-warning', 'text-dark', 'fw-bold');
+                                fBadge.classList.add('bg-white', 'bg-opacity-20');
+                            }
+                        }
+                    }
+
+                    // Actualizar badge de Huérfanos si el área es HUERFANOS
+                    if (areaNombre === 'HUERFANOS') {
+                        const hBadge = document.getElementById('presenciaHuerfanosBadge');
+                        const hText = document.getElementById('presenciaHuerfanosTexto');
+                        if (hBadge && hText) {
+                            if (data.otros_total > 0) {
+                                const nombres = data.otros.map(o => '@' + o.username).join(', ');
+                                hText.innerHTML = `<strong>${data.total_activos}</strong> en Huérfanos (tú y ${nombres})`;
+                                hBadge.classList.remove('bg-white', 'bg-opacity-20');
+                                hBadge.classList.add('bg-warning', 'text-dark', 'fw-bold');
+                            } else {
+                                hText.textContent = `Solo tú en Huérfanos`;
+                                hBadge.classList.remove('bg-warning', 'text-dark', 'fw-bold');
+                                hBadge.classList.add('bg-white', 'bg-opacity-20');
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
+        };
+
+        // Iniciar heartbeat al cargar panel
+        pingPresenciaArea('GESTION_USUARIOS');
+        setInterval(() => {
+            pingPresenciaArea('GESTION_USUARIOS');
+        }, 30000);
+
+        // Control de presencia colaborativa en Modales Especiales
+        let intervalPresenciaModal = null;
+        const modalFusionEl = document.getElementById('modalFusionarAutores');
+        if (modalFusionEl) {
+            modalFusionEl.addEventListener('shown.bs.modal', function() {
+                pingPresenciaArea('FUSION');
+                if (intervalPresenciaModal) clearInterval(intervalPresenciaModal);
+                intervalPresenciaModal = setInterval(() => pingPresenciaArea('FUSION'), 15000);
+            });
+            modalFusionEl.addEventListener('hidden.bs.modal', function() {
+                if (intervalPresenciaModal) clearInterval(intervalPresenciaModal);
+                pingPresenciaArea('GESTION_USUARIOS');
+            });
+        }
+
+        const modalHuerfanosEl = document.getElementById('modalLimpiarHuerfanos');
+        if (modalHuerfanosEl) {
+            modalHuerfanosEl.addEventListener('shown.bs.modal', function() {
+                pingPresenciaArea('HUERFANOS');
+                if (intervalPresenciaModal) clearInterval(intervalPresenciaModal);
+                intervalPresenciaModal = setInterval(() => pingPresenciaArea('HUERFANOS'), 15000);
+            });
+            modalHuerfanosEl.addEventListener('hidden.bs.modal', function() {
+                if (intervalPresenciaModal) clearInterval(intervalPresenciaModal);
+                pingPresenciaArea('GESTION_USUARIOS');
+            });
         }
     </script>
 

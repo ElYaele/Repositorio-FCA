@@ -33,7 +33,8 @@ from .models import (
     Nombramiento, EnlaceProfesional, RegistroAuditoria, Universidad,
     InvitacionCoautoria, MensajeInterno, ROL_DOCENTE_OPCIONES, HistorialFusion,
     ConfiguracionSistema, PreguntaFrecuenteSoporte, EventoFCA, EnlaceRapidoPortal,
-    RedSocialFooter, EnlacePiePagina, MensajeContacto, AuditoriaSemestral
+    RedSocialFooter, EnlacePiePagina, MensajeContacto, AuditoriaSemestral,
+    PresenciaAdministrador, BloqueoConcurrencia
 )
 import random
 from .forms import ArticuloForm
@@ -2489,7 +2490,13 @@ def soporte_institucional_view(request):
     - Para superadministradores: Bandeja centralizada de atención y resolución de tickets.
     """
     mi_autor = getattr(request.user, 'autor', None)
-    es_admin = request.user.is_superuser
+    es_admin = request.user.is_superuser or (mi_autor and mi_autor.es_soporte)
+
+    if es_admin and mi_autor and not mi_autor.es_admin_nivel_1:
+        if not getattr(mi_autor, 'permiso_soporte', True):
+            messages.warning(request, "⚠️ Tu acceso como moderador a la Mesa de Soporte ha sido revocado temporalmente por la administración.")
+            return redirect('gestion_usuarios')
+
     ticket_autor_id = request.GET.get('ticket_autor')
     filtro_estado = request.GET.get('estado')
     vista = request.GET.get('vista', 'docentes')
@@ -4203,6 +4210,29 @@ def panel_usuarios_view(request):
     total_solicitudes_pendientes = pendientes.count()
     ultimo_user_id = User.objects.order_by('-id').values_list('id', flat=True).first() or 0
 
+    # Cálculo de Días sin Respaldo (Alerta Preventiva de 15 Días)
+    config_sis = ConfiguracionSistema.get_solo()
+    if config_sis.fecha_ultimo_respaldo:
+        dias_sin_respaldo = (timezone.now() - config_sis.fecha_ultimo_respaldo).days
+    else:
+        ultimo_log_respaldo = RegistroAuditoria.objects.filter(accion__icontains="Respaldo").order_by('-created_at').first()
+        if ultimo_log_respaldo:
+            dias_sin_respaldo = (timezone.now() - ultimo_log_respaldo.created_at).days
+        else:
+            dias_sin_respaldo = 16
+    alerta_respaldo_pendiente = dias_sin_respaldo >= 15
+
+    # Jerarquía del usuario actual
+    caller_autor = getattr(request.user, 'autor', None)
+    es_n1 = (request.user.id == 1 or request.user.username.lower() == 'yaele') or (caller_autor and caller_autor.es_admin_nivel_1)
+    es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
+    es_n3 = (not es_n1) and (not es_n2)
+
+    # Lista de moderadores para gestión de permisos
+    moderadores_gestion = User.objects.filter(
+        Q(is_staff=True) | Q(is_superuser=True) | Q(autor__es_soporte=True) | Q(autor__es_operador_tecnico=True)
+    ).select_related('autor').distinct().order_by('username')
+
     context = {
         'pendientes': pendientes,
         'suspendidas': suspendidas,
@@ -4316,6 +4346,17 @@ def panel_usuarios_view(request):
         'semestre_actual_num': '1' if timezone.localdate().month <= 6 else '2',
         'periodo_actual': f"{timezone.localdate().year}-{'1' if timezone.localdate().month <= 6 else '2'}",
         'metricas_semestre_actual': calcular_metricas_semestre(timezone.localdate().year, '1' if timezone.localdate().month <= 6 else '2'),
+
+        # Estado de Respaldos y Alerta Preventiva de 15 Días
+        'dias_sin_respaldo': dias_sin_respaldo,
+        'alerta_respaldo_pendiente': alerta_respaldo_pendiente,
+
+        # Jerarquías y Permisos de Administradores
+        'es_admin_nivel_1': es_n1,
+        'es_admin_nivel_2': es_n2,
+        'es_admin_nivel_3': es_n3,
+        'mi_autor_admin': caller_autor,
+        'moderadores_gestion': moderadores_gestion,
     }
     return render(request, 'panel_usuarios.html', context)
 
@@ -4630,6 +4671,215 @@ def dictamen_semestral_pdf_view(request, auditoria_id):
         'fecha_impresion': timezone.now(),
     }
     return render(request, 'reporte_dictamen_semestral.html', context)
+
+
+# ==============================================================================
+# CONTROL DE PRESENCIA, CONCURRENCIA Y PERMISOS GRANULARES (IDEAS 5 Y 7)
+# ==============================================================================
+
+@login_required
+def api_presencia_heartbeat_view(request):
+    """
+    Heartbeat en tiempo real de presencia colaborativa de administradores (Idea 5).
+    Registra la presencia del admin actual en un área del sistema y devuelve la lista
+    de otros administradores activos en la misma área (ventana de 2 minutos).
+    """
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'No autorizado'}, status=403)
+
+    area = request.GET.get('area') or request.POST.get('area') or 'GESTION_USUARIOS'
+    area = area.upper()
+    ahora = timezone.now()
+
+    # Limpieza periódica de presencias inactivas (> 5 minutos)
+    PresenciaAdministrador.objects.filter(ultima_actividad__lt=ahora - timedelta(minutes=5)).delete()
+
+    # Registrar o actualizar presencia actual
+    PresenciaAdministrador.objects.update_or_create(
+        admin=request.user,
+        area=area,
+        defaults={'ultima_actividad': ahora}
+    )
+
+    # Consultar otros administradores en la misma área activos en los últimos 2 minutos
+    limite_activo = ahora - timedelta(minutes=2)
+    presencias = PresenciaAdministrador.objects.filter(
+        area=area,
+        ultima_actividad__gte=limite_activo
+    ).select_related('admin', 'admin__autor')
+
+    activos = []
+    for p in presencias:
+        nombre = p.admin.get_full_name() or p.admin.username
+        if hasattr(p.admin, 'autor') and p.admin.autor and p.admin.autor.nombre:
+            nombre = p.admin.autor.nombre
+        activos.append({
+            'username': p.admin.username,
+            'nombre': nombre,
+            'es_yo': p.admin_id == request.user.id
+        })
+
+    otros = [a for a in activos if not a['es_yo']]
+
+    return JsonResponse({
+        'status': 'ok',
+        'area': area,
+        'total_activos': len(activos),
+        'otros_total': len(otros),
+        'otros': otros
+    })
+
+
+@login_required
+def api_bloqueo_concurrencia_view(request):
+    """
+    API de candado suave en tiempo real para evitar que 2 moderadores editen o dictaminen
+    la misma obra o semblanza simultáneamente (Idea 5).
+    """
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'No autorizado'}, status=403)
+
+    accion = request.GET.get('accion') or request.POST.get('accion') or 'consultar'
+    recurso_tipo = (request.GET.get('recurso_tipo') or request.POST.get('recurso_tipo') or 'DOCUMENTO').upper()
+    recurso_id_raw = request.GET.get('recurso_id') or request.POST.get('recurso_id')
+    try:
+        recurso_id = int(recurso_id_raw)
+    except (TypeError, ValueError):
+        return JsonResponse({'status': 'error', 'message': 'ID de recurso inválido'}, status=400)
+
+    ahora = timezone.now()
+    BloqueoConcurrencia.objects.filter(expira_en__lt=ahora).delete()
+
+    bloqueo_existente = BloqueoConcurrencia.objects.filter(
+        recurso_tipo=recurso_tipo,
+        recurso_id=recurso_id,
+        expira_en__gte=ahora
+    ).select_related('admin', 'admin__autor').first()
+
+    if accion == 'liberar':
+        if bloqueo_existente and bloqueo_existente.admin_id == request.user.id:
+            bloqueo_existente.delete()
+        return JsonResponse({'status': 'ok', 'bloqueado': False})
+
+    elif accion == 'bloquear':
+        if bloqueo_existente and bloqueo_existente.admin_id != request.user.id:
+            nombre = bloqueo_existente.admin.get_full_name() or bloqueo_existente.admin.username
+            if hasattr(bloqueo_existente.admin, 'autor') and bloqueo_existente.admin.autor.nombre:
+                nombre = bloqueo_existente.admin.autor.nombre
+            return JsonResponse({
+                'status': 'bloqueado_por_otro',
+                'bloqueado': True,
+                'admin_username': bloqueo_existente.admin.username,
+                'admin_nombre': nombre,
+                'mensaje': f"En revisión activa por @{bloqueo_existente.admin.username}"
+            })
+        else:
+            expira = ahora + timedelta(minutes=10)
+            BloqueoConcurrencia.objects.update_or_create(
+                recurso_tipo=recurso_tipo,
+                recurso_id=recurso_id,
+                defaults={'admin': request.user, 'expira_en': expira}
+            )
+            return JsonResponse({'status': 'ok', 'bloqueado': True, 'es_propio': True})
+
+    # Consultar
+    if bloqueo_existente:
+        nombre = bloqueo_existente.admin.get_full_name() or bloqueo_existente.admin.username
+        if hasattr(bloqueo_existente.admin, 'autor') and bloqueo_existente.admin.autor.nombre:
+            nombre = bloqueo_existente.admin.autor.nombre
+        return JsonResponse({
+            'status': 'ok',
+            'bloqueado': True,
+            'es_propio': bloqueo_existente.admin_id == request.user.id,
+            'admin_username': bloqueo_existente.admin.username,
+            'admin_nombre': nombre,
+            'mensaje': f"En revisión por @{bloqueo_existente.admin.username}" if bloqueo_existente.admin_id != request.user.id else "Bloqueo activo propio"
+        })
+    else:
+        return JsonResponse({'status': 'ok', 'bloqueado': False})
+
+
+@login_required
+def toggle_permiso_moderador_view(request):
+    """
+    Control de Permisos Granulares y Niveles Jerárquicos de Administradores (Idea 7).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+    caller_autor = getattr(request.user, 'autor', None)
+    es_n1 = (request.user.id == 1 or request.user.username.lower() == 'yaele') or (caller_autor and caller_autor.es_admin_nivel_1)
+    es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
+
+    if not (es_n1 or es_n2):
+        return JsonResponse({'status': 'error', 'message': 'No tienes permisos jerárquicos para modificar moderadores.'}, status=403)
+
+    target_user_id = request.POST.get('user_id')
+    permiso = request.POST.get('permiso', '').strip()
+    nuevo_nivel = request.POST.get('nuevo_nivel', '').strip()
+
+    target_user = get_object_or_404(User, id=target_user_id)
+    target_autor = getattr(target_user, 'autor', None)
+    if not target_autor:
+        return JsonResponse({'status': 'error', 'message': 'El usuario objetivo no cuenta con perfil de Autor.'}, status=400)
+
+    target_nivel = target_autor.get_nivel_admin_efectivo()
+
+    # Jerarquía: Nivel 2 no puede alterar a Nivel 1 ni a otros Nivel 2
+    if es_n2:
+        if target_nivel in ['NIVEL_1', 'NIVEL_2']:
+            return JsonResponse({'status': 'error', 'message': 'Como Administrador Nivel 2 no puedes modificar permisos de Nivel 1 ni de otros Nivel 2.'}, status=403)
+        if nuevo_nivel in ['NIVEL_1', 'NIVEL_2']:
+            return JsonResponse({'status': 'error', 'message': 'No puedes promover cuentas a Nivel 1 o 2.'}, status=403)
+
+    # Cambio de Nivel
+    if nuevo_nivel:
+        if nuevo_nivel in ['NIVEL_1', 'NIVEL_2', 'NIVEL_3', 'NINGUNO']:
+            target_autor.nivel_administrador = nuevo_nivel
+            target_autor.save(update_fields=['nivel_administrador'])
+            registrar_auditoria(
+                request.user,
+                "Cambio de Nivel de Moderador",
+                f"Se modificó la jerarquía de @{target_user.username} a {nuevo_nivel} por @{request.user.username}."
+            )
+            return JsonResponse({
+                'status': 'ok',
+                'nuevo_nivel': nuevo_nivel,
+                'mensaje': f"Jerarquía de @{target_user.username} actualizada a {target_autor.get_nivel_administrador_display()}."
+            })
+
+    # Cambio de Permiso Granular
+    permisos_validos = {
+        'soporte': ('permiso_soporte', 'Atención en Mesa de Soporte'),
+        'moderar_obras': ('permiso_moderar_obras', 'Moderación de Obras y Cola'),
+        'gestionar_usuarios': ('permiso_gestionar_usuarios', 'Gestión y Admisión de Cuentas'),
+        'revisar_semblanzas': ('permiso_revisar_semblanzas', 'Revisión de Semblanzas y Claustro'),
+        'emitir_auditorias': ('permiso_emitir_auditorias', 'Emisión de Auditorías y Dictámenes'),
+        'descargar_respaldos': ('permiso_descargar_respaldos', 'Descarga de Copias de Seguridad'),
+    }
+
+    if permiso not in permisos_validos:
+        return JsonResponse({'status': 'error', 'message': f'Permiso "{permiso}" desconocido.'}, status=400)
+
+    campo, desc = permisos_validos[permiso]
+    valor_actual = getattr(target_autor, campo, True)
+    nuevo_valor = not valor_actual
+    setattr(target_autor, campo, nuevo_valor)
+    target_autor.save(update_fields=[campo])
+
+    accion_txt = "ACTIVÓ" if nuevo_valor else "REVOCÓ"
+    registrar_auditoria(
+        request.user,
+        "Modificación de Permisos de Moderador",
+        f"Se {accion_txt} el permiso de '{desc}' a @{target_user.username} por @{request.user.username}."
+    )
+
+    return JsonResponse({
+        'status': 'ok',
+        'permiso': permiso,
+        'nuevo_valor': nuevo_valor,
+        'mensaje': f"Permiso '{desc}' para @{target_user.username}: {'ACTIVADO' if nuevo_valor else 'REVOCADO'}."
+    })
 
 
 
@@ -5056,6 +5306,11 @@ def exportar_respaldo_sistema_view(request):
     """
     from django.conf import settings
 
+    if hasattr(request.user, 'autor') and not request.user.autor.es_admin_nivel_1:
+        if not getattr(request.user.autor, 'permiso_descargar_respaldos', True):
+            messages.error(request, "⚠️ Tu permiso para descargar copias de seguridad ha sido revocado por la administración.")
+            return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     modelos = [
         User, Area, TipoContenido, Entidad, Universidad, Nombramiento,
         Autor, EnlaceProfesional, Articulo, InvitacionCoautoria,
@@ -5086,6 +5341,13 @@ def exportar_respaldo_sistema_view(request):
 
     formato = request.GET.get('tipo', 'zip').lower()
     timestamp_str = timezone.now().strftime('%Y%m%d_%H%M%S')
+
+    try:
+        cfg = ConfiguracionSistema.get_solo()
+        cfg.fecha_ultimo_respaldo = timezone.now()
+        cfg.save(update_fields=['fecha_ultimo_respaldo'])
+    except Exception:
+        pass
 
     if formato == 'json':
         json_bytes = json.dumps(payload, indent=2, ensure_ascii=False).encode('utf-8')

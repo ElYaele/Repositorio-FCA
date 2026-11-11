@@ -105,6 +105,9 @@ from .views import (
     obtener_metricas_semestre_api,
     registrar_auditoria_semestral_view,
     dictamen_semestral_pdf_view,
+    api_presencia_heartbeat_view,
+    api_bloqueo_concurrencia_view,
+    toggle_permiso_moderador_view,
 )
 
 urlpatterns = [
@@ -250,4 +253,9 @@ urlpatterns = [
 
     # Sincronización reactiva del panel de usuarios
     path('gestion-usuarios/sync-ajax/', sync_panel_usuarios_ajax_view, name='sync_panel_usuarios_ajax'),
+
+    # Control de Presencia, Concurrencia y Permisos Granulares (Ideas 5 y 7)
+    path('api/presencia/heartbeat/', api_presencia_heartbeat_view, name='api_presencia_heartbeat'),
+    path('api/presencia/bloqueo/', api_bloqueo_concurrencia_view, name='api_bloqueo_concurrencia'),
+    path('api/moderadores/toggle-permiso/', toggle_permiso_moderador_view, name='toggle_permiso_moderador'),
 ]

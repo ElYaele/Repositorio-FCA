@@ -507,6 +507,12 @@
             <span class="badge bg-warning bg-opacity-20 text-dark border border-warning fw-bold">
                 <i class="fas fa-headset me-1 text-warning"></i>Área de Ayuda & Soporte FCA
             </span>
+            {% if es_admin %}
+                <div id="presenciaSoporteBadge" class="badge bg-white text-muted border px-2.5 py-1 rounded-pill small fw-normal d-inline-flex align-items-center gap-1 shadow-2xs ms-2" title="Administradores activos en esta área">
+                    <i class="fas fa-users text-warning me-1"></i>
+                    <span id="presenciaSoporteTexto">Conectando...</span>
+                </div>
+            {% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
             {% if es_admin %}
@@ -1822,6 +1828,36 @@
                 m.show();
             }
         }
+
+        {% if es_admin %}
+        // PRESENCIA DE ADMINISTRADORES EN MESA DE SOPORTE (EN TIEMPO REAL)
+        (function() {
+            function pingPresenciaSoporte() {
+                fetch("{% url 'api_presencia_heartbeat' %}?area=SOPORTE")
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const badge = document.getElementById('presenciaSoporteTexto');
+                        if (badge && badge.parentElement) {
+                            if (data.otros_total > 0) {
+                                const nombres = data.otros.map(o => '@' + o.username).join(', ');
+                                badge.innerHTML = `<strong>${data.total_activos}</strong> admins en Soporte (tú y ${nombres})`;
+                                badge.parentElement.classList.remove('bg-white', 'text-muted');
+                                badge.parentElement.classList.add('bg-success', 'bg-opacity-10', 'text-success', 'border-success');
+                            } else {
+                                badge.textContent = `1 admin en Soporte (tú)`;
+                                badge.parentElement.classList.remove('bg-success', 'bg-opacity-10', 'text-success', 'border-success');
+                                badge.parentElement.classList.add('bg-white', 'text-muted');
+                            }
+                        }
+                    }
+                })
+                .catch(() => {});
+            }
+            pingPresenciaSoporte();
+            setInterval(pingPresenciaSoporte, 30000);
+        })();
+        {% endif %}
     </script>
     <!-- Modal de Alerta Personalizado Soporte -->
     <div class="modal fade" id="modalAlertaSoporte" tabindex="-1" aria-hidden="true">
