@@ -2496,7 +2496,7 @@ def soporte_institucional_view(request):
     if es_admin and mi_autor and not mi_autor.es_admin_nivel_1:
         if not getattr(mi_autor, 'permiso_soporte', True):
             messages.warning(request, "⚠️ Tu acceso como moderador a la Mesa de Soporte ha sido revocado temporalmente por la administración.")
-            return redirect('gestion_usuarios')
+            return redirect('panel_usuarios')
 
     ticket_autor_id = request.GET.get('ticket_autor')
     filtro_estado = request.GET.get('estado')
@@ -4669,7 +4669,7 @@ def registrar_auditoria_semestral_view(request):
     Registra formalmente una auditoría semestral del repositorio con folio, sello SHA-256 y aval oficial.
     """
     if request.method != 'POST':
-        return redirect('gestion_usuarios')
+        return redirect('panel_usuarios')
 
     anio = int(request.POST.get('anio', timezone.localdate().year))
     semestre = request.POST.get('semestre', '1')
@@ -8449,7 +8449,7 @@ def cambiar_estado_contacto_view(request, contacto_id):
     """
     if not request.user.is_superuser:
         messages.error(request, 'Acceso no autorizado.')
-        return redirect('catalogo_general')
+        return redirect('Home')
 
     contacto = get_object_or_404(MensajeContacto, id=contacto_id)
 
