@@ -37,11 +37,9 @@
             padding: 4px 8px 4px 16px;
         }
 
-        /* PANEL LATERAL COMPLETAMENTE ESTÁTICO / FIJO AL HACER SCROLL */
+        /* PANEL LATERAL FLUIDO Y NATURAL (SIN BLOQUEOS DE SCROLL) */
         .sidebar-sticky-panel {
-            position: sticky;
-            top: 86px;
-            z-index: 1000;
+            position: relative;
         }
 
         .sidebar-filters {
@@ -1349,12 +1347,17 @@
             const modalDetalle = document.getElementById('modalDetalleObra');
             if (modalDetalle) {
                 modalDetalle.addEventListener('show.bs.modal', function(event) {
-                    const btn = event.relatedTarget;
+                    let btn = event.relatedTarget;
                     if (!btn) return;
+                    if (!btn.hasAttribute('data-titulo') && btn.closest) {
+                        btn = btn.closest('[data-titulo]') || btn.closest('.doc-card-grid') || btn;
+                    }
 
                     const docId = btn.getAttribute('data-id') || btn.getAttribute('data-doc-id') || '';
                     window.currentModalDocId = docId;
-                    actualizarBotonFavoritoModal(docId);
+                    if (typeof actualizarBotonFavoritoModal === 'function') {
+                        actualizarBotonFavoritoModal(docId);
+                    }
 
                     const titulo = btn.getAttribute('data-titulo') || '';
                     const autores = btn.getAttribute('data-autores') || 'Sin autores';
@@ -1472,7 +1475,6 @@
                     document.getElementById('modalDescripcionObra').textContent = descripcion;
 
                     // Métricas de Impacto Institucional (Lecturas y Descargas)
-                    const docId = btn.getAttribute('data-id') || '';
                     const vistas = btn.getAttribute('data-vistas') || '0';
                     const descargas = btn.getAttribute('data-descargas') || '0';
 
