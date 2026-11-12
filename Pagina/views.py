@@ -413,6 +413,56 @@ class HomePageView(TemplateView):
         context['eventos_fca'] = eventos_activos
         context['enlaces_rapidos'] = EnlaceRapidoPortal.objects.filter(activo=True).order_by('orden', 'id')
 
+        # <--- RECURSOS DESTACADOS AUTOMÁTICOS (ESTILO REPOSITORIO UNAM) --->
+        qs_destacados = articulos_visibles.select_related('tipo_contenido', 'area', 'entidad').prefetch_related('autor')
+        recursos_destacados = []
+        # 1. Priorizar obras arbitradas con DOI oficial
+        con_doi = list(qs_destacados.exclude(Q(doi_enlace__isnull=True) | Q(doi_enlace__exact='')).order_by('-año_produccion', '-created_at')[:6])
+        recursos_destacados.extend(con_doi)
+
+        # 2. Diversificar con Tesis o Libros aprobados
+        ids_existentes = [o.id for o in recursos_destacados]
+        libros_tesis = list(qs_destacados.exclude(id__in=ids_existentes).filter(
+            Q(tipo_contenido__nombre__icontains='tesis') | Q(tipo_contenido__nombre__icontains='libro')
+        ).order_by('-año_produccion', '-created_at')[:4])
+        recursos_destacados.extend(libros_tesis)
+
+        # 3. Completar hasta 10-12 con obras aprobadas recientes
+        if len(recursos_destacados) < 10:
+            ids_existentes = [o.id for o in recursos_destacados]
+            extra = list(qs_destacados.exclude(id__in=ids_existentes).order_by('-año_produccion', '-created_at')[:12 - len(recursos_destacados)])
+            recursos_destacados.extend(extra)
+
+        for doc in recursos_destacados:
+            autores_lista = list(doc.autor.all())
+            if autores_lista:
+                primer_autor = autores_lista[0].nombre
+                doc.autor_str = f"{primer_autor} y cols." if len(autores_lista) > 1 else primer_autor
+            elif doc.autor_original:
+                doc.autor_str = doc.autor_original
+            else:
+                doc.autor_str = "Claustro Académico FCA"
+
+            # Distintivo institucional para el pie de tarjeta
+            tipo_nom = (doc.tipo_contenido.nombre if doc.tipo_contenido else '').lower()
+            if doc.doi_enlace:
+                doc.distintivo_icono = "fas fa-globe-americas text-warning"
+                doc.distintivo_texto = "Arbitrado con DOI"
+            elif 'tesis' in tipo_nom:
+                doc.distintivo_icono = "fas fa-graduation-cap text-success"
+                doc.distintivo_texto = "Tesis Académica"
+            elif 'libro' in tipo_nom:
+                doc.distintivo_icono = "fas fa-book text-primary"
+                doc.distintivo_texto = "Obra Editorial"
+            elif 'propiedad' in tipo_nom:
+                doc.distintivo_icono = "fas fa-shield-alt text-purple"
+                doc.distintivo_texto = "INDAUTOR / IMPI"
+            else:
+                doc.distintivo_icono = "fas fa-unlock-alt text-success"
+                doc.distintivo_texto = "Acceso Abierto"
+
+        context['recursos_destacados'] = recursos_destacados
+
         return context
 
 

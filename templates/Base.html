@@ -935,6 +935,122 @@
             object-fit: contain;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
+
+        /* BOTONES DE ORDENAMIENTO A-Z / Z-A EN ÍNDICES */
+        .btn-sort-az {
+            font-size: 0.68rem !important;
+            padding: 2px 6px !important;
+            line-height: 1.2;
+            border-color: #006633 !important;
+            color: #006633 !important;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        .btn-sort-az:hover,
+        .btn-sort-az.active {
+            background-color: #006633 !important;
+            color: #ffffff !important;
+        }
+
+        /* ==========================================================================
+           CARRUSEL DE RECURSOS DESTACADOS (ESTILO REPOSITORIO UNAM)
+           ========================================================================== */
+        .recursos-destacados-section {
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .recursos-carousel-wrapper {
+            position: relative;
+            padding: 0 10px;
+            width: 100%;
+        }
+        .recursos-track-container {
+            overflow: hidden;
+            width: 100%;
+            padding: 12px 0 18px 0;
+        }
+        .recursos-track {
+            display: flex;
+            gap: 18px;
+            transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+            width: 100%;
+        }
+        .recursos-slide {
+            flex: 0 0 calc((100% - 36px) / 3);
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        @media (max-width: 1199.98px) and (min-width: 768px) {
+            .recursos-slide {
+                flex: 0 0 calc((100% - 18px) / 2);
+            }
+        }
+        @media (max-width: 767.98px) {
+            .recursos-slide {
+                flex: 0 0 100%;
+            }
+        }
+        .recurso-card {
+            border-radius: 14px;
+            background-color: #ffffff;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+            cursor: pointer;
+            border: 1px solid #e2e8f0 !important;
+        }
+        .recurso-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+            border-color: #006633 !important;
+        }
+        .recurso-titulo {
+            color: #0f172a;
+            transition: color 0.18s ease;
+        }
+        .recurso-card:hover .recurso-titulo {
+            color: #006633;
+        }
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .recursos-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            color: #006633;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+        .recursos-nav-btn:hover {
+            background-color: #006633;
+            color: #ffffff;
+            border-color: #006633;
+            box-shadow: 0 6px 16px rgba(0, 102, 51, 0.25);
+        }
+        .recursos-nav-btn.prev-btn {
+            left: -18px;
+        }
+        .recursos-nav-btn.next-btn {
+            right: -18px;
+        }
+        @media (max-width: 576px) {
+            .recursos-nav-btn.prev-btn { left: -6px; }
+            .recursos-nav-btn.next-btn { right: -6px; }
+        }
     </style>
 </head>
 <body>
@@ -1168,8 +1284,12 @@
                             <span><i class="fas fa-university"></i>Entidad Aportante</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroEntidades" class="form-control form-control-sm" placeholder="🔍 Buscar entidad..." onkeyup="filtrarLista('filtroEntidades', 'listaEntidades', 'item-entidad')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaEntidades" class="mb-0">
                                 {% for entidad in entidades %}
@@ -1195,8 +1315,12 @@
                             <span><i class="far fa-calendar-alt"></i>Año de Producción</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroAnios" class="form-control form-control-sm" placeholder="🔍 Buscar año..." onkeyup="filtrarLista('filtroAnios', 'listaAnios', 'item-anio')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'desc', this)" title="Más recientes primero">Reciente</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'asc', this)" title="Más antiguos primero">Antiguo</button>
+                                </div>
                             </div>
                             <ul id="listaAnios" class="mb-0">
                                 {% for anio in anos_produccion %}
@@ -1222,8 +1346,12 @@
                             <span><i class="fas fa-file-alt"></i>Tipo de Contenido</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroTipos" class="form-control form-control-sm" placeholder="🔍 Buscar tipo..." onkeyup="filtrarLista('filtroTipos', 'listaTipos', 'item-tipo')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaTipos" class="mb-0">
                                 {% for tipo_contenido in tipos_contenido %}
@@ -1249,8 +1377,12 @@
                             <span><i class="fas fa-tags"></i>Área / Materia</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroAreas" class="form-control form-control-sm" placeholder="🔍 Buscar área..." onkeyup="filtrarLista('filtroAreas', 'listaAreas', 'item-area')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAreas', 'item-area', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAreas', 'item-area', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaAreas" class="mb-0">
                                 {% for area in areas %}
@@ -1276,8 +1408,12 @@
                             <span><i class="fas fa-users"></i>Autor / Investigador</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroAutores" class="form-control form-control-sm" placeholder="🔍 Buscar autor..." onkeyup="filtrarLista('filtroAutores', 'listaAutores', 'item-autor')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaAutores" class="mb-0">
                                 {% for autor in autores %}
@@ -1303,8 +1439,12 @@
                             <span><i class="fas fa-language"></i>Idioma</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroIdiomas" class="form-control form-control-sm" placeholder="🔍 Buscar idioma..." onkeyup="filtrarLista('filtroIdiomas', 'listaIdiomas', 'item-idioma')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaIdiomas" class="mb-0">
                                 {% for item in idiomas_existentes %}
@@ -1330,8 +1470,12 @@
                             <span><i class="fas fa-book-open"></i>Revista / Editorial</span>
                         </h2>
                         <div class="category-content p-2">
-                            <div class="mb-2">
+                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
                                 <input type="text" id="filtroRevistas" class="form-control form-control-sm" placeholder="🔍 Buscar revista..." onkeyup="filtrarLista('filtroRevistas', 'listaRevistas', 'item-revista')">
+                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
+                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                                </div>
                             </div>
                             <ul id="listaRevistas" class="mb-0">
                                 {% for item in revistas_existentes %}
@@ -1613,6 +1757,226 @@
         </div>
     </div>
 
+    <!-- SECCIÓN: RECURSOS DESTACADOS (CARRUSEL AL ESTILO REPOSITORIO UNAM) -->
+    <div class="recursos-destacados-section py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap">
+                <div>
+                    <h2 class="font-weight-bold text-uppercase mb-1" style="color: #1e293b; letter-spacing: -0.5px; font-size: 2rem;">
+                        RECURSOS <span class="badge px-3 py-1 text-white shadow-xs" style="background-color: #dd971a; font-size: 1.4rem; vertical-align: middle; border-radius: 6px; letter-spacing: 0;">DESTACADOS</span>
+                    </h2>
+                    <p class="text-muted mb-0 small" style="font-size: 0.9rem;">
+                        Publicaciones arbitradas, tesis sobresalientes y producción científica relevante del acervo de la Facultad de Contaduría y Administración (UABC)
+                    </p>
+                </div>
+                <div class="mt-2 mt-md-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 font-weight-bold shadow-2xs" id="btnPausarDestacados" onclick="toggleAutoPlayDestacados()" title="Pausar o reanudar el desplazamiento automático">
+                        <i class="fas fa-pause mr-1 text-warning" id="iconoPausaDestacados"></i><span id="textoPausaDestacados">Pausar el movimiento</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DEL CARRUSEL DE RECURSOS DESTACADOS -->
+            <div class="recursos-carousel-wrapper position-relative">
+                <button type="button" class="recursos-nav-btn prev-btn" id="recursosPrevBtn" aria-label="Recurso anterior" title="Recurso anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <div class="recursos-track-container" id="recursosTrackContainer">
+                    <div class="recursos-track" id="recursosTrack">
+                        {% for doc in recursos_destacados %}
+                        <div class="recursos-slide">
+                            <div class="card recurso-card h-100 shadow-sm border-0" 
+                                 role="button"
+                                 data-toggle="modal" 
+                                 data-target="#modalDetalleObra"
+                                 data-titulo="{{ doc.titulo|escape }}"
+                                 data-autores="{{ doc.autor_str|escape }}"
+                                 data-tipo="{{ doc.tipo_contenido.nombre|default:'Documento Académico'|escape }}"
+                                 data-area="{{ doc.area.nombre|default:'FCA'|escape }}"
+                                 data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración Tijuana'|escape }}"
+                                 data-anio="{{ doc.año_produccion|default:doc.created_at|date:'Y' }}"
+                                 data-idioma="{{ doc.idioma|default:'Español'|escape }}"
+                                 data-descripcion="{{ doc.descripcion|default:'Sin resumen detallado disponible.'|escape }}"
+                                 data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}"
+                                 data-doi="{{ doc.doi_enlace|default:'' }}"
+                                 data-isbn="{{ doc.isbn_issn|default:'' }}">
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div class="d-flex align-items-start mb-2" style="gap: 14px;">
+                                        <!-- Miniatura estilo documento académico UNAM -->
+                                        <div class="recurso-thumb flex-shrink-0 text-center d-flex flex-column align-items-center justify-content-between p-2 rounded shadow-2xs" style="width: 86px; height: 118px; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; border-left: 4px solid #006633; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                                            <div class="text-success small"><i class="fas fa-book-reader fs-5"></i></div>
+                                            <div class="w-100 text-truncate font-weight-bold text-dark" style="font-size: 0.65rem; line-height: 1.1;">UABC • FCA</div>
+                                            <span class="badge badge-success px-1 py-0 w-100 text-truncate" style="font-size: 0.6rem;">{{ doc.tipo_contenido.nombre|default:'Obra' }}</span>
+                                        </div>
+                                        <!-- Metadatos de la publicación -->
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="recurso-titulo font-weight-bold mb-1 text-dark text-truncate-2" title="{{ doc.titulo }}" style="font-size: 0.95rem; line-height: 1.35;">
+                                                {{ doc.titulo }}
+                                            </h6>
+                                            <div class="recurso-meta text-muted" style="font-size: 0.78rem; line-height: 1.35;">
+                                                <div class="text-truncate mb-0.5"><strong class="text-dark">Autor:</strong> {{ doc.autor_str }}</div>
+                                                <div class="text-truncate mb-0.5"><strong class="text-dark">Entidad:</strong> {{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}</div>
+                                                <div class="text-truncate mb-0.5"><strong class="text-dark">Repositorio:</strong> Repositorio FCA UABC</div>
+                                                <div class="text-truncate"><strong class="text-dark">Fecha:</strong> {{ doc.año_produccion|default:doc.created_at|date:'Y' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Cintillo inferior destacado -->
+                                    <div class="recurso-badge-strip pt-2 border-top d-flex justify-content-between align-items-center mt-2">
+                                        <span class="badge badge-pill badge-light text-dark border py-1 px-2.5" style="font-size: 0.72rem; background-color: #f1f5f9;">
+                                            <i class="{{ doc.distintivo_icono }} mr-1"></i>{{ doc.distintivo_texto }}
+                                        </span>
+                                        <span class="text-success font-weight-bold small" style="font-size: 0.72rem;">
+                                            Consultar <i class="fas fa-external-link-alt ml-0.5"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="w-100 text-center py-4 text-muted">
+                            <p class="mb-0">No hay publicaciones destacadas disponibles en este momento.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="button" class="recursos-nav-btn next-btn" id="recursosNextBtn" aria-label="Siguiente recurso" title="Siguiente recurso">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DETALLE DE RECURSO DESTACADO (ESTILO REPOSITORIO UNAM) -->
+    <div class="modal fade" id="modalDetalleObra" tabindex="-1" role="dialog" aria-labelledby="modalDetalleObraLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                <!-- Header con botón de cierre -->
+                <div class="modal-header py-3 px-4 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center" style="gap: 10px;">
+                        <span class="badge px-2.5 py-1 text-white font-weight-bold" id="modalObraTipo" style="background-color: #0b3b60; font-size: 0.8rem; border-radius: 4px;">Publicación</span>
+                        <span class="text-muted small">Repositorio Institucional FCA &bull; UABC</span>
+                    </div>
+                    <button type="button" class="close text-dark m-0 p-0" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; opacity: 0.7;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <!-- Cuerpo del Modal -->
+                <div class="modal-body p-4 p-md-5">
+                    <div class="row">
+                        <!-- Columna Izquierda: Información Académica y Cita -->
+                        <div class="col-lg-7 col-md-12 pr-lg-4 mb-4 mb-lg-0">
+                            <h3 class="font-weight-bold text-dark mb-2" id="modalObraTitulo" style="line-height: 1.35; font-size: 1.45rem;">
+                                Título de la obra
+                            </h3>
+                            <div class="text-secondary small mb-3">
+                                <span><i class="fas fa-university text-success mr-1"></i> México &bull; </span>
+                                <span id="modalObraEntidadDetalle">Facultad de Contaduría y Administración</span> &bull; 
+                                <span class="font-weight-bold text-dark">UABC</span>
+                            </div>
+
+                            <!-- Botones de Acción Superior Estilo UNAM -->
+                            <div class="d-flex flex-wrap align-items-center mb-4" style="gap: 8px;">
+                                <a href="#" id="modalObraFichaOriginalBtn" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-2xs" style="background-color: #f59e0b; border-color: #d97706;">
+                                    <i class="fas fa-file-pdf mr-1"></i> Ficha original
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold shadow-2xs" onclick="compartirRecursoModal()">
+                                    <i class="fas fa-share-alt mr-1"></i> Compartir
+                                </button>
+                                <a href="#" id="modalObraDoiBtn" target="_blank" class="btn btn-outline-primary btn-sm font-weight-bold shadow-2xs" style="display: none;">
+                                    <i class="fas fa-globe-americas mr-1"></i> Ver en DOI Oficial
+                                </a>
+                            </div>
+
+                            <!-- Sección: Licencia de Uso -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">Licencia de uso</h6>
+                                <div class="d-flex align-items-start" style="gap: 12px;">
+                                    <div class="text-secondary flex-shrink-0" style="font-size: 1.8rem; line-height: 1;">
+                                        <i class="fab fa-creative-commons"></i><i class="fab fa-creative-commons-by"></i><i class="fab fa-creative-commons-nc"></i>
+                                    </div>
+                                    <p class="text-muted mb-0 small" style="line-height: 1.5; font-size: 0.78rem;">
+                                        La titularidad de los derechos patrimoniales de este recurso digital pertenece a la Universidad Autónoma de Baja California. Su uso se rige por una licencia <strong class="text-dark">Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional (CC BY-NC-ND 4.0)</strong>. Acceso Abierto para consulta académica y de investigación.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Procedencia del Contenido -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">Procedencia del contenido</h6>
+                                <div class="small" style="line-height: 1.7; font-size: 0.82rem;">
+                                    <div><span class="text-muted">Área / Disciplina:</span> <strong class="text-dark" id="modalObraArea">-</strong></div>
+                                    <div><span class="text-muted">Autor(es):</span> <strong class="text-dark" id="modalObraAutores">-</strong></div>
+                                    <div><span class="text-muted">Año de Producción:</span> <strong class="text-dark" id="modalObraAnio">-</strong></div>
+                                    <div><span class="text-muted">Idioma:</span> <strong class="text-dark" id="modalObraIdioma">Español</strong></div>
+                                    <div id="modalObraIsbnCont" style="display: none;"><span class="text-muted">Registro Editorial / ISBN / ISSN:</span> <strong class="text-dark" id="modalObraIsbn">-</strong></div>
+                                    <div><span class="text-muted">Repositorio:</span> <strong class="text-dark">Repositorio Institucional FCA - UABC</strong></div>
+                                    <div><span class="text-muted">Contacto:</span> <a href="mailto:repositorio.fca@uabc.edu.mx" class="text-success font-weight-bold">repositorio.fca@uabc.edu.mx</a></div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Cita Sugerida -->
+                            <div class="mb-4 pb-3 border-bottom">
+                                <h6 class="font-weight-bold text-dark mb-1" style="font-size: 0.95rem;">Cita (Formato sugerido)</h6>
+                                <div class="p-2.5 bg-light rounded border text-secondary small font-italic" id="modalObraCita" style="font-size: 0.78rem; line-height: 1.5;">
+                                </div>
+                            </div>
+
+                            <!-- Sección: Descripción del Recurso -->
+                            <div>
+                                <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">Descripción del recurso</h6>
+                                <p class="text-secondary small mb-0" id="modalObraDescripcion" style="white-space: pre-line; line-height: 1.6; font-size: 0.82rem;">
+                                    Sin resumen detallado disponible.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Vista Previa Portada Estilo UNAM -->
+                        <div class="col-lg-5 col-md-12 d-flex flex-column align-items-center justify-content-between">
+                            <div class="w-100 p-4 rounded text-center d-flex flex-column align-items-center justify-content-between shadow-xs border" style="background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%); min-height: 440px;">
+                                <!-- Portada Simulación Realista -->
+                                <div class="bg-white rounded shadow p-4 text-center d-flex flex-column justify-content-between w-100 my-auto position-relative" style="max-width: 280px; min-height: 350px; border-left: 6px solid #006633; border-top: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                                    <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                                        <img src="{% static 'images/LOGO FCA1.png' %}" alt="FCA" style="height: 26px; object-fit: contain;">
+                                        <span class="badge badge-success px-2 py-0.5" id="modalObraCoverBadge" style="font-size: 0.65rem;">UABC</span>
+                                    </div>
+                                    <div class="my-4">
+                                        <div class="text-success mb-2"><i class="fas fa-book-reader fa-3x"></i></div>
+                                        <h6 class="font-weight-bold text-dark mb-2" id="modalObraCoverTitulo" style="font-size: 0.9rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"></h6>
+                                        <div class="text-muted small text-truncate" id="modalObraCoverAutor" style="font-size: 0.75rem;"></div>
+                                    </div>
+                                    <div class="pt-2 border-top">
+                                        <div class="bg-light p-1.5 rounded border text-muted small font-weight-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                            <i class="fas fa-barcode mr-1 text-dark"></i> <span id="modalObraCoverBarcode">FCA-UABC-DIGITAL</span>
+                                        </div>
+                                        <span class="text-muted d-block mt-1 font-weight-bold" style="font-size: 0.58rem; letter-spacing: 0.5px;">BIBLIOTECA DIGITAL &bull; ACERVO CIENTÍFICO FCA</span>
+                                    </div>
+                                </div>
+
+                                <!-- Botones de Descarga y Lectura -->
+                                <div class="w-100 mt-4">
+                                    <a href="#" id="modalObraBtnVerPdf" target="_blank" class="btn btn-success btn-block font-weight-bold py-2 shadow-2xs">
+                                        <i class="fas fa-file-pdf mr-2"></i>Consultar Texto Completo (PDF)
+                                    </a>
+                                    <a href="#" id="modalObraBtnDescargarPdf" download class="btn btn-outline-secondary btn-block btn-sm font-weight-bold mt-2" style="display: none;">
+                                        <i class="fas fa-download mr-1"></i>Descargar Copia Local
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small"><i class="fas fa-shield-alt text-success mr-1"></i>Documento verificado en el catálogo institucional</span>
+                    <button type="button" class="btn btn-secondary btn-sm px-4" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PIE DE PÁGINA INSTITUCIONAL FCA DINÁMICO -->
     <footer class="footer">
         <div class="container">
@@ -1793,6 +2157,49 @@
                 } else {
                     items[i].style.display = "none";
                 }
+            }
+        }
+
+        // Ordenamiento Alfabético (A-Z / Z-A) y Cronológico (Reciente / Antiguo) para personas mayores y consulta rápida
+        function ordenarListaIndice(listaId, claseItem, orden, btnEl) {
+            const lista = document.getElementById(listaId);
+            if (!lista) return;
+
+            const items = Array.from(lista.getElementsByClassName(claseItem));
+            if (items.length <= 1) return;
+
+            items.sort(function(a, b) {
+                const linkA = a.querySelector('a') || a;
+                const linkB = b.querySelector('a') || b;
+                const textA = (linkA.textContent || linkA.innerText || '').trim();
+                const textB = (linkB.textContent || linkB.innerText || '').trim();
+
+                // Caso numérico (Año de producción)
+                const numA = parseInt(textA, 10);
+                const numB = parseInt(textB, 10);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return orden === 'asc' ? numA - numB : numB - numA;
+                }
+
+                // Caso textual (Entidad, Tipo, Área, Autor, Idioma, Revista) con soporte para tildes y caracteres en español
+                const comp = textA.localeCompare(textB, 'es', { sensitivity: 'base', numeric: true });
+                return orden === 'asc' ? comp : -comp;
+            });
+
+            // Reinsertar en el nuevo orden preservando eventos y enlaces
+            items.forEach(function(item) {
+                lista.appendChild(item);
+            });
+
+            // Feedback visual: resaltar el botón activo y atenuar el alterno
+            if (btnEl && btnEl.parentElement) {
+                const hermanos = btnEl.parentElement.querySelectorAll('.btn-sort-az');
+                hermanos.forEach(function(h) {
+                    h.classList.remove('active', 'btn-success', 'text-white');
+                    h.classList.add('btn-outline-success');
+                });
+                btnEl.classList.add('active', 'btn-success', 'text-white');
+                btnEl.classList.remove('btn-outline-success');
             }
         }
     </script>
@@ -2110,6 +2517,277 @@
                 initQuickLinksCarousel();
             }
         })();
+    </script>
+
+    <!-- Script del Carrusel de Recursos Destacados (Estilo Repositorio UNAM) -->
+    <script>
+        var toggleAutoPlayDestacados = function() {}; // Definición inicial accesible globalmente
+
+        (function() {
+            function initRecursosDestacadosCarousel() {
+                const track = document.getElementById('recursosTrack');
+                const container = document.getElementById('recursosTrackContainer');
+                const prevBtn = document.getElementById('recursosPrevBtn');
+                const nextBtn = document.getElementById('recursosNextBtn');
+                const btnPausar = document.getElementById('btnPausarDestacados');
+                const iconoPausa = document.getElementById('iconoPausaDestacados');
+                const textoPausa = document.getElementById('textoPausaDestacados');
+
+                if (!track || !container || !prevBtn || !nextBtn) return;
+
+                const slides = track.querySelectorAll('.recursos-slide');
+                if (slides.length === 0) return;
+
+                let currentIndex = 0;
+                let autoPlayTimer = null;
+                let isPausedManually = false;
+
+                function getVisibleCount() {
+                    const width = window.innerWidth;
+                    if (width >= 1200) return 4;
+                    if (width >= 992) return 3;
+                    if (width >= 768) return 2;
+                    return 1;
+                }
+
+                function getMaxIndex() {
+                    const visible = getVisibleCount();
+                    return Math.max(0, slides.length - visible);
+                }
+
+                function updateCarousel() {
+                    const visible = getVisibleCount();
+                    const maxIndex = getMaxIndex();
+
+                    if (currentIndex > maxIndex) currentIndex = maxIndex;
+                    if (currentIndex < 0) currentIndex = 0;
+
+                    if (slides.length <= visible) {
+                        track.classList.add('is-centered');
+                        track.style.transform = 'translateX(0)';
+                        prevBtn.style.display = 'none';
+                        nextBtn.style.display = 'none';
+                        if (btnPausar && btnPausar.parentElement) {
+                            btnPausar.parentElement.style.display = 'none';
+                        }
+                        stopAutoPlay();
+                        return;
+                    }
+
+                    track.classList.remove('is-centered');
+                    prevBtn.style.display = 'flex';
+                    nextBtn.style.display = 'flex';
+                    if (btnPausar && btnPausar.parentElement) {
+                        btnPausar.parentElement.style.display = '';
+                    }
+
+                    const slideWidth = slides[0].getBoundingClientRect().width;
+                    const trackStyle = window.getComputedStyle(track);
+                    const gap = parseFloat(trackStyle.gap) || 16;
+                    const shift = currentIndex * (slideWidth + gap);
+                    track.style.transform = `translateX(-${shift}px)`;
+                }
+
+                function nextSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex >= maxIndex) {
+                        currentIndex = 0;
+                    } else {
+                        currentIndex++;
+                    }
+                    updateCarousel();
+                }
+
+                function prevSlide() {
+                    const maxIndex = getMaxIndex();
+                    if (currentIndex <= 0) {
+                        currentIndex = maxIndex;
+                    } else {
+                        currentIndex--;
+                    }
+                    updateCarousel();
+                }
+
+                nextBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    nextSlide();
+                    if (!isPausedManually) resetAutoPlay();
+                });
+
+                prevBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    prevSlide();
+                    if (!isPausedManually) resetAutoPlay();
+                });
+
+                function startAutoPlay() {
+                    if (slides.length > getVisibleCount() && !autoPlayTimer && !isPausedManually) {
+                        autoPlayTimer = setInterval(nextSlide, 4500);
+                    }
+                }
+
+                function stopAutoPlay() {
+                    if (autoPlayTimer) {
+                        clearInterval(autoPlayTimer);
+                        autoPlayTimer = null;
+                    }
+                }
+
+                function resetAutoPlay() {
+                    stopAutoPlay();
+                    startAutoPlay();
+                }
+
+                // Control interactivo del botón estilo UNAM "Pausar el movimiento" / "Reanudar"
+                toggleAutoPlayDestacados = function() {
+                    isPausedManually = !isPausedManually;
+                    if (isPausedManually) {
+                        stopAutoPlay();
+                        if (iconoPausa) {
+                            iconoPausa.className = 'fas fa-play mr-1 text-success';
+                        }
+                        if (textoPausa) {
+                            textoPausa.textContent = 'Reanudar movimiento';
+                        }
+                        if (btnPausar) {
+                            btnPausar.classList.remove('btn-outline-secondary');
+                            btnPausar.classList.add('btn-outline-success');
+                        }
+                    } else {
+                        startAutoPlay();
+                        if (iconoPausa) {
+                            iconoPausa.className = 'fas fa-pause mr-1 text-warning';
+                        }
+                        if (textoPausa) {
+                            textoPausa.textContent = 'Pausar el movimiento';
+                        }
+                        if (btnPausar) {
+                            btnPausar.classList.remove('btn-outline-success');
+                            btnPausar.classList.add('btn-outline-secondary');
+                        }
+                    }
+                };
+
+                container.addEventListener('mouseenter', function() {
+                    if (!isPausedManually) stopAutoPlay();
+                });
+                container.addEventListener('mouseleave', function() {
+                    if (!isPausedManually) startAutoPlay();
+                });
+
+                window.addEventListener('resize', function() {
+                    updateCarousel();
+                    if (!isPausedManually) resetAutoPlay();
+                });
+
+                // Soporte para gestos táctiles en pantallas táctiles y móviles
+                let touchStartX = 0;
+                let touchEndX = 0;
+                container.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    if (!isPausedManually) stopAutoPlay();
+                }, { passive: true });
+
+                container.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 35) {
+                        if (diff > 0) nextSlide();
+                        else prevSlide();
+                    }
+                    if (!isPausedManually) startAutoPlay();
+                }, { passive: true });
+
+                updateCarousel();
+                startAutoPlay();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initRecursosDestacadosCarousel);
+            } else {
+                initRecursosDestacadosCarousel();
+            }
+        })();
+    </script>
+
+    <!-- Script de Apertura y Metadatos del Modal Obra Destacada (Estilo UNAM) -->
+    <script>
+        $(document).ready(function() {
+            $('#modalDetalleObra').on('show.bs.modal', function(event) {
+                var card = $(event.relatedTarget);
+                if (!card.length) return;
+
+                var titulo = card.data('titulo') || 'Documento Académico';
+                var autores = card.data('autores') || 'Claustro de Investigadores FCA';
+                var tipo = card.data('tipo') || 'Publicación';
+                var area = card.data('area') || 'Facultad de Contaduría y Administración';
+                var entidad = card.data('entidad') || 'Facultad de Contaduría y Administración - UABC';
+                var anio = card.data('anio') || '2026';
+                var idioma = card.data('idioma') || 'Español';
+                var descripcion = card.data('descripcion') || 'Este recurso forma parte del acervo institucional digital certificado de la Facultad de Contaduría y Administración.';
+                var pdfUrl = card.data('pdf') || '';
+                var doiUrl = card.data('doi') || '';
+                var isbnVal = card.data('isbn') || '';
+
+                $('#modalObraTipo').text(tipo);
+                $('#modalObraCoverBadge').text(tipo);
+                $('#modalObraTitulo').text(titulo);
+                $('#modalObraCoverTitulo').text(titulo);
+                $('#modalObraAutores').text(autores);
+                $('#modalObraCoverAutor').text(autores);
+                $('#modalObraEntidadDetalle').text(entidad);
+                $('#modalObraArea').text(area);
+                $('#modalObraAnio').text(anio);
+                $('#modalObraCoverBarcode').text('FCA-' + anio + '-' + Math.floor(1000 + Math.random() * 9000));
+                $('#modalObraIdioma').text(idioma);
+                $('#modalObraDescripcion').text(descripcion);
+
+                // Construcción de cita sugerida (formato APA)
+                var currentUrl = window.location.origin + window.location.pathname;
+                var urlReferencia = doiUrl ? doiUrl : currentUrl;
+                var citaTexto = autores + ' (' + anio + '). "' + titulo + '". Repositorio Institucional de la Facultad de Contaduría y Administración, Universidad Autónoma de Baja California. Recuperado de ' + urlReferencia;
+                $('#modalObraCita').text(citaTexto);
+
+                // Botón DOI oficial
+                if (doiUrl) {
+                    $('#modalObraDoiBtn').attr('href', doiUrl).show();
+                } else {
+                    $('#modalObraDoiBtn').hide();
+                }
+
+                // ISBN / ISSN
+                if (isbnVal) {
+                    $('#modalObraIsbn').text(isbnVal);
+                    $('#modalObraIsbnCont').show();
+                } else {
+                    $('#modalObraIsbnCont').hide();
+                }
+
+                // Enlaces y Botones PDF
+                if (pdfUrl) {
+                    $('#modalObraBtnVerPdf').attr('href', pdfUrl).removeClass('disabled btn-secondary').addClass('btn-success').html('<i class="fas fa-file-pdf mr-2"></i>Consultar Texto Completo (PDF)');
+                    $('#modalObraFichaOriginalBtn').attr('href', pdfUrl).show();
+                    $('#modalObraBtnDescargarPdf').attr('href', pdfUrl).show();
+                } else {
+                    $('#modalObraBtnVerPdf').attr('href', 'javascript:void(0)').removeClass('btn-success').addClass('disabled btn-secondary').html('<i class="fas fa-info-circle mr-2"></i>PDF en proceso de preservación');
+                    $('#modalObraFichaOriginalBtn').hide();
+                    $('#modalObraBtnDescargarPdf').hide();
+                }
+            });
+        });
+
+        function compartirRecursoModal() {
+            var cita = document.getElementById('modalObraCita').innerText || document.getElementById('modalObraTitulo').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(cita).then(function() {
+                    alert('¡Cita bibliográfica y ficha copiadas al portapapeles!');
+                }).catch(function() {
+                    prompt('Copie la referencia de la obra:', cita);
+                });
+            } else {
+                prompt('Copie la referencia de la obra:', cita);
+            }
+        }
     </script>
 
 </body>
