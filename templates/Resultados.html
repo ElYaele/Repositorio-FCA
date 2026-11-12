@@ -538,63 +538,173 @@
         </div>
     </div>
 
-    <!-- MODAL DETALLE DE PUBLICACIÓN (INFORMACIÓN ALARGADA SIN SCROLL FORZADO) -->
+    <!-- MODAL DETALLE DE PUBLICACIÓN (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UNAM) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header bg-success text-white py-3">
-                    <h5 class="modal-title fw-bold fs-6"><i class="fas fa-book-open me-2"></i>Ficha Académica de la Publicación</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-success text-white py-2.5 px-4 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-book-open"></i>
+                        <span class="fw-bold fs-6">Ficha de la Publicación</span>
+                    </div>
+
+                    <!-- SELECTOR DUAL DE VISTAS (CATÁLOGO vs INSTITUCIONAL UNAM) -->
+                    <div class="btn-group p-0.5 bg-white rounded-pill border shadow-sm" role="group" aria-label="Selector de Vista">
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 btn-success text-white shadow-sm" id="btnVistaResCatalogo" onclick="cambiarVistaModalResultados('catalogo')" title="Ver en formato Ficha de Catálogo">
+                            <i class="fas fa-th-large me-1"></i> Ficha Catálogo
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 text-muted btn-light" id="btnVistaResUNAM" onclick="cambiarVistaModalResultados('unam')" title="Ver en formato Ficha Institucional estilo UNAM">
+                            <i class="fas fa-university me-1"></i> Ficha Institucional (UNAM)
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white m-0" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 bg-light">
-                    <div class="row g-4 align-items-stretch">
-                        <!-- COLUMNA IZQUIERDA: PORTADA VERTICAL Y BOTONES PDF -->
-                        <div class="col-lg-5 d-flex flex-column">
-                            <div class="modal-pdf-preview mb-3 flex-grow-1 shadow-sm">
-                                <canvas class="modal-pdf-canvas" id="modalPdfCanvas"></canvas>
-                                <div class="modal-pdf-loading text-danger text-center p-3" id="modalPdfLoading">
-                                    <i class="fas fa-file-pdf fa-3x mb-2"></i>
-                                    <span class="d-block small">Cargando vista previa...</span>
+                    <!-- VISTA 1: FICHA CATÁLOGO (ESTILO RESULTADOS - POR DEFECTO) -->
+                    <div id="vistaResModoCatalogo" style="display: block;">
+                        <div class="row g-4 align-items-stretch">
+                            <!-- COLUMNA IZQUIERDA: PORTADA VERTICAL Y BOTONES PDF -->
+                            <div class="col-lg-5 d-flex flex-column">
+                                <div class="modal-pdf-preview mb-3 flex-grow-1 shadow-sm">
+                                    <canvas class="modal-pdf-canvas" id="modalPdfCanvas"></canvas>
+                                    <div class="modal-pdf-loading text-danger text-center p-3" id="modalPdfLoading">
+                                        <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                        <span class="d-block small">Cargando vista previa...</span>
+                                    </div>
+                                </div>
+                                <div id="modalPdfWrapper" class="mt-auto" style="display: none;">
+                                    <div class="d-flex flex-column gap-2">
+                                        <button type="button" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill" id="btnVerDocAquiModal" onclick="abrirVisorPdfModal()">
+                                            <i class="fas fa-eye me-2"></i>Ver Documento Aquí
+                                        </button>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" id="modalPdfNuevaPestanaLink" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Abrir archivo PDF en una pestaña nueva del navegador">
+                                                <i class="fas fa-external-link-alt me-1"></i>En otra pestaña
+                                            </a>
+                                            <a href="#" id="modalPdfDownloadLink" download class="btn btn-outline-danger flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Descargar archivo PDF directamente">
+                                                <i class="fas fa-download me-1"></i>Descargar
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div id="modalPdfWrapper" class="mt-auto" style="display: none;">
-                                <div class="d-flex flex-column gap-2">
-                                    <button type="button" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill" id="btnVerDocAquiModal" onclick="abrirVisorPdfModal()">
-                                        <i class="fas fa-eye me-2"></i>Ver Documento Aquí
-                                    </button>
-                                    <div class="d-flex gap-2">
-                                        <a href="#" id="modalPdfNuevaPestanaLink" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Abrir archivo PDF en una pestaña nueva del navegador">
-                                            <i class="fas fa-external-link-alt me-1"></i>En otra pestaña
-                                        </a>
-                                        <a href="#" id="modalPdfDownloadLink" download class="btn btn-outline-danger flex-fill fw-bold shadow-sm py-2 rounded-pill small" title="Descargar archivo PDF directamente">
-                                            <i class="fas fa-download me-1"></i>Descargar
-                                        </a>
+
+                            <!-- COLUMNA DERECHA: METADATOS Y RESUMEN ALARGADO -->
+                            <div class="col-lg-7 d-flex flex-column">
+                                <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll flex-grow-1 d-flex flex-column">
+                                    <h4 class="fw-bold text-dark mb-3 pt-1" id="modalTituloObra" style="line-height: 1.35;"></h4>
+                                    <div class="mb-3 d-flex flex-wrap gap-1">
+                                        <span class="badge bg-success" id="modalTipoObra"></span>
+                                        <span class="badge bg-primary" id="modalAreaObra"></span>
+                                        <span class="badge bg-secondary" id="modalEntidadObra"></span>
+                                        <span class="badge bg-dark" id="modalAnioObra"></span>
+                                    </div>
+
+                                    <div class="card bg-light border-0 p-3 mb-3 small rounded-3">
+                                        <div class="mb-2"><strong><i class="fas fa-users me-1 text-success"></i>Autores Acreditados:</strong> <span id="modalAutoresObra"></span></div>
+                                        <div class="mb-2"><strong><i class="fas fa-language me-1 text-success"></i>Idioma:</strong> <span id="modalIdiomaObra"></span></div>
+                                        <!-- CONTENEDOR DINÁMICO DE DATOS ESPECÍFICOS -->
+                                        <div id="modalCamposEspecificos"></div>
+                                    </div>
+
+                                    <h6 class="fw-bold text-success mb-2"><i class="fas fa-align-left me-1"></i>Resumen / Descripción Detallada:</h6>
+                                    <div class="p-3 bg-light rounded-3 border flex-grow-1 overflow-auto">
+                                        <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6;" id="modalDescripcionObra"></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- COLUMNA DERECHA: METADATOS Y RESUMEN ALARGADO -->
-                        <div class="col-lg-7 d-flex flex-column">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border modal-info-scroll flex-grow-1 d-flex flex-column">
-                                <h4 class="fw-bold text-dark mb-3 pt-1" id="modalTituloObra" style="line-height: 1.35;"></h4>
-                                <div class="mb-3 d-flex flex-wrap gap-1">
-                                    <span class="badge bg-success" id="modalTipoObra"></span>
-                                    <span class="badge bg-primary" id="modalAreaObra"></span>
-                                    <span class="badge bg-secondary" id="modalEntidadObra"></span>
-                                    <span class="badge bg-dark" id="modalAnioObra"></span>
+                    <!-- VISTA 2: FICHA INSTITUCIONAL (ESTILO REPOSITORIO UNAM) -->
+                    <div id="vistaResModoUNAM" style="display: none;">
+                        <div class="row g-4 align-items-stretch">
+                            <!-- Columna Izquierda: Información Académica, Licencia CC y Cita -->
+                            <div class="col-lg-7 d-flex flex-column">
+                                <div class="bg-white p-4 rounded-4 shadow-sm border flex-grow-1">
+                                    <h4 class="fw-bold text-dark mb-2" id="modalUnamTitulo" style="line-height: 1.35;"></h4>
+                                    <div class="text-secondary small mb-3">
+                                        <span><i class="fas fa-university text-success me-1"></i> México &bull; </span>
+                                        <span id="modalUnamEntidad">Facultad de Contaduría y Administración</span> &bull; 
+                                        <span class="fw-bold text-dark">UABC</span>
+                                    </div>
+
+                                    <!-- Botones de Acción Superior Estilo UNAM -->
+                                    <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+                                        <a href="#" id="modalUnamFichaOriginalBtn" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm fw-bold text-dark shadow-sm">
+                                            <i class="fas fa-file-pdf me-1"></i> Ficha original
+                                        </a>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm fw-bold shadow-sm" onclick="abrirModalCitarDesdeFicha()">
+                                            <i class="fas fa-share-alt me-1"></i> Compartir
+                                        </button>
+                                        <a href="#" id="modalUnamDoiBtn" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm fw-bold shadow-sm" style="display: none;">
+                                            <i class="fas fa-globe-americas me-1"></i> Ver en DOI Oficial
+                                        </a>
+                                    </div>
+
+                                    <!-- Licencia de Uso CC -->
+                                    <div class="mb-3 pb-3 border-bottom">
+                                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Licencia de uso</h6>
+                                        <div class="d-flex align-items-start gap-2">
+                                            <div class="text-secondary fs-4 lh-1">
+                                                <i class="fab fa-creative-commons"></i><i class="fab fa-creative-commons-by"></i><i class="fab fa-creative-commons-nc"></i>
+                                            </div>
+                                            <p class="text-muted mb-0 small" style="line-height: 1.5; font-size: 0.78rem;">
+                                                La titularidad de los derechos patrimoniales pertenece a la UABC. Su uso se rige por la licencia <strong class="text-dark">Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional (CC BY-NC-ND 4.0)</strong>.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Procedencia del Contenido -->
+                                    <div class="mb-3 pb-3 border-bottom small" style="line-height: 1.7; font-size: 0.82rem;">
+                                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Procedencia del contenido</h6>
+                                        <div><span class="text-muted">Área / Disciplina:</span> <strong class="text-dark" id="modalUnamArea">-</strong></div>
+                                        <div><span class="text-muted">Autor(es):</span> <strong class="text-dark" id="modalUnamAutores">-</strong></div>
+                                        <div><span class="text-muted">Año de Producción:</span> <strong class="text-dark" id="modalUnamAnio">-</strong></div>
+                                        <div><span class="text-muted">Idioma:</span> <strong class="text-dark" id="modalUnamIdioma">Español</strong></div>
+                                        <div id="modalUnamContIsbn" style="display: none;"><span class="text-muted">Registro Editorial / ISBN / ISSN:</span> <strong class="text-dark" id="modalUnamIsbn">-</strong></div>
+                                        <div><span class="text-muted">Repositorio:</span> <strong class="text-dark">Repositorio Institucional FCA - UABC</strong></div>
+                                    </div>
+
+                                    <!-- Cita Sugerida APA -->
+                                    <div class="mb-3 pb-3 border-bottom">
+                                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Cita (Formato sugerido)</h6>
+                                        <div class="p-2.5 bg-light rounded border text-secondary small fst-italic" id="modalUnamCita" style="font-size: 0.78rem; line-height: 1.5;"></div>
+                                    </div>
+
+                                    <!-- Resumen -->
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Descripción del recurso</h6>
+                                        <p class="text-secondary small mb-0" id="modalUnamDescripcion" style="white-space: pre-line; line-height: 1.6; font-size: 0.82rem;"></p>
+                                    </div>
                                 </div>
+                            </div>
 
-                                <div class="card bg-light border-0 p-3 mb-3 small rounded-3">
-                                    <div class="mb-2"><strong><i class="fas fa-users me-1 text-success"></i>Autores Acreditados:</strong> <span id="modalAutoresObra"></span></div>
-                                    <div class="mb-2"><strong><i class="fas fa-language me-1 text-success"></i>Idioma:</strong> <span id="modalIdiomaObra"></span></div>
-                                    <!-- CONTENEDOR DINÁMICO DE DATOS ESPECÍFICOS -->
-                                    <div id="modalCamposEspecificos"></div>
-                                </div>
+                            <!-- Columna Derecha: Vista Previa Portada Estilo UNAM con Render PDF Real -->
+                            <div class="col-lg-5 d-flex flex-column align-items-center justify-content-between">
+                                <div class="w-100 p-4 rounded-4 text-center d-flex flex-column align-items-center justify-content-between shadow-sm border bg-white h-100">
+                                    <div id="modalUnamPdfWrapper" class="bg-white rounded-3 p-2 text-center d-flex align-items-center justify-content-center w-100 my-auto position-relative" style="max-width: 300px; min-height: 380px; border: 1px solid #cbd5e1;">
+                                        <canvas id="modalUnamPdfCanvas" style="max-width: 100%; max-height: 360px; object-fit: contain; display: none; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px;"></canvas>
+                                        <div id="modalUnamPdfLoading" class="text-center p-3 text-danger my-auto">
+                                            <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                            <span class="d-block small text-muted fw-bold">Cargando portada del PDF...</span>
+                                        </div>
+                                    </div>
 
-                                <h6 class="fw-bold text-success mb-2"><i class="fas fa-align-left me-1"></i>Resumen / Descripción Detallada:</h6>
-                                <div class="p-3 bg-light rounded-3 border flex-grow-1 overflow-auto">
-                                    <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6;" id="modalDescripcionObra"></p>
+                                    <div class="w-100 mt-3">
+                                        <button type="button" class="btn btn-danger w-100 fw-bold shadow-sm py-2 rounded-pill mb-2" onclick="abrirVisorPdfModal()">
+                                            <i class="fas fa-eye me-2"></i>Ver Documento Aquí (PDF)
+                                        </button>
+                                        <div class="d-flex gap-2">
+                                            <a href="#" id="modalUnamNuevaPestanaBtn" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm flex-fill fw-bold shadow-sm py-1.5 rounded-pill small">
+                                                <i class="fas fa-external-link-alt me-1"></i> En otra pestaña
+                                            </a>
+                                            <a href="#" id="modalUnamDescargarBtn" download class="btn btn-outline-danger btn-sm flex-fill fw-bold shadow-sm py-1.5 rounded-pill small">
+                                                <i class="fas fa-download me-1"></i> Descargar
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -733,6 +843,24 @@
             anio: '',
             tipo: ''
         };
+
+        function cambiarVistaModalResultados(modo) {
+            if (modo === 'unam') {
+                document.getElementById('vistaResModoCatalogo').style.display = 'none';
+                document.getElementById('vistaResModoUNAM').style.display = 'block';
+                const btnU = document.getElementById('btnVistaResUNAM');
+                const btnC = document.getElementById('btnVistaResCatalogo');
+                if (btnU) { btnU.classList.remove('btn-light', 'text-muted'); btnU.classList.add('btn-success', 'text-white', 'shadow-sm'); }
+                if (btnC) { btnC.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnC.classList.add('btn-light', 'text-muted'); }
+            } else {
+                document.getElementById('vistaResModoUNAM').style.display = 'none';
+                document.getElementById('vistaResModoCatalogo').style.display = 'block';
+                const btnU = document.getElementById('btnVistaResUNAM');
+                const btnC = document.getElementById('btnVistaResCatalogo');
+                if (btnC) { btnC.classList.remove('btn-light', 'text-muted'); btnC.classList.add('btn-success', 'text-white', 'shadow-sm'); }
+                if (btnU) { btnU.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnU.classList.add('btn-light', 'text-muted'); }
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Renderizar miniaturas en las tarjetas de resultados
@@ -884,12 +1012,71 @@
                     document.getElementById('modalCamposEspecificos').innerHTML = htmlEspecificos;
                     document.getElementById('modalDescripcionObra').textContent = descripcion;
 
-                    // Columna izquierda PDF con vista previa y acciones
+                    // Reset a vista Catálogo por defecto
+                    cambiarVistaModalResultados('catalogo');
+
+                    // --- POBLAR VISTA 2: INSTITUCIONAL UNAM ---
+                    const unamTitulo = document.getElementById('modalUnamTitulo');
+                    if (unamTitulo) unamTitulo.textContent = titulo;
+                    const unamEntidad = document.getElementById('modalUnamEntidad');
+                    if (unamEntidad) unamEntidad.textContent = entidad;
+                    const unamArea = document.getElementById('modalUnamArea');
+                    if (unamArea) unamArea.textContent = area;
+                    const unamAutores = document.getElementById('modalUnamAutores');
+                    if (unamAutores) unamAutores.textContent = autores;
+                    const unamAnio = document.getElementById('modalUnamAnio');
+                    if (unamAnio) unamAnio.textContent = anio;
+                    const unamIdioma = document.getElementById('modalUnamIdioma');
+                    if (unamIdioma) unamIdioma.textContent = idioma;
+                    const unamDesc = document.getElementById('modalUnamDescripcion');
+                    if (unamDesc) unamDesc.textContent = descripcion;
+
+                    const unamIsbnEl = document.getElementById('modalUnamIsbn');
+                    const unamContIsbn = document.getElementById('modalUnamContIsbn');
+                    if (isbn && isbn !== 'N/A' && unamIsbnEl && unamContIsbn) {
+                        unamIsbnEl.textContent = isbn;
+                        unamContIsbn.style.display = 'block';
+                    } else if (unamContIsbn) {
+                        unamContIsbn.style.display = 'none';
+                    }
+
+                    const unamDoiBtn = document.getElementById('modalUnamDoiBtn');
+                    if (doi && doi !== 'N/A' && unamDoiBtn) {
+                        unamDoiBtn.href = doi;
+                        unamDoiBtn.style.display = 'inline-block';
+                    } else if (unamDoiBtn) {
+                        unamDoiBtn.style.display = 'none';
+                    }
+
+                    const unamFichaOriginal = document.getElementById('modalUnamFichaOriginalBtn');
+                    const unamPestana = document.getElementById('modalUnamNuevaPestanaBtn');
+                    const unamDescargar = document.getElementById('modalUnamDescargarBtn');
+                    if (pdfUrl && pdfUrl.trim() !== '') {
+                        if (unamFichaOriginal) { unamFichaOriginal.href = pdfUrl; unamFichaOriginal.style.display = 'inline-block'; }
+                        if (unamPestana) { unamPestana.href = pdfUrl; unamPestana.style.display = 'inline-block'; }
+                        if (unamDescargar) { unamDescargar.href = pdfUrl; unamDescargar.style.display = 'inline-block'; }
+                    } else {
+                        if (unamFichaOriginal) unamFichaOriginal.style.display = 'none';
+                        if (unamPestana) unamPestana.style.display = 'none';
+                        if (unamDescargar) unamDescargar.style.display = 'none';
+                    }
+
+                    // Cita APA para Vista UNAM
+                    const unamCita = document.getElementById('modalUnamCita');
+                    if (unamCita) {
+                        const urlRef = doi && doi !== 'N/A' ? doi : window.location.href;
+                        unamCita.textContent = `${autores} (${anio}). "${titulo}". Repositorio Institucional FCA - UABC. Recuperado de ${urlRef}`;
+                    }
+
+                    // Portadas PDF en ambas vistas
                     const pdfWrapper = document.getElementById('modalPdfWrapper');
                     const pdfDownloadLink = document.getElementById('modalPdfDownloadLink');
                     const pdfNuevaPestanaLink = document.getElementById('modalPdfNuevaPestanaLink');
                     const modalCanvas = document.getElementById('modalPdfCanvas');
                     const modalLoading = document.getElementById('modalPdfLoading');
+
+                    const modalUnamCanvas = document.getElementById('modalUnamPdfCanvas');
+                    const modalUnamLoading = document.getElementById('modalUnamPdfLoading');
 
                     if (pdfUrl && pdfUrl.trim() !== '') {
                         pdfWrapper.style.display = 'block';
@@ -898,9 +1085,13 @@
                         modalLoading.style.display = 'block';
                         modalCanvas.style.display = 'none';
 
+                        if (modalUnamLoading) modalUnamLoading.style.display = 'block';
+                        if (modalUnamCanvas) modalUnamCanvas.style.display = 'none';
+
                         pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
                             return pdfDoc.getPage(1);
                         }).then(function(page) {
+                            // Render Vista Catálogo
                             const context = modalCanvas.getContext('2d');
                             const viewport = page.getViewport({ scale: 1.5 });
                             modalCanvas.height = viewport.height;
@@ -910,14 +1101,32 @@
                                 modalLoading.style.display = 'none';
                                 modalCanvas.style.display = 'block';
                             });
+
+                            // Render Vista Institucional UNAM
+                            if (modalUnamCanvas) {
+                                const contextUnam = modalUnamCanvas.getContext('2d');
+                                const viewportUnam = page.getViewport({ scale: 0.85 });
+                                modalUnamCanvas.height = viewportUnam.height;
+                                modalUnamCanvas.width = viewportUnam.width;
+                                page.render({ canvasContext: contextUnam, viewport: viewportUnam }).promise.then(function() {
+                                    if (modalUnamLoading) modalUnamLoading.style.display = 'none';
+                                    modalUnamCanvas.style.display = 'block';
+                                });
+                            }
                         }).catch(function() {
                             modalLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo cargar la vista previa</span>';
+                            if (modalUnamLoading) modalUnamLoading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-3x mb-2"></i><span class="d-block small text-danger">No se pudo cargar la vista previa</span>';
                         });
                     } else {
                         pdfWrapper.style.display = 'none';
                         modalLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin archivo PDF adjunto</span>';
                         modalLoading.style.display = 'block';
                         modalCanvas.style.display = 'none';
+                        if (modalUnamLoading) {
+                            modalUnamLoading.innerHTML = '<i class="fas fa-file-alt text-secondary fa-3x mb-2"></i><span class="d-block small text-muted">Sin archivo PDF adjunto</span>';
+                            modalUnamLoading.style.display = 'block';
+                        }
+                        if (modalUnamCanvas) modalUnamCanvas.style.display = 'none';
                     }
                 });
             }
