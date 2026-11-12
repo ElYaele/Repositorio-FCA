@@ -2195,6 +2195,9 @@
                                 <a href="#" id="modalObraFichaOriginalBtn" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-2xs" style="background-color: #f59e0b; border-color: #d97706;">
                                     <i class="fas fa-file-pdf mr-1"></i> Ficha original
                                 </a>
+                                <a href="#" id="modalObraVerEnResultadosBtn" class="btn btn-outline-success btn-sm font-weight-bold shadow-2xs">
+                                    <i class="fas fa-search mr-1"></i> Ver en Resultados
+                                </a>
                                 <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold shadow-2xs" onclick="compartirRecursoModal()">
                                     <i class="fas fa-share-alt mr-1"></i> Compartir
                                 </button>
@@ -2250,16 +2253,16 @@
                         <div class="col-lg-5 col-md-12 d-flex flex-column align-items-center justify-content-between">
                             <div class="w-100 p-4 rounded text-center d-flex flex-column align-items-center justify-content-between shadow-xs border" style="background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%); min-height: 440px;">
                                 <!-- Visor de Portada Real en PDF (PDF.js) -->
-                                <div id="modalDestacadoPdfWrapper" class="bg-white rounded shadow p-2 text-center d-flex align-items-center justify-content-center w-100 my-auto position-relative" style="max-width: 300px; height: 380px; border: 1px solid #cbd5e1;">
-                                    <canvas id="modalDestacadoPdfCanvas" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;"></canvas>
-                                    <div id="modalDestacadoPdfLoading" class="text-center p-3 text-danger">
+                                <div id="modalDestacadoPdfWrapper" class="bg-white rounded shadow p-2 text-center align-items-center justify-content-center w-100 my-auto position-relative" style="max-width: 300px; min-height: 380px; border: 1px solid #cbd5e1; display: flex;">
+                                    <canvas id="modalDestacadoPdfCanvas" style="max-width: 100%; max-height: 360px; object-fit: contain; display: none; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 4px;"></canvas>
+                                    <div id="modalDestacadoPdfLoading" class="text-center p-3 text-danger my-auto">
                                         <i class="fas fa-file-pdf fa-3x mb-2"></i>
                                         <span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>
                                     </div>
                                 </div>
 
                                 <!-- Portada Simulación Realista Alternativa (cuando no hay PDF o falla carga) -->
-                                <div id="modalObraSimulatedCover" class="bg-white rounded shadow p-4 text-center d-flex flex-column justify-content-between w-100 my-auto position-relative" style="max-width: 280px; min-height: 350px; border-left: 6px solid #006633; border-top: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; display: none;">
+                                <div id="modalObraSimulatedCover" class="bg-white rounded shadow p-4 text-center flex-column justify-content-between w-100 my-auto position-relative" style="max-width: 280px; min-height: 350px; border-left: 6px solid #006633; border-top: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; display: none;">
                                     <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
                                         <img src="{% static 'images/LOGO FCA1.png' %}" alt="FCA" style="height: 26px; object-fit: contain;">
                                         <span class="badge badge-success px-2 py-0.5" id="modalObraCoverBadge" style="font-size: 0.65rem;">UABC</span>
@@ -2279,12 +2282,17 @@
 
                                 <!-- Botones de Descarga y Lectura -->
                                 <div class="w-100 mt-4">
-                                    <a href="#" id="modalObraBtnVerPdf" target="_blank" class="btn btn-success btn-block font-weight-bold py-2 shadow-2xs">
+                                    <a href="#" id="modalObraBtnVerPdf" target="_blank" class="btn btn-success btn-block font-weight-bold py-2 shadow-2xs mb-2">
                                         <i class="fas fa-file-pdf mr-2"></i>Consultar Texto Completo (PDF)
                                     </a>
-                                    <a href="#" id="modalObraBtnDescargarPdf" download class="btn btn-outline-secondary btn-block btn-sm font-weight-bold mt-2" style="display: none;">
-                                        <i class="fas fa-download mr-1"></i>Descargar Copia Local
-                                    </a>
+                                    <div class="d-flex" style="gap: 8px;">
+                                        <a href="#" id="modalObraVerEnResultadosColBtn" class="btn btn-outline-success btn-sm font-weight-bold flex-fill py-1.5 shadow-2xs">
+                                            <i class="fas fa-search mr-1"></i> Ver en Resultados
+                                        </a>
+                                        <a href="#" id="modalObraBtnDescargarPdf" download class="btn btn-outline-secondary btn-sm font-weight-bold flex-fill py-1.5 shadow-2xs" style="display: none;">
+                                            <i class="fas fa-download mr-1"></i> Descargar
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3141,42 +3149,44 @@
                 $('#modalObraIdioma').text(idioma);
                 $('#modalObraDescripcion').text(descripcion);
 
+                // Configuración de los enlaces "Ver en Resultados"
+                var urlBusquedaResultados = "{% url 'resultado_busqueda' %}?q=" + encodeURIComponent(titulo);
+                $('#modalObraVerEnResultadosBtn').attr('href', urlBusquedaResultados);
+                $('#modalObraVerEnResultadosColBtn').attr('href', urlBusquedaResultados);
+
                 // Portada en el Modal: Renderizar PDF real o mostrar portada simulada
-                var pdfWrapper = document.getElementById('modalDestacadoPdfWrapper');
-                var pdfCanvas = document.getElementById('modalDestacadoPdfCanvas');
-                var pdfLoading = document.getElementById('modalDestacadoPdfLoading');
-                var simCover = document.getElementById('modalObraSimulatedCover');
+                var pdfWrapper = $('#modalDestacadoPdfWrapper');
+                var pdfCanvasEl = document.getElementById('modalDestacadoPdfCanvas');
+                var pdfLoading = $('#modalDestacadoPdfLoading');
+                var simCover = $('#modalObraSimulatedCover');
 
                 if (pdfUrl && pdfUrl.trim() !== '' && typeof pdfjsLib !== 'undefined') {
-                    if (pdfWrapper) pdfWrapper.style.display = 'flex';
-                    if (simCover) simCover.style.display = 'none';
-                    if (pdfCanvas) pdfCanvas.style.display = 'none';
-                    if (pdfLoading) {
-                        pdfLoading.style.display = 'block';
-                        pdfLoading.innerHTML = '<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>';
-                    }
+                    pdfWrapper.css('display', 'flex');
+                    simCover.css('display', 'none');
+                    $(pdfCanvasEl).hide();
+                    pdfLoading.show().html('<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>');
 
                     pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
                         return pdfDoc.getPage(1);
                     }).then(function(page) {
-                        if (!pdfCanvas) return;
-                        var context = pdfCanvas.getContext('2d');
+                        if (!pdfCanvasEl) return;
+                        var context = pdfCanvasEl.getContext('2d');
                         var viewport = page.getViewport({ scale: 0.85 });
-                        pdfCanvas.height = viewport.height;
-                        pdfCanvas.width = viewport.width;
+                        pdfCanvasEl.height = viewport.height;
+                        pdfCanvasEl.width = viewport.width;
 
                         return page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
-                            if (pdfLoading) pdfLoading.style.display = 'none';
-                            pdfCanvas.style.display = 'block';
+                            pdfLoading.hide();
+                            $(pdfCanvasEl).show();
                         });
                     }).catch(function(err) {
                         console.warn('Error al renderizar portada de PDF en modal:', err);
-                        if (pdfWrapper) pdfWrapper.style.display = 'none';
-                        if (simCover) simCover.style.display = 'flex';
+                        pdfWrapper.css('display', 'none');
+                        simCover.css('display', 'flex');
                     });
                 } else {
-                    if (pdfWrapper) pdfWrapper.style.display = 'none';
-                    if (simCover) simCover.style.display = 'flex';
+                    pdfWrapper.css('display', 'none');
+                    simCover.css('display', 'flex');
                 }
 
                 // Construcción de cita sugerida (formato APA)
