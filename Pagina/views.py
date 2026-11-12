@@ -3337,6 +3337,11 @@ def cambiar_password_propia_view(request):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def aprobar_semblanza_view(request, autor_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_revisar_semblanzas', True):
+        messages.warning(request, "⚠️ Tu permiso para revisar semblanzas y fotos del Claustro ha sido revocado temporalmente por la administración.")
+        return redirect(reverse('panel_usuarios') + '#semblanzas')
+
     autor = get_object_or_404(Autor, id=autor_id)
 
     if autor.biografia_borrador is not None:
@@ -3366,6 +3371,11 @@ def aprobar_semblanza_view(request, autor_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def rechazar_semblanza_view(request, autor_id):
     if request.method == 'POST':
+        caller_autor = getattr(request.user, 'autor', None)
+        if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_revisar_semblanzas', True):
+            messages.warning(request, "⚠️ Tu permiso para revisar semblanzas y fotos del Claustro ha sido revocado temporalmente por la administración.")
+            return redirect(reverse('panel_usuarios') + '#semblanzas')
+
         autor = get_object_or_404(Autor, id=autor_id)
         checks = request.POST.getlist('motivo_checks')
         texto_libre = request.POST.get('motivo_rechazo', '').strip()
@@ -4677,6 +4687,11 @@ def registrar_auditoria_semestral_view(request):
     """
     Registra formalmente una auditoría semestral del repositorio con folio, sello SHA-256 y aval oficial.
     """
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_emitir_auditorias', True):
+        messages.warning(request, "⚠️ Tu permiso para emitir dictámenes oficiales de auditoría ha sido revocado temporalmente por la administración.")
+        return redirect(reverse('panel_usuarios') + '#auditoria-semestral')
+
     if request.method != 'POST':
         return redirect('panel_usuarios')
 
@@ -5089,6 +5104,11 @@ def cambiar_color_cumpleanos_view(request):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def aprobar_documento_view(request, doc_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+        messages.warning(request, "⚠️ Tu permiso para moderar obras académicas ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     articulo = get_object_or_404(Articulo, id=doc_id)
     articulo.estado = 'aprobado'
     articulo.motivo_rechazo = ''
@@ -5111,6 +5131,11 @@ def aprobar_documento_view(request, doc_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def rechazar_documento_view(request, doc_id):
     if request.method == 'POST':
+        caller_autor = getattr(request.user, 'autor', None)
+        if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+            messages.warning(request, "⚠️ Tu permiso para moderar obras académicas ha sido revocado temporalmente por la administración.")
+            return redirect('panel_usuarios')
+
         articulo = get_object_or_404(Articulo, id=doc_id)
         checks = request.POST.getlist('motivo_checks')
         texto_libre = request.POST.get('motivo_rechazo', '').strip()
@@ -5491,6 +5516,11 @@ def restaurar_respaldo_sistema_view(request):
     - Garantiza cero pérdidas de datos y compatibilidad total con MySQL, PostgreSQL y SQLite.
     """
     from django.conf import settings
+
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_descargar_respaldos', True):
+        messages.warning(request, "⚠️ Tu permiso para gestionar y restaurar copias de seguridad ha sido revocado temporalmente por la administración.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
 
     if request.method != 'POST':
         messages.warning(request, "Método no permitido para restauración.")
@@ -6231,6 +6261,11 @@ def restaurar_respaldo_sistema_view(request):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def aprobar_usuario_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para gestionar y admitir cuentas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     usuario = get_object_or_404(User, id=user_id)
     usuario.is_active = True
     usuario.save()
@@ -6283,6 +6318,11 @@ def aprobar_usuario_view(request, user_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def rechazar_usuario_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para gestionar cuentas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     usuario = get_object_or_404(User, id=user_id)
     nombre_usr = usuario.username
     if hasattr(usuario, 'autor'):
@@ -6470,6 +6510,11 @@ def desactivar_cuenta_soporte_view(request, user_id):
 def suspender_usuario_view(request, user_id):
     """Suspende una cuenta registrando motivo obligatorio y tiempo definido (o indefinido)."""
     if request.method == 'POST':
+        caller_autor = getattr(request.user, 'autor', None)
+        if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+            messages.warning(request, "⚠️ Tu permiso para suspender cuentas de usuario ha sido revocado temporalmente por la administración.")
+            return redirect('panel_usuarios')
+
         usuario = get_object_or_404(User, id=user_id)
         if usuario == request.user or (usuario.id == 1 or usuario.username.lower() == 'yaele'):
             messages.error(request, 'No puedes suspender a este usuario protegido.')
