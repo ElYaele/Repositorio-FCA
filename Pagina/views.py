@@ -16,6 +16,8 @@ from django.utils import timezone
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
@@ -9275,4 +9277,29 @@ def acuse_recepcion_documento_view(request, doc_id):
         'sello': articulo.hash_sello_digital,
     }
     return render(request, 'acuse_recepcion.html', context)
+
+
+@csrf_exempt
+@require_POST
+def registrar_metrica_obra_view(request, doc_id):
+    """
+    Registra de forma asíncrona y atómica una lectura o descarga de un documento académico.
+    """
+    try:
+        from django.db.models import F
+        tipo = request.POST.get('tipo', 'vista').strip().lower()
+        if tipo == 'descarga':
+            Articulo.objects.filter(id=doc_id).update(descargas=F('descargas') + 1)
+        else:
+            Articulo.objects.filter(id=doc_id).update(vistas=F('vistas') + 1)
+
+        art = Articulo.objects.filter(id=doc_id).values('vistas', 'descargas').first()
+        return JsonResponse({
+            'status': 'ok',
+            'vistas': art['vistas'] if art else 0,
+            'descargas': art['descargas'] if art else 0
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
 

@@ -110,6 +110,7 @@ from .views import (
     api_presencia_heartbeat_view,
     api_bloqueo_concurrencia_view,
     toggle_permiso_moderador_view,
+    registrar_metrica_obra_view,
 )
 
 urlpatterns = [
@@ -119,6 +120,7 @@ urlpatterns = [
     path('upload/', ArticuloCreateView.as_view(), name='upload_document'),
     path('documento/editar/<int:pk>/', ArticuloDocenteEditarView.as_view(), name='editar_documento'),
     path('documento/<int:doc_id>/acuse/', acuse_recepcion_documento_view, name='acuse_recepcion'),
+    path('api/obra/<int:doc_id>/metrica/', registrar_metrica_obra_view, name='registrar_metrica_obra'),
 
     # Autenticación y Registro
     path('login/', login_view, name='login'),

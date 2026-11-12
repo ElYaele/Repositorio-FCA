@@ -922,6 +922,10 @@ class Articulo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Métricas de impacto institucional
+    vistas = models.PositiveIntegerField(default=0, verbose_name="Visualizaciones / Lecturas")
+    descargas = models.PositiveIntegerField(default=0, verbose_name="Descargas de Texto Completo")
+
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     motivo_rechazo = models.TextField(blank=True, null=True, verbose_name="Motivo del rechazo (si aplica)")
 
