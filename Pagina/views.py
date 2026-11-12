@@ -3869,6 +3869,7 @@ def calcular_sla_documento(doc, ahora=None):
             'badge_class': 'bg-success',
             'icon': 'fa-check-circle',
             'texto': f"{dias_habiles}d hábil{'es' if dias_habiles != 1 else ''} (En tiempo)" if dias_habiles > 0 else "< 24h hábiles (Al día)",
+            'style': 'background-color: #ecfdf5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important;',
             'tooltip': f"Ingresó hace {dias_habiles} día(s) hábil(es). Dentro del margen institucional UABC (≤ 48h)."
         }
     elif dias_habiles <= 5:
@@ -3879,6 +3880,7 @@ def calcular_sla_documento(doc, ahora=None):
             'badge_class': 'bg-warning',
             'icon': 'fa-hourglass-half',
             'texto': f"{dias_habiles}d hábiles (Atención)",
+            'style': 'background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid #fde68a !important;',
             'tooltip': f"Lleva {dias_habiles} días hábiles en espera de moderación. Requiere atención pronta."
         }
     else:
@@ -3889,6 +3891,7 @@ def calcular_sla_documento(doc, ahora=None):
             'badge_class': 'bg-danger',
             'icon': 'fa-fire',
             'texto': f"{dias_habiles}d hábiles (Urgente)",
+            'style': 'background-color: #fef2f2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important;',
             'tooltip': f"Excedió el SLA institucional de 5 días hábiles ({dias_habiles} días acumulados). Prioridad alta."
         }
 

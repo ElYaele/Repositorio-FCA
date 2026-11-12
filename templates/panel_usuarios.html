@@ -1433,27 +1433,7 @@
                                                 <span class="text-muted">Admin / Inicial</span>
                                             {% endif %}
                                         </td>
-                                        <td>
-                                            {{ doc.created_at|date:"d/m/Y H:i" }}
-                                            {% if doc.estado == 'pendiente' and doc.sla %}
-                                                <br>
-                                                <span class="badge {{ doc.sla.badge_class }} bg-opacity-15 text-{{ doc.sla.color }} border border-{{ doc.sla.color }} px-2 py-0.5 rounded-pill small mt-1 shadow-2xs" title="{{ doc.sla.tooltip }}">
-                                                    <i class="fas {{ doc.sla.icon }} me-1"></i>SLA: {{ doc.sla.texto }}
-                                                </span>
-                                            {% endif %}
-                                            {% if doc.es_reenvio_corregido %}
-                                                <br>
-                                                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 small mt-1 btn-diff-trigger shadow-2xs"
-                                                        data-docid="{{ doc.id }}"
-                                                        data-doctitulo="{{ doc.titulo|escapejs }}"
-                                                        data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
-                                                        data-doccambios="{{ doc.campos_modificados_recientes|default:'[]'|escapejs }}"
-                                                        data-docfecha="{{ doc.fecha_ultimo_reenvio|date:'d/m/Y H:i'|default:'' }}"
-                                                        title="Obra reenviada con correcciones por el autor. Clic para comparar qué modificó.">
-                                                    <i class="fas fa-sync-alt me-1"></i>Cambios Reenviados
-                                                </button>
-                                            {% endif %}
-                                        </td>
+                                        <td>{{ doc.created_at|date:"d/m/Y H:i" }}</td>
                                         <td class="text-center">
                                             {% if doc.estado == 'aprobado' %}
                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Aprobado</span>
@@ -1461,6 +1441,24 @@
                                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Rechazado</span>
                                             {% else %}
                                                 <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Espera</span>
+                                                {% if doc.sla %}
+                                                    <br>
+                                                    <span class="badge rounded-pill mt-1" style="{{ doc.sla.style }} font-size: 0.7rem;" title="{{ doc.sla.tooltip }}">
+                                                        <i class="fas {{ doc.sla.icon }} me-1"></i>{{ doc.sla.texto }}
+                                                    </span>
+                                                {% endif %}
+                                                {% if doc.es_reenvio_corregido %}
+                                                    <br>
+                                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 small mt-1 btn-diff-trigger shadow-2xs"
+                                                            data-docid="{{ doc.id }}"
+                                                            data-doctitulo="{{ doc.titulo|escapejs }}"
+                                                            data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
+                                                            data-doccambios="{{ doc.campos_modificados_recientes|default:'[]'|escapejs }}"
+                                                            data-docfecha="{{ doc.fecha_ultimo_reenvio|date:'d/m/Y H:i'|default:'' }}"
+                                                            title="Obra reenviada con correcciones por el autor. Clic para comparar qué modificó.">
+                                                        <i class="fas fa-sync-alt me-1"></i>Cambios Reenviados
+                                                    </button>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                         <td class="text-center pe-3 text-nowrap">
@@ -1592,27 +1590,7 @@
                                                 <span class="text-muted">Admin / Inicial</span>
                                             {% endif %}
                                         </td>
-                                        <td>
-                                            {{ doc.created_at|date:"d/m/Y H:i" }}
-                                            {% if doc.estado == 'pendiente' and doc.sla %}
-                                                <br>
-                                                <span class="badge {{ doc.sla.badge_class }} bg-opacity-15 text-{{ doc.sla.color }} border border-{{ doc.sla.color }} px-2 py-0.5 rounded-pill small mt-1 shadow-2xs" title="{{ doc.sla.tooltip }}">
-                                                    <i class="fas {{ doc.sla.icon }} me-1"></i>SLA: {{ doc.sla.texto }}
-                                                </span>
-                                            {% endif %}
-                                            {% if doc.es_reenvio_corregido %}
-                                                <br>
-                                                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 small mt-1 btn-diff-trigger shadow-2xs"
-                                                        data-docid="{{ doc.id }}"
-                                                        data-doctitulo="{{ doc.titulo|escapejs }}"
-                                                        data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
-                                                        data-doccambios="{{ doc.campos_modificados_recientes|default:'[]'|escapejs }}"
-                                                        data-docfecha="{{ doc.fecha_ultimo_reenvio|date:'d/m/Y H:i'|default:'' }}"
-                                                        title="Obra reenviada con correcciones por el autor. Clic para comparar qué modificó.">
-                                                    <i class="fas fa-sync-alt me-1"></i>Cambios Reenviados
-                                                </button>
-                                            {% endif %}
-                                        </td>
+                                        <td>{{ doc.created_at|date:"d/m/Y H:i" }}</td>
                                         <td class="text-center">
                                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill"><i class="fas fa-trash me-1"></i>En Papelera</span>
                                         </td>
@@ -1705,21 +1683,14 @@
                                                 {% else %}
                                                     <span class="badge bg-secondary bg-opacity-10 text-muted border border-secondary" style="font-size: 0.65rem;"><i class="fas fa-tag me-1"></i>Sin Keywords</span>
                                                 {% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <small class="text-muted">{{ doc.created_at|date:"d/m/y" }}</small>
                                                 {% if doc.estado == 'pendiente' and doc.sla %}
-                                                    <br>
-                                                    <span class="badge {{ doc.sla.badge_class }} bg-opacity-15 text-{{ doc.sla.color }} border border-{{ doc.sla.color }} px-1.5 py-0.5 rounded-pill shadow-2xs" style="font-size: 0.62rem;" title="{{ doc.sla.tooltip }}">
-                                                        <i class="fas {{ doc.sla.icon }} me-1"></i>SLA: {{ doc.sla.texto }}
+                                                    <span class="badge rounded-pill" style="{{ doc.sla.style }} font-size: 0.65rem;" title="{{ doc.sla.tooltip }}">
+                                                        <i class="fas {{ doc.sla.icon }} me-1"></i>{{ doc.sla.texto }}
                                                     </span>
                                                 {% endif %}
                                                 {% if doc.es_reenvio_corregido %}
-                                                    <br>
-                                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-1.5 py-0.5 mt-1 btn-diff-trigger shadow-2xs"
-                                                            style="font-size: 0.62rem;"
+                                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-1.5 py-0.5 btn-diff-trigger shadow-2xs"
+                                                            style="font-size: 0.65rem;"
                                                             data-docid="{{ doc.id }}"
                                                             data-doctitulo="{{ doc.titulo|escapejs }}"
                                                             data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
@@ -1730,6 +1701,9 @@
                                                     </button>
                                                 {% endif %}
                                             </div>
+                                        </div>
+                                        <div class="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">{{ doc.created_at|date:"d/m/y" }}</small>
                                             <div class="d-flex align-items-center">
                                                 <button type="button" class="btn btn-outline-info btn-action-circle me-1 btn-preview-doc"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
@@ -6794,30 +6768,30 @@
                             <label class="form-check-label small" for="chkTitulo">Título, resumen o palabras clave requieren ajustes</label>
                         </div>
                         <!-- PLANTILLAS RÁPIDAS INSTITUCIONALES (IDEA 14) -->
-                        <div class="mb-3 p-2.5 bg-light rounded-3 border">
+                        <div class="mb-2.5">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-bold small text-dark mb-0" style="font-size: 0.8rem;">
-                                    <i class="fas fa-magic text-warning me-1"></i> Plantillas Rápidas Institucionales:
+                                <label class="form-label fw-bold text-muted mb-0" style="font-size: 0.75rem;">
+                                    <i class="fas fa-bolt text-warning me-1"></i>Plantillas Rápidas (clic para insertar):
                                 </label>
-                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" onclick="limpiarPlantillasRechazoDoc()" title="Limpiar observaciones" style="font-size: 0.75rem;">
+                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" onclick="limpiarPlantillasRechazoDoc()" title="Limpiar texto" style="font-size: 0.72rem;">
                                     <i class="fas fa-eraser me-1"></i>Limpiar
                                 </button>
                             </div>
                             <div class="d-flex flex-wrap gap-1">
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoDoc('Falta DOI oficial o identificador persistente válido de la publicación.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoDoc('Falta DOI oficial o identificador persistente válido de la publicación.')">
                                     <i class="fas fa-link me-1 text-primary"></i>Falta DOI
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoDoc('El archivo PDF adjunto carece de carátula institucional FCA UABC o está ilegible.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoDoc('El archivo PDF adjunto carece de carátula institucional FCA UABC o está ilegible.')">
                                     <i class="fas fa-file-pdf me-1 text-danger"></i>PDF sin carátula
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoDoc('Favor de verificar los coautores registrados e incluir su adscripción académica correspondiente.')">
-                                    <i class="fas fa-users me-1 text-success"></i>Coautores incompletos
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoDoc('Favor de verificar los coautores registrados e incluir su adscripción académica.')">
+                                    <i class="fas fa-users me-1 text-success"></i>Coautores
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoDoc('El resumen debe contar con un mínimo de 200 palabras y contener al menos 3 palabras clave normalizadas.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoDoc('El resumen requiere mínimo 200 palabras y contener al menos 3 palabras clave.')">
                                     <i class="fas fa-align-left me-1 text-info"></i>Resumen / Keywords
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoDoc('El año de producción o fecha editorial no coincide con el documento publicado.')">
-                                    <i class="fas fa-calendar-times me-1 text-warning"></i>Año / Fecha no coincide
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoDoc('El año de producción o fecha editorial no coincide con el documento publicado.')">
+                                    <i class="fas fa-calendar-times me-1 text-warning"></i>Año / Fecha
                                 </button>
                             </div>
                         </div>
@@ -7375,26 +7349,26 @@
                             <label class="form-check-label small" for="chkSemblanzaHorario">Horario de Clases y Asesorías Académicas incorrecto o requiere actualización</label>
                         </div>
                         <!-- PLANTILLAS RÁPIDAS INSTITUCIONALES PARA SEMBLANZAS (IDEA 14) -->
-                        <div class="mb-3 p-2.5 bg-light rounded-3 border">
+                        <div class="mb-2.5">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-bold small text-dark mb-0" style="font-size: 0.8rem;">
-                                    <i class="fas fa-magic text-warning me-1"></i> Plantillas Rápidas de Semblanza:
+                                <label class="form-label fw-bold text-muted mb-0" style="font-size: 0.75rem;">
+                                    <i class="fas fa-bolt text-warning me-1"></i>Plantillas Rápidas (clic para insertar):
                                 </label>
-                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" onclick="limpiarPlantillasRechazoSemblanza()" title="Limpiar observaciones" style="font-size: 0.75rem;">
+                                <button type="button" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" onclick="limpiarPlantillasRechazoSemblanza()" title="Limpiar texto" style="font-size: 0.72rem;">
                                     <i class="fas fa-eraser me-1"></i>Limpiar
                                 </button>
                             </div>
                             <div class="d-flex flex-wrap gap-1">
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoSemblanza('La fotografía debe ser formal institucional, de frente, fondo claro y resolución adecuada.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoSemblanza('La fotografía debe ser formal institucional, de frente, fondo claro y resolución adecuada.')">
                                     <i class="fas fa-camera me-1 text-primary"></i>Foto Institucional
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoSemblanza('Las líneas de investigación deben apegarse a las Líneas de Generación y Aplicación del Conocimiento (LGAC) oficiales FCA.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoSemblanza('Las líneas de investigación deben apegarse a las Líneas de Generación y Aplicación del Conocimiento (LGAC) oficiales FCA.')">
                                     <i class="fas fa-tags me-1 text-success"></i>Apegarse a LGAC
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoSemblanza('Favor de verificar el grado académico y nombramientos docentes registrados en la facultad.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoSemblanza('Favor de verificar el grado académico y nombramientos docentes registrados en la facultad.')">
                                     <i class="fas fa-graduation-cap me-1 text-info"></i>Grado / Nombramiento
                                 </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill small" onclick="insertarPlantillaRechazoSemblanza('El horario de clases o asesorías adjunto se encuentra desactualizado o no corresponde al ciclo en curso.')">
+                                <button type="button" class="btn btn-sm py-0.5 px-2 rounded-pill border bg-white text-dark shadow-2xs" style="font-size: 0.73rem;" onclick="insertarPlantillaRechazoSemblanza('El horario de clases o asesorías adjunto se encuentra desactualizado o no corresponde al ciclo en curso.')">
                                     <i class="fas fa-calendar-alt me-1 text-warning"></i>Horario ciclo actual
                                 </button>
                             </div>
