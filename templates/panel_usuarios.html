@@ -545,19 +545,25 @@
             color: #f8fafc !important;
             overflow-x: hidden;
         }
-        body.modo-presentacion-activa .sima-topbar,
-        body.modo-presentacion-activa .sima-sidebar,
-        body.modo-presentacion-activa .hub-master-nav,
+        body.modo-presentacion-activa header.topbar,
+        body.modo-presentacion-activa aside.sidebar,
+        body.modo-presentacion-activa .topbar,
+        body.modo-presentacion-activa .sidebar,
+        body.modo-presentacion-activa .panel-top-header,
+        body.modo-presentacion-activa .panel-master-nav,
         body.modo-presentacion-activa .hub-subnav-group,
+        body.modo-presentacion-activa .master-hub-pills,
+        body.modo-presentacion-activa .alert,
         body.modo-presentacion-activa footer,
         body.modo-presentacion-activa .floating-support-btn {
             display: none !important;
         }
-        body.modo-presentacion-activa .sima-content {
+        body.modo-presentacion-activa .main-wrapper {
             margin-left: 0 !important;
-            padding-top: 1.2rem !important;
+            padding-top: 1.5rem !important;
             padding-left: 2.5rem !important;
             padding-right: 2.5rem !important;
+            padding-bottom: 3.5rem !important;
             max-width: 100% !important;
             width: 100% !important;
         }
@@ -603,13 +609,21 @@
 
         /* En modo presentación, las tarjetas de analítica adaptan su contraste institucional */
         body.modo-presentacion-activa .card {
-            background: #1e293b !important;
+            --bs-card-bg: #1e293b !important;
+            --bs-card-color: #f1f5f9 !important;
+            background-color: #1e293b !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             color: #f1f5f9 !important;
         }
-        body.modo-presentacion-activa .card-header {
-            background: #0f172a !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        body.modo-presentacion-activa .card-header,
+        body.modo-presentacion-activa .card-header.bg-white,
+        body.modo-presentacion-activa .card-header.bg-light {
+            background-color: #0f172a !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #f1f5f9 !important;
+        }
+        body.modo-presentacion-activa .card-body {
+            background-color: #1e293b !important;
             color: #f1f5f9 !important;
         }
         body.modo-presentacion-activa .text-dark {
@@ -627,13 +641,93 @@
         body.modo-presentacion-activa .text-muted {
             color: #94a3b8 !important;
         }
-        body.modo-presentacion-activa .table {
+
+        /* ==========================================================================
+           TABLAS EN MODO PRESENTACIÓN (TOP 5, DESGLOSE Y DISTRIBUCIÓN)
+           ========================================================================== */
+        body.modo-presentacion-activa .table,
+        body.modo-presentacion-activa .table-responsive,
+        body.modo-presentacion-activa .table > :not(caption) > * > *,
+        body.modo-presentacion-activa .table tbody,
+        body.modo-presentacion-activa .table tbody tr,
+        body.modo-presentacion-activa .table tbody td,
+        body.modo-presentacion-activa .table tbody th {
+            --bs-table-bg: #1e293b !important;
+            --bs-table-accent-bg: transparent !important;
+            --bs-table-striped-bg: #182234 !important;
+            --bs-table-striped-color: #f1f5f9 !important;
+            --bs-table-active-bg: #27354a !important;
+            --bs-table-active-color: #ffffff !important;
+            --bs-table-hover-bg: #27354a !important;
+            --bs-table-hover-color: #ffffff !important;
+            --bs-table-color: #f1f5f9 !important;
+            background-color: #1e293b !important;
             color: #f1f5f9 !important;
-        }
-        body.modo-presentacion-activa .table th,
-        body.modo-presentacion-activa .table td {
             border-color: rgba(255, 255, 255, 0.08) !important;
-            color: #f1f5f9 !important;
+        }
+
+        /* Encabezados thead (Fondo pizarra oscuro #0f172a, texto claro nítido - Cero blanco) */
+        body.modo-presentacion-activa thead,
+        body.modo-presentacion-activa thead.table-light,
+        body.modo-presentacion-activa thead.table-dark-presentation,
+        body.modo-presentacion-activa thead tr,
+        body.modo-presentacion-activa thead th,
+        body.modo-presentacion-activa thead.table-light th,
+        body.modo-presentacion-activa thead.table-dark-presentation th,
+        body.modo-presentacion-activa thead.table-light tr,
+        body.modo-presentacion-activa thead.table-dark-presentation tr {
+            --bs-table-bg: #0f172a !important;
+            --bs-table-color: #cbd5e1 !important;
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+            border-top: none !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.02em !important;
+        }
+
+        /* Hover de filas */
+        body.modo-presentacion-activa .table-hover > tbody > tr:hover > *,
+        body.modo-presentacion-activa .table-hover tbody tr:hover td {
+            --bs-table-accent-bg: #27354a !important;
+            background-color: #27354a !important;
+            color: #ffffff !important;
+        }
+
+        /* Textos y títulos dentro de tablas */
+        body.modo-presentacion-activa .table td .text-dark,
+        body.modo-presentacion-activa .table td span.text-dark,
+        body.modo-presentacion-activa .table td div.text-dark,
+        body.modo-presentacion-activa .table td strong {
+            color: #f8fafc !important;
+        }
+        body.modo-presentacion-activa .table td .text-muted,
+        body.modo-presentacion-activa .table td small.text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* Badges e insignias dentro de tablas */
+        body.modo-presentacion-activa .table td .bg-light,
+        body.modo-presentacion-activa .table td .badge.bg-light {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            color: #cbd5e1 !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+        body.modo-presentacion-activa .avatar-circle-sm,
+        body.modo-presentacion-activa .table td .rounded-circle.bg-light {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #4ade80 !important;
+        }
+
+        /* Barras de progreso de Tipologías y Áreas */
+        body.modo-presentacion-activa .progress {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+        }
+
+        /* Tarjetas de semestres comparativa (Evolución y Ritmo) */
+        body.modo-presentacion-activa .p-3.rounded-4.border.bg-light {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
         }
 
         /* TARJETAS BURBUJA (CUADRÍCULA) */
@@ -985,7 +1079,7 @@
 
     <!-- WRAPPER PRINCIPAL FLUIDO -->
     <main class="main-wrapper">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 panel-top-header">
             <div>
                 <h3 class="mb-0 text-success fw-bold"><i class="fas fa-tasks me-2"></i>Panel de Control y Moderación</h3>
                 <small class="text-muted">Revisión de obras académicas, gestión de perfiles e identidades institucionales</small>
@@ -13685,6 +13779,12 @@
 
                 document.body.classList.add('modo-presentacion-activa');
 
+                // Reemplazar dinámicamente la clase table-light de theads por table-dark-presentation
+                document.querySelectorAll('#dashboard-analitica thead.table-light').forEach(th => {
+                    th.classList.remove('table-light');
+                    th.classList.add('table-dark-presentation');
+                });
+
                 // Iniciar reloj dinámico institucional
                 actualizarRelojPresentacion();
                 if (relojInterval) clearInterval(relojInterval);
@@ -13708,6 +13808,13 @@
 
             window.desactivarModoPresentacion = function() {
                 document.body.classList.remove('modo-presentacion-activa');
+
+                // Restaurar la clase table-light de theads
+                document.querySelectorAll('#dashboard-analitica thead.table-dark-presentation').forEach(th => {
+                    th.classList.remove('table-dark-presentation');
+                    th.classList.add('table-light');
+                });
+
                 if (relojInterval) {
                     clearInterval(relojInterval);
                     relojInterval = null;
