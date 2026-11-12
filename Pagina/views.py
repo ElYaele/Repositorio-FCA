@@ -799,6 +799,12 @@ class BusquedaResultadosView(ListView):
 
         resultados = Articulo.objects.filter(filtro_publico_articulos())
 
+        favoritos_ids = self.request.GET.get('favoritos_ids', '').strip()
+        if favoritos_ids:
+            fav_id_list = [int(x) for x in favoritos_ids.split(',') if x.isdigit()]
+            if fav_id_list:
+                resultados = resultados.filter(id__in=fav_id_list)
+
         if anio_desde and anio_desde.isdigit():
             resultados = resultados.filter(año_produccion__gte=int(anio_desde))
         if anio_hasta and anio_hasta.isdigit():
@@ -905,7 +911,8 @@ class BusquedaResultadosView(ListView):
         if request.GET.get('exportar') == 'csv':
             import csv
             response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-            response['Content-Disposition'] = 'attachment; filename="catalogo_fca_uabc.csv"'
+            nombre_archivo = "mis_favoritos_fca_uabc.csv" if request.GET.get('favoritos_ids') else "catalogo_fca_uabc.csv"
+            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
             writer = csv.writer(response)
             writer.writerow(['ID', 'Título', 'Autores', 'Tipo de Recurso', 'Área', 'Entidad', 'Año', 'Idioma', 'DOI / Enlace', 'Lecturas', 'Descargas'])
             for art in self.get_queryset():
@@ -990,6 +997,10 @@ class BusquedaResultadosView(ListView):
         context['orden_actual'] = self.request.GET.get('orden', 'reciente')
         context['filtro_atributo_actual'] = self.request.GET.get('filtro_atributo', 'todo')
 
+        favoritos_ids_param = self.request.GET.get('favoritos_ids', '').strip()
+        context['es_filtro_favoritos'] = bool(favoritos_ids_param)
+        context['favoritos_ids_actual'] = favoritos_ids_param
+
         context['total_documentos'] = articulos_aprobados.count()
         total_resultados = self.get_queryset().count()
         context['resultados_count'] = total_resultados
@@ -997,18 +1008,45 @@ class BusquedaResultadosView(ListView):
         # Sugerencia ortográfica ("Quizás quisiste decir...") cuando hay 0 resultados o búsqueda específica
         q_buscada = context['query_actual'].strip()
         if q_buscada and total_resultados == 0:
-            import difflib
-            # Vocabulario institucional de áreas, tipos y palabras clave
-            vocab = set(Area.objects.values_list('nombre', flat=True))
-            vocab.update(TipoContenido.objects.values_list('nombre', flat=True))
-            for kw_raw in articulos_aprobados.exclude(palabras_clave__isnull=True).values_list('palabras_clave', flat=True)[:50]:
-                if kw_raw:
-                    for k in kw_raw.split(','):
-                        if len(k.strip()) > 3:
-                            vocab.add(k.strip())
-            matches = difflib.get_close_matches(q_buscada, list(vocab), n=1, cutoff=0.55)
-            if matches and matches[0].lower() != q_buscada.lower():
-                context['sugerencia_busqueda'] = matches[0]
+            import difflib, re, unicodedata
+
+            def _strip_accents(s):
+                return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
+            palabras_map = {}
+            fuentes = list(articulos_aprobados.values_list('titulo', flat=True))
+            fuentes.extend(list(Area.objects.values_list('nombre', flat=True)))
+            fuentes.extend(list(TipoContenido.objects.values_list('nombre', flat=True)))
+
+            for texto in fuentes:
+                if not texto:
+                    continue
+                for w in re.findall(r'\b[a-zA-ZáéíóúÁÉÍÓÚñÑ]{4,}\b', texto):
+                    w_clean = w.strip()
+                    norm = _strip_accents(w_clean.lower()).replace('ñ', 'ni')
+                    palabras_map[norm] = w_clean
+                    palabras_map[w_clean.lower()] = w_clean
+                    palabras_map[_strip_accents(w_clean.lower())] = w_clean
+
+            candidatos = list(palabras_map.keys())
+
+            def _sugerir_palabra(p):
+                if len(p) < 3:
+                    return p
+                p_norm = _strip_accents(p.lower()).replace('ñ', 'ni')
+                matches = difflib.get_close_matches(p_norm, candidatos, n=1, cutoff=0.55)
+                if not matches:
+                    matches = difflib.get_close_matches(p.lower(), candidatos, n=1, cutoff=0.50)
+                if matches:
+                    sug = palabras_map[matches[0]]
+                    if sug.lower() != p.lower():
+                        return sug
+                return p
+
+            palabras_q = q_buscada.split()
+            nuevas = [_sugerir_palabra(p) for p in palabras_q]
+            if any(n.lower() != o.lower() for n, o in zip(nuevas, palabras_q)):
+                context['sugerencia_busqueda'] = ' '.join(nuevas)
 
         return context
 
