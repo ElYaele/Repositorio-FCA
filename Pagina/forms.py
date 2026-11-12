@@ -35,6 +35,16 @@ class ArticuloForm(forms.ModelForm):
         max_value=2026
     )
 
+    semestre = forms.ChoiceField(
+        choices=[
+            ('1', '1.er Semestre (Enero - Junio)'),
+            ('2', '2.º Semestre (Agosto - Diciembre)'),
+        ],
+        required=False,
+        initial='2',
+        label="Semestre Lectivo"
+    )
+
     titulo = forms.CharField(
         max_length=255,
         required=True
@@ -133,6 +143,8 @@ class ArticuloForm(forms.ModelForm):
             self.fields['carrera_o_posgrado'].initial = self.instance.carrera_o_posgrado
             self.fields['editorial'].initial = self.instance.editorial
             self.fields['palabras_clave'].initial = self.instance.palabras_clave
+            if hasattr(self.instance, 'semestre') and self.instance.semestre:
+                self.fields['semestre'].initial = self.instance.semestre
             self.fields['idioma'].initial = self.instance.idioma
 
             # Precargamos los campos de Propiedad Intelectual y nuevos recursos

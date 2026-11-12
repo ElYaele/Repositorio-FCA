@@ -537,6 +537,105 @@
             border-color: #cbd5e1;
         }
 
+        /* ==========================================================================
+           MODO PRESENTACIÓN INSTITUCIONAL / CACECA (BLOQUE 3 - IDEA 15)
+           ========================================================================== */
+        body.modo-presentacion-activa {
+            background-color: #0b1120 !important;
+            color: #f8fafc !important;
+            overflow-x: hidden;
+        }
+        body.modo-presentacion-activa .sima-topbar,
+        body.modo-presentacion-activa .sima-sidebar,
+        body.modo-presentacion-activa .hub-master-nav,
+        body.modo-presentacion-activa .hub-subnav-group,
+        body.modo-presentacion-activa footer,
+        body.modo-presentacion-activa .floating-support-btn {
+            display: none !important;
+        }
+        body.modo-presentacion-activa .sima-content {
+            margin-left: 0 !important;
+            padding-top: 1.2rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        body.modo-presentacion-activa #dashboard-analitica {
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        /* Encabezado ejecutivo de presentación institucional */
+        .presentacion-header-banner {
+            display: none;
+            background: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            padding: 18px 26px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+        }
+        body.modo-presentacion-activa .presentacion-header-banner {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        /* Botón flotante para salir del modo presentación */
+        .btn-salir-presentacion-flotante {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
+        }
+        body.modo-presentacion-activa .btn-salir-presentacion-flotante {
+            display: inline-flex !important;
+        }
+        .btn-salir-presentacion-flotante:hover {
+            transform: scale(1.05);
+        }
+
+        /* En modo presentación, las tarjetas de analítica adaptan su contraste institucional */
+        body.modo-presentacion-activa .card {
+            background: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #f1f5f9 !important;
+        }
+        body.modo-presentacion-activa .card-header {
+            background: #0f172a !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #f1f5f9 !important;
+        }
+        body.modo-presentacion-activa .text-dark {
+            color: #f8fafc !important;
+        }
+        body.modo-presentacion-activa .bg-white {
+            background-color: #1e293b !important;
+        }
+        body.modo-presentacion-activa .bg-light {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        body.modo-presentacion-activa .border {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        body.modo-presentacion-activa .text-muted {
+            color: #94a3b8 !important;
+        }
+        body.modo-presentacion-activa .table {
+            color: #f1f5f9 !important;
+        }
+        body.modo-presentacion-activa .table th,
+        body.modo-presentacion-activa .table td {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #f1f5f9 !important;
+        }
+
         /* TARJETAS BURBUJA (CUADRÍCULA) */
         .doc-card-bubble {
             background: #ffffff;
@@ -1268,11 +1367,50 @@
                                 </div>
                                 <input type="hidden" id="filter-doc-tipo" value="{{ tipo_docs|default:'all' }}">
 
+                                <!-- DROPDOWN ELEGANTE PARA SEMESTRE ACADÉMICO (BLOQUE 3 - IDEA 1) -->
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn btn-sm btn-white border dropdown-toggle shadow-xs rounded-pill px-3 py-1 text-secondary d-flex align-items-center gap-1 bg-white" type="button" id="dropdownSemestreBtn" data-bs-toggle="dropdown" aria-expanded="false" style="max-width: 190px;">
+                                        <i class="fas fa-calendar-alt text-success me-1"></i>
+                                        <span id="label-selected-semestre" class="text-truncate">
+                                            {% if semestre_docs and semestre_docs != 'all' %}
+                                                {% for s_item in semestres_catalogo %}{% if semestre_docs == s_item.codigo %}{{ s_item.codigo }}{% endif %}{% endfor %}
+                                            {% else %}
+                                                Todos los Semestres
+                                            {% endif %}
+                                        </span>
+                                    </button>
+                                    <div class="dropdown-menu shadow-lg border-0 rounded-4 p-0 custom-filter-dropdown overflow-hidden" aria-labelledby="dropdownSemestreBtn" style="min-width: 250px;">
+                                        <div class="p-2 border-bottom bg-white sticky-top" style="position: sticky; top: 0; z-index: 10;">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted small"></i></span>
+                                                <input type="text" class="form-control form-control-sm border-start-0 filter-dropdown-search" placeholder="Buscar semestre..." data-target="semestre" onclick="event.stopPropagation();" onkeydown="event.stopPropagation();">
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-list-container p-2" data-list="semestre" style="max-height: 240px; overflow-y: auto;">
+                                            <a class="dropdown-item rounded-3 py-2 {% if not semestre_docs or semestre_docs == 'all' %}active{% endif %} d-flex align-items-center justify-content-between doc-filter-option" href="#" data-filter-type="semestre" data-value="all">
+                                                <span class="fw-bold">Todos los Semestres</span>
+                                                <i class="fas fa-check text-success check-icon {% if semestre_docs and semestre_docs != 'all' %}d-none{% endif %}"></i>
+                                            </a>
+                                            {% for s_item in semestres_catalogo %}
+                                                <a class="dropdown-item rounded-3 py-2 d-flex align-items-center justify-content-between doc-filter-option {% if semestre_docs == s_item.codigo %}active{% endif %}" href="#" data-filter-type="semestre" data-value="{{ s_item.codigo }}">
+                                                    <span class="text-truncate" title="{{ s_item.nombre }}">
+                                                        <i class="fas fa-calendar-day text-muted me-1 small"></i>{{ s_item.nombre }}
+                                                    </span>
+                                                    <span class="badge bg-light text-muted border py-0 px-1.5 ms-1" style="font-size: 0.65rem;">{{ s_item.total }}</span>
+                                                    <i class="fas fa-check text-success check-icon {% if semestre_docs != s_item.codigo %}d-none{% endif %} ms-1"></i>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="filter-doc-semestre" value="{{ semestre_docs|default:'all' }}">
+
                                 <!-- BUSCADOR INTEGRADO -->
                                 <form method="get" action="{% url 'panel_usuarios' %}#documentos" class="d-inline-flex align-middle m-0">
                                     {% if estado_docs %}<input type="hidden" name="estado_docs" value="{{ estado_docs }}">{% endif %}
                                     {% if area_docs %}<input type="hidden" name="area_docs" value="{{ area_docs }}">{% endif %}
                                     {% if tipo_docs %}<input type="hidden" name="tipo_docs" value="{{ tipo_docs }}">{% endif %}
+                                    {% if semestre_docs %}<input type="hidden" name="semestre_docs" value="{{ semestre_docs }}">{% endif %}
                                     <div class="input-group input-group-sm shadow-xs">
                                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
                                         <input type="text" name="q_docs" value="{{ q_docs }}" id="search-documentos" class="form-control border-start-0" placeholder="Buscar en BD..." style="max-width: 175px;" autocomplete="off">
@@ -1376,6 +1514,7 @@
                                         data-estado="{{ doc.estado }}"
                                         data-area-id="{{ doc.area.id }}"
                                         data-tipo-id="{{ doc.tipo_contenido.id }}"
+                                        data-semestre="{{ doc.ciclo_semestre }}"
                                         data-automatico="{{ doc.es_subida_automatica|yesno:'true,false' }}"
                                         data-chequeado="{{ doc.chequeado_por_moderador|yesno:'true,false' }}"
                                         data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }} {{ doc.editorial|default:''|lower }} {{ doc.subido_por.username|default:''|lower }}">
@@ -1447,6 +1586,7 @@
                                             <br>
                                             <small class="text-muted">
                                                 {{ doc.tipo_contenido.nombre }} | {{ doc.area.nombre }} ({{ doc.año_produccion }})
+                                                <span class="badge bg-light text-secondary border px-1.5 py-0.5 ms-1" style="font-size: 0.65rem;" title="Ciclo / Semestre Lectivo"><i class="fas fa-calendar-alt text-success me-1"></i>{{ doc.ciclo_semestre }}</span>
                                             </small>
                                             {% if doc.numero_registro %}
                                                 <span class="badge bg-warning bg-opacity-25 text-dark border border-warning font-monospace ms-1" style="font-size: 0.65rem;" title="Registro Oficial INDAUTOR / IMPI">
@@ -1617,6 +1757,7 @@
                                         data-estado="papelera"
                                         data-area-id="{{ doc.area.id }}"
                                         data-tipo-id="{{ doc.tipo_contenido.id }}"
+                                        data-semestre="{{ doc.ciclo_semestre }}"
                                         data-automatico="{{ doc.es_subida_automatica|yesno:'true,false' }}"
                                         data-chequeado="{{ doc.chequeado_por_moderador|yesno:'true,false' }}"
                                         data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }} {{ doc.editorial|default:''|lower }} {{ doc.subido_por.username|default:''|lower }}">
@@ -1679,6 +1820,7 @@
                                      data-estado="{{ doc.estado }}"
                                      data-area-id="{{ doc.area.id }}"
                                      data-tipo-id="{{ doc.tipo_contenido.id }}"
+                                     data-semestre="{{ doc.ciclo_semestre }}"
                                      data-automatico="{{ doc.es_subida_automatica|yesno:'true,false' }}"
                                      data-chequeado="{{ doc.chequeado_por_moderador|yesno:'true,false' }}"
                                      data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }} {{ doc.editorial|default:''|lower }} {{ doc.subido_por.username|default:''|lower }}">
@@ -1711,6 +1853,7 @@
                                             </div>
                                             <small class="text-muted d-block mb-1">
                                                 <i class="fas fa-tag me-1 text-success"></i>{{ doc.tipo_contenido.nombre }} | {{ doc.area.nombre }} ({{ doc.año_produccion }})
+                                                <span class="badge bg-light text-secondary border px-1.5 py-0.5 ms-1" style="font-size: 0.65rem;" title="Ciclo / Semestre Lectivo"><i class="fas fa-calendar-alt text-success me-1"></i>{{ doc.ciclo_semestre }}</span>
                                             </small>
                                             {% if doc.numero_registro %}
                                                 <div class="mb-1">
@@ -1858,6 +2001,7 @@
                                      data-estado="papelera"
                                      data-area-id="{{ doc.area.id }}"
                                      data-tipo-id="{{ doc.tipo_contenido.id }}"
+                                     data-semestre="{{ doc.ciclo_semestre }}"
                                      data-automatico="{{ doc.es_subida_automatica|yesno:'true,false' }}"
                                      data-chequeado="{{ doc.chequeado_por_moderador|yesno:'true,false' }}"
                                      data-search="{{ doc.titulo|lower }} {% for a in doc.autor.all %}{{ a.nombre|lower }} {% endfor %}{{ doc.tipo_contenido.nombre|lower }} {{ doc.area.nombre|lower }} {{ doc.año_produccion }} {{ doc.editorial|default:''|lower }} {{ doc.subido_por.username|default:''|lower }}">
@@ -4583,6 +4727,36 @@
             <!-- PESTAÑA 4: DASHBOARD ANALÍTICO DE PRODUCCIÓN Y RANKING (IDEA 18 & IDEA 8) -->
             <!-- ============================================================================== -->
             <div class="tab-pane fade" id="dashboard-analitica" role="tabpanel">
+                <!-- ENCABEZADO EJECUTIVO PARA MODO PRESENTACIÓN (CACECA / JUNTAS DE CONSEJO) -->
+                <div class="presentacion-header-banner" id="bannerModoPresentacion">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 bg-success bg-opacity-20 rounded-3 border border-success border-opacity-30 text-center" style="min-width: 54px;">
+                            <i class="fas fa-university text-success fs-2"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1" style="font-size: 0.75rem;">
+                                    <i class="fas fa-certificate me-1"></i>SESIÓN DE ACREDITACIÓN CACECA / CONAHCYT
+                                </span>
+                                <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-25 px-2.5 py-1" style="font-size: 0.75rem;">
+                                    Ciclo Lectivo {{ periodo_actual }}
+                                </span>
+                            </div>
+                            <h4 class="fw-bold mb-0 text-white">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</h4>
+                            <small class="text-white text-opacity-75">Facultad de Contaduría y Administración • Sistema Institucional de Gestión y Producción Científica</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-end d-none d-md-block text-white">
+                            <div class="fw-bold fs-6 font-monospace" id="presentacionRelojHora">--:--:-- hrs</div>
+                            <small class="text-white text-opacity-75" id="presentacionRelojFecha">Baja California, México</small>
+                        </div>
+                        <button type="button" class="btn btn-outline-light rounded-pill px-3 py-1.5 fw-bold btn-desactivar-presentacion shadow-sm">
+                            <i class="fas fa-compress me-1"></i>Salir de Pantalla Completa (ESC)
+                        </button>
+                    </div>
+                </div>
+
                 <!-- BANNER DE BIENVENIDA Y ACCIONES DEL DASHBOARD -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
                     <div class="card-body p-4 text-white">
@@ -4601,7 +4775,10 @@
                                     Monitoreo integral de publicaciones arbitradas, distribución por áreas de conocimiento, impacto DOI y cuadro de honor docente.
                                 </p>
                             </div>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-warning rounded-pill px-3 fw-bold shadow-sm text-dark d-flex align-items-center gap-1" id="btnActivarModoPresentacion" title="Proyectar métricas e indicadores de acreditación en pantalla completa para Acreditaciones CACECA / Juntas de Consejo">
+                                    <i class="fas fa-tv text-dark"></i>Modo Presentación (CACECA)
+                                </button>
                                 <a href="{% url 'exportar_documentos_excel' %}" class="btn btn-success rounded-pill px-3 fw-bold shadow-sm" title="Descargar reporte completo en formato compatible con Excel">
                                     <i class="fas fa-file-excel me-1"></i>Exportar Estadísticas
                                 </a>
@@ -10525,6 +10702,7 @@
             const searchDocs = document.getElementById('search-documentos');
             const filterDocArea = document.getElementById('filter-doc-area');
             const filterDocTipo = document.getElementById('filter-doc-tipo');
+            const filterDocSemestre = document.getElementById('filter-doc-semestre');
             const noDocResults = document.getElementById('no-doc-results');
 
             // Elementos de acciones masivas
@@ -10561,6 +10739,7 @@
                 const estado = activeBtn ? activeBtn.getAttribute('data-estado') : 'all';
                 const area = filterDocArea ? filterDocArea.value : 'all';
                 const tipo = filterDocTipo ? filterDocTipo.value : 'all';
+                const semestre = filterDocSemestre ? filterDocSemestre.value : 'all';
                 const query = searchDocs ? searchDocs.value.toLowerCase().trim() : '';
                 let visibles = 0;
 
@@ -10583,9 +10762,10 @@
 
                     const matchArea = (area === 'all' || row.getAttribute('data-area-id') === area);
                     const matchTipo = (tipo === 'all' || row.getAttribute('data-tipo-id') === tipo);
+                    const matchSemestre = (semestre === 'all' || row.getAttribute('data-semestre') === semestre);
                     const matchSearch = (query === '' || (row.dataset.search && row.dataset.search.includes(query)));
 
-                    if (matchEstado && matchArea && matchTipo && matchSearch) {
+                    if (matchEstado && matchArea && matchTipo && matchSemestre && matchSearch) {
                         row.style.display = '';
                         visibles++;
                     } else {
@@ -10614,9 +10794,10 @@
 
                     const matchArea = (area === 'all' || card.getAttribute('data-area-id') === area);
                     const matchTipo = (tipo === 'all' || card.getAttribute('data-tipo-id') === tipo);
+                    const matchSemestre = (semestre === 'all' || card.getAttribute('data-semestre') === semestre);
                     const matchSearch = (query === '' || (card.dataset.search && card.dataset.search.includes(query)));
 
-                    if (matchEstado && matchArea && matchTipo && matchSearch) {
+                    if (matchEstado && matchArea && matchTipo && matchSemestre && matchSearch) {
                         card.style.display = '';
                     } else {
                         card.style.display = 'none';
@@ -10627,7 +10808,7 @@
                 actualizarBarraAccionesMasivas();
             }
 
-            // GESTIÓN DE DROPDOWNS PERSONALIZADOS PARA ÁREAS Y TIPOS
+            // GESTIÓN DE DROPDOWNS PERSONALIZADOS PARA ÁREAS, TIPOS Y SEMESTRES
             document.querySelectorAll('.doc-filter-option').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -10672,6 +10853,18 @@
                         url.hash = '#documentos';
                         window.location.href = url.toString();
                         return;
+                    } else if (filterType === 'semestre') {
+                        const url = new URL(window.location.href);
+                        if (value && value !== 'all') {
+                            url.searchParams.set('semestre_docs', value);
+                        } else {
+                            url.searchParams.delete('semestre_docs');
+                        }
+                        url.searchParams.delete('page_docs');
+                        url.searchParams.delete('page');
+                        url.hash = '#documentos';
+                        window.location.href = url.toString();
+                        return;
                     }
 
                     aplicarFiltrosDocumentos();
@@ -10699,7 +10892,7 @@
             });
 
             // Auto-focus en el minibuscador al desplegar el menú
-            document.querySelectorAll('#dropdownAreaBtn, #dropdownTipoBtn').forEach(btn => {
+            document.querySelectorAll('#dropdownAreaBtn, #dropdownTipoBtn, #dropdownSemestreBtn').forEach(btn => {
                 btn.addEventListener('shown.bs.dropdown', function() {
                     const menu = this.nextElementSibling;
                     const searchInput = menu ? menu.querySelector('.filter-dropdown-search') : null;
@@ -12702,6 +12895,7 @@
                     { tipo: 'acciones', titulo: 'Exportar Publicaciones a Excel', sub: 'Descarga estructurada de obras aprobadas en formato XLSX', icono: 'fa-file-excel text-success', accion: () => { $('#modalExportarExcelOpciones').modal('show'); } },
                     { tipo: 'acciones', titulo: 'Ver Papelera de Reciclaje', sub: 'Consulta o purga definitiva de publicaciones descartadas', icono: 'fa-trash-alt text-danger', accion: () => { const t = document.querySelector('button[data-bs-target="#papelera"]'); if (t) bootstrap.Tab.getOrCreateInstance(t).show(); } },
                     { tipo: 'acciones', titulo: 'Tablero de Analítica y Estadísticas', sub: 'Gráficos interactivos de producción científica por año, área y tipo', icono: 'fa-chart-pie text-purple', accion: () => { const t = document.querySelector('button[data-bs-target="#dashboard-analitica"]'); if (t) bootstrap.Tab.getOrCreateInstance(t).show(); } },
+                    { tipo: 'acciones', titulo: 'Modo Presentación (CACECA)', sub: 'Proyectar métricas e indicadores en pantalla completa para acreditaciones y consejos', icono: 'fa-tv text-warning', accion: () => { window.activarModoPresentacion(); } },
                     { tipo: 'acciones', titulo: 'Directorio de Profesores y Claustro FCA', sub: 'Listado público y podio de productividad académica', icono: 'fa-chalkboard-teacher text-success', url: '{% url "directorio_profesores" %}' }
                 ];
                 commandPaletteData.push(...acciones);
@@ -13456,6 +13650,114 @@
                 }
             });
         });
+    </script>
+
+    <!-- BOTÓN FLOTANTE SALIR DE MODO PRESENTACIÓN (BLOQUE 3 - IDEA 15) -->
+    <button type="button" class="btn btn-warning rounded-pill px-4 py-2.5 fw-bold text-dark btn-salir-presentacion-flotante btn-desactivar-presentacion">
+        <i class="fas fa-compress-arrows-alt me-2"></i>Salir de Modo Presentación (ESC)
+    </button>
+
+    <!-- CONTROL DE MODO PRESENTACIÓN INSTITUCIONAL / CACECA (BLOQUE 3 - IDEA 15) -->
+    <script>
+        (function() {
+            let relojInterval = null;
+
+            function actualizarRelojPresentacion() {
+                const ahora = new Date();
+                const horaEl = document.getElementById('presentacionRelojHora');
+                const fechaEl = document.getElementById('presentacionRelojFecha');
+                if (horaEl) {
+                    horaEl.textContent = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' hrs';
+                }
+                if (fechaEl) {
+                    fechaEl.textContent = ahora.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            }
+
+            window.activarModoPresentacion = function() {
+                // Asegurar cambio visual al hub y subpestaña de analítica
+                if (typeof window.cambiarPestanaAdmin === 'function') {
+                    window.cambiarPestanaAdmin('#dashboard-analitica');
+                } else {
+                    const tabBtn = document.querySelector('button[data-bs-target="#dashboard-analitica"]');
+                    if (tabBtn && window.bootstrap) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+                }
+
+                document.body.classList.add('modo-presentacion-activa');
+
+                // Iniciar reloj dinámico institucional
+                actualizarRelojPresentacion();
+                if (relojInterval) clearInterval(relojInterval);
+                relojInterval = setInterval(actualizarRelojPresentacion, 1000);
+
+                // Pantalla completa nativa del navegador
+                try {
+                    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    }
+                } catch (e) {}
+
+                // Redimensionar gráficos de Chart.js para llenar la pantalla ancha
+                setTimeout(function() {
+                    window.dispatchEvent(new Event('resize'));
+                    if (window.chartAniosInstance && typeof window.chartAniosInstance.resize === 'function') window.chartAniosInstance.resize();
+                    if (window.chartAreasInstance && typeof window.chartAreasInstance.resize === 'function') window.chartAreasInstance.resize();
+                    if (window.chartTiposInstance && typeof window.chartTiposInstance.resize === 'function') window.chartTiposInstance.resize();
+                }, 180);
+            };
+
+            window.desactivarModoPresentacion = function() {
+                document.body.classList.remove('modo-presentacion-activa');
+                if (relojInterval) {
+                    clearInterval(relojInterval);
+                    relojInterval = null;
+                }
+
+                // Salir de pantalla completa nativa
+                try {
+                    if (document.fullscreenElement && document.exitFullscreen) {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                } catch (e) {}
+
+                // Reajustar gráficos al contenedor estándar
+                setTimeout(function() {
+                    window.dispatchEvent(new Event('resize'));
+                    if (window.chartAniosInstance && typeof window.chartAniosInstance.resize === 'function') window.chartAniosInstance.resize();
+                    if (window.chartAreasInstance && typeof window.chartAreasInstance.resize === 'function') window.chartAreasInstance.resize();
+                    if (window.chartTiposInstance && typeof window.chartTiposInstance.resize === 'function') window.chartTiposInstance.resize();
+                }, 180);
+            };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const btnActivar = document.getElementById('btnActivarModoPresentacion');
+                if (btnActivar) {
+                    btnActivar.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.activarModoPresentacion();
+                    });
+                }
+
+                document.querySelectorAll('.btn-desactivar-presentacion').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.desactivarModoPresentacion();
+                    });
+                });
+
+                document.addEventListener('fullscreenchange', function() {
+                    if (!document.fullscreenElement && document.body.classList.contains('modo-presentacion-activa')) {
+                        window.desactivarModoPresentacion();
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && document.body.classList.contains('modo-presentacion-activa')) {
+                        window.desactivarModoPresentacion();
+                    }
+                });
+            });
+        })();
     </script>
 
     <!-- BIBLIOTECAS EXTERNAS PARA ANALÍTICA Y VISOR PDF -->

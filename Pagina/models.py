@@ -832,6 +832,18 @@ class Articulo(models.Model):
     titulo = models.CharField(max_length=255)
     descripcion = models.TextField(verbose_name="Resumen / Descripción")
     año_produccion = models.IntegerField(verbose_name="Año de producción")
+    SEMESTRES_OPCIONES = [
+        ('1', '1.er Semestre (Enero - Junio)'),
+        ('2', '2.º Semestre (Agosto - Diciembre)'),
+    ]
+    semestre = models.CharField(
+        max_length=10,
+        choices=SEMESTRES_OPCIONES,
+        default='2',
+        blank=True,
+        null=True,
+        verbose_name="Semestre Lectivo"
+    )
     palabras_clave = models.CharField(max_length=255, blank=True, null=True, help_text="Separadas por comas")
     idioma = models.CharField(max_length=50, default="Español")
 
@@ -974,6 +986,12 @@ class Articulo(models.Model):
     @property
     def esta_publicado(self):
         return self.estado == 'aprobado' and not self.en_papelera
+
+    @property
+    def ciclo_semestre(self):
+        s = self.semestre or ('1' if self.created_at and self.created_at.month <= 6 else '2')
+        year = self.año_produccion or (self.created_at.year if self.created_at else 2026)
+        return f"{year}-{s}"
 
     @property
     def folio_institucional(self):

@@ -4097,6 +4097,7 @@ def panel_usuarios_view(request):
     estado_semb = request.GET.get('estado_semb', '').strip()
     area_docs = request.GET.get('area_docs', '').strip()
     tipo_docs = request.GET.get('tipo_docs', '').strip()
+    semestre_docs = request.GET.get('semestre_docs', '').strip()
 
     # Documentos activos (excluyendo papelera de reciclaje)
     base_docs_qs = Articulo.objects.filter(en_papelera=False)
@@ -4155,6 +4156,12 @@ def panel_usuarios_view(request):
         todos_documentos_qs = todos_documentos_qs.filter(area_id=area_docs)
     if tipo_docs:
         todos_documentos_qs = todos_documentos_qs.filter(tipo_contenido_id=tipo_docs)
+    if semestre_docs and semestre_docs != 'all':
+        try:
+            s_anio, s_sem = semestre_docs.split('-')
+            todos_documentos_qs = todos_documentos_qs.filter(año_produccion=int(s_anio), semestre=s_sem)
+        except Exception:
+            pass
 
     paginator_docs = Paginator(todos_documentos_qs, 20)
     page_docs = request.GET.get('page_docs') or request.GET.get('page')
@@ -4506,6 +4513,21 @@ def panel_usuarios_view(request):
             'doi': m['obras_con_doi']
         })
 
+    # Catálogo dinámico de semestres (Bloque 3 - Idea 1)
+    semestres_raw = Articulo.objects.exclude(semestre__isnull=True).exclude(semestre='').values('año_produccion', 'semestre').annotate(total=Count('id')).order_by('-año_produccion', '-semestre')
+    semestres_catalogo = []
+    for s in semestres_raw:
+        y = s['año_produccion']
+        sem = s['semestre']
+        txt_sem = "Ene - Jun" if sem == '1' else "Ago - Dic"
+        semestres_catalogo.append({
+            'codigo': f"{y}-{sem}",
+            'nombre': f"{y}-{sem} ({txt_sem})",
+            'anio': y,
+            'semestre': sem,
+            'total': s['total']
+        })
+
     ultimo_doc_id = Articulo.objects.order_by('-id').values_list('id', flat=True).first() or 0
 
     # Métricas de Personal y Roles de la plantilla (todos los usuarios no-superadmin)
@@ -4600,6 +4622,8 @@ def panel_usuarios_view(request):
         'estado_semb': estado_semb,
         'area_docs': area_docs,
         'tipo_docs': tipo_docs,
+        'semestre_docs': semestre_docs,
+        'semestres_catalogo': semestres_catalogo,
         'areas_catalogo': Area.objects.all().order_by('nombre'),
         'tipos_catalogo': TipoContenido.objects.all().order_by('nombre'),
         'ids_candidatos_confianza': ids_candidatos_confianza,
@@ -5526,6 +5550,13 @@ def exportar_documentos_excel_view(request):
             docs = docs.filter(area_id=area_id)
         if tipo_id and tipo_id != 'all':
             docs = docs.filter(tipo_contenido_id=tipo_id)
+        semestre_param = request.GET.get('semestre', '').strip() or request.GET.get('semestre_docs', '').strip()
+        if semestre_param and semestre_param != 'all':
+            try:
+                s_anio, s_sem = semestre_param.split('-')
+                docs = docs.filter(año_produccion=int(s_anio), semestre=s_sem)
+            except Exception:
+                pass
         if q_search:
             docs = docs.filter(
                 Q(titulo__icontains=q_search) |
@@ -5552,6 +5583,7 @@ def exportar_documentos_excel_view(request):
         'Área de Conocimiento',
         'Autores Acreditados',
         'Año de Producción',
+        'Semestre Lectivo',
         'Estado Editorial',
         'Modalidad / Protección',
         'No. Registro / Folio Oficial',
@@ -5579,6 +5611,7 @@ def exportar_documentos_excel_view(request):
             doc.area.nombre if doc.area else '',
             autores_txt or 'Sin autor',
             doc.año_produccion or '',
+            doc.ciclo_semestre,
             doc.get_estado_display() if hasattr(doc, 'get_estado_display') else doc.estado,
             doc.tipo_proteccion or '',
             doc.numero_registro or '',
