@@ -631,7 +631,7 @@
             border-bottom: 1px solid #edf2f7 !important;
             border-left: none !important;
             border-right: none !important;
-            vertical-align: middle;
+            vertical-align: top !important;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
@@ -1527,11 +1527,11 @@
                         <div class="table-cards-container">
                             <table class="table-custom-cards">
                                 <colgroup>
-                                    <col style="width: 44%;">
+                                    <col style="width: 38%;">
+                                    <col style="width: 19%;">
+                                    <col style="width: 7%;">
+                                    <col style="width: 14%;">
                                     <col style="width: 22%;">
-                                    <col style="width: 8%;">
-                                    <col style="width: 13%;">
-                                    <col style="width: 13%;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -1557,15 +1557,24 @@
                                                     {% endif %}
                                                 {% empty %}Sin autores{% endfor %}
                                             </small>
-                                            <small class="text-muted">Registrado: {{ doc.created_at|date:"d/m/Y H:i" }}</small>
-                                            {% if doc.pdf %}
-                                                <br><a href="{{ doc.pdf.url }}" target="_blank" class="small text-primary text-decoration-none">
-                                                    <i class="fas fa-file-pdf text-danger me-1"></i>Ver PDF oficial
-                                                </a>
-                                            {% endif %}
+                                            <div class="d-flex align-items-center gap-2 small text-muted">
+                                                <span><i class="far fa-clock me-1"></i>Registrado: {{ doc.created_at|date:"d/m/Y H:i" }}</span>
+                                                {% if doc.pdf %}
+                                                    <span>•</span>
+                                                    <a href="{{ doc.pdf.url }}" target="_blank" class="text-primary text-decoration-none fw-semibold">
+                                                        <i class="fas fa-file-pdf text-danger me-1"></i>Ver PDF oficial
+                                                    </a>
+                                                {% endif %}
+                                            </div>
                                             {% if doc.estado == 'rechazado' and doc.motivo_rechazo %}
-                                                <div class="alert alert-danger py-2 px-3 mt-2 mb-0 small rounded-3" style="max-height: 120px; overflow-y: auto; word-break: break-word;">
-                                                    <strong>Observaciones del Moderador:</strong> {{ doc.motivo_rechazo|linebreaksbr }}
+                                                <div class="mt-2 p-2 rounded-2 border border-danger-subtle bg-danger bg-opacity-10 text-danger-emphasis small" style="word-break: break-word;">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <i class="fas fa-exclamation-triangle text-danger me-1"></i>
+                                                        <strong class="text-danger">Observaciones del Moderador:</strong>
+                                                    </div>
+                                                    <div class="text-dark" style="font-size: 0.82rem; line-height: 1.4;">
+                                                        {{ doc.motivo_rechazo|linebreaksbr }}
+                                                    </div>
                                                 </div>
                                             {% endif %}
                                         </td>
@@ -1589,22 +1598,24 @@
                                                 <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Revisión</span>
                                             {% endif %}
                                         </td>
-                                        <td class="text-center pe-3 text-nowrap">
-                                            <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 fw-bold me-1 shadow-xs" title="Descargar Acuse Oficial de Recepción (Folio / QR)">
-                                                <i class="fas fa-file-invoice me-1"></i>Acuse
-                                            </a>
-                                            <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold me-1 shadow-xs" title="Editar Metadatos de la Obra">
-                                                <i class="fas fa-pencil-alt me-1"></i>Editar
-                                            </a>
-                                            {% if doc.archivo %}
-                                            <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-circle" title="Ver Documento">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                            {% elif doc.link %}
-                                            <a href="{{ doc.link }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-circle" title="Abrir Enlace">
-                                                <i class="fas fa-external-link-alt"></i>
-                                            </a>
-                                            {% endif %}
+                                        <td class="text-center pe-3">
+                                            <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                                <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 fw-bold me-1 shadow-xs" title="Descargar Acuse Oficial de Recepción (Folio / QR)">
+                                                    <i class="fas fa-file-invoice me-1"></i>Acuse
+                                                </a>
+                                                <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold me-1 shadow-xs" title="Editar Metadatos de la Obra">
+                                                    <i class="fas fa-pencil-alt me-1"></i>Editar
+                                                </a>
+                                                {% if doc.archivo %}
+                                                <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-circle" title="Ver Documento">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                {% elif doc.link %}
+                                                <a href="{{ doc.link }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-circle" title="Abrir Enlace">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -1692,11 +1703,11 @@
                         <div class="table-cards-container" id="view-table-doc-container">
                             <table class="table-custom-cards">
                                 <colgroup>
-                                    <col style="width: 44%;">
+                                    <col style="width: 38%;">
+                                    <col style="width: 19%;">
+                                    <col style="width: 7%;">
+                                    <col style="width: 14%;">
                                     <col style="width: 22%;">
-                                    <col style="width: 8%;">
-                                    <col style="width: 13%;">
-                                    <col style="width: 13%;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -1722,21 +1733,37 @@
                                                     {% endif %}
                                                 {% empty %}Sin autor{% endfor %}
                                             </small>
-                                            <small class="text-muted">Enviado: {{ doc.created_at|date:"d/m/Y H:i" }}</small>
-                                            {% if doc.pdf %}
-                                                <br><a href="{{ doc.pdf.url }}" target="_blank" class="small text-primary text-decoration-none">
-                                                    <i class="fas fa-file-pdf text-danger me-1"></i>Ver PDF subido
-                                                </a>
-                                            {% endif %}
+                                            <div class="d-flex align-items-center gap-2 small text-muted">
+                                                <span><i class="far fa-clock me-1"></i>Enviado: {{ doc.created_at|date:"d/m/Y H:i" }}</span>
+                                                {% if doc.pdf %}
+                                                    <span>•</span>
+                                                    <a href="{{ doc.pdf.url }}" target="_blank" class="text-primary text-decoration-none fw-semibold">
+                                                        <i class="fas fa-file-pdf text-danger me-1"></i>Ver PDF subido
+                                                    </a>
+                                                {% endif %}
+                                            </div>
                                             {% if doc.estado == 'rechazado' and doc.motivo_rechazo %}
-                                                <div class="alert alert-danger py-2 px-3 mt-2 mb-0 small rounded-3" style="max-height: 120px; overflow-y: auto; word-break: break-word;">
-                                                    <strong>Observaciones:</strong> {{ doc.motivo_rechazo|linebreaksbr }}
+                                                <div class="mt-2 p-2 rounded-2 border border-danger-subtle bg-danger bg-opacity-10 text-danger-emphasis small" style="word-break: break-word;">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <i class="fas fa-exclamation-triangle text-danger me-1"></i>
+                                                        <strong class="text-danger">Observaciones para Corrección:</strong>
+                                                    </div>
+                                                    <div class="text-dark" style="font-size: 0.82rem; line-height: 1.4;">
+                                                        {{ doc.motivo_rechazo|linebreaksbr }}
+                                                    </div>
                                                     {% if doc.moderado_por %}
-                                                        <br><span class="text-muted fst-italic">Rechazado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong></span>
+                                                        <div class="mt-1 pt-1 border-top border-danger border-opacity-25 text-muted fst-italic" style="font-size: 0.72rem;">
+                                                            Revisado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong>
+                                                        </div>
                                                     {% endif %}
                                                 </div>
+                                            {% elif doc.estado == 'pendiente' and doc.fecha_ultimo_reenvio %}
+                                                <div class="mt-2 p-1 px-2 rounded-2 border border-primary-subtle bg-primary bg-opacity-10 text-primary small d-inline-flex align-items-center gap-1">
+                                                    <i class="fas fa-sync-alt fa-spin me-1 text-primary" style="animation-duration: 3s;"></i>
+                                                    <span style="font-size: 0.76rem;"><strong>Correcciones reenviadas</strong> ({{ doc.fecha_ultimo_reenvio|date:"d/m/Y H:i" }}). En cola de moderación.</span>
+                                                </div>
                                             {% elif doc.estado == 'aprobado' and doc.moderado_por %}
-                                                <br><small class="text-success fst-italic">Aprobado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong></small>
+                                                <small class="text-success fst-italic d-block mt-1" style="font-size: 0.75rem;"><i class="fas fa-check-circle me-1"></i>Aprobado por: <strong>{{ doc.moderado_por.autor.nombre|default:doc.moderado_por.get_full_name|default:doc.moderado_por.username }}</strong></small>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -1757,69 +1784,74 @@
                                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill"><i class="fas fa-exclamation-triangle me-1"></i>Corrección</span>
                                             {% else %}
                                                 <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Revisión</span>
+                                                {% if doc.fecha_ultimo_reenvio %}
+                                                    <br><span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-0.5 rounded-pill mt-1" style="font-size: 0.68rem;"><i class="fas fa-sync-alt me-1"></i>Reenviado</span>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
-                                        <td class="text-center pe-3 text-nowrap">
-                                            <button type="button" class="btn btn-sm btn-outline-info me-1 btn-preview-doc rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
-                                                    data-titulo="{{ doc.titulo|escape }}"
-                                                    data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
-                                                    data-tipo="{{ doc.tipo_contenido.nombre }}"
-                                                    data-area="{{ doc.area.nombre }}"
-                                                    data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
-                                                    data-anio="{{ doc.año_produccion }}"
-                                                    data-idioma="{{ doc.idioma|default:'Español' }}"
-                                                    data-revista="{{ doc.revista|default:'N/A' }}"
-                                                    data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
-                                                    data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
-                                                    data-paginas="{{ doc.paginas|default:'N/A' }}"
-                                                    data-doi="{{ doc.doi_enlace|default:'N/A' }}"
-                                                    data-grado="{{ doc.grado_academico|default:'N/A' }}"
-                                                    data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
-                                                    data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
-                                                    data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
-                                                    data-editorial="{{ doc.editorial|default:'N/A' }}"
-                                                    data-proteccion="{{ doc.tipo_proteccion|default:'N/A' }}"
-                                                    data-registro="{{ doc.numero_registro|default:'N/A' }}"
-                                                    data-rama="{{ doc.rama_propiedad|default:'N/A' }}"
-                                                    data-titular="{{ doc.titular_propiedad|default:'N/A' }}"
-                                                    data-rol="{{ doc.rol_participacion|default:'N/A' }}"
-                                                    data-estado-prop="{{ doc.estado_propiedad|default:'N/A' }}"
-                                                    data-desarrollo="{{ doc.tipo_desarrollo|default:'N/A' }}"
-                                                    data-receptora="{{ doc.institucion_receptora|default:'N/A' }}"
-                                                    data-transferencia="{{ doc.tipo_transferencia|default:'N/A' }}"
-                                                    data-obra-rec="{{ doc.obra_receptora|default:'N/A' }}"
-                                                    data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.'|escape }}"
-                                                    data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Ver detalles">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-
-                                            <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle me-1 shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
-                                                <i class="fas fa-file-invoice"></i>
-                                            </a>
-                                            {% if doc.pdf %}
-                                                <button type="button" class="btn btn-sm btn-outline-danger me-1 rounded-circle"
-                                                        data-bs-toggle="modal" data-bs-target="#modalVisorPdfRapido"
-                                                        data-pdf-url="{{ doc.pdf.url }}"
-                                                        data-pdf-titulo="{{ doc.titulo|escape }}"
-                                                        title="Vista Rápida PDF">
-                                                    <i class="fas fa-file-pdf"></i>
+                                        <td class="text-center pe-3">
+                                            <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                                <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-preview-doc"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                        data-titulo="{{ doc.titulo|escape }}"
+                                                        data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                        data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                        data-area="{{ doc.area.nombre }}"
+                                                        data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                        data-anio="{{ doc.año_produccion }}"
+                                                        data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                        data-revista="{{ doc.revista|default:'N/A' }}"
+                                                        data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                        data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                        data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                        data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                        data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                        data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                        data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                        data-proteccion="{{ doc.tipo_proteccion|default:'N/A' }}"
+                                                        data-registro="{{ doc.numero_registro|default:'N/A' }}"
+                                                        data-rama="{{ doc.rama_propiedad|default:'N/A' }}"
+                                                        data-titular="{{ doc.titular_propiedad|default:'N/A' }}"
+                                                        data-rol="{{ doc.rol_participacion|default:'N/A' }}"
+                                                        data-estado-prop="{{ doc.estado_propiedad|default:'N/A' }}"
+                                                        data-desarrollo="{{ doc.tipo_desarrollo|default:'N/A' }}"
+                                                        data-receptora="{{ doc.institucion_receptora|default:'N/A' }}"
+                                                        data-transferencia="{{ doc.tipo_transferencia|default:'N/A' }}"
+                                                        data-obra-rec="{{ doc.obra_receptora|default:'N/A' }}"
+                                                        data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.'|escape }}"
+                                                        data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
                                                 </button>
-                                            {% endif %}
-                                            {% if doc.estado == 'rechazado' %}
-                                                <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-warning fw-bold text-dark shadow-sm me-1 rounded-pill px-2" title="Corregir">
-                                                    <i class="fas fa-exclamation-triangle me-1"></i>Corregir
-                                                </a>
-                                            {% else %}
-                                                <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-outline-primary me-1 rounded-circle" title="Editar metadatos"><i class="fas fa-pencil-alt"></i></a>
-                                            {% endif %}
 
-                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalEliminarDoc"
-                                                    data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo|escape }}"
-                                                    title="Eliminar Publicación">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                                <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
+                                                    <i class="fas fa-file-invoice"></i>
+                                                </a>
+                                                {% if doc.pdf %}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle"
+                                                            data-bs-toggle="modal" data-bs-target="#modalVisorPdfRapido"
+                                                            data-pdf-url="{{ doc.pdf.url }}"
+                                                            data-pdf-titulo="{{ doc.titulo|escape }}"
+                                                            title="Vista Rápida PDF">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </button>
+                                                {% endif %}
+                                                {% if doc.estado == 'rechazado' %}
+                                                    <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-warning fw-bold text-dark shadow-sm rounded-pill px-2 text-nowrap" title="Corregir observaciones">
+                                                        <i class="fas fa-wrench me-1"></i>Corregir
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'editar_documento' doc.id %}" class="btn btn-sm btn-outline-primary rounded-circle" title="Editar metadatos"><i class="fas fa-pencil-alt"></i></a>
+                                                {% endif %}
+
+                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalEliminarDoc"
+                                                        data-docid="{{ doc.id }}" data-doctitulo="{{ doc.titulo|escape }}"
+                                                        title="Eliminar Publicación">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -2036,11 +2068,11 @@
                         <div class="table-cards-container" id="view-table-coautor-container">
                             <table class="table-custom-cards">
                                 <colgroup>
-                                    <col style="width: 48%;">
-                                    <col style="width: 17%;">
+                                    <col style="width: 44%;">
+                                    <col style="width: 18%;">
                                     <col style="width: 18%;">
                                     <col style="width: 8%;">
-                                    <col style="width: 9%;">
+                                    <col style="width: 12%;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -2079,43 +2111,45 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-muted fw-bold">{{ doc.año_produccion }}</td>
-                                        <td class="text-center pe-3 text-nowrap">
-                                            <button type="button" class="btn btn-sm btn-outline-info me-1 btn-preview-doc rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
-                                                    data-titulo="{{ doc.titulo|escape }}"
-                                                    data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
-                                                    data-tipo="{{ doc.tipo_contenido.nombre }}"
-                                                    data-area="{{ doc.area.nombre }}"
-                                                    data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
-                                                    data-anio="{{ doc.año_produccion }}"
-                                                    data-idioma="{{ doc.idioma|default:'Español' }}"
-                                                    data-revista="{{ doc.revista|default:'N/A' }}"
-                                                    data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
-                                                    data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
-                                                    data-paginas="{{ doc.paginas|default:'N/A' }}"
-                                                    data-doi="{{ doc.doi_enlace|default:'N/A' }}"
-                                                    data-grado="{{ doc.grado_academico|default:'N/A' }}"
-                                                    data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
-                                                    data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
-                                                    data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
-                                                    data-editorial="{{ doc.editorial|default:'N/A' }}"
-                                                    data-proteccion="{{ doc.tipo_proteccion|default:'N/A' }}"
-                                                    data-registro="{{ doc.numero_registro|default:'N/A' }}"
-                                                    data-rama="{{ doc.rama_propiedad|default:'N/A' }}"
-                                                    data-titular="{{ doc.titular_propiedad|default:'N/A' }}"
-                                                    data-rol="{{ doc.rol_participacion|default:'N/A' }}"
-                                                    data-estado-prop="{{ doc.estado_propiedad|default:'N/A' }}"
-                                                    data-desarrollo="{{ doc.tipo_desarrollo|default:'N/A' }}"
-                                                    data-receptora="{{ doc.institucion_receptora|default:'N/A' }}"
-                                                    data-transferencia="{{ doc.tipo_transferencia|default:'N/A' }}"
-                                                    data-obra-rec="{{ doc.obra_receptora|default:'N/A' }}"
-                                                    data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.'|escape }}"
-                                                    data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Ver detalles">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            {% if doc.pdf %}
-                                                <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle" title="Ver PDF completo"><i class="fas fa-file-pdf"></i></a>
-                                            {% endif %}
+                                        <td class="text-center pe-3">
+                                            <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                                <button type="button" class="btn btn-sm btn-outline-info btn-preview-doc rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                        data-titulo="{{ doc.titulo|escape }}"
+                                                        data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
+                                                        data-tipo="{{ doc.tipo_contenido.nombre }}"
+                                                        data-area="{{ doc.area.nombre }}"
+                                                        data-entidad="{{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                        data-anio="{{ doc.año_produccion }}"
+                                                        data-idioma="{{ doc.idioma|default:'Español' }}"
+                                                        data-revista="{{ doc.revista|default:'N/A' }}"
+                                                        data-isbn="{{ doc.isbn_issn|default:'N/A' }}"
+                                                        data-volumen="{{ doc.volumen_numero|default:'N/A' }}"
+                                                        data-paginas="{{ doc.paginas|default:'N/A' }}"
+                                                        data-doi="{{ doc.doi_enlace|default:'N/A' }}"
+                                                        data-grado="{{ doc.grado_academico|default:'N/A' }}"
+                                                        data-director="{% if doc.asesor %}{{ doc.asesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-codirector="{% if doc.coasesor %}{{ doc.coasesor.nombre }}{% else %}N/A{% endif %}"
+                                                        data-programa="{{ doc.carrera_o_posgrado|default:'N/A' }}"
+                                                        data-editorial="{{ doc.editorial|default:'N/A' }}"
+                                                        data-proteccion="{{ doc.tipo_proteccion|default:'N/A' }}"
+                                                        data-registro="{{ doc.numero_registro|default:'N/A' }}"
+                                                        data-rama="{{ doc.rama_propiedad|default:'N/A' }}"
+                                                        data-titular="{{ doc.titular_propiedad|default:'N/A' }}"
+                                                        data-rol="{{ doc.rol_participacion|default:'N/A' }}"
+                                                        data-estado-prop="{{ doc.estado_propiedad|default:'N/A' }}"
+                                                        data-desarrollo="{{ doc.tipo_desarrollo|default:'N/A' }}"
+                                                        data-receptora="{{ doc.institucion_receptora|default:'N/A' }}"
+                                                        data-transferencia="{{ doc.tipo_transferencia|default:'N/A' }}"
+                                                        data-obra-rec="{{ doc.obra_receptora|default:'N/A' }}"
+                                                        data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.'|escape }}"
+                                                        data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if doc.pdf %}
+                                                    <a href="{{ doc.pdf.url }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle" title="Ver PDF completo"><i class="fas fa-file-pdf"></i></a>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
