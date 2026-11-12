@@ -42,6 +42,8 @@ from .views import (
     marcar_archivo_checado_view,
     acciones_masivas_documentos_view,
     exportar_documentos_excel_view,
+    exportar_auditoria_excel_view,
+    historial_documento_api_view,
     exportar_respaldo_sistema_view,
     restaurar_respaldo_sistema_view,
     aprobar_semblanza_view,
@@ -237,6 +239,8 @@ urlpatterns = [
     path('gestion-documentos/marcar-checado/<int:doc_id>/', marcar_archivo_checado_view, name='marcar_archivo_checado'),
     path('gestion-documentos/acciones-masivas/', acciones_masivas_documentos_view, name='acciones_masivas_documentos'),
     path('gestion-documentos/exportar-excel/', exportar_documentos_excel_view, name='exportar_documentos_excel'),
+    path('gestion-auditoria/exportar-excel/', exportar_auditoria_excel_view, name='exportar_auditoria_excel'),
+    path('gestion-documentos/<int:doc_id>/historial/', historial_documento_api_view, name='historial_documento_api'),
     path('gestion-sistema/exportar-respaldo/', exportar_respaldo_sistema_view, name='exportar_respaldo_sistema'),
     path('gestion-sistema/restaurar-respaldo/', restaurar_respaldo_sistema_view, name='restaurar_respaldo_sistema'),
 

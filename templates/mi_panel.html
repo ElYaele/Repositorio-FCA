@@ -659,6 +659,56 @@
             border-left: 5px solid #006633 !important;
         }
 
+        /* TIMELINE VISUAL DE HISTORIAL (IDEA 6) */
+        .timeline-visual {
+            position: relative;
+            padding-left: 2.2rem;
+        }
+        .timeline-visual::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            bottom: 14px;
+            left: 17px;
+            width: 3px;
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-marker {
+            position: absolute;
+            left: -2.2rem;
+            top: 2px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 4px #ffffff, 0 3px 8px rgba(0,0,0,0.12);
+            z-index: 2;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        .timeline-card {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .timeline-card:hover {
+            box-shadow: 0 4px 14px rgba(0, 102, 51, 0.08);
+            border-color: #cbd5e1;
+        }
+
         .doc-card-bubble {
             background: #ffffff;
             border: 1px solid #e0e0e0;
@@ -1527,11 +1577,11 @@
                         <div class="table-cards-container">
                             <table class="table-custom-cards">
                                 <colgroup>
-                                    <col style="width: 38%;">
+                                    <col style="width: 36%;">
                                     <col style="width: 19%;">
                                     <col style="width: 7%;">
                                     <col style="width: 14%;">
-                                    <col style="width: 22%;">
+                                    <col style="width: 24%;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -1703,11 +1753,11 @@
                         <div class="table-cards-container" id="view-table-doc-container">
                             <table class="table-custom-cards">
                                 <colgroup>
-                                    <col style="width: 38%;">
+                                    <col style="width: 36%;">
                                     <col style="width: 19%;">
                                     <col style="width: 7%;">
                                     <col style="width: 14%;">
-                                    <col style="width: 22%;">
+                                    <col style="width: 24%;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -1793,6 +1843,7 @@
                                             <div class="d-inline-flex align-items-center justify-content-center gap-1 flex-nowrap">
                                                 <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-preview-doc"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                                                        data-docid="{{ doc.id }}"
                                                         data-titulo="{{ doc.titulo|escape }}"
                                                         data-autores="{% for a in doc.autor.all %}{{ a.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Sin autores{% endfor %}"
                                                         data-tipo="{{ doc.tipo_contenido.nombre }}"
@@ -1823,6 +1874,13 @@
                                                         data-descripcion="{{ doc.descripcion|default:'Sin resumen disponible.'|escape }}"
                                                         data-pdf="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}" title="Ver detalles">
                                                     <i class="fas fa-eye"></i>
+                                                </button>
+
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle btn-historial-doc"
+                                                        data-docid="{{ doc.id }}"
+                                                        data-doctitulo="{{ doc.titulo|escape }}"
+                                                        title="Bitácora / Historial de Moderación">
+                                                    <i class="fas fa-history"></i>
                                                 </button>
 
                                                 <a href="{% url 'acuse_recepcion' doc.id %}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle shadow-xs" title="Descargar Acuse Oficial (Folio / QR)">
@@ -4217,6 +4275,61 @@
                             <li><a class="dropdown-item py-2" href="#" onclick="generarCitaPanel(event, 'VANCOUVER')">Vancouver</a></li>
                         </ul>
                     </div>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-outline-secondary px-3 rounded-pill shadow-xs me-2" id="btnHistorialDesdeDetalleMiPanel" title="Ver bitácora de moderación y cambios">
+                            <i class="fas fa-history me-1 text-primary"></i>Ver Bitácora / Historial
+                        </button>
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL Y BITÁCORA DE DOCUMENTO (IDEA 6) -->
+    <div class="modal fade" id="modalHistorialDocumento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-success bg-opacity-25 p-2 text-success d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="fas fa-history text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white">Bitácora de Trazabilidad y Moderación</h5>
+                            <small class="text-white-50" id="historialDocFolio">Cargando Folio...</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light p-4">
+                    <!-- CABECERA RESUMEN DEL DOCUMENTO -->
+                    <div class="card border-0 shadow-xs rounded-3 p-3 mb-4 bg-white">
+                        <h6 class="fw-bold text-dark mb-1" id="historialDocTitulo">Cargando título de la obra...</h6>
+                        <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
+                            <span id="historialDocTipoBadge" class="badge bg-light text-secondary border">Tipo de Recurso</span>
+                            <span id="historialDocArea" class="badge bg-light text-muted border">Área de Conocimiento</span>
+                            <span id="historialDocEstadoBadge" class="badge bg-warning text-dark border">Estado</span>
+                            <span class="text-muted ms-1"><i class="fas fa-user-edit me-1 text-success"></i><span id="historialDocAutores">Autores</span></span>
+                        </div>
+                    </div>
+
+                    <!-- CONTENEDOR TIMELINE -->
+                    <div id="historialTimelineLoading" class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Cargando bitácora...</span>
+                        </div>
+                        <p class="text-muted mt-2 small">Consultando cronología oficial y registro de cambios...</p>
+                    </div>
+
+                    <div id="historialTimelineContainer" style="display: none;">
+                        <div class="timeline-visual position-relative px-2 py-1" id="historialTimelineList">
+                            <!-- Nodos inyectados dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="fas fa-fingerprint me-1 text-secondary"></i>Auditoría institucional con registro de tiempo inmutable.</small>
                     <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
@@ -5957,6 +6070,10 @@
                     const btn = event.relatedTarget;
                     if (!btn) return;
 
+                    const docId = btn.getAttribute('data-docid') || '';
+                    modalDetalle.setAttribute('data-current-docid', docId);
+                    modalDetalle.setAttribute('data-current-titulo', btn.getAttribute('data-titulo') || '');
+
                     const titulo = btn.getAttribute('data-titulo') || '';
                     const autores = btn.getAttribute('data-autores') || 'Sin autores';
                     const tipo = btn.getAttribute('data-tipo') || '';
@@ -6894,6 +7011,172 @@
                     }
                 });
             }
+
+            // -------------------------------------------------------------
+            // BITÁCORA Y TIMELINE POR DOCUMENTO (IDEA 6)
+            // -------------------------------------------------------------
+            window.abrirHistorialDocumento = function(docId, tituloFallback = '') {
+                if (!docId) return;
+                const modalEl = document.getElementById('modalHistorialDocumento');
+                if (!modalEl) return;
+
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                const loading = document.getElementById('historialTimelineLoading');
+                const container = document.getElementById('historialTimelineContainer');
+                const list = document.getElementById('historialTimelineList');
+                const tituloEl = document.getElementById('historialDocTitulo');
+                const folioEl = document.getElementById('historialDocFolio');
+                const tipoBadge = document.getElementById('historialDocTipoBadge');
+                const areaBadge = document.getElementById('historialDocArea');
+                const estadoBadge = document.getElementById('historialDocEstadoBadge');
+                const autoresEl = document.getElementById('historialDocAutores');
+
+                if (tituloEl) tituloEl.textContent = tituloFallback || 'Cargando documento...';
+                if (folioEl) folioEl.textContent = 'FOLIO-FCA-...';
+                if (loading) loading.style.display = 'block';
+                if (container) container.style.display = 'none';
+                if (list) list.innerHTML = '';
+
+                modal.show();
+
+                fetch(`/gestion-documentos/${docId}/historial/`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+                    return r.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        if (list) list.innerHTML = `<div class="alert alert-danger py-2 px-3 small">${data.message || 'Error al cargar bitácora.'}</div>`;
+                        if (loading) loading.style.display = 'none';
+                        if (container) container.style.display = 'block';
+                        return;
+                    }
+
+                    if (tituloEl) tituloEl.textContent = data.titulo;
+                    if (folioEl) folioEl.textContent = data.folio;
+                    if (tipoBadge) tipoBadge.textContent = data.tipo;
+                    if (areaBadge) areaBadge.textContent = data.area;
+                    if (autoresEl) autoresEl.textContent = (data.autores && data.autores.length) ? data.autores.join(', ') : 'Sin autor';
+
+                    if (estadoBadge) {
+                        if (data.estado === 'aprobado') {
+                            estadoBadge.className = 'badge bg-success bg-opacity-10 text-success border border-success';
+                            estadoBadge.textContent = 'Publicado';
+                        } else if (data.estado === 'rechazado') {
+                            estadoBadge.className = 'badge bg-danger bg-opacity-10 text-danger border border-danger';
+                            estadoBadge.textContent = 'Requiere Corrección';
+                        } else {
+                            estadoBadge.className = 'badge bg-warning bg-opacity-10 text-dark border border-warning';
+                            estadoBadge.textContent = 'En Espera';
+                        }
+                    }
+
+                    if (list) {
+                        list.innerHTML = '';
+                        if (!data.eventos || data.eventos.length === 0) {
+                            list.innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-history fa-2x mb-2 text-secondary"></i><p>No hay eventos registrados en la bitácora aún.</p></div>';
+                        } else {
+                            data.eventos.forEach(ev => {
+                                let diffHtml = '';
+                                if (ev.diff && Array.isArray(ev.diff) && ev.diff.length > 0) {
+                                    diffHtml = `
+                                        <div class="mt-2 pt-2 border-top">
+                                            <div class="small fw-bold text-muted mb-1"><i class="fas fa-exchange-alt me-1 text-primary"></i>Campos modificados en este reenvío:</div>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered mb-0 bg-white" style="font-size: 0.76rem;">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Campo</th>
+                                                            <th>Anterior</th>
+                                                            <th>Corregido</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        ${ev.diff.map(d => `
+                                                            <tr>
+                                                                <td class="fw-bold">${d.campo}</td>
+                                                                <td class="text-muted"><del class="text-danger">${d.anterior || '(vacío)'}</del></td>
+                                                                <td class="text-success"><ins class="text-success text-decoration-none">${d.nuevo || '(vacío)'}</ins></td>
+                                                            </tr>
+                                                        `).join('')}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+
+                                const itemDiv = document.createElement('div');
+                                itemDiv.className = 'timeline-item';
+                                itemDiv.innerHTML = `
+                                    <div class="timeline-marker" style="background-color: ${ev.color};">
+                                        <i class="fas ${ev.icono}"></i>
+                                    </div>
+                                    <div class="timeline-card">
+                                        <div class="d-flex justify-content-between align-items-start mb-1 flex-wrap gap-2">
+                                            <div>
+                                                <strong class="text-dark">${ev.titulo}</strong>
+                                                <span class="badge ${ev.badge} ms-1" style="font-size: 0.68rem;">${ev.tipo.toUpperCase()}</span>
+                                            </div>
+                                            <div class="text-muted small text-nowrap">
+                                                <i class="far fa-clock me-1"></i>${ev.fecha} • ${ev.hora}
+                                            </div>
+                                        </div>
+                                        <div class="small text-muted mb-2">
+                                            <i class="fas fa-user-circle me-1 text-secondary"></i><strong>${ev.usuario}</strong> 
+                                            <span class="badge bg-light text-muted border py-0 px-1.5 ms-1" style="font-size: 0.65rem;">${ev.rol}</span>
+                                        </div>
+                                        ${ev.descripcion ? `
+                                            <div class="p-2 rounded-2 bg-light border text-dark small lh-sm" style="word-break: break-word;">
+                                                ${ev.descripcion.replace(/\n/g, '<br>')}
+                                            </div>
+                                        ` : ''}
+                                        ${diffHtml}
+                                    </div>
+                                `;
+                                list.appendChild(itemDiv);
+                            });
+                        }
+                    }
+
+                    if (loading) loading.style.display = 'none';
+                    if (container) container.style.display = 'block';
+                })
+                .catch(err => {
+                    console.error('Error al obtener bitácora:', err);
+                    if (list) list.innerHTML = `<div class="alert alert-danger py-2 px-3 small">Ocurrió un error al cargar la bitácora: ${err.message}</div>`;
+                    if (loading) loading.style.display = 'none';
+                    if (container) container.style.display = 'block';
+                });
+            };
+
+            // Delegación de eventos para botones .btn-historial-doc
+            document.addEventListener('click', function(e) {
+                const btnHistorial = e.target.closest('.btn-historial-doc');
+                if (btnHistorial) {
+                    e.preventDefault();
+                    const docId = btnHistorial.getAttribute('data-docid');
+                    const titulo = btnHistorial.getAttribute('data-doctitulo') || '';
+                    window.abrirHistorialDocumento(docId, titulo);
+                }
+
+                const btnHistorialDesdeDetalle = e.target.closest('#btnHistorialDesdeDetalleMiPanel');
+                if (btnHistorialDesdeDetalle) {
+                    e.preventDefault();
+                    const modalDetalle = document.getElementById('modalDetalleObra');
+                    const docId = modalDetalle ? modalDetalle.getAttribute('data-current-docid') : null;
+                    const titulo = modalDetalle ? modalDetalle.getAttribute('data-current-titulo') : '';
+                    if (modalDetalle) {
+                        const bsModalDetalle = bootstrap.Modal.getInstance(modalDetalle);
+                        if (bsModalDetalle) bsModalDetalle.hide();
+                    }
+                    if (docId) {
+                        window.abrirHistorialDocumento(docId, titulo);
+                    }
+                }
+            });
         });
     </script>
 

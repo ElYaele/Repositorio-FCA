@@ -990,6 +990,40 @@ class Articulo(models.Model):
         return f"{self.titulo} ({self.año_produccion}) - [{self.estado}]"
 
 
+class HistorialDocumento(models.Model):
+    """
+    Bitácora de trazabilidad cronológica por documento (Timeline).
+    Registra cada hito: creación, moderación, aprobación, devolución con observaciones,
+    reenvíos de corrección, ediciones y eventos de papelera.
+    """
+    EVENTOS = [
+        ('creacion', 'Creación / Registro Inicial'),
+        ('aprobacion', 'Aprobación Editorial'),
+        ('rechazo', 'Devolución con Observaciones'),
+        ('reenvio', 'Corrección y Reenvío'),
+        ('edicion', 'Edición de Metadatos'),
+        ('cotejo', 'Cotejo de Archivo'),
+        ('papelera', 'Envío a Papelera'),
+        ('restauracion', 'Restauración de Papelera'),
+    ]
+
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='historial_eventos')
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='eventos_documento')
+    tipo_evento = models.CharField(max_length=30, choices=EVENTOS, default='creacion')
+    titulo = models.CharField(max_length=255, verbose_name="Título del Hito")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción u Observaciones")
+    detalles_json = models.TextField(blank=True, null=True, verbose_name="Metadatos o Campos Modificados (JSON)")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha y Hora del Evento")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Historial de Documento"
+        verbose_name_plural = "Historiales de Documentos"
+
+    def __str__(self):
+        return f"[{self.created_at.strftime('%d/%m/%Y %H:%M')}] {self.articulo_id} - {self.titulo}"
+
+
 # ==============================================================================
 # MÓDULO 5: COLABORACIÓN, COAUTORÍAS Y MENSAJERÍA INTERNA
 # ==============================================================================

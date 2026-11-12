@@ -35,7 +35,7 @@ from .models import (
     InvitacionCoautoria, MensajeInterno, ROL_DOCENTE_OPCIONES, HistorialFusion,
     ConfiguracionSistema, PreguntaFrecuenteSoporte, EventoFCA, EnlaceRapidoPortal,
     RedSocialFooter, EnlacePiePagina, MensajeContacto, AuditoriaSemestral,
-    PresenciaAdministrador, BloqueoConcurrencia
+    PresenciaAdministrador, BloqueoConcurrencia, HistorialDocumento
 )
 import random
 from .forms import ArticuloForm
@@ -94,6 +94,29 @@ def registrar_auditoria(usuario, accion, detalle=""):
         accion=accion,
         detalle=detalle
     )
+
+
+def registrar_evento_historial_documento(articulo, usuario, tipo_evento, titulo, descripcion="", detalles_json=None):
+    """
+    Registra un hito en la bitácora de trazabilidad cronológica del documento (Timeline).
+    """
+    try:
+        detalles_str = None
+        if isinstance(detalles_json, (dict, list)):
+            detalles_str = json.dumps(detalles_json, ensure_ascii=False)
+        elif detalles_json:
+            detalles_str = str(detalles_json)
+
+        HistorialDocumento.objects.create(
+            articulo=articulo,
+            usuario=usuario if usuario and usuario.is_authenticated else None,
+            tipo_evento=tipo_evento,
+            titulo=titulo,
+            descripcion=descripcion or "",
+            detalles_json=detalles_str
+        )
+    except Exception as e:
+        logger.error(f"Error al registrar hito de historial para obra {articulo.id}: {e}")
 
 
 def limpiar_autores_huerfanos(minutos_gracia=15, excluir_ids=None):
@@ -482,6 +505,19 @@ class ArticuloCreateView(CreateView):
             registrar_auditoria(self.request.user, "Subida de Obra", f"Subió la obra: {articulo.titulo}")
             messages.info(self.request, f'Tu obra "{articulo.titulo}" ha sido enviada y quedará en espera de revisión por la administración.')
 
+        desc_creacion = f"Registro inicial de la obra '{articulo.titulo}' en el repositorio institucional."
+        if es_confianza and not self.request.user.is_superuser:
+            desc_creacion += " Publicada automáticamente bajo Credencial de Confianza."
+        elif es_auxiliar and tutor:
+            desc_creacion += f" Registrada por auxiliar {self.request.user.username} para el Dr. {tutor.nombre}."
+        registrar_evento_historial_documento(
+            articulo,
+            self.request.user,
+            'creacion',
+            'Obra Registrada en el Repositorio',
+            desc_creacion
+        )
+
         return redirect('mi_panel')
 
     def get_context_data(self, **kwargs):
@@ -621,6 +657,26 @@ class ArticuloDocenteEditarView(UpdateView):
                 registrar_auditoria(self.request.user, "Edición de Obra", f"Modificó la obra: {articulo.titulo}")
         articulo.save()
         form.save_m2m()
+
+        # Registro en Bitácora de Historial Cronológico
+        if cambios_detectados and (articulo.estado in ['rechazado', 'pendiente'] or articulo.ultimo_motivo_rechazo):
+            registrar_evento_historial_documento(
+                articulo,
+                self.request.user,
+                'reenvio',
+                'Corrección Reenviada por el Autor',
+                f"El autor actualizó la obra tras atender observaciones. Se detectaron {len(cambios_detectados)} modificaciones en los campos institucionales.",
+                detalles_json=cambios_detectados
+            )
+        else:
+            registrar_evento_historial_documento(
+                articulo,
+                self.request.user,
+                'edicion',
+                'Edición de Metadatos',
+                f"Actualización de datos de la obra por {self.request.user.username}.",
+                detalles_json=cambios_detectados if cambios_detectados else None
+            )
 
         # Limpiar autores huérfanos que se hayan desvinculado de la obra
         try:
@@ -5288,6 +5344,13 @@ def aprobar_documento_view(request, doc_id):
         logger.warning(f"Error al enviar correo de obra aprobada: {e}")
 
     registrar_auditoria(request.user, "Aprobación de Documento", f"Aprobó la obra: {articulo.titulo}")
+    registrar_evento_historial_documento(
+        articulo,
+        request.user,
+        'aprobacion',
+        'Obra Aprobada y Publicada',
+        f"Aprobación editorial concedida por el moderador {request.user.get_full_name() or request.user.username}. Publicada en el repositorio institucional."
+    )
     messages.success(request, f'La obra "{articulo.titulo}" ha sido aprobada y publicada exitosamente.')
     referer = request.META.get('HTTP_REFERER')
     if referer:
@@ -5325,6 +5388,13 @@ def rechazar_documento_view(request, doc_id):
             logger.warning(f"Error al enviar correo de obra rechazada: {e}")
 
         registrar_auditoria(request.user, "Rechazo de Documento", f"Rechazó la obra: {articulo.titulo}")
+        registrar_evento_historial_documento(
+            articulo,
+            request.user,
+            'rechazo',
+            'Devolución con Observaciones',
+            motivo_final
+        )
         messages.warning(request,
                          f'La obra "{articulo.titulo}" ha sido devuelta al autor con observaciones de corrección.')
     referer = request.META.get('HTTP_REFERER')
@@ -5350,6 +5420,13 @@ def marcar_archivo_checado_view(request, doc_id):
         request.user,
         "Cotejo de Obra de Confianza",
         f"Verificó y marcó como «Archivo Checado» la publicación directa: {articulo.titulo}"
+    )
+    registrar_evento_historial_documento(
+        articulo,
+        request.user,
+        'cotejo',
+        'Archivo Oficial Cotejado',
+        f"El moderador {request.user.get_full_name() or request.user.username} cotejó y verificó el archivo PDF y metadatos de la obra."
     )
     messages.success(request, f'La obra de publicación directa "{articulo.titulo}" ha sido verificada y marcada como «Archivo Checado».')
     referer = request.META.get('HTTP_REFERER')
@@ -5524,6 +5601,254 @@ def exportar_documentos_excel_view(request):
     return response
 
 
+@user_passes_test(es_superusuario, login_url='/login/')
+def exportar_auditoria_excel_view(request):
+    """
+    Genera y descarga un reporte en formato CSV con BOM UTF-8 (compatible con Excel)
+    del Buzón de Auditoría institucional, respetando los filtros activos de fecha y búsqueda.
+    """
+    import csv
+    from django.http import HttpResponse
+
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_ver_auditoria', True):
+        messages.warning(request, "⚠️ Tu permiso para consultar y exportar el buzón de auditoría ha sido revocado temporalmente.")
+        return redirect('panel_usuarios')
+
+    fecha_filtro = request.GET.get('fecha', '').strip()
+    q_search = request.GET.get('q', '').strip()
+
+    registros = RegistroAuditoria.objects.select_related('admin_usuario', 'admin_usuario__autor').all().order_by('-created_at')
+
+    if fecha_filtro:
+        try:
+            from datetime import datetime
+            fecha_obj = datetime.strptime(fecha_filtro, '%Y-%m-%d').date()
+            registros = registros.filter(created_at__date=fecha_obj)
+        except Exception:
+            pass
+
+    if q_search:
+        registros = registros.filter(
+            Q(admin_usuario__username__icontains=q_search) |
+            Q(admin_usuario__first_name__icontains=q_search) |
+            Q(admin_usuario__last_name__icontains=q_search) |
+            Q(accion__icontains=q_search) |
+            Q(detalle__icontains=q_search)
+        )
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    filename = f"auditoria_fca_{timezone.now().strftime('%Y%m%d_%H%M')}.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow([
+        'ID Evento',
+        'Fecha y Hora',
+        'Usuario (Username)',
+        'Nombre del Administrador / Operador',
+        'Rol Institucional',
+        'Acción Realizada',
+        'Detalles del Evento'
+    ])
+
+    for reg in registros:
+        nombre_completo = ""
+        rol_display = "Sistema / Externo"
+        if reg.admin_usuario:
+            nombre_completo = reg.admin_usuario.get_full_name() or reg.admin_usuario.username
+            autor_reg = getattr(reg.admin_usuario, 'autor', None)
+            if reg.admin_usuario.id == 1 or reg.admin_usuario.username == 'yaele':
+                rol_display = "Superadministrador Global (Nivel 1)"
+            elif autor_reg and autor_reg.es_admin_nivel_2:
+                rol_display = "Superadministrador Secundario (Nivel 2)"
+            elif reg.admin_usuario.is_superuser:
+                rol_display = "Soporte Técnico / Moderador (Nivel 3)"
+            elif autor_reg and autor_reg.es_auxiliar:
+                rol_display = "Auxiliar de Investigación"
+            else:
+                rol_display = "Docente / Autor"
+
+        writer.writerow([
+            reg.id,
+            reg.created_at.strftime('%d/%m/%Y %H:%M:%S'),
+            reg.admin_usuario.username if reg.admin_usuario else "Sistema",
+            nombre_completo,
+            rol_display,
+            reg.accion,
+            reg.detalle or "Sin detalles adicionales"
+        ])
+
+    registrar_auditoria(request.user, "Exportación de Buzón de Auditoría", f"Descargó reporte en formato Excel/CSV ({registros.count()} eventos auditados).")
+    return response
+
+
+@login_required
+def historial_documento_api_view(request, doc_id):
+    """
+    API JSON que retorna la bitácora cronológica completa (Timeline) de una obra.
+    Permite el acceso a superusuarios/moderadores y al autor o coautores del documento.
+    Si la obra no cuenta con eventos explícitos en HistorialDocumento (obras legacy),
+    se sintetizan y persisten automáticamente a partir de sus metadatos y del buzón de auditoría.
+    """
+    articulo = get_object_or_404(Articulo, id=doc_id)
+
+    # Permisos de consulta
+    es_dueno = (articulo.subido_por == request.user)
+    es_coautor = articulo.autor.filter(usuario=request.user).exists()
+    es_admin = request.user.is_superuser
+
+    es_auxiliar_autorizado = False
+    if hasattr(request.user, 'autor') and request.user.autor and request.user.autor.es_auxiliar:
+        tutor = request.user.autor.profesor_tutor
+        if tutor and (articulo.subido_por == tutor.usuario or articulo.autor.filter(id=tutor.id).exists()):
+            es_auxiliar_autorizado = True
+
+    if not (es_admin or es_dueno or es_coautor or es_auxiliar_autorizado):
+        return JsonResponse({'success': False, 'message': 'No tienes permisos para consultar la bitácora de este documento.'}, status=403)
+
+    # Si aún no tiene eventos registrados en HistorialDocumento, sintetizarlos de forma inteligente
+    if not articulo.historial_eventos.exists():
+        # 1. Evento de creación
+        autor_creador = articulo.subido_por or (articulo.autor.first().usuario if articulo.autor.filter(usuario__isnull=False).exists() else None)
+        desc_crea = f"Carga inicial de la obra académica '{articulo.titulo}'."
+        if articulo.es_subida_automatica:
+            desc_crea += " Publicación directa autorizada por Credencial de Confianza."
+        HistorialDocumento.objects.create(
+            articulo=articulo,
+            usuario=autor_creador,
+            tipo_evento='creacion',
+            titulo='Obra Registrada en el Repositorio',
+            descripcion=desc_crea,
+            created_at=articulo.created_at or timezone.now()
+        )
+
+        # 2. Si tiene motivo de rechazo previo
+        if articulo.ultimo_motivo_rechazo or articulo.motivo_rechazo:
+            fecha_rechazo = (articulo.fecha_ultimo_reenvio - timedelta(minutes=30)) if articulo.fecha_ultimo_reenvio else (articulo.updated_at or timezone.now())
+            HistorialDocumento.objects.create(
+                articulo=articulo,
+                usuario=articulo.moderado_por,
+                tipo_evento='rechazo',
+                titulo='Devolución con Observaciones',
+                descripcion=articulo.ultimo_motivo_rechazo or articulo.motivo_rechazo,
+                created_at=fecha_rechazo
+            )
+
+        # 3. Si fue reenviada por el autor
+        if articulo.fecha_ultimo_reenvio:
+            HistorialDocumento.objects.create(
+                articulo=articulo,
+                usuario=articulo.subido_por,
+                tipo_evento='reenvio',
+                titulo='Corrección Reenviada por el Autor',
+                descripcion='El autor atendió las observaciones institucionales y reenvió la obra a la cola de moderación.',
+                detalles_json=articulo.campos_modificados_recientes,
+                created_at=articulo.fecha_ultimo_reenvio
+            )
+
+        # 4. Si fue cotejada/checada
+        if articulo.chequeado_por_moderador and articulo.fecha_chequeado:
+            HistorialDocumento.objects.create(
+                articulo=articulo,
+                usuario=articulo.chequeado_por,
+                tipo_evento='cotejo',
+                titulo='Archivo Oficial Cotejado',
+                descripcion='El archivo PDF y los metadatos fueron verificados contra el estándar UABC.',
+                created_at=articulo.fecha_chequeado
+            )
+
+        # 5. Si está aprobada
+        if articulo.estado == 'aprobado':
+            HistorialDocumento.objects.create(
+                articulo=articulo,
+                usuario=articulo.moderado_por,
+                tipo_evento='aprobacion',
+                titulo='Obra Aprobada y Publicada',
+                descripcion='Revisión editorial completada. Obra visible públicamente en el Repositorio FCA.',
+                created_at=articulo.updated_at or timezone.now()
+            )
+
+        # 6. Si está en papelera
+        if articulo.en_papelera and articulo.fecha_eliminacion:
+            HistorialDocumento.objects.create(
+                articulo=articulo,
+                usuario=articulo.eliminado_por,
+                tipo_evento='papelera',
+                titulo='Movida a la Papelera de Reciclaje',
+                descripcion='La obra fue enviada a la papelera.',
+                created_at=articulo.fecha_eliminacion
+            )
+
+    # Extraer eventos ordenados cronológicamente
+    eventos_qs = articulo.historial_eventos.select_related('usuario', 'usuario__autor').all().order_by('-created_at')
+    eventos_data = []
+
+    iconos_map = {
+        'creacion': {'icono': 'fa-cloud-upload-alt', 'color': '#0d6efd', 'badge': 'bg-primary'},
+        'aprobacion': {'icono': 'fa-check-circle', 'color': '#198754', 'badge': 'bg-success'},
+        'rechazo': {'icono': 'fa-exclamation-triangle', 'color': '#dc3545', 'badge': 'bg-danger'},
+        'reenvio': {'icono': 'fa-sync-alt', 'color': '#0dcaf0', 'badge': 'bg-info text-dark'},
+        'edicion': {'icono': 'fa-pencil-alt', 'color': '#6f42c1', 'badge': 'bg-secondary'},
+        'cotejo': {'icono': 'fa-clipboard-check', 'color': '#ffc107', 'badge': 'bg-warning text-dark'},
+        'papelera': {'icono': 'fa-trash-alt', 'color': '#dc3545', 'badge': 'bg-danger'},
+        'restauracion': {'icono': 'fa-trash-restore', 'color': '#20c997', 'badge': 'bg-success'},
+    }
+
+    for ev in eventos_qs:
+        meta_icon = iconos_map.get(ev.tipo_evento, {'icono': 'fa-history', 'color': '#6c757d', 'badge': 'bg-secondary'})
+        usuario_nom = "Sistema / Automático"
+        usuario_rol = "Sistema"
+        if ev.usuario:
+            usuario_nom = ev.usuario.get_full_name() or ev.usuario.username
+            autor_ev = getattr(ev.usuario, 'autor', None)
+            if ev.usuario.id == 1 or ev.usuario.username == 'yaele':
+                usuario_rol = "Superadministrador Principal"
+            elif autor_ev and autor_ev.es_admin_nivel_2:
+                usuario_rol = "Superadministrador Secundario"
+            elif ev.usuario.is_superuser:
+                usuario_rol = "Moderador / Soporte FCA"
+            elif autor_ev and autor_ev.es_auxiliar:
+                usuario_rol = "Auxiliar de Investigación"
+            else:
+                usuario_rol = "Autor / Docente"
+
+        diff_list = None
+        if ev.detalles_json:
+            try:
+                diff_list = json.loads(ev.detalles_json)
+            except Exception:
+                diff_list = None
+
+        eventos_data.append({
+            'id': ev.id,
+            'tipo': ev.tipo_evento,
+            'titulo': ev.titulo,
+            'descripcion': ev.descripcion or '',
+            'diff': diff_list,
+            'fecha': ev.created_at.strftime('%d/%m/%Y'),
+            'hora': ev.created_at.strftime('%H:%M hrs'),
+            'usuario': usuario_nom,
+            'rol': usuario_rol,
+            'icono': meta_icon['icono'],
+            'color': meta_icon['color'],
+            'badge': meta_icon['badge']
+        })
+
+    return JsonResponse({
+        'success': True,
+        'doc_id': articulo.id,
+        'titulo': articulo.titulo,
+        'folio': articulo.folio_institucional,
+        'tipo': articulo.tipo_contenido.nombre,
+        'area': articulo.area.nombre,
+        'estado': articulo.estado,
+        'estado_display': articulo.get_estado_display(),
+        'autores': [a.nombre for a in articulo.autor.all()],
+        'eventos': eventos_data
+    })
+
+
 @login_required
 def eliminar_documento_view(request, doc_id):
     articulo = get_object_or_404(Articulo, id=doc_id)
@@ -5559,6 +5884,13 @@ def eliminar_documento_view(request, doc_id):
         articulo.eliminado_por = request.user
         articulo.save()
         registrar_auditoria(request.user, "Envío a Papelera", f"Movió a la papelera la obra: {titulo_doc}")
+        registrar_evento_historial_documento(
+            articulo,
+            request.user,
+            'papelera',
+            'Movida a la Papelera de Reciclaje',
+            f"La obra fue enviada a la papelera de reciclaje por {request.user.get_full_name() or request.user.username}."
+        )
         messages.success(request, f'La obra "{titulo_doc}" fue movida a la Papelera de Reciclaje. Puedes restaurarla cuando lo desees.')
 
     referer = request.META.get('HTTP_REFERER', '')
@@ -5590,6 +5922,13 @@ def restaurar_documento_view(request, doc_id):
     articulo.save()
 
     registrar_auditoria(request.user, "Restauración de Obra", f"Restauró de la papelera la obra: {titulo_doc}")
+    registrar_evento_historial_documento(
+        articulo,
+        request.user,
+        'restauracion',
+        'Restaurada de la Papelera',
+        f"La obra fue restaurada al catálogo activo por {request.user.get_full_name() or request.user.username}."
+    )
     messages.success(request, f'La obra "{titulo_doc}" ha sido restaurada con éxito al catálogo activo.')
 
     referer = request.META.get('HTTP_REFERER', '')
