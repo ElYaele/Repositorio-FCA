@@ -538,7 +538,7 @@
         </div>
     </div>
 
-    <!-- MODAL DETALLE DE PUBLICACIÓN (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UNAM) -->
+    <!-- MODAL DETALLE DE PUBLICACIÓN (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UABC) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -548,13 +548,13 @@
                         <span class="fw-bold fs-6">Ficha de la Publicación</span>
                     </div>
 
-                    <!-- SELECTOR DUAL DE VISTAS (CATÁLOGO vs INSTITUCIONAL UNAM) -->
+                    <!-- SELECTOR DUAL DE VISTAS (CATÁLOGO vs INSTITUCIONAL UABC) -->
                     <div class="btn-group p-0.5 bg-white rounded-pill border shadow-sm" role="group" aria-label="Selector de Vista">
-                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 btn-success text-white shadow-sm" id="btnVistaResCatalogo" onclick="cambiarVistaModalResultados('catalogo')" title="Ver en formato Ficha de Catálogo">
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 btn-success text-white shadow-sm" id="btnVistaResCatalogo" onclick="cambiarVistaModalResultados('catalogo')" title="Ver en formato Ficha Catálogo">
                             <i class="fas fa-th-large me-1"></i> Ficha Catálogo
                         </button>
-                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 text-muted btn-light" id="btnVistaResUNAM" onclick="cambiarVistaModalResultados('unam')" title="Ver en formato Ficha Institucional estilo UNAM">
-                            <i class="fas fa-university me-1"></i> Ficha Institucional (UNAM)
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold px-3 py-1 text-muted btn-light" id="btnVistaResInstitucional" onclick="cambiarVistaModalResultados('institucional')" title="Ver en formato Ficha Institucional UABC">
+                            <i class="fas fa-university me-1"></i> Ficha Institucional (UABC)
                         </button>
                     </div>
 
@@ -617,8 +617,8 @@
                         </div>
                     </div>
 
-                    <!-- VISTA 2: FICHA INSTITUCIONAL (ESTILO REPOSITORIO UNAM) -->
-                    <div id="vistaResModoUNAM" style="display: none;">
+                    <!-- VISTA 2: FICHA INSTITUCIONAL UABC -->
+                    <div id="vistaResModoInstitucional" style="display: none;">
                         <div class="row g-4 align-items-stretch">
                             <!-- Columna Izquierda: Información Académica, Licencia CC y Cita -->
                             <div class="col-lg-7 d-flex flex-column">
@@ -630,7 +630,7 @@
                                         <span class="fw-bold text-dark">UABC</span>
                                     </div>
 
-                                    <!-- Botones de Acción Superior Estilo UNAM -->
+                                    <!-- Botones de Acción Superior Ficha Institucional -->
                                     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
                                         <a href="#" id="modalUnamFichaOriginalBtn" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm fw-bold text-dark shadow-sm">
                                             <i class="fas fa-file-pdf me-1"></i> Ficha original
@@ -681,7 +681,7 @@
                                 </div>
                             </div>
 
-                            <!-- Columna Derecha: Vista Previa Portada Estilo UNAM con Render PDF Real -->
+                            <!-- Columna Derecha: Vista Previa Portada Ficha Institucional con Render PDF Real -->
                             <div class="col-lg-5 d-flex flex-column align-items-center justify-content-between">
                                 <div class="w-100 p-4 rounded-4 text-center d-flex flex-column align-items-center justify-content-between shadow-sm border bg-white h-100">
                                     <div id="modalUnamPdfWrapper" class="bg-white rounded-3 p-2 text-center d-flex align-items-center justify-content-center w-100 my-auto position-relative" style="max-width: 300px; min-height: 380px; border: 1px solid #cbd5e1;">
@@ -845,20 +845,21 @@
         };
 
         function cambiarVistaModalResultados(modo) {
-            if (modo === 'unam') {
-                document.getElementById('vistaResModoCatalogo').style.display = 'none';
-                document.getElementById('vistaResModoUNAM').style.display = 'block';
-                const btnU = document.getElementById('btnVistaResUNAM');
-                const btnC = document.getElementById('btnVistaResCatalogo');
-                if (btnU) { btnU.classList.remove('btn-light', 'text-muted'); btnU.classList.add('btn-success', 'text-white', 'shadow-sm'); }
-                if (btnC) { btnC.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnC.classList.add('btn-light', 'text-muted'); }
+            const vistaCatalogo = document.getElementById('vistaResModoCatalogo');
+            const vistaInst = document.getElementById('vistaResModoInstitucional') || document.getElementById('vistaResModoUNAM');
+            const btnInst = document.getElementById('btnVistaResInstitucional') || document.getElementById('btnVistaResUNAM');
+            const btnCat = document.getElementById('btnVistaResCatalogo');
+
+            if (modo === 'institucional' || modo === 'unam') {
+                if (vistaCatalogo) vistaCatalogo.style.display = 'none';
+                if (vistaInst) vistaInst.style.display = 'block';
+                if (btnInst) { btnInst.classList.remove('btn-light', 'text-muted'); btnInst.classList.add('btn-success', 'text-white', 'shadow-sm'); }
+                if (btnCat) { btnCat.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnCat.classList.add('btn-light', 'text-muted'); }
             } else {
-                document.getElementById('vistaResModoUNAM').style.display = 'none';
-                document.getElementById('vistaResModoCatalogo').style.display = 'block';
-                const btnU = document.getElementById('btnVistaResUNAM');
-                const btnC = document.getElementById('btnVistaResCatalogo');
-                if (btnC) { btnC.classList.remove('btn-light', 'text-muted'); btnC.classList.add('btn-success', 'text-white', 'shadow-sm'); }
-                if (btnU) { btnU.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnU.classList.add('btn-light', 'text-muted'); }
+                if (vistaInst) vistaInst.style.display = 'none';
+                if (vistaCatalogo) vistaCatalogo.style.display = 'block';
+                if (btnCat) { btnCat.classList.remove('btn-light', 'text-muted'); btnCat.classList.add('btn-success', 'text-white', 'shadow-sm'); }
+                if (btnInst) { btnInst.classList.remove('btn-success', 'text-white', 'shadow-sm'); btnInst.classList.add('btn-light', 'text-muted'); }
             }
         }
 
@@ -1015,7 +1016,7 @@
                     // Reset a vista Catálogo por defecto
                     cambiarVistaModalResultados('catalogo');
 
-                    // --- POBLAR VISTA 2: INSTITUCIONAL UNAM ---
+                    // --- POBLAR VISTA 2: INSTITUCIONAL UABC ---
                     const unamTitulo = document.getElementById('modalUnamTitulo');
                     if (unamTitulo) unamTitulo.textContent = titulo;
                     const unamEntidad = document.getElementById('modalUnamEntidad');
@@ -1061,7 +1062,7 @@
                         if (unamDescargar) unamDescargar.style.display = 'none';
                     }
 
-                    // Cita APA para Vista UNAM
+                    // Cita APA para Vista Institucional UABC
                     const unamCita = document.getElementById('modalUnamCita');
                     if (unamCita) {
                         const urlRef = doi && doi !== 'N/A' ? doi : window.location.href;
@@ -1102,7 +1103,7 @@
                                 modalCanvas.style.display = 'block';
                             });
 
-                            // Render Vista Institucional UNAM
+                            // Render Vista Institucional UABC
                             if (modalUnamCanvas) {
                                 const contextUnam = modalUnamCanvas.getContext('2d');
                                 const viewportUnam = page.getViewport({ scale: 0.85 });

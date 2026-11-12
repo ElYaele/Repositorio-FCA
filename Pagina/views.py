@@ -413,7 +413,7 @@ class HomePageView(TemplateView):
         context['eventos_fca'] = eventos_activos
         context['enlaces_rapidos'] = EnlaceRapidoPortal.objects.filter(activo=True).order_by('orden', 'id')
 
-        # <--- RECURSOS DESTACADOS AUTOMÁTICOS (ESTILO REPOSITORIO UNAM - HASTA 30 OBRAS) --->
+        # <--- RECURSOS DESTACADOS AUTOMÁTICOS INSTITUCIONALES UABC (HASTA 30 OBRAS) --->
         qs_destacados = articulos_visibles.select_related('tipo_contenido', 'area', 'entidad').prefetch_related('autor')
         recursos_destacados = []
         # 1. Priorizar obras arbitradas con DOI oficial (hasta 15)

@@ -1135,7 +1135,7 @@
         }
 
         /* ==========================================================================
-           CARRUSEL DE RECURSOS DESTACADOS (ESTILO REPOSITORIO UNAM)
+           CARRUSEL DE RECURSOS DESTACADOS INSTITUCIONALES (UABC)
            ========================================================================== */
         .recursos-destacados-section {
             background-color: #f8fafc;
@@ -2058,7 +2058,7 @@
         </div>
     </div>
 
-    <!-- SECCIÓN: RECURSOS DESTACADOS (CARRUSEL AL ESTILO REPOSITORIO UNAM) -->
+    <!-- SECCIÓN: RECURSOS DESTACADOS INSTITUCIONALES (CARRUSEL AUTOMÁTICO UABC) -->
     <div class="recursos-destacados-section py-5">
         <div class="container-fluid px-xl-5 px-lg-4 px-3" style="max-width: 1780px;">
             <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap">
@@ -2163,7 +2163,7 @@
         </div>
     </div>
 
-    <!-- MODAL: DETALLE DE RECURSO DESTACADO (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UNAM) -->
+    <!-- MODAL: DETALLE DE RECURSO DESTACADO (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UABC) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" role="dialog" aria-labelledby="modalDetalleObraLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
@@ -2174,13 +2174,13 @@
                         <span class="text-muted small font-weight-bold d-none d-sm-inline">Repositorio Institucional FCA &bull; UABC</span>
                     </div>
 
-                    <!-- SELECTOR DUAL DE VISTAS (CATÁLOGO vs INSTITUCIONAL UNAM) -->
+                    <!-- SELECTOR DUAL DE VISTAS (CATÁLOGO vs INSTITUCIONAL UABC) -->
                     <div class="btn-group p-0.5 bg-white rounded-pill border shadow-xs" role="group" aria-label="Selector de Vista">
-                        <button type="button" class="btn btn-sm rounded-pill font-weight-bold px-3 py-1 btn-success text-white shadow-xs" id="btnVistaModoResultados" onclick="cambiarVistaModalDestacado('resultados')" title="Ver en formato Ficha de Catálogo">
+                        <button type="button" class="btn btn-sm rounded-pill font-weight-bold px-3 py-1 btn-success text-white shadow-xs" id="btnVistaModoResultados" onclick="cambiarVistaModalDestacado('resultados')" title="Ver en formato Ficha Catálogo">
                             <i class="fas fa-th-large mr-1.5"></i> Ficha Catálogo
                         </button>
-                        <button type="button" class="btn btn-sm rounded-pill font-weight-bold px-3 py-1 text-muted btn-light" id="btnVistaModoUNAM" onclick="cambiarVistaModalDestacado('unam')" title="Ver en formato Ficha Institucional estilo UNAM">
-                            <i class="fas fa-university mr-1.5"></i> Ficha Institucional (UNAM)
+                        <button type="button" class="btn btn-sm rounded-pill font-weight-bold px-3 py-1 text-muted btn-light" id="btnVistaModoInstitucional" onclick="cambiarVistaModalDestacado('institucional')" title="Ver en formato Ficha Institucional UABC">
+                            <i class="fas fa-university mr-1.5"></i> Ficha Institucional (UABC)
                         </button>
                     </div>
 
@@ -2257,9 +2257,9 @@
                 </div>
 
                 <!-- ======================================================== -->
-                <!-- VISTA 2: FICHA INSTITUCIONAL (ESTILO REPOSITORIO UNAM)    -->
+                <!-- VISTA 2: FICHA INSTITUCIONAL UABC                        -->
                 <!-- ======================================================== -->
-                <div id="vistaModalUNAM" class="modal-body p-4 p-md-5" style="display: none;">
+                <div id="vistaModalInstitucional" class="modal-body p-4 p-md-5" style="display: none;">
                     <div class="row">
                         <!-- Columna Izquierda: Información Académica, Licencia CC y Cita -->
                         <div class="col-lg-7 col-md-12 pr-lg-4 mb-4 mb-lg-0">
@@ -2272,7 +2272,7 @@
                                 <span class="font-weight-bold text-dark">UABC</span>
                             </div>
 
-                            <!-- Botones de Acción Superior Estilo UNAM -->
+                            <!-- Botones de Acción Superior Ficha Institucional -->
                             <div class="d-flex flex-wrap align-items-center mb-4" style="gap: 8px;">
                                 <a href="#" id="modalObraFichaOriginalBtn" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-2xs" style="background-color: #f59e0b; border-color: #d97706;">
                                     <i class="fas fa-file-pdf mr-1"></i> Ficha original
@@ -2331,7 +2331,7 @@
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Vista Previa Portada Estilo UNAM con Render PDF Real -->
+                        <!-- Columna Derecha: Vista Previa Portada Ficha Institucional con Render PDF Real -->
                         <div class="col-lg-5 col-md-12 d-flex flex-column align-items-center justify-content-between">
                             <div class="w-100 p-4 rounded text-center d-flex flex-column align-items-center justify-content-between shadow-xs border" style="background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%); min-height: 440px;">
                                 <!-- Visor de Portada Real en PDF (PDF.js) -->
@@ -2987,7 +2987,7 @@
         })();
     </script>
 
-    <!-- Script del Carrusel de Recursos Destacados (Estilo Repositorio UNAM) -->
+    <!-- Script del Carrusel de Recursos Destacados Institucionales UABC -->
     <script>
         var toggleAutoPlayDestacados = function() {}; // Definición inicial accesible globalmente
 
@@ -3107,7 +3107,7 @@
                     startAutoPlay();
                 }
 
-                // Control interactivo del botón estilo UNAM "Pausar el movimiento" / "Reanudar"
+                // Control interactivo del botón institucional "Pausar el movimiento" / "Reanudar"
                 toggleAutoPlayDestacados = function() {
                     isPausedManually = !isPausedManually;
                     if (isPausedManually) {
@@ -3179,19 +3179,19 @@
         })();
     </script>
 
-    <!-- Script de Apertura, Metadatos y Sistema Dual de Vistas del Modal (Resultados vs UNAM) -->
+    <!-- Script de Apertura, Metadatos y Sistema Dual de Vistas del Modal (Resultados vs Institucional UABC) -->
     <script>
         function cambiarVistaModalDestacado(modo) {
-            if (modo === 'unam') {
+            if (modo === 'institucional' || modo === 'unam') {
                 $('#vistaModalResultados').hide();
-                $('#vistaModalUNAM').show();
-                $('#btnVistaModoUNAM').removeClass('btn-light text-muted').addClass('btn-success text-white shadow-xs');
+                $('#vistaModalInstitucional, #vistaModalUNAM').show();
+                $('#btnVistaModoInstitucional, #btnVistaModoUNAM').removeClass('btn-light text-muted').addClass('btn-success text-white shadow-xs');
                 $('#btnVistaModoResultados').removeClass('btn-success text-white shadow-xs').addClass('btn-light text-muted');
             } else {
-                $('#vistaModalUNAM').hide();
+                $('#vistaModalInstitucional, #vistaModalUNAM').hide();
                 $('#vistaModalResultados').show();
                 $('#btnVistaModoResultados').removeClass('btn-light text-muted').addClass('btn-success text-white shadow-xs');
-                $('#btnVistaModoUNAM').removeClass('btn-success text-white shadow-xs').addClass('btn-light text-muted');
+                $('#btnVistaModoInstitucional, #btnVistaModoUNAM').removeClass('btn-success text-white shadow-xs').addClass('btn-light text-muted');
             }
         }
 
@@ -3293,7 +3293,7 @@
                     $('#modalResDescargarBtn').hide();
                 }
 
-                // --- 2. POBLAR VISTA INSTITUCIONAL (UNAM) ---
+                // --- 2. POBLAR VISTA INSTITUCIONAL (UABC) ---
                 $('#modalObraTitulo').text(titulo);
                 $('#modalObraEntidadDetalle').text(entidad);
                 $('#modalObraArea').text(area);
@@ -3347,10 +3347,10 @@
                 var pdfResLoading = $('#modalResPdfLoading');
                 var resSimCover = $('#modalResSimCover');
 
-                var pdfUnamWrapper = $('#modalDestacadoPdfWrapper');
-                var pdfUnamCanvasEl = document.getElementById('modalDestacadoPdfCanvas');
-                var pdfUnamLoading = $('#modalDestacadoPdfLoading');
-                var unamSimCover = $('#modalObraSimulatedCover');
+                var pdfInstWrapper = $('#modalDestacadoPdfWrapper');
+                var pdfInstCanvasEl = document.getElementById('modalDestacadoPdfCanvas');
+                var pdfInstLoading = $('#modalDestacadoPdfLoading');
+                var instSimCover = $('#modalObraSimulatedCover');
 
                 if (pdfUrl && pdfUrl.trim() !== '' && typeof pdfjsLib !== 'undefined') {
                     pdfResWrapper.css('display', 'flex');
@@ -3358,10 +3358,10 @@
                     $(pdfResCanvasEl).hide();
                     pdfResLoading.show().html('<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando vista previa...</span>');
 
-                    pdfUnamWrapper.css('display', 'flex');
-                    unamSimCover.css('display', 'none');
-                    $(pdfUnamCanvasEl).hide();
-                    pdfUnamLoading.show().html('<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>');
+                    pdfInstWrapper.css('display', 'flex');
+                    instSimCover.css('display', 'none');
+                    $(pdfInstCanvasEl).hide();
+                    pdfInstLoading.show().html('<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>');
 
                     pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
                         return pdfDoc.getPage(1);
@@ -3377,29 +3377,29 @@
                                 $(pdfResCanvasEl).show();
                             });
                         }
-                        // Portada para Vista Institucional UNAM
-                        if (pdfUnamCanvasEl) {
-                            var ctx2 = pdfUnamCanvasEl.getContext('2d');
+                        // Portada para Vista Institucional UABC
+                        if (pdfInstCanvasEl) {
+                            var ctx2 = pdfInstCanvasEl.getContext('2d');
                             var vp2 = page.getViewport({ scale: 0.85 });
-                            pdfUnamCanvasEl.height = vp2.height;
-                            pdfUnamCanvasEl.width = vp2.width;
+                            pdfInstCanvasEl.height = vp2.height;
+                            pdfInstCanvasEl.width = vp2.width;
                             page.render({ canvasContext: ctx2, viewport: vp2 }).promise.then(function() {
-                                pdfUnamLoading.hide();
-                                $(pdfUnamCanvasEl).show();
+                                pdfInstLoading.hide();
+                                $(pdfInstCanvasEl).show();
                             });
                         }
                     }).catch(function(err) {
                         console.warn('Error al renderizar PDF en modal:', err);
                         pdfResWrapper.css('display', 'none');
                         resSimCover.css('display', 'block');
-                        pdfUnamWrapper.css('display', 'none');
-                        unamSimCover.css('display', 'flex');
+                        pdfInstWrapper.css('display', 'none');
+                        instSimCover.css('display', 'flex');
                     });
                 } else {
                     pdfResWrapper.css('display', 'none');
                     resSimCover.css('display', 'block');
-                    pdfUnamWrapper.css('display', 'none');
-                    unamSimCover.css('display', 'flex');
+                    pdfInstWrapper.css('display', 'none');
+                    instSimCover.css('display', 'flex');
                 }
             });
         });
