@@ -311,93 +311,214 @@
         }
 
         .category-card {
-            background-color: var(--light-bg);
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            padding: 20px;
-            margin-bottom: 30px;
-            height: 410px;
+            background-color: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            padding: 0;
+            margin-bottom: 25px;
+            height: 450px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(44, 82, 52, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 102, 51, 0.12);
+            border-color: #cbd5e1;
         }
 
         .category-card h2 {
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 0.9rem;
-            margin: -20px -20px 15px -20px;
-            padding: 12px 15px;
-            border-radius: 15px 15px 0 0;
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: #ffffff;
+            font-size: 0.94rem;
+            font-weight: 700;
+            margin: 0;
+            padding: 12px 14px;
+            border-radius: 14px 14px 0 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
-        .category-card h2 i.fa-university, .category-card h2 i.far, .category-card h2 i.fas {
-            margin-right: 6px;
+        .category-card h2 i.fa-university, 
+        .category-card h2 i.far, 
+        .category-card h2 i.fas {
+            margin-right: 7px;
+            color: #ffd54f;
         }
 
         /* ESTILO PROFESIONAL PARA EL BOTÓN DE INFORMACIÓN */
         .btn-card-info {
             position: absolute;
-            top: 12px;
+            top: 10px;
             right: 12px;
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background-color: #e8f0fe;
-            color: #1967d2;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 11px;
-            border: 1px solid #c2e7ff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             cursor: pointer;
             transition: all 0.2s ease;
             z-index: 5;
             text-decoration: none !important;
         }
         .btn-card-info:hover {
-            background-color: #1967d2;
-            color: #ffffff;
-            transform: scale(1.15);
+            background-color: #ffffff;
+            color: #006633;
+            transform: scale(1.12);
         }
 
+        /* BARRA FIJA SUPERIOR DE HERRAMIENTAS (BÚSQUEDA Y ORDENAMIENTO) */
+        .category-toolbar {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 9px 12px 8px 12px;
+            flex-shrink: 0;
+            min-height: 84px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .category-search-box {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 4px 11px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            width: 100%;
+        }
+
+        .category-search-box:focus-within {
+            border-color: #006633;
+            box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.15);
+            background-color: #ffffff;
+        }
+
+        .category-search-box .search-icon {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            margin-right: 7px;
+            flex-shrink: 0;
+        }
+
+        .category-search-box input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.81rem;
+            width: 100%;
+            color: #1e293b;
+            padding: 1px 0;
+        }
+
+        .category-search-box input::placeholder {
+            color: #94a3b8;
+            font-size: 0.78rem;
+        }
+
+        .category-search-box .btn-clear-search {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.78rem;
+            display: none;
+            line-height: 1;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+        .category-search-box .btn-clear-search:hover {
+            color: #ef4444;
+        }
+
+        /* SEGMENTED CONTROL / BOTONES DE ORDEN TIPO PÍLDORA */
+        .sort-pill-group {
+            background-color: #e2e8f0;
+            border-radius: 20px;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .sort-pill-btn {
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            line-height: 1.35;
+            white-space: nowrap;
+        }
+
+        .sort-pill-btn:hover {
+            color: #0f172a;
+        }
+
+        .sort-pill-btn.active {
+            background-color: #006633 !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(0, 102, 51, 0.3);
+        }
+
+        /* CONTENIDO DE LA LISTA SCROLLABLE */
         .category-content {
-            height: calc(100% - 60px);
+            flex: 1 1 auto;
             overflow-y: auto;
-            padding-right: 5px;
+            padding: 8px 12px;
         }
 
         .category-content::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
 
         .category-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
+            background: #f8fafc;
         }
 
         .category-content::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
+            background: #cbd5e1;
             border-radius: 4px;
+        }
+
+        .category-content::-webkit-scrollbar-thumb:hover {
+            background: #006633;
         }
 
         .category-card ul {
             list-style-type: none;
             padding-left: 0;
+            margin-bottom: 0;
         }
 
         .category-card ul li {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            transition: transform 0.2s ease;
+            padding: 6px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            border-radius: 6px;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.15s ease, transform 0.15s ease;
         }
 
         .category-card ul li:last-child {
@@ -405,18 +526,42 @@
         }
 
         .category-card ul li:hover {
-            transform: translateX(5px);
+            background-color: #f1f5f9;
+            transform: translateX(2px);
         }
 
         .category-card ul li a {
-            color: #333;
+            color: #334155;
             text-decoration: none;
-            display: block;
+            font-size: 0.83rem;
             font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 6px;
         }
 
-        .category-card ul li a:hover {
-            color: var(--accent-color);
+        .category-card ul li:hover a {
+            color: #006633;
+            font-weight: 600;
+        }
+
+        .category-card ul li .item-count-badge {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1px 7px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            letter-spacing: 0.2px;
+        }
+
+        .category-card ul li:hover .item-count-badge {
+            background-color: #e2e8f0;
+            color: #0f172a;
         }
 
         .quick-links-section {
@@ -1283,19 +1428,30 @@
                         <h2>
                             <span><i class="fas fa-university"></i>Entidad Aportante</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroEntidades" class="form-control form-control-sm" placeholder="🔍 Buscar entidad..." onkeyup="filtrarLista('filtroEntidades', 'listaEntidades', 'item-entidad')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroEntidades" placeholder="Buscar entidad..." onkeyup="filtrarLista('filtroEntidades', 'listaEntidades', 'item-entidad', 'clearEntidades')">
+                                <button type="button" class="btn-clear-search" id="clearEntidades" onclick="limpiarFiltro('filtroEntidades', 'listaEntidades', 'item-entidad', 'clearEntidades')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaEntidades', 'item-entidad', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaEntidades" class="mb-0">
                                 {% for entidad in entidades %}
                                     <li class="item-entidad">
-                                        <a href="{% url 'resultado_busqueda' %}?entidad={{ entidad.id }}">{{ entidad.nombre }}</a>
-                                        <span class="text-muted small">- {{ entidad.total }} recurso{% if entidad.total != 1 %}s{% endif %}</span>
+                                        <a href="{% url 'resultado_busqueda' %}?entidad={{ entidad.id }}" title="{{ entidad.nombre }}">{{ entidad.nombre }}</a>
+                                        <span class="item-count-badge" title="{{ entidad.total }} recursos">{{ entidad.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay entidades registradas.</li>
@@ -1314,19 +1470,30 @@
                         <h2>
                             <span><i class="far fa-calendar-alt"></i>Año de Producción</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroAnios" class="form-control form-control-sm" placeholder="🔍 Buscar año..." onkeyup="filtrarLista('filtroAnios', 'listaAnios', 'item-anio')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'desc', this)" title="Más recientes primero">Reciente</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'asc', this)" title="Más antiguos primero">Antiguo</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroAnios" placeholder="Buscar año (ej. 2026)..." onkeyup="filtrarLista('filtroAnios', 'listaAnios', 'item-anio', 'clearAnios')">
+                                <button type="button" class="btn-clear-search" id="clearAnios" onclick="limpiarFiltro('filtroAnios', 'listaAnios', 'item-anio', 'clearAnios')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-history mr-1 text-success"></i>Cronología
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'desc', this)" title="Más recientes primero">Reciente</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaAnios', 'item-anio', 'asc', this)" title="Más antiguos primero">Antiguo</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaAnios" class="mb-0">
                                 {% for anio in anos_produccion %}
                                     <li class="item-anio">
                                         <a href="{% url 'resultado_busqueda' %}?anio={{ anio.año_produccion }}">{{ anio.año_produccion }}</a>
-                                        <span class="text-muted small">- {{ anio.total }} recurso{% if anio.total != 1 %}s{% endif %}</span>
+                                        <span class="item-count-badge" title="{{ anio.total }} recursos">{{ anio.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay registros por año.</li>
@@ -1345,19 +1512,30 @@
                         <h2>
                             <span><i class="fas fa-file-alt"></i>Tipo de Contenido</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroTipos" class="form-control form-control-sm" placeholder="🔍 Buscar tipo..." onkeyup="filtrarLista('filtroTipos', 'listaTipos', 'item-tipo')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroTipos" placeholder="Buscar tipo (tesis, libro...)" onkeyup="filtrarLista('filtroTipos', 'listaTipos', 'item-tipo', 'clearTipos')">
+                                <button type="button" class="btn-clear-search" id="clearTipos" onclick="limpiarFiltro('filtroTipos', 'listaTipos', 'item-tipo', 'clearTipos')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaTipos', 'item-tipo', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaTipos" class="mb-0">
                                 {% for tipo_contenido in tipos_contenido %}
                                     <li class="item-tipo">
-                                        <a href="{% url 'resultado_busqueda' %}?tipo={{ tipo_contenido.id }}">{{ tipo_contenido.nombre }}</a>
-                                        <span class="text-muted small">- {{ tipo_contenido.total }} recurso{% if tipo_contenido.total != 1 %}s{% endif %}</span>
+                                        <a href="{% url 'resultado_busqueda' %}?tipo={{ tipo_contenido.id }}" title="{{ tipo_contenido.nombre }}">{{ tipo_contenido.nombre }}</a>
+                                        <span class="item-count-badge" title="{{ tipo_contenido.total }} recursos">{{ tipo_contenido.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay tipos registrados.</li>
@@ -1376,19 +1554,30 @@
                         <h2>
                             <span><i class="fas fa-tags"></i>Área / Materia</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroAreas" class="form-control form-control-sm" placeholder="🔍 Buscar área..." onkeyup="filtrarLista('filtroAreas', 'listaAreas', 'item-area')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAreas', 'item-area', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAreas', 'item-area', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroAreas" placeholder="Buscar área temática..." onkeyup="filtrarLista('filtroAreas', 'listaAreas', 'item-area', 'clearAreas')">
+                                <button type="button" class="btn-clear-search" id="clearAreas" onclick="limpiarFiltro('filtroAreas', 'listaAreas', 'item-area', 'clearAreas')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaAreas', 'item-area', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaAreas', 'item-area', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaAreas" class="mb-0">
                                 {% for area in areas %}
                                     <li class="item-area">
-                                        <a href="{% url 'resultado_busqueda' %}?area={{ area.nombre|urlencode }}">{{ area.nombre }}</a>
-                                        <span class="text-muted small">- {{ area.total }} recurso{% if area.total != 1 %}s{% endif %}</span>
+                                        <a href="{% url 'resultado_busqueda' %}?area={{ area.nombre|urlencode }}" title="{{ area.nombre }}">{{ area.nombre }}</a>
+                                        <span class="item-count-badge" title="{{ area.total }} recursos">{{ area.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay áreas registradas.</li>
@@ -1407,19 +1596,30 @@
                         <h2>
                             <span><i class="fas fa-users"></i>Autor / Investigador</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroAutores" class="form-control form-control-sm" placeholder="🔍 Buscar autor..." onkeyup="filtrarLista('filtroAutores', 'listaAutores', 'item-autor')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroAutores" placeholder="Buscar autor o docente..." onkeyup="filtrarLista('filtroAutores', 'listaAutores', 'item-autor', 'clearAutores')">
+                                <button type="button" class="btn-clear-search" id="clearAutores" onclick="limpiarFiltro('filtroAutores', 'listaAutores', 'item-autor', 'clearAutores')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaAutores', 'item-autor', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaAutores" class="mb-0">
                                 {% for autor in autores %}
                                     <li class="item-autor">
-                                        <a href="{% url 'resultado_busqueda' %}?q={{ autor.nombre }}">{{ autor.nombre }}</a>
-                                        <span class="text-muted small">({{ autor.institucion_origen|default:"UABC" }})</span>
+                                        <a href="{% url 'resultado_busqueda' %}?q={{ autor.nombre }}" title="{{ autor.nombre }}">{{ autor.nombre }}</a>
+                                        <span class="item-count-badge" style="font-size: 0.65rem;" title="{{ autor.institucion_origen|default:'UABC' }}">{{ autor.institucion_origen|default:"UABC" }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay autores registrados.</li>
@@ -1438,19 +1638,30 @@
                         <h2>
                             <span><i class="fas fa-language"></i>Idioma</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroIdiomas" class="form-control form-control-sm" placeholder="🔍 Buscar idioma..." onkeyup="filtrarLista('filtroIdiomas', 'listaIdiomas', 'item-idioma')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroIdiomas" placeholder="Buscar idioma..." onkeyup="filtrarLista('filtroIdiomas', 'listaIdiomas', 'item-idioma', 'clearIdiomas')">
+                                <button type="button" class="btn-clear-search" id="clearIdiomas" onclick="limpiarFiltro('filtroIdiomas', 'listaIdiomas', 'item-idioma', 'clearIdiomas')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaIdiomas', 'item-idioma', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaIdiomas" class="mb-0">
                                 {% for item in idiomas_existentes %}
                                     <li class="item-idioma">
                                         <a href="{% url 'resultado_busqueda' %}?q={{ item.idioma }}">{{ item.idioma }}</a>
-                                        <span class="text-muted small">- {{ item.total }} recurso{% if item.total != 1 %}s{% endif %}</span>
+                                        <span class="item-count-badge" title="{{ item.total }} recursos">{{ item.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay idiomas registrados.</li>
@@ -1469,19 +1680,30 @@
                         <h2>
                             <span><i class="fas fa-book-open"></i>Revista / Editorial</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="d-flex align-items-center mb-2" style="gap: 4px;">
-                                <input type="text" id="filtroRevistas" class="form-control form-control-sm" placeholder="🔍 Buscar revista..." onkeyup="filtrarLista('filtroRevistas', 'listaRevistas', 'item-revista')">
-                                <div class="btn-group btn-group-sm flex-shrink-0" role="group" aria-label="Orden">
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'asc', this)" title="Ordenar de A a Z">A-Z</button>
-                                    <button type="button" class="btn btn-outline-success btn-sort-az" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'desc', this)" title="Ordenar de Z a A">Z-A</button>
+                        <!-- BARRA FIJA SUPERIOR DE CONTROL (BÚSQUEDA Y ORDENAMIENTO) -->
+                        <div class="category-toolbar">
+                            <div class="category-search-box mb-2">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="filtroRevistas" placeholder="Buscar revista o editorial..." onkeyup="filtrarLista('filtroRevistas', 'listaRevistas', 'item-revista', 'clearRevistas')">
+                                <button type="button" class="btn-clear-search" id="clearRevistas" onclick="limpiarFiltro('filtroRevistas', 'listaRevistas', 'item-revista', 'clearRevistas')" title="Limpiar"><i class="fas fa-times-circle"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-muted font-weight-bold" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;">
+                                    <i class="fas fa-sort-amount-down-alt mr-1 text-success"></i>Orden
+                                </span>
+                                <div class="sort-pill-group">
+                                    <button type="button" class="sort-pill-btn active" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'asc', this)" title="Ordenar de A a Z">A &rarr; Z</button>
+                                    <button type="button" class="sort-pill-btn" onclick="ordenarListaIndice('listaRevistas', 'item-revista', 'desc', this)" title="Ordenar de Z a A">Z &rarr; A</button>
                                 </div>
                             </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE (SOLO LA LISTA) -->
+                        <div class="category-content">
                             <ul id="listaRevistas" class="mb-0">
                                 {% for item in revistas_existentes %}
                                     <li class="item-revista">
-                                        <a href="{% url 'resultado_busqueda' %}?q={{ item.revista }}">{{ item.revista }}</a>
-                                        <span class="text-muted small">- {{ item.total }} recurso{% if item.total != 1 %}s{% endif %}</span>
+                                        <a href="{% url 'resultado_busqueda' %}?q={{ item.revista }}" title="{{ item.revista }}">{{ item.revista }}</a>
+                                        <span class="item-count-badge" title="{{ item.total }} recursos">{{ item.total }}</span>
                                     </li>
                                 {% empty %}
                                     <li class="text-muted small text-center mt-3">No hay revistas registradas.</li>
@@ -1500,38 +1722,50 @@
                         <h2>
                             <span><i class="fas fa-compass"></i>Exploración Rápida</span>
                         </h2>
-                        <div class="category-content p-2">
-                            <div class="mb-2 text-muted small px-1">Tipos de recursos y accesos:</div>
+                        <!-- BARRA FIJA SUPERIOR: ALINEADA EN ALTURA EXACTA CON LAS OTRAS TARJETAS -->
+                        <div class="category-toolbar">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="font-weight-bold text-dark small" style="font-size: 0.8rem;">
+                                    <i class="fas fa-layer-group text-success mr-1"></i>Acceso Temático
+                                </span>
+                                <span class="badge badge-pill badge-light border text-muted px-2 py-0.5" style="font-size: 0.68rem; font-weight: 700;">10 atajos</span>
+                            </div>
+                            <div class="text-muted small" style="font-size: 0.73rem; line-height: 1.25;">
+                                Enlaces directos a colecciones arbitradas, formatos clave y claustro FCA
+                            </div>
+                        </div>
+                        <!-- CONTENIDO DESPLAZABLE -->
+                        <div class="category-content">
                             <ul class="mb-0">
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Artículo"><i class="fas fa-chevron-right text-success mr-1"></i> Artículo Científico / Revista</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Artículo"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Artículo Científico / Revista</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Tesis"><i class="fas fa-chevron-right text-success mr-1"></i> Tesis / Titulación</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Tesis"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Tesis / Titulación</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Libro"><i class="fas fa-chevron-right text-success mr-1"></i> Libro Completo</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Libro"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Libro Completo</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Capítulo"><i class="fas fa-chevron-right text-success mr-1"></i> Capítulo de Libro</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Capítulo"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Capítulo de Libro</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Ponencia"><i class="fas fa-chevron-right text-success mr-1"></i> Ponencia / Congreso</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Ponencia"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Ponencia / Congreso</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Proyecto"><i class="fas fa-chevron-right text-success mr-1"></i> Proyecto / Reporte Técnico</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Proyecto"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Proyecto / Reporte Técnico</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Propiedad+Intelectual"><i class="fas fa-chevron-right text-success mr-1"></i> Propiedad Intelectual (INDAUTOR / IMPI)</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Propiedad+Intelectual"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Propiedad Intelectual (INDAUTOR / IMPI)</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'resultado_busqueda' %}?q=Desarrollo+Tecnológico"><i class="fas fa-chevron-right text-success mr-1"></i> Desarrollo Tecnológico / Software</a>
+                                    <a href="{% url 'resultado_busqueda' %}?q=Desarrollo+Tecnológico"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Desarrollo Tecnológico / Software</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'universidades_colaboradoras' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Ver Universidades Aliadas</a>
+                                    <a href="{% url 'universidades_colaboradoras' %}"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Ver Universidades Aliadas</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'directorio_profesores' %}"><i class="fas fa-chevron-right text-success mr-1"></i> Consultar Claustro Docente e Investigadores</a>
+                                    <a href="{% url 'directorio_profesores' %}"><i class="fas fa-chevron-right text-success mr-1.5" style="font-size: 0.7rem;"></i> Consultar Claustro Docente e Investigadores</a>
                                 </li>
                             </ul>
                         </div>
@@ -2145,18 +2379,51 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        function filtrarLista(inputId, listaId, claseItem) {
-            let input = document.getElementById(inputId).value.toLowerCase();
+        function filtrarLista(inputId, listaId, claseItem, clearBtnId) {
+            let inputEl = document.getElementById(inputId);
+            if (!inputEl) return;
+            let input = inputEl.value.toLowerCase().trim();
             let lista = document.getElementById(listaId);
+            if (!lista) return;
             let items = lista.getElementsByClassName(claseItem);
+            let clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
 
+            if (clearBtn) {
+                clearBtn.style.display = input.length > 0 ? 'inline-block' : 'none';
+            }
+
+            let coincidencias = 0;
             for (let i = 0; i < items.length; i++) {
                 let texto = items[i].textContent || items[i].innerText;
                 if (texto.toLowerCase().indexOf(input) > -1) {
                     items[i].style.display = "";
+                    coincidencias++;
                 } else {
                     items[i].style.display = "none";
                 }
+            }
+
+            // Retroalimentación visual si no hay coincidencias con la búsqueda
+            let noMatchEl = lista.querySelector('.no-match-feedback');
+            if (coincidencias === 0 && input.length > 0) {
+                if (!noMatchEl) {
+                    noMatchEl = document.createElement('li');
+                    noMatchEl.className = 'no-match-feedback text-center py-3 text-muted small';
+                    noMatchEl.innerHTML = '<i class="fas fa-search-minus mr-1 text-warning"></i>Sin coincidencias encontradas';
+                    lista.appendChild(noMatchEl);
+                }
+                noMatchEl.style.display = '';
+            } else if (noMatchEl) {
+                noMatchEl.style.display = 'none';
+            }
+        }
+
+        function limpiarFiltro(inputId, listaId, claseItem, clearBtnId) {
+            let inputEl = document.getElementById(inputId);
+            if (inputEl) {
+                inputEl.value = '';
+                filtrarLista(inputId, listaId, claseItem, clearBtnId);
+                inputEl.focus();
             }
         }
 
@@ -2191,15 +2458,20 @@
                 lista.appendChild(item);
             });
 
-            // Feedback visual: resaltar el botón activo y atenuar el alterno
+            // Feedback visual: resaltar la píldora o botón activo en el grupo
             if (btnEl && btnEl.parentElement) {
-                const hermanos = btnEl.parentElement.querySelectorAll('.btn-sort-az');
+                const hermanos = btnEl.parentElement.querySelectorAll('.sort-pill-btn, .btn-sort-az');
                 hermanos.forEach(function(h) {
                     h.classList.remove('active', 'btn-success', 'text-white');
-                    h.classList.add('btn-outline-success');
+                    if (h.classList.contains('btn-sort-az')) {
+                        h.classList.add('btn-outline-success');
+                    }
                 });
-                btnEl.classList.add('active', 'btn-success', 'text-white');
-                btnEl.classList.remove('btn-outline-success');
+                btnEl.classList.add('active');
+                if (btnEl.classList.contains('btn-sort-az')) {
+                    btnEl.classList.add('btn-success', 'text-white');
+                    btnEl.classList.remove('btn-outline-success');
+                }
             }
         }
     </script>
