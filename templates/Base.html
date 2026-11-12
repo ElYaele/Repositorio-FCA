@@ -527,29 +527,29 @@
             transform: translateX(2px);
         }
 
-        /* Estilo para las tarjetas con insignias numéricas (Entidad, Tipo, Área, Año, Idioma, Revista) */
+        /* Estilo para las tarjetas con insignias numéricas (Entidad, Tipo, Área, Año, Idioma, Revista y Exploración) */
         .category-card ul li:not(.item-autor) {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
         }
 
-        .category-card ul li:not(.item-autor) a {
-            color: #1e293b;
+        .category-card ul li a {
+            color: #0f172a;
             text-decoration: none;
-            font-size: 0.84rem;
-            font-weight: 500;
+            font-size: 0.86rem;
+            font-weight: 700;
             line-height: 1.35;
             flex: 1;
             margin-right: 8px;
             white-space: normal;
             word-break: normal;
             overflow-wrap: break-word;
+            transition: color 0.15s ease;
         }
 
-        .category-card ul li:not(.item-autor):hover a {
-            color: #006633;
-            font-weight: 600;
+        .category-card ul li:hover a {
+            color: #006633 !important;
         }
 
         .category-card ul li .item-count-badge {
