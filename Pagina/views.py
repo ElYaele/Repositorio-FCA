@@ -793,9 +793,16 @@ class BusquedaResultadosView(ListView):
         entidad_id = self.request.GET.get('entidad', '').strip()
         area_filtro = self.request.GET.get('area', '').strip()
         anio_filtro = self.request.GET.get('anio', '').strip()
+        anio_desde = self.request.GET.get('anio_desde', '').strip()
+        anio_hasta = self.request.GET.get('anio_hasta', '').strip()
         filtro_atributo = self.request.GET.get('filtro_atributo', 'todo').strip().lower()
 
         resultados = Articulo.objects.filter(filtro_publico_articulos())
+
+        if anio_desde and anio_desde.isdigit():
+            resultados = resultados.filter(año_produccion__gte=int(anio_desde))
+        if anio_hasta and anio_hasta.isdigit():
+            resultados = resultados.filter(año_produccion__lte=int(anio_hasta))
 
         if q:
             import re, unicodedata
@@ -894,10 +901,48 @@ class BusquedaResultadosView(ListView):
 
         return resultados.distinct()
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.GET.get('exportar') == 'csv':
+            import csv
+            response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+            response['Content-Disposition'] = 'attachment; filename="catalogo_fca_uabc.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['ID', 'Título', 'Autores', 'Tipo de Recurso', 'Área', 'Entidad', 'Año', 'Idioma', 'DOI / Enlace', 'Lecturas', 'Descargas'])
+            for art in self.get_queryset():
+                autores_str = ", ".join([a.nombre for a in art.autor.all()])
+                writer.writerow([
+                    art.id,
+                    art.titulo,
+                    autores_str,
+                    art.tipo_contenido.nombre if art.tipo_contenido else '',
+                    art.area.nombre if art.area else '',
+                    art.entidad.nombre if art.entidad else '',
+                    art.año_produccion,
+                    art.idioma,
+                    art.doi_enlace or '',
+                    art.vistas,
+                    art.descargas
+                ])
+            return response
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        return self._filtrar_base().prefetch_related(
+        orden = self.request.GET.get('orden', 'reciente').strip().lower()
+        qs = self._filtrar_base().prefetch_related(
             'autor', 'tipo_contenido', 'area', 'entidad'
-        ).order_by('-created_at')
+        )
+        if orden == 'antiguo':
+            return qs.order_by('año_produccion', 'created_at')
+        elif orden == 'az':
+            return qs.order_by('titulo')
+        elif orden == 'za':
+            return qs.order_by('-titulo')
+        elif orden == 'vistas':
+            return qs.order_by('-vistas', '-created_at')
+        elif orden == 'descargas':
+            return qs.order_by('-descargas', '-created_at')
+        else:  # 'reciente' por defecto
+            return qs.order_by('-año_produccion', '-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -933,13 +978,38 @@ class BusquedaResultadosView(ListView):
 
         context['query_actual'] = self.request.GET.get('q', '')
         context['tipo_actual'] = self.request.GET.get('tipo', '')
+        context['tipo_actual_nombre'] = ''
+        if context['tipo_actual']:
+            t_obj = TipoContenido.objects.filter(id=context['tipo_actual']).first() if context['tipo_actual'].isdigit() else None
+            context['tipo_actual_nombre'] = t_obj.nombre if t_obj else context['tipo_actual']
         context['entidad_actual'] = self.request.GET.get('entidad', '')
         context['area_actual'] = self.request.GET.get('area', '')
         context['anio_actual'] = self.request.GET.get('anio', '')
+        context['anio_desde_actual'] = self.request.GET.get('anio_desde', '')
+        context['anio_hasta_actual'] = self.request.GET.get('anio_hasta', '')
+        context['orden_actual'] = self.request.GET.get('orden', 'reciente')
         context['filtro_atributo_actual'] = self.request.GET.get('filtro_atributo', 'todo')
 
         context['total_documentos'] = articulos_aprobados.count()
-        context['resultados_count'] = self.get_queryset().count()
+        total_resultados = self.get_queryset().count()
+        context['resultados_count'] = total_resultados
+
+        # Sugerencia ortográfica ("Quizás quisiste decir...") cuando hay 0 resultados o búsqueda específica
+        q_buscada = context['query_actual'].strip()
+        if q_buscada and total_resultados == 0:
+            import difflib
+            # Vocabulario institucional de áreas, tipos y palabras clave
+            vocab = set(Area.objects.values_list('nombre', flat=True))
+            vocab.update(TipoContenido.objects.values_list('nombre', flat=True))
+            for kw_raw in articulos_aprobados.exclude(palabras_clave__isnull=True).values_list('palabras_clave', flat=True)[:50]:
+                if kw_raw:
+                    for k in kw_raw.split(','):
+                        if len(k.strip()) > 3:
+                            vocab.add(k.strip())
+            matches = difflib.get_close_matches(q_buscada, list(vocab), n=1, cutoff=0.55)
+            if matches and matches[0].lower() != q_buscada.lower():
+                context['sugerencia_busqueda'] = matches[0]
+
         return context
 
 
