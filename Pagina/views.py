@@ -1,3 +1,62 @@
+"""
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Módulo: Pagina/views.py
+Descripción: Controladores de Lógica de Negocio, Vistas de Interfaz y Servicios Web / APIs.
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Este archivo centraliza el conjunto integral de controladores del sistema:
+
+1. SEGURIDAD Y CONTROL DE ACCESO:
+   - `es_superusuario`: Permiso de moderación y administración.
+   - `es_superusuario_principal`: Salvaguarda exclusiva para el titular máximo de la plataforma.
+   - `registrar_auditoria`: Registro de trazas de auditoría forense inmutables.
+   - `filtro_publico_articulos`: Filtro institucional para exclusión de obras en papelera o no aprobadas.
+
+2. CATÁLOGO PÚBLICO Y CONSULTAS:
+   - `HomePageView`: Portal principal, carrusel de eventos FCA, estadísticas y acervo destacado.
+   - `BusquedaResultadosView`: Metabuscador con filtros combinados (año, entidad, área, tipo, autor).
+   - `contacto_view`: Formulario de atención y vinculación externa.
+   - `registrar_metrica_obra_view`: Telemetría de vistas y descargas de documentos.
+
+3. GESTIÓN EDITORIAL Y PRODUCCIÓN ACADÉMICA:
+   - `ArticuloCreateView`: Carga multipart de recursos con validación de metadatos y PDF.
+   - `ArticuloDocenteEditarView`: Edición autónoma por parte del docente con revalidación editorial.
+   - `acuse_recepcion_documento_view`: Generación de comprobante institucional de entrega en PDF.
+
+4. AUTENTICACIÓN, REGISTRO Y GESTIÓN DE IDENTIDAD:
+   - `solicitar_registro_view` / `verificar_codigo_registro_view`: Registro con código OTP universitario.
+   - `recuperar_password_view` / `validar_recuperar_password_view`: Restablecimiento seguro de claves.
+   - `solicitar_reactivacion_view`: Canal formal de apelación para cuentas suspendidas.
+
+5. EXPEDIENTE PERSONAL DOCENTE (MI PANEL) Y CV:
+   - `mi_panel_view`: Centro de operaciones del académico, semáforo de completitud y estado de obras.
+   - `reporte_curriculo_pdf_view`: Exportación oficial del Currículum Vitae institucional en formato PDF.
+   - `gestionar_auxiliar_docente_view`: Asignación y supervisión de alumnos auxiliares de investigación.
+
+6. COAUTORÍAS Y TRABAJO COLEGIADO:
+   - `gestion_coautorias_view`: Buzón de invitaciones y estado de firmas de coautoría.
+   - `responder_invitacion_coautoria_view` / `aceptar_todas_coautorias_view`: Firma o declinación.
+   - `constancia_coautoria_view`: Emisión de constancia formal de coautoría con sellos institucionales.
+
+7. COMUNICACIÓN INSTITUCIONAL Y SOPORTE:
+   - `mensajeria_view` / `enviar_mensaje_interno_view`: Comunicación directa entre miembros del claustro.
+   - `soporte_institucional_view`: Mesa de ayuda y resolución de incidencias técnicas.
+
+8. PANEL DE CONTROL, MODERACIÓN Y AUDITORÍA:
+   - `panel_usuarios_view`: Dashboard administrativo unificado.
+   - Moderación de obras (aprobar, rechazar, papelera, vaciado y restauración).
+   - Moderación de semblanzas curriculares del claustro.
+   - `fusionar_autores_view` / `revertir_fusion_view`: Deduplicación y consolidación de identidades.
+   - `exportar_respaldo_sistema_view` / `restaurar_respaldo_sistema_view`: Respaldos transaccionales ZIP/JSON.
+   - `AuditoriaSemestral` / `dictamen_semestral_pdf_view`: Evaluación de metas semestrales en PDF.
+
+9. TELEMETRÍA REACTIVA Y CONCURRENCIA DISTRIBUIDA:
+   - `api_presencia_heartbeat_view`: Monitor de moderadores en línea en tiempo real.
+   - `api_bloqueo_concurrencia_view`: Bloqueo pesimista para evitar colisiones en la moderación de obras.
+====================================================================================================
+"""
+
 import logging
 import re
 import unicodedata

@@ -1,3 +1,27 @@
+"""
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Módulo: Pagina/emails.py
+Descripción: Motor Transaccional de Correos Electrónicos Institucionales y Notificaciones SMTP.
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Este módulo gestiona la infraestructura completa de mensajería electrónica de la plataforma:
+1. Plantilla Responsiva Institucional: Generación de correo con diseño de identidad UABC
+   (paleta verde bosque #006633 y dorado cimarrón #dd971a, tipografías estándar y botones CTA).
+2. Despacho Asíncrono no Bloqueante: Todos los envíos se ejecutan en subprocesos desacoplados
+   (`threading.Thread`) para evitar bloqueos del ciclo de solicitud/respuesta HTTP o demoras a los usuarios.
+3. Configuración Dinámica de Servidores de Correo: Permite la lectura dinámica de credenciales SMTP
+   desde la base de datos (`ConfiguracionSistema`) o fallback a variables de entorno (`settings.py`).
+4. Flujos Notificados:
+   - Verificación de código OTP para registro de cuentas nuevas (@uabc.edu.mx).
+   - Códigos de recuperación de contraseñas olvidadas y alertas de seguridad.
+   - Solicitudes de aprobación para nuevos usuarios y asistentes de investigación.
+   - Notificaciones editoriales: aprobación o rechazo de obras académicas con observaciones.
+   - Invitaciones de coautoría y recordatorios a coautores.
+   - Mensajería interna entre miembros del claustro y tickets de soporte técnico.
+====================================================================================================
+"""
+
 import os
 import logging
 import threading

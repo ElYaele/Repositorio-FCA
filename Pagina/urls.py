@@ -1,3 +1,27 @@
+"""
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Módulo: Pagina/urls.py
+Descripción: Catálogo de Rutas y Endpoints Operativos de la Aplicación Central.
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Este archivo mapea todas las URIs de la aplicación a sus correspondientes vistas y controladores.
+Estructura funcional de los endpoints:
+
+1. Catálogo Público y Búsqueda: Portada, metabúsqueda facetada, contacto institucional.
+2. Carga y Edición de Obras: Asistente multipart, edición docente, acuses de recibo en PDF y métricas.
+3. Ciclo de Autenticación y Cuentas: Registro institucional, OTP vía correo universitario, recuperación de
+   contraseñas y solicitudes de reactivación.
+4. Panel Docente (Mi Panel): Gestión de expediente académico, CV institucional en PDF, auxiliares de investigación.
+5. Coautorías e Invitaciones: Confirmación y firma de coautorías, emisión de constancias oficiales.
+6. Mensajería y Mesa de Ayuda: Comunicación bidireccional entre docentes, simulador de soporte y tickets.
+7. Configuración Institucional: Administrador de avisos, carrusel de eventos FCA, FAQs, redes y enlaces.
+8. Directorio del Claustro: Perfiles de profesores, felicitaciones y poemas de cumpleaños interactivos.
+9. Panel de Control y Moderación: Flujo editorial (aprobación/rechazo de obras y semblanzas), bitácora inmutable,
+   herramienta de fusión y deduplicación de autores, respaldos transaccionales ZIP/JSON y control de concurrencia.
+====================================================================================================
+"""
+
 from django.urls import path
 from .views import (
     HomePageView,
@@ -119,15 +143,24 @@ from .views import (
 )
 
 urlpatterns = [
+    # ==============================================================================================
+    # 1. PÁGINA DE INICIO, BÚSQUEDA Y METADATOS PÚBLICOS
+    # ==============================================================================================
     path("", HomePageView.as_view(), name='Home'),
     path('busqueda/', BusquedaResultadosView.as_view(), name='resultado_busqueda'),
     path('contacto/', contacto_view, name='contacto'),
+
+    # ==============================================================================================
+    # 2. GESTIÓN Y CARGA DE OBRAS ACADÉMICAS
+    # ==============================================================================================
     path('upload/', ArticuloCreateView.as_view(), name='upload_document'),
     path('documento/editar/<int:pk>/', ArticuloDocenteEditarView.as_view(), name='editar_documento'),
     path('documento/<int:doc_id>/acuse/', acuse_recepcion_documento_view, name='acuse_recepcion'),
     path('api/obra/<int:doc_id>/metrica/', registrar_metrica_obra_view, name='registrar_metrica_obra'),
 
-    # Autenticación y Registro
+    # ==============================================================================================
+    # 3. AUTENTICACIÓN, REGISTRO Y GESTIÓN DE CREDENCIALES
+    # ==============================================================================================
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('solicitar-cuenta/', solicitar_registro_view, name='solicitar_registro'),
@@ -137,7 +170,9 @@ urlpatterns = [
     path('recuperar-contrasena/validar/<int:user_id>/', validar_recuperar_password_view, name='validar_recuperar_password'),
     path('solicitar-reactivacion/', solicitar_reactivacion_view, name='solicitar_reactivacion'),
 
-    # Panel personal de docente / usuario
+    # ==============================================================================================
+    # 4. PANEL PERSONAL DEL DOCENTE (MI PANEL)
+    # ==============================================================================================
     path('mi-panel/', mi_panel_view, name='mi_panel'),
     path('mi-panel/actualizar-datos-cuenta/', actualizar_datos_cuenta_view, name='actualizar_datos_cuenta'),
     path('mi-panel/reporte-curriculo/', reporte_curriculo_pdf_view, name='reporte_curriculo_pdf'),
@@ -149,7 +184,9 @@ urlpatterns = [
     path('mi-panel/mensajes/enviar/', enviar_mensaje_interno_view, name='enviar_mensaje_interno_legacy'),
     path('mi-panel/mensajes/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido_legacy'),
 
-    # Módulo de Coautorías e Invitaciones Académicas
+    # ==============================================================================================
+    # 5. MÓDULO DE COAUTORÍAS E INVITACIONES ACADÉMICAS
+    # ==============================================================================================
     path('coautorias/', gestion_coautorias_view, name='gestion_coautorias'),
     path('coautorias/<int:invitacion_id>/responder/', responder_invitacion_coautoria_view, name='responder_invitacion_coautoria'),
     path('coautorias/aceptar-todas/', aceptar_todas_coautorias_view, name='aceptar_todas_coautorias'),
@@ -158,17 +195,23 @@ urlpatterns = [
     path('coautorias/exportar-csv/', exportar_coautorias_csv_view, name='exportar_coautorias_csv'),
     path('coautorias/<int:invitacion_id>/constancia/', constancia_coautoria_view, name='constancia_coautoria'),
 
-    # Módulo de Mensajería Académica entre Colegas
+    # ==============================================================================================
+    # 6. MENSAJERÍA ACADÉMICA INTERNA Y NOTIFICACIONES
+    # ==============================================================================================
     path('mensajeria/', mensajeria_view, name='mensajeria'),
     path('mensajeria/enviar/', enviar_mensaje_interno_view, name='enviar_mensaje_interno'),
     path('mensajeria/marcar-leido/<int:mensaje_id>/', marcar_mensaje_leido_view, name='marcar_mensaje_leido'),
     path('mensajeria/obtener-nuevos/', obtener_mensajes_nuevos_ajax_view, name='obtener_mensajes_nuevos_ajax'),
 
-    # Módulo Dedicado de Soporte Institucional y Área de Ayuda
+    # ==============================================================================================
+    # 7. MÓDULO DE SOPORTE INSTITUCIONAL Y MESA DE AYUDA
+    # ==============================================================================================
     path('soporte/', soporte_institucional_view, name='soporte_institucional'),
     path('soporte/estado/<int:ticket_autor_id>/', cambiar_estado_soporte_view, name='cambiar_estado_soporte'),
 
-    # Módulo de Configuración del Sistema y Soporte (Super Administrador)
+    # ==============================================================================================
+    # 8. CONFIGURACIÓN DEL SISTEMA Y GESTIÓN DE CONTENIDOS INSTITUCIONALES
+    # ==============================================================================================
     path('configuracion-soporte/', configuracion_soporte_view, name='configuracion_soporte'),
     path('configuracion-soporte/probar-email/', probar_email_soporte_ajax, name='probar_email_soporte_ajax'),
     path('configuracion-soporte/faq/crear/', crear_faq_soporte_view, name='crear_faq_soporte'),
@@ -176,25 +219,26 @@ urlpatterns = [
     path('configuracion-soporte/faq/eliminar/<int:faq_id>/', eliminar_faq_soporte_view, name='eliminar_faq_soporte'),
     path('configuracion-soporte/faq/toggle/<int:faq_id>/', toggle_faq_soporte_view, name='toggle_faq_soporte'),
 
-    # Rutas para Próximos Eventos FCA
+    # Carrusel de Eventos FCA
     path('configuracion-soporte/evento/crear/', crear_evento_fca_view, name='crear_evento_fca'),
     path('configuracion-soporte/evento/editar/<int:evento_id>/', editar_evento_fca_view, name='editar_evento_fca'),
     path('configuracion-soporte/evento/eliminar/<int:evento_id>/', eliminar_evento_fca_view, name='eliminar_evento_fca'),
     path('configuracion-soporte/evento/toggle/<int:evento_id>/', toggle_evento_fca_view, name='toggle_evento_fca'),
 
-    # Rutas para Enlaces Rápidos e Indexadores
+    # Enlaces Rápidos Institucionales
     path('configuracion-soporte/enlace/crear/', crear_enlace_rapido_view, name='crear_enlace_rapido'),
     path('configuracion-soporte/enlace/editar/<int:enlace_id>/', editar_enlace_rapido_view, name='editar_enlace_rapido'),
     path('configuracion-soporte/enlace/eliminar/<int:enlace_id>/', eliminar_enlace_rapido_view, name='eliminar_enlace_rapido'),
     path('configuracion-soporte/enlace/toggle/<int:enlace_id>/', toggle_enlace_rapido_view, name='toggle_enlace_rapido'),
 
-    # Rutas para Redes Sociales y Enlaces del Pie de Página (Footer)
+    # Redes Sociales Universitarias
     path('configuracion-soporte/red-social/crear/', crear_red_social_view, name='crear_red_social'),
     path('configuracion-soporte/red-social/editar/<int:red_id>/', editar_red_social_view, name='editar_red_social'),
     path('configuracion-soporte/red-social/eliminar/<int:red_id>/', eliminar_red_social_view, name='eliminar_red_social'),
     path('configuracion-soporte/red-social/toggle/<int:red_id>/', toggle_red_social_view, name='toggle_red_social'),
     path('configuracion-soporte/red-social/reordenar/<int:red_id>/<str:direccion>/', reordenar_red_social_view, name='reordenar_red_social'),
 
+    # Enlaces del Pie de Página (Footer Dinámico)
     path('configuracion-soporte/enlace-footer/crear/', crear_enlace_footer_view, name='crear_enlace_footer'),
     path('configuracion-soporte/enlace-footer/editar/<int:enlace_id>/', editar_enlace_footer_view, name='editar_enlace_footer'),
     path('configuracion-soporte/enlace-footer/eliminar/<int:enlace_id>/', eliminar_enlace_footer_view, name='eliminar_enlace_footer'),
@@ -203,16 +247,21 @@ urlpatterns = [
     path('configuracion-soporte/footer/guardar-orden-dragdrop/', reordenar_footer_dragdrop_ajax, name='reordenar_footer_dragdrop_ajax'),
     path('configuracion-soporte/contacto/<int:contacto_id>/', cambiar_estado_contacto_view, name='cambiar_estado_contacto'),
 
-
-    # Directorio de profesores y cumpleaños
+    # ==============================================================================================
+    # 9. DIRECTORIO DEL CLAUSTRO PROFESORAL Y CUMPLEAÑOS
+    # ==============================================================================================
     path('profesores/', directorio_profesores_view, name='directorio_profesores'),
     path('profesores/felicitar/<int:autor_id>/', enviar_felicitacion_cumpleanos_view, name='enviar_felicitacion_cumpleanos'),
     path('profesores/color-cumpleanos/', cambiar_color_cumpleanos_view, name='cambiar_color_cumpleanos'),
 
-    # Red de Universidades Colaboradoras
+    # ==============================================================================================
+    # 10. RED DE UNIVERSIDADES COLABORADORAS
+    # ==============================================================================================
     path('universidades-colaboradoras/', universidades_colaboradoras_view, name='universidades_colaboradoras'),
 
-    # Panel de administración (Superusuario)
+    # ==============================================================================================
+    # 11. PANEL DE CONTROL, AUDITORÍA Y GESTIÓN DE USUARIOS
+    # ==============================================================================================
     path('gestion-usuarios/', panel_usuarios_view, name='panel_usuarios'),
     path('gestion-usuarios/politicas-acceso/', toggle_politica_acceso_view, name='toggle_politica_acceso'),
     path('gestion-usuarios/auditoria-semestral/registrar/', registrar_auditoria_semestral_view, name='registrar_auditoria_semestral'),
@@ -242,7 +291,9 @@ urlpatterns = [
     path('gestion-usuarios/dejar-impersonacion/', dejar_impersonacion_view, name='dejar_impersonacion'),
     path('gestion-usuarios/bitacora/<int:user_id>/', bitacora_usuario_ajax_view, name='bitacora_usuario_ajax'),
 
-    # Moderación de documentos
+    # ==============================================================================================
+    # 12. GESTIÓN EDITORIAL Y MODERACIÓN DE DOCUMENTOS
+    # ==============================================================================================
     path('gestion-documentos/aprobar/<int:doc_id>/', aprobar_documento_view, name='aprobar_documento'),
     path('gestion-documentos/rechazar/<int:doc_id>/', rechazar_documento_view, name='rechazar_documento'),
     path('gestion-documentos/eliminar/<int:doc_id>/', eliminar_documento_view, name='eliminar_documento'),
@@ -256,21 +307,23 @@ urlpatterns = [
     path('gestion-sistema/exportar-respaldo/', exportar_respaldo_sistema_view, name='exportar_respaldo_sistema'),
     path('gestion-sistema/restaurar-respaldo/', restaurar_respaldo_sistema_view, name='restaurar_respaldo_sistema'),
 
-    # Moderación de semblanzas (Claustro)
+    # ==============================================================================================
+    # 13. MODERACIÓN EDITORIAL DE SEMBLANZAS Y PERFILES DOCENTES
+    # ==============================================================================================
     path('gestion-semblanzas/aprobar/<int:autor_id>/', aprobar_semblanza_view, name='aprobar_semblanza'),
     path('gestion-semblanzas/rechazar/<int:autor_id>/', rechazar_semblanza_view, name='rechazar_semblanza'),
     path('gestion-semblanzas/editar/<int:autor_id>/', editar_semblanza_admin_view, name='editar_semblanza_admin'),
     path('gestion-semblanzas/eliminar/<int:autor_id>/', restablecer_semblanza_admin_view, name='restablecer_semblanza_admin'),
 
-    # API para autores
+    # ==============================================================================================
+    # 14. ENDPOINTS REACTIVOS AJAX / JSON Y UTILIDADES
+    # ==============================================================================================
     path('ajax/crear-autor-rapido/', crear_autor_rapido_view, name='crear_autor_rapido'),
     path('ajax/buscar-autores-live/', buscar_autores_live_ajax_view, name='buscar_autores_live_ajax'),
     path('ajax/verificar-titulo-duplicado/', verificar_titulo_duplicado_ajax_view, name='verificar_titulo_duplicado_ajax'),
-
-    # Sincronización reactiva del panel de usuarios
     path('gestion-usuarios/sync-ajax/', sync_panel_usuarios_ajax_view, name='sync_panel_usuarios_ajax'),
 
-    # Control de Presencia, Concurrencia y Permisos Granulares (Ideas 5 y 7)
+    # Control de Presencia, Concurrencia y Permisos Granulares
     path('api/presencia/heartbeat/', api_presencia_heartbeat_view, name='api_presencia_heartbeat'),
     path('api/presencia/bloqueo/', api_bloqueo_concurrencia_view, name='api_bloqueo_concurrencia'),
     path('api/moderadores/toggle-permiso/', toggle_permiso_moderador_view, name='toggle_permiso_moderador'),

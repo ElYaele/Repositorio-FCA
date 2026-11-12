@@ -1,3 +1,27 @@
+"""
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Módulo: Pagina/models.py
+Descripción: Esquema de Modelos Relacionales y Capa de Persistencia Institucional (ORM).
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Este archivo define el modelo entidad-relación del repositorio institucional:
+1. Identidades Académicas y Claustro (`Autor`, `Nombramiento`, `EnlaceProfesional`, `Universidad`):
+   Gestión de docentes, investigadores externos y auxiliares, códigos FCA-ID, ORCID, semáforo de
+   salud de perfil, cumpleaños y semblanzas curriculares.
+2. Acervo de Producción Científica (`Articulo`, `HistorialDocumento`, `TipoContenido`, `Entidad`, `Area`):
+   Almacenamiento de obras académicas, tesis, patentes IMPI/INDAUTOR, desarrollos y métricas de impacto.
+3. Flujo Colaborativo y Editorial (`InvitacionCoautoria`, `MensajeInterno`, `MensajeCumpleanos`):
+   Firmas de coautoría colegiada, mensajería interna entre profesores y felicitaciones festivas.
+4. Auditoría, Integridad y Deduplicación (`RegistroAuditoria`, `HistorialFusion`, `AuditoriaSemestral`):
+   Bitácora inmutable de auditoría forense, reversión de fusiones de identidades duplicadas y dictámenes semestrales.
+5. Parametrización y Concurrencia (`ConfiguracionSistema`, `PresenciaAdministrador`, `BloqueoConcurrencia`,
+   `EventoFCA`, `PreguntaFrecuenteSoporte`, `EnlaceRapidoPortal`, `RedSocialFooter`, `EnlacePiePagina`, `MensajeContacto`):
+   Configuración global singleton, heartbeat de presencia en tiempo real, bloqueos pesimistas de moderación
+   y gestión de contenidos dinámicos del portal institucional.
+====================================================================================================
+"""
+
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User

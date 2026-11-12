@@ -1,5 +1,34 @@
+"""
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Módulo: Pagina/context_processors.py
+Descripción: Procesadores de Contexto Globales para Inyección Dinámica de Datos en Plantillas (DTL).
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Este archivo suministra variables globales a todas las plantillas renderizadas en el sistema:
+1. `obtener_tema_rol(user)`:
+   Resuelve la paleta cromática institucional y metadatos visuales (insignias, badges de barra superior,
+   íconos FontAwesome y estilos CSS) según la jerarquía del usuario:
+   - Verde Institucional UABC (#006633, acento dorado #dd971a): Docentes UABC y Super Administradores.
+   - Azul Celeste (#0284c7, acento cyan #38bdf8): Colaboradores de Universidades Externas en Convenio.
+   - Morado Académico (#6f42c1, acento lavanda #c084fc): Investigadores Independientes.
+   - Azul Rey (#0d6efd, acento azul cielo #60a5fa): Personal Administrativo y Auxiliares de Investigación FCA.
+   - Dark Slate (#1e293b, acento dorado #dd971a): Personal de Soporte Técnico en Modo Lector.
+   - Teal / Cian (#0891b2, acento #22d3ee): Operadores Técnicos y Depuradores de Contenidos.
+
+2. `notificaciones_institucionales(request)`:
+   Inyecta en tiempo real métricas operativas al header y sidebar:
+   - Notificaciones de coautorías pendientes de firma.
+   - Mensajes no leídos entre colegas o provenientes de la Mesa de Ayuda.
+   - Conteo de tickets de soporte para superusuarios.
+   - Alerta festiva interactiva (🎂) cuando miembros del claustro cumplen años en la fecha actual.
+   - Configuración global del sistema (`ConfiguracionSistema`), redes sociales y enlaces institucionales del footer.
+====================================================================================================
+"""
+
 from django.utils import timezone
 from .models import Autor, InvitacionCoautoria, MensajeInterno
+
 
 def obtener_tema_rol(user):
     """
@@ -8,6 +37,8 @@ def obtener_tema_rol(user):
     - Azul Celeste (#0284c7, acento cyan #38bdf8): Colaboradores Externos
     - Morado Académico (#6f42c1, acento lavanda #c084fc): Investigadores Independientes
     - Azul Rey (#0d6efd, acento azul cielo #60a5fa): Personal Administrativo y Auxiliares de Investigación FCA
+    - Dark Slate (#1e293b, acento #dd971a): Soporte Técnico (Modo Lector)
+    - Teal (#0891b2): Operador Técnico / Depurador de Contenidos
     """
     if not user or not user.is_authenticated:
         return {
@@ -223,6 +254,9 @@ def notificaciones_institucionales(request):
     - mensajes_no_leidos_count: Mensajes académicos no leídos
     - soporte_pendientes_count: Consultas a soporte institucional
     - cumpleaneros_hoy: Docentes que cumplen años hoy
+    - config_sistema: Parámetros del portal institucional
+    - redes_sociales_footer: Redes sociales activas
+    - enlaces_pie_*: Enlaces institucionales agrupados por categoría
     """
     u = getattr(request, 'user', None)
     es_super_principal = False
@@ -248,7 +282,7 @@ def notificaciones_institucionales(request):
         'es_superadmin_principal': es_super_principal,
     }
 
-    # Configuración global institucional y pie de página (visible tanto para docentes autenticados como para alumnos y público general)
+    # Configuración global institucional y pie de página (visible en todas las vistas públicas y privadas)
     try:
         from .models import ConfiguracionSistema, RedSocialFooter, EnlacePiePagina
         context['config_sistema'] = ConfiguracionSistema.get_solo()
