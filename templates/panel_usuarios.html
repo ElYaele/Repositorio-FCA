@@ -3934,9 +3934,26 @@
                                             <div class="small text-muted">{{ u.autor.nombre|default:u.get_full_name|default:"Personal de Soporte" }}</div>
                                         </td>
                                         <td>
-                                            <span class="badge" style="background-color: #1e293b; color: #f8fafc; border: 1px solid #334155;">
-                                                <i class="fas fa-headset text-warning me-1"></i>Soporte FCA (Modo Lectura)
-                                            </span>
+                                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                                <span class="badge" id="badge-modo-soporte-{{ u.id }}" style="background-color: {% if u.is_superuser %}#0d9488{% else %}#1e293b{% endif %}; color: #f8fafc; border: 1px solid {% if u.is_superuser %}#14b8a6{% else %}#334155{% endif %};">
+                                                    {% if u.is_superuser %}
+                                                        <i class="fas fa-user-shield text-warning me-1"></i>Soporte FCA (Facultades Completas)
+                                                    {% else %}
+                                                        <i class="fas fa-headset text-warning me-1"></i>Soporte FCA (Modo Lectura)
+                                                    {% endif %}
+                                                </span>
+                                                <!-- INTERRUPTOR INTERACTIVO: MODO LECTURA VS FACULTADES COMPLETAS -->
+                                                <div class="form-check form-switch d-inline-flex align-items-center mb-0" title="Alternar entre Facultades Completas y Modo Lectura">
+                                                    <input class="form-check-input" type="checkbox" role="switch"
+                                                           id="switch-modo-soporte-{{ u.id }}"
+                                                           style="cursor: pointer;"
+                                                           {% if u.is_superuser %}checked{% endif %}
+                                                           onchange="toggleModoLecturaSoporte({{ u.id }}, this.checked)">
+                                                    <label class="form-check-label small ms-1 fw-bold" for="switch-modo-soporte-{{ u.id }}" id="label-modo-soporte-{{ u.id }}" style="font-size: 0.72rem; cursor: pointer; color: {% if u.is_superuser %}#0d9488{% else %}#dd971a{% endif %};">
+                                                        {% if u.is_superuser %}Completas{% else %}Modo Lectura{% endif %}
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>{{ u.email|default:"Sin correo" }}</td>
                                         <td class="text-center pe-3 text-nowrap">
@@ -3953,6 +3970,13 @@
                                                     <i class="fas fa-user-edit me-1"></i>Mis Datos
                                                 </button>
                                             {% else %}
+                                                <!-- Botón Alternar Facultades Completas / Modo Lectura -->
+                                                <button type="button" class="btn btn-outline-info btn-action-circle me-1"
+                                                        id="btn-modo-soporte-{{ u.id }}"
+                                                        onclick="toggleModoLecturaSoporte({{ u.id }}, {% if u.is_superuser %}false{% else %}true{% endif %})"
+                                                        title="{% if u.is_superuser %}Degradar a Modo Lectura{% else %}Otorgar Facultades Completas{% endif %}">
+                                                    <i class="fas {% if u.is_superuser %}fa-eye text-warning{% else %}fa-user-shield text-success{% endif %}"></i>
+                                                </button>
                                                 <!-- Botón Desactivar Cuenta -->
                                                 <button type="button" class="btn btn-outline-warning btn-action-circle me-1"
                                                         onclick="abrirModalDesactivarSoporte('{{ u.id }}', '{{ u.username|escapejs }}')"
@@ -12687,6 +12711,63 @@
             })
             .catch(err => {
                 mostrarToast('Error de red al actualizar jerarquía', 'danger');
+            });
+        };
+
+        // INTERRUPTOR DE MODO LECTURA VS FACULTADES COMPLETAS PARA SOPORTE
+        window.toggleModoLecturaSoporte = function(userId, setSuperuser) {
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            fd.append('set_superuser', setSuperuser ? '1' : '0');
+            fd.append('ajax', '1');
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch("{% url 'toggle_superuser' 0 %}".replace('/0/', `/${userId}/`), {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: fd
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const isSuper = data.is_superuser;
+                    const badge = document.getElementById(`badge-modo-soporte-${userId}`);
+                    const sw = document.getElementById(`switch-modo-soporte-${userId}`);
+                    const lbl = document.getElementById(`label-modo-soporte-${userId}`);
+                    const btn = document.getElementById(`btn-modo-soporte-${userId}`);
+
+                    if (sw) sw.checked = isSuper;
+                    if (badge) {
+                        badge.style.backgroundColor = isSuper ? '#0d9488' : '#1e293b';
+                        badge.style.borderColor = isSuper ? '#14b8a6' : '#334155';
+                        badge.innerHTML = isSuper
+                            ? '<i class="fas fa-user-shield text-warning me-1"></i>Soporte FCA (Facultades Completas)'
+                            : '<i class="fas fa-headset text-warning me-1"></i>Soporte FCA (Modo Lectura)';
+                    }
+                    if (lbl) {
+                        lbl.style.color = isSuper ? '#0d9488' : '#dd971a';
+                        lbl.textContent = isSuper ? 'Completas' : 'Modo Lectura';
+                    }
+                    if (btn) {
+                        btn.title = isSuper ? 'Degradar a Modo Lectura' : 'Otorgar Facultades Completas';
+                        btn.setAttribute('onclick', `toggleModoLecturaSoporte(${userId}, ${!isSuper})`);
+                        btn.innerHTML = isSuper
+                            ? '<i class="fas fa-eye text-warning"></i>'
+                            : '<i class="fas fa-user-shield text-success"></i>';
+                    }
+                    mostrarToast(data.mensaje, isSuper ? 'success' : 'warning');
+                } else {
+                    mostrarToast(data.error || 'No fue posible actualizar los privilegios.', 'danger');
+                    const sw = document.getElementById(`switch-modo-soporte-${userId}`);
+                    if (sw) sw.checked = !setSuperuser;
+                }
+            })
+            .catch(err => {
+                mostrarToast('Error de red al actualizar privilegios de soporte.', 'danger');
+                const sw = document.getElementById(`switch-modo-soporte-${userId}`);
+                if (sw) sw.checked = !setSuperuser;
             });
         };
 

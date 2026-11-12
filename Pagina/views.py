@@ -4121,11 +4121,11 @@ def panel_usuarios_view(request):
     total_usuarios_confianza = usuarios_confianza.count()
     usuarios_candidatos = administrativos.filter(id__in=ids_candidatos_confianza)
 
-    # Superusuarios activos
+    # Superusuarios activos (Excluye cuentas de soporte que tienen su propia sección)
     superusuarios = User.objects.filter(
         is_superuser=True,
         is_active=True
-    ).order_by('username')
+    ).exclude(autor__es_soporte=True).order_by('username')
 
     # Cuentas de soporte: pendientes o desactivadas (en espera de doble validación o aprobación del Admin Inicial)
     soporte_pendientes = User.objects.filter(
@@ -4133,11 +4133,10 @@ def panel_usuarios_view(request):
         is_active=False
     ).select_related('autor', 'autor__aprobado_por_soporte_1', 'autor__aprobado_por_soporte_2').order_by('-date_joined')
 
-    # Cuentas de soporte: activas con facultades operativas o modo lectura
+    # Cuentas de soporte: activas (con facultades completas o en modo lectura)
     soporte_activos = User.objects.filter(
         autor__es_soporte=True,
-        is_active=True,
-        is_superuser=False
+        is_active=True
     ).select_related('autor').order_by('username')
 
     total_soporte_total = User.objects.filter(Q(is_superuser=True) | Q(autor__es_soporte=True), is_active=True).distinct().count()
@@ -6720,14 +6719,25 @@ def toggle_superuser_view(request, user_id):
             messages.error(request, 'Contraseña de administrador incorrecta. No se modificaron los privilegios.')
             return redirect('panel_usuarios')
 
-    usuario.is_superuser = not usuario.is_superuser
+    set_super = request.POST.get('set_superuser')
+    if set_super is not None:
+        usuario.is_superuser = (str(set_super).lower() in ['1', 'true'])
+    else:
+        usuario.is_superuser = not usuario.is_superuser
     usuario.is_staff = True
     usuario.save()
 
-    estado_super = "otorgó privilegios de Superusuario" if usuario.is_superuser else "retiró privilegios de Superusuario"
-    registrar_auditoria(request.user, "Cambio de Privilegios Superusuario", f"{estado_super} a: {usuario.username}")
+    es_soporte_usr = bool(getattr(usuario, 'autor', None) and usuario.autor.es_soporte)
+    if es_soporte_usr:
+        estado_super = "activó Facultades Completas" if usuario.is_superuser else "cambió a Modo Lectura"
+        mensaje_resp = f'Cuenta de soporte "@{usuario.username}": {"Facultades Completas activadas" if usuario.is_superuser else "cambiado a Modo Lectura"}.'
+    else:
+        estado_super = "otorgó privilegios de Superusuario" if usuario.is_superuser else "retiró privilegios de Superusuario"
+        mensaje_resp = f'Se han actualizado los privilegios de superusuario para "@{usuario.username}".'
+
+    registrar_auditoria(request.user, "Cambio de Privilegios Superusuario / Soporte", f"{estado_super} a: {usuario.username}")
     
-    if usuario.is_superuser:
+    if usuario.is_superuser and not es_soporte_usr:
         try:
             notificar_ascenso_superadmin(usuario)
         except Exception:
@@ -6737,10 +6747,11 @@ def toggle_superuser_view(request, user_id):
         return JsonResponse({
             'success': True,
             'is_superuser': usuario.is_superuser,
-            'mensaje': f'Se han actualizado los privilegios de superusuario para "{usuario.username}".'
+            'es_soporte': es_soporte_usr,
+            'mensaje': mensaje_resp
         })
-    messages.success(request, f'Se han actualizado los privilegios de superusuario para "{usuario.username}".')
-    return redirect('panel_usuarios')
+    messages.success(request, mensaje_resp)
+    return redirect(reverse('panel_usuarios') + '#supers')
 
 
 @login_required
