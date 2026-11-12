@@ -518,6 +518,14 @@ class ArticuloDocenteEditarView(UpdateView):
 
         if not (request.user.is_superuser or es_dueno or es_auxiliar_autorizado):
             return HttpResponseForbidden("No tienes autorización para editar esta obra.")
+
+        # Si un moderador edita una obra que no es suya ni de su tutor, validar permiso_moderar_obras
+        if request.user.is_superuser and not (es_dueno or es_auxiliar_autorizado):
+            caller_autor = getattr(request.user, 'autor', None)
+            if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+                messages.warning(request, "⚠️ Tu permiso para moderar y editar obras académicas ha sido revocado temporalmente por la administración.")
+                return redirect('panel_usuarios')
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -3397,6 +3405,11 @@ def rechazar_semblanza_view(request, autor_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def restablecer_semblanza_admin_view(request, autor_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_revisar_semblanzas', True):
+        messages.warning(request, "⚠️ Tu permiso para restablecer o vaciar semblanzas del Claustro ha sido revocado temporalmente por la administración.")
+        return redirect(reverse('panel_usuarios') + '#semblanzas')
+
     if request.method == 'POST':
         autor = get_object_or_404(Autor, id=autor_id)
         motivo = request.POST.get('motivo_restablecimiento', '').strip()
@@ -3431,6 +3444,11 @@ def restablecer_semblanza_admin_view(request, autor_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def editar_semblanza_admin_view(request, autor_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_revisar_semblanzas', True):
+        messages.warning(request, "⚠️ Tu permiso para revisar y editar semblanzas del Claustro ha sido revocado temporalmente por la administración.")
+        return redirect(reverse('panel_usuarios') + '#semblanzas')
+
     autor = get_object_or_404(Autor, id=autor_id)
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -5165,6 +5183,11 @@ def rechazar_documento_view(request, doc_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def marcar_archivo_checado_view(request, doc_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+        messages.warning(request, "⚠️ Tu permiso para cotejar y verificar obras académicas ha sido revocado temporalmente por la administración.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     articulo = get_object_or_404(Articulo, id=doc_id)
     articulo.chequeado_por_moderador = True
     articulo.chequeado_por = request.user
@@ -5186,6 +5209,11 @@ def marcar_archivo_checado_view(request, doc_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def acciones_masivas_documentos_view(request):
     """Ejecuta acciones en lote (aprobar, cotejar, eliminar) sobre múltiples documentos seleccionados."""
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+        messages.warning(request, "⚠️ Tu permiso para aplicar acciones en lote a obras académicas ha sido revocado temporalmente por la administración.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     if request.method == 'POST':
         accion = request.POST.get('accion', '').strip()
         ids_raw = request.POST.get('doc_ids', '').strip()
@@ -5352,6 +5380,16 @@ def eliminar_documento_view(request, doc_id):
         messages.error(request, "No tienes autorización para eliminar esta obra.")
         return redirect('mi_panel')
 
+    # Si es moderador eliminando obra ajena, verificar permiso_moderar_obras
+    if articulo.subido_por != request.user:
+        caller_autor = getattr(request.user, 'autor', None)
+        if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+            messages.warning(request, "⚠️ Tu permiso para moderar y eliminar obras académicas ha sido revocado temporalmente por la administración.")
+            referer = request.META.get('HTTP_REFERER', '')
+            if 'gestion-usuarios' in referer:
+                return redirect(f"{reverse('panel_usuarios')}#documentos")
+            return redirect('panel_usuarios')
+
     titulo_doc = articulo.titulo
     es_definitivo = request.GET.get('definitivo') == '1' or request.POST.get('definitivo') == '1'
 
@@ -5386,6 +5424,13 @@ def restaurar_documento_view(request, doc_id):
         messages.error(request, "No tienes autorización para restaurar esta obra.")
         return redirect('mi_panel')
 
+    # Si es moderador restaurando obra ajena, verificar permiso_moderar_obras
+    if articulo.subido_por != request.user:
+        caller_autor = getattr(request.user, 'autor', None)
+        if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+            messages.warning(request, "⚠️ Tu permiso para moderar y restaurar obras académicas ha sido revocado temporalmente por la administración.")
+            return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     titulo_doc = articulo.titulo
     articulo.en_papelera = False
     articulo.fecha_eliminacion = None
@@ -5404,6 +5449,11 @@ def restaurar_documento_view(request, doc_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def vaciar_papelera_documentos_view(request):
     """Vacía definitivamente todas las obras en la papelera de reciclaje."""
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_moderar_obras', True):
+        messages.warning(request, "⚠️ Tu permiso para vaciar la papelera de obras académicas ha sido revocado temporalmente por la administración.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
+
     docs_papelera = Articulo.objects.filter(en_papelera=True)
     total = docs_papelera.count()
     if total > 0:
@@ -6580,6 +6630,11 @@ def suspender_usuario_view(request, user_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def reactivar_usuario_view(request, user_id):
     """Reactiva una cuenta previamente suspendida o dada de baja."""
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para reactivar cuentas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     if request.method == 'POST':
         usuario = get_object_or_404(User, id=user_id)
 
@@ -6621,6 +6676,10 @@ def reactivar_usuario_view(request, user_id):
 @user_passes_test(es_superusuario, login_url='/login/')
 def toggle_trusted_publisher_view(request, user_id):
     """Otorga o revoca la credencial de Publicador de Confianza (Bypass de Moderación)."""
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        return JsonResponse({'success': False, 'error': 'Tu permiso para gestionar licencias de confianza ha sido revocado temporalmente por la administración.'}, status=403)
+
     if request.method == 'POST':
         usuario = get_object_or_404(User, id=user_id)
         autor, _ = Autor.objects.get_or_create(
@@ -6898,6 +6957,11 @@ def gestionar_auxiliar_docente_view(request, auxiliar_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def eliminar_usuario_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para eliminar cuentas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     usuario = get_object_or_404(User, id=user_id)
     if usuario == request.user or usuario.id == 1 or usuario.username.lower() == 'yaele':
         messages.error(request, 'No puedes eliminar esta cuenta protegida.')
@@ -6921,6 +6985,11 @@ def eliminar_usuario_view(request, user_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def cambiar_rol_usuario_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para cambiar roles de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     if request.method == 'POST':
         usuario = get_object_or_404(User, id=user_id)
 
@@ -7042,6 +7111,11 @@ def cambiar_rol_usuario_view(request, user_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def editar_ficha_usuario_admin_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para editar fichas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     if request.method == 'POST':
         usuario = get_object_or_404(User, id=user_id)
 
@@ -7438,6 +7512,11 @@ def asignar_autor_propio_doc_view(request, doc_id, user_id):
 
 @user_passes_test(es_superusuario, login_url='/login/')
 def restablecer_password_usuario_view(request, user_id):
+    caller_autor = getattr(request.user, 'autor', None)
+    if caller_autor and not caller_autor.es_admin_nivel_1 and not getattr(caller_autor, 'permiso_gestionar_usuarios', True):
+        messages.warning(request, "⚠️ Tu permiso para restablecer contraseñas de usuario ha sido revocado temporalmente por la administración.")
+        return redirect('panel_usuarios')
+
     if request.method == 'POST':
         usuario = get_object_or_404(User, id=user_id)
         nueva_pass = request.POST.get('nueva_password', '').strip()
