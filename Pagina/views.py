@@ -572,7 +572,7 @@ class ArticuloDocenteEditarView(UpdateView):
 
         if es_auxiliar and tutor:
             if articulo.estado in ['rechazado', 'pendiente'] and not self.request.user.is_superuser:
-                if es_confianza:
+                if es_confianza and articulo.estado != 'rechazado':
                     articulo.estado = 'aprobado'
                     articulo.es_subida_automatica = True
                     articulo.chequeado_por_moderador = False
@@ -602,7 +602,7 @@ class ArticuloDocenteEditarView(UpdateView):
                 pass
         else:
             if articulo.estado in ['rechazado', 'pendiente'] and not self.request.user.is_superuser:
-                if es_confianza:
+                if es_confianza and articulo.estado != 'rechazado':
                     articulo.estado = 'aprobado'
                     articulo.es_subida_automatica = True
                     articulo.chequeado_por_moderador = False

@@ -442,7 +442,7 @@
             border-bottom: 1px solid #edf2f7 !important;
             border-left: none !important;
             border-right: none !important;
-            vertical-align: middle;
+            vertical-align: middle !important;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
@@ -1301,10 +1301,10 @@
                                 <colgroup>
                                     <col style="width: 44px;">
                                     <col style="width: auto;">
-                                    <col style="width: 190px;">
-                                    <col style="width: 130px;">
-                                    <col style="width: 120px;">
-                                    <col style="width: 210px;">
+                                    <col style="width: 175px;">
+                                    <col style="width: 125px;">
+                                    <col style="width: 145px;">
+                                    <col style="width: 215px;">
                                 </colgroup>
                                 <thead>
                                     <tr>
@@ -1381,6 +1381,18 @@
                                                                 <i class="fas fa-tag me-1"></i>Sin Keywords
                                                             </span>
                                                         {% endif %}
+                                                        {% if doc.es_reenvio_corregido %}
+                                                            <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 ms-1 btn-diff-trigger shadow-2xs"
+                                                                    style="font-size: 0.68rem; font-weight: 600;"
+                                                                    data-docid="{{ doc.id }}"
+                                                                    data-doctitulo="{{ doc.titulo|escapejs }}"
+                                                                    data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:doc.motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
+                                                                    data-doccambios="{{ doc.campos_modificados_recientes|default:'[]'|escapejs }}"
+                                                                    data-docfecha="{{ doc.fecha_ultimo_reenvio|date:'d/m/Y H:i'|default:'' }}"
+                                                                    title="El autor corrigió y reenvió la obra tras observaciones. Clic para ver comparador de cambios.">
+                                                                <i class="fas fa-sync-alt me-1"></i>Cambios Reenviados
+                                                            </button>
+                                                        {% endif %}
                                                     </div>
                                             <br>
                                             <small class="text-muted">
@@ -1425,39 +1437,31 @@
                                         </td>
                                         <td>
                                             {% if doc.subido_por %}
-                                                <a href="{% url 'ver_subidas_usuario' doc.subido_por.id %}" class="user-link" title="Ver obras de este usuario">
-                                                    <i class="fas fa-folder-open me-1 small"></i>{{ doc.subido_por.username }}
+                                                <a href="{% url 'ver_subidas_usuario' doc.subido_por.id %}" class="user-link text-decoration-none fw-semibold" title="Ver obras de este usuario">
+                                                    <i class="fas fa-user-circle me-1 text-primary"></i>{{ doc.subido_por.username }}
                                                 </a><br>
-                                                <small class="text-muted">{{ doc.subido_por.email|default:"" }}</small>
+                                                <small class="text-muted text-truncate d-inline-block" style="max-width: 160px;" title="{{ doc.subido_por.email }}">{{ doc.subido_por.email|default:"" }}</small>
                                             {% else %}
-                                                <span class="text-muted">Admin / Inicial</span>
+                                                <span class="text-muted"><i class="fas fa-shield-alt me-1"></i>Admin / Inicial</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ doc.created_at|date:"d/m/Y H:i" }}</td>
+                                        <td class="text-nowrap">
+                                            <span class="fw-semibold text-dark"><i class="far fa-calendar-alt text-muted me-1"></i>{{ doc.created_at|date:"d/m/Y" }}</span><br>
+                                            <small class="text-muted ps-3">{{ doc.created_at|date:"H:i" }} hrs</small>
+                                        </td>
                                         <td class="text-center">
                                             {% if doc.estado == 'aprobado' %}
-                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Aprobado</span>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-2.5 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Aprobado</span>
                                             {% elif doc.estado == 'rechazado' %}
-                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Rechazado</span>
+                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2.5 py-1 rounded-pill"><i class="fas fa-times-circle me-1"></i>Rechazado</span>
                                             {% else %}
-                                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 rounded-pill"><i class="fas fa-hourglass-half me-1"></i>En Espera</span>
+                                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2.5 py-1 rounded-pill fw-semibold"><i class="fas fa-hourglass-half me-1"></i>En Espera</span>
                                                 {% if doc.sla %}
-                                                    <br>
-                                                    <span class="badge rounded-pill mt-1" style="{{ doc.sla.style }} font-size: 0.7rem;" title="{{ doc.sla.tooltip }}">
-                                                        <i class="fas {{ doc.sla.icon }} me-1"></i>{{ doc.sla.texto }}
-                                                    </span>
-                                                {% endif %}
-                                                {% if doc.es_reenvio_corregido %}
-                                                    <br>
-                                                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0.5 small mt-1 btn-diff-trigger shadow-2xs"
-                                                            data-docid="{{ doc.id }}"
-                                                            data-doctitulo="{{ doc.titulo|escapejs }}"
-                                                            data-docobservacion="{{ doc.ultimo_motivo_rechazo|default:'Sin observaciones registradas'|escapejs }}"
-                                                            data-doccambios="{{ doc.campos_modificados_recientes|default:'[]'|escapejs }}"
-                                                            data-docfecha="{{ doc.fecha_ultimo_reenvio|date:'d/m/Y H:i'|default:'' }}"
-                                                            title="Obra reenviada con correcciones por el autor. Clic para comparar qué modificó.">
-                                                        <i class="fas fa-sync-alt me-1"></i>Cambios Reenviados
-                                                    </button>
+                                                    <div class="mt-1">
+                                                        <span class="badge rounded-pill px-2 py-0.5" style="{{ doc.sla.style }} font-size: 0.68rem;" title="{{ doc.sla.tooltip }}">
+                                                            <i class="fas {{ doc.sla.icon }} me-1"></i>SLA: {{ doc.sla.texto }}
+                                                        </span>
+                                                    </div>
                                                 {% endif %}
                                             {% endif %}
                                         </td>
