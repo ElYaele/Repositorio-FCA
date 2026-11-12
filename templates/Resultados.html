@@ -541,6 +541,29 @@
         </div>
     </div>
 
+    <!-- SECCIÓN: CONSULTADOS RECIENTEMENTE (IDEA 11) -->
+    <div class="container-fluid px-lg-5 mb-5" id="seccionVistosRecientes" style="display: none;">
+        <div class="bg-white rounded-4 shadow-sm border p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-success bg-opacity-10 text-success p-2 rounded-circle">
+                        <i class="fas fa-history fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0 fs-6">Consultados recientemente</h6>
+                        <span class="text-muted small">Obras que has explorado durante tu navegación en este dispositivo</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 text-muted fw-bold shadow-sm" onclick="limpiarVistosRecientes()" title="Borrar historial local">
+                    <i class="fas fa-trash-alt me-1"></i> Limpiar historial
+                </button>
+            </div>
+            <div class="row g-3" id="contenedorVistosRecientes">
+                <!-- Se puebla dinámicamente con JavaScript desde localStorage -->
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETALLE DE PUBLICACIÓN (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UABC) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -1085,6 +1108,25 @@
                         url: window.location.origin + "{% url 'resultado_busqueda' %}?q=" + encodeURIComponent(titulo)
                     };
 
+                    // Guardar en historial de Vistos Recientemente (Idea 11)
+                    guardarVistoRecienteRes({
+                        id: docId,
+                        titulo: titulo,
+                        autores: autores,
+                        tipo: tipo,
+                        area: area,
+                        entidad: entidad,
+                        anio: anio,
+                        idioma: idioma,
+                        revista: revista,
+                        isbn: isbn,
+                        doi: doi,
+                        descripcion: descripcion,
+                        pdf: btn.getAttribute('data-pdf') || '',
+                        vistas: vistas,
+                        descargas: descargas
+                    });
+
                     // Registrar lectura atómica (1 por sesión)
                     if (docId) {
                         const sessionKey = 'uabc_obra_leida_' + docId;
@@ -1521,6 +1563,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            renderVistosRecientesRes();
             const btnsDescarga = ['modalPdfDownloadLink', 'modalPdfNuevaPestanaLink', 'btnVerDocAquiModal', 'modalUnamDescargarBtn', 'modalUnamNuevaPestanaBtn', 'modalUnamFichaOriginalBtn'];
             btnsDescarga.forEach(function(id) {
                 const el = document.getElementById(id);
@@ -1566,6 +1609,100 @@
                     prompt('Copie el enlace directo del recurso:', info.url);
                 }
             }
+        }
+
+        // ========================================================
+        // HISTORIAL DE VISTOS RECIENTEMENTE (IDEA 11)
+        // ========================================================
+        function guardarVistoRecienteRes(doc) {
+            if (!doc || !doc.titulo) return;
+            try {
+                let lista = JSON.parse(localStorage.getItem('fca_vistos_recientes') || '[]');
+                lista = lista.filter(function(item) {
+                    return (item.id && doc.id) ? (item.id !== doc.id) : (item.titulo !== doc.titulo);
+                });
+                lista.unshift(doc);
+                if (lista.length > 6) lista = lista.slice(0, 6);
+                localStorage.setItem('fca_vistos_recientes', JSON.stringify(lista));
+                renderVistosRecientesRes();
+            } catch(e) {}
+        }
+
+        function limpiarVistosRecientes() {
+            try {
+                localStorage.removeItem('fca_vistos_recientes');
+            } catch(e) {}
+            renderVistosRecientesRes();
+        }
+
+        function renderVistosRecientesRes() {
+            const seccion = document.getElementById('seccionVistosRecientes');
+            const contenedor = document.getElementById('contenedorVistosRecientes');
+            if (!seccion || !contenedor) return;
+
+            let lista = [];
+            try {
+                lista = JSON.parse(localStorage.getItem('fca_vistos_recientes') || '[]');
+            } catch (e) {
+                lista = [];
+            }
+
+            if (!lista || lista.length === 0) {
+                seccion.style.display = 'none';
+                contenedor.innerHTML = '';
+                return;
+            }
+
+            seccion.style.display = 'block';
+            let html = '';
+            lista.forEach(function(doc) {
+                const tituloEsc = (doc.titulo || '').replace(/"/g, '&quot;');
+                const autoresEsc = (doc.autores || '').replace(/"/g, '&quot;');
+                const tipoEsc = (doc.tipo || 'Obra').replace(/"/g, '&quot;');
+                const areaEsc = (doc.area || '').replace(/"/g, '&quot;');
+                const entidadEsc = (doc.entidad || '').replace(/"/g, '&quot;');
+                const anioEsc = doc.anio || '';
+                const idiomaEsc = (doc.idioma || 'Español').replace(/"/g, '&quot;');
+                const descEsc = (doc.descripcion || '').replace(/"/g, '&quot;');
+                const pdfEsc = doc.pdf || '';
+                const doiEsc = doc.doi || '';
+                const isbnEsc = doc.isbn || '';
+                const revistaEsc = doc.revista || '';
+                const vistasEsc = doc.vistas || 0;
+                const descargasEsc = doc.descargas || 0;
+
+                html += `
+                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                    <div class="card h-100 border rounded-3 p-2.5 shadow-sm bg-light hover-lift cursor-pointer visto-reciente-card"
+                         role="button"
+                         data-bs-toggle="modal" data-bs-target="#modalDetalleObra"
+                         data-id="${doc.id || ''}"
+                         data-titulo="${tituloEsc}"
+                         data-autores="${autoresEsc}"
+                         data-tipo="${tipoEsc}"
+                         data-area="${areaEsc}"
+                         data-entidad="${entidadEsc}"
+                         data-anio="${anioEsc}"
+                         data-idioma="${idiomaEsc}"
+                         data-descripcion="${descEsc}"
+                         data-pdf="${pdfEsc}"
+                         data-doi="${doiEsc}"
+                         data-isbn="${isbnEsc}"
+                         data-revista="${revistaEsc}"
+                         data-vistas="${vistasEsc}"
+                         data-descargas="${descargasEsc}"
+                         style="cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-0.5 px-2" style="font-size: 0.65rem;">${tipoEsc}</span>
+                            <span class="text-muted small fw-bold" style="font-size: 0.68rem;">${anioEsc}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.8rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${tituloEsc}">${doc.titulo}</h6>
+                        <div class="text-muted small text-truncate mt-auto pt-1 border-top" style="font-size: 0.7rem;"><i class="fas fa-user-edit me-1 text-success"></i>${doc.autores}</div>
+                    </div>
+                </div>`;
+            });
+
+            contenedor.innerHTML = html;
         }
     </script>
 </body>
