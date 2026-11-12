@@ -1,3 +1,16 @@
+{#
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Plantilla: templates/verificar_codigo.html
+Descripción: Pantalla de Verificación de Código de Seguridad OTP (One-Time Password) de 6 Dígitos.
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Seguridad:
+- Autenticación en Dos Pasos: Requiere el código de 6 dígitos enviado exclusivamente al correo universitario.
+- Expiración Temporal: Ventana de validez de 15 minutos con temporizador regresivo interactivo.
+- Reenvío Protegido: Control contra ráfagas de solicitudes con tiempo de espera entre intentos.
+====================================================================================================
+#}
 <!DOCTYPE html>
 <html lang="es">
 <head>

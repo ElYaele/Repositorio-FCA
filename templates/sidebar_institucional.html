@@ -1,3 +1,17 @@
+{#
+====================================================================================================
+SISTEMA DE REPOSITORIO ACADÉMICO INSTITUCIONAL (FCA - UABC)
+Componente: templates/sidebar_institucional.html
+Descripción: Barra Lateral de Navegación Universal Dinámica con Tematización por Rol e Indicadores Vivos.
+Autor: Facultad de Contaduría y Administración - Campus Tijuana
+====================================================================================================
+Características:
+- Theming por Rol: Inyecta variables CSS dinámicas (--theme-primary, --theme-accent) según el perfil activo.
+- Badges de Notificación: Conteo en tiempo real de invitaciones de coautoría, mensajes internos y tickets de soporte.
+- Indicador Festivo de Claustro: Ícono interactivo de pastel (🎂) con animación flotante cuando hay cumpleaños hoy.
+- Acceso Rápido a Módulos: Mi Panel, Coautorías, Mensajería Colegiada, Soporte FCA, Directorio y Panel de Control.
+====================================================================================================
+#}
 {% if user.is_authenticated %}
 <style>
     :root {
