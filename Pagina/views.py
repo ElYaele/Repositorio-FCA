@@ -413,24 +413,24 @@ class HomePageView(TemplateView):
         context['eventos_fca'] = eventos_activos
         context['enlaces_rapidos'] = EnlaceRapidoPortal.objects.filter(activo=True).order_by('orden', 'id')
 
-        # <--- RECURSOS DESTACADOS AUTOMÁTICOS (ESTILO REPOSITORIO UNAM) --->
+        # <--- RECURSOS DESTACADOS AUTOMÁTICOS (ESTILO REPOSITORIO UNAM - HASTA 30 OBRAS) --->
         qs_destacados = articulos_visibles.select_related('tipo_contenido', 'area', 'entidad').prefetch_related('autor')
         recursos_destacados = []
-        # 1. Priorizar obras arbitradas con DOI oficial
-        con_doi = list(qs_destacados.exclude(Q(doi_enlace__isnull=True) | Q(doi_enlace__exact='')).order_by('-año_produccion', '-created_at')[:6])
+        # 1. Priorizar obras arbitradas con DOI oficial (hasta 15)
+        con_doi = list(qs_destacados.exclude(Q(doi_enlace__isnull=True) | Q(doi_enlace__exact='')).order_by('-año_produccion', '-created_at')[:15])
         recursos_destacados.extend(con_doi)
 
-        # 2. Diversificar con Tesis o Libros aprobados
+        # 2. Diversificar con Tesis o Libros aprobados (hasta 10 adicionales)
         ids_existentes = [o.id for o in recursos_destacados]
         libros_tesis = list(qs_destacados.exclude(id__in=ids_existentes).filter(
             Q(tipo_contenido__nombre__icontains='tesis') | Q(tipo_contenido__nombre__icontains='libro')
-        ).order_by('-año_produccion', '-created_at')[:4])
+        ).order_by('-año_produccion', '-created_at')[:10])
         recursos_destacados.extend(libros_tesis)
 
-        # 3. Completar hasta 10-12 con obras aprobadas recientes
-        if len(recursos_destacados) < 10:
+        # 3. Completar hasta 30 con obras aprobadas recientes
+        if len(recursos_destacados) < 30:
             ids_existentes = [o.id for o in recursos_destacados]
-            extra = list(qs_destacados.exclude(id__in=ids_existentes).order_by('-año_produccion', '-created_at')[:12 - len(recursos_destacados)])
+            extra = list(qs_destacados.exclude(id__in=ids_existentes).order_by('-año_produccion', '-created_at')[:30 - len(recursos_destacados)])
             recursos_destacados.extend(extra)
 
         for doc in recursos_destacados:

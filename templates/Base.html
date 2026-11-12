@@ -1154,25 +1154,53 @@
         }
         .recursos-track {
             display: flex;
-            gap: 18px;
+            gap: 16px;
             transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
             will-change: transform;
             width: 100%;
         }
+        /* VISUALIZACIÓN DE 5 EN 5 TARJETAS EN PANTALLAS GRANDES Y APROVECHAMIENTO DEL ANCHO */
         .recursos-slide {
-            flex: 0 0 calc((100% - 36px) / 3);
+            flex: 0 0 calc((100% - (16px * 4)) / 5);
             min-width: 0;
             box-sizing: border-box;
         }
-        @media (max-width: 1199.98px) and (min-width: 768px) {
+        @media (max-width: 1299.98px) and (min-width: 1100px) {
             .recursos-slide {
-                flex: 0 0 calc((100% - 18px) / 2);
+                flex: 0 0 calc((100% - (16px * 3)) / 4);
             }
         }
-        @media (max-width: 767.98px) {
+        @media (max-width: 1099.98px) and (min-width: 768px) {
+            .recursos-slide {
+                flex: 0 0 calc((100% - (16px * 2)) / 3);
+            }
+        }
+        @media (max-width: 767.98px) and (min-width: 540px) {
+            .recursos-slide {
+                flex: 0 0 calc((100% - 16px) / 2);
+            }
+        }
+        @media (max-width: 539.98px) {
             .recursos-slide {
                 flex: 0 0 100%;
             }
+        }
+        .pdf-preview-destacado {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .pdf-canvas-destacado {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
         }
         .recurso-card {
             border-radius: 14px;
@@ -2032,7 +2060,7 @@
 
     <!-- SECCIÓN: RECURSOS DESTACADOS (CARRUSEL AL ESTILO REPOSITORIO UNAM) -->
     <div class="recursos-destacados-section py-5">
-        <div class="container">
+        <div class="container-fluid px-xl-5 px-lg-4 px-3" style="max-width: 1780px;">
             <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap">
                 <div>
                     <h2 class="font-weight-bold text-uppercase mb-1" style="color: #1e293b; letter-spacing: -0.5px; font-size: 2rem;">
@@ -2075,19 +2103,31 @@
                                  data-doi="{{ doc.doi_enlace|default:'' }}"
                                  data-isbn="{{ doc.isbn_issn|default:'' }}">
                                 <div class="card-body p-3 d-flex flex-column justify-content-between">
-                                    <div class="d-flex align-items-start mb-2" style="gap: 14px;">
-                                        <!-- Miniatura estilo documento académico UNAM -->
-                                        <div class="recurso-thumb flex-shrink-0 text-center d-flex flex-column align-items-center justify-content-between p-2 rounded shadow-2xs" style="width: 86px; height: 118px; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; border-left: 4px solid #006633; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
-                                            <div class="text-success small"><i class="fas fa-book-reader fs-5"></i></div>
-                                            <div class="w-100 text-truncate font-weight-bold text-dark" style="font-size: 0.65rem; line-height: 1.1;">UABC • FCA</div>
-                                            <span class="badge badge-success px-1 py-0 w-100 text-truncate" style="font-size: 0.6rem;">{{ doc.tipo_contenido.nombre|default:'Obra' }}</span>
+                                    <div class="d-flex align-items-start mb-2" style="gap: 12px;">
+                                        <!-- Miniatura con portada real del PDF (PDF.js) o distintivo institucional -->
+                                        <div class="recurso-thumb pdf-preview-destacado flex-shrink-0 text-center rounded position-relative overflow-hidden" 
+                                             style="width: 82px; height: 114px; background: #ffffff; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06);"
+                                             data-pdf-url="{% if doc.pdf %}{{ doc.pdf.url }}{% endif %}">
+                                            {% if doc.pdf %}
+                                                <canvas class="pdf-canvas-destacado" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;"></canvas>
+                                                <div class="pdf-loading-destacado text-center p-1 text-danger">
+                                                    <i class="fas fa-file-pdf fa-2x mb-1"></i>
+                                                    <span class="d-block text-muted font-weight-bold" style="font-size: 0.55rem; line-height: 1;">PDF</span>
+                                                </div>
+                                            {% else %}
+                                                <div class="d-flex flex-column align-items-center justify-content-between h-100 p-1.5 text-center" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);">
+                                                    <div class="text-success small"><i class="fas fa-book-reader fa-lg"></i></div>
+                                                    <div class="font-weight-bold text-dark" style="font-size: 0.62rem; line-height: 1.1;">UABC &bull; FCA</div>
+                                                    <span class="badge badge-success px-1 py-0 w-100 text-truncate" style="font-size: 0.58rem;">{{ doc.tipo_contenido.nombre|default:'Obra' }}</span>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                         <!-- Metadatos de la publicación -->
                                         <div class="flex-grow-1 overflow-hidden">
-                                            <h6 class="recurso-titulo font-weight-bold mb-1 text-dark text-truncate-2" title="{{ doc.titulo }}" style="font-size: 0.95rem; line-height: 1.35;">
+                                            <h6 class="recurso-titulo font-weight-bold mb-1 text-dark text-truncate-2" title="{{ doc.titulo }}" style="font-size: 0.9rem; line-height: 1.35;">
                                                 {{ doc.titulo }}
                                             </h6>
-                                            <div class="recurso-meta text-muted" style="font-size: 0.78rem; line-height: 1.35;">
+                                            <div class="recurso-meta text-muted" style="font-size: 0.76rem; line-height: 1.35;">
                                                 <div class="text-truncate mb-0.5"><strong class="text-dark">Autor:</strong> {{ doc.autor_str }}</div>
                                                 <div class="text-truncate mb-0.5"><strong class="text-dark">Entidad:</strong> {{ doc.entidad.nombre|default:'Facultad de Contaduría y Administración' }}</div>
                                                 <div class="text-truncate mb-0.5"><strong class="text-dark">Repositorio:</strong> Repositorio FCA UABC</div>
@@ -2097,10 +2137,10 @@
                                     </div>
                                     <!-- Cintillo inferior destacado -->
                                     <div class="recurso-badge-strip pt-2 border-top d-flex justify-content-between align-items-center mt-2">
-                                        <span class="badge badge-pill badge-light text-dark border py-1 px-2.5" style="font-size: 0.72rem; background-color: #f1f5f9;">
+                                        <span class="badge badge-pill badge-light text-dark border py-1 px-2.5 text-truncate" style="font-size: 0.7rem; max-width: 65%; background-color: #f1f5f9;">
                                             <i class="{{ doc.distintivo_icono }} mr-1"></i>{{ doc.distintivo_texto }}
                                         </span>
-                                        <span class="text-success font-weight-bold small" style="font-size: 0.72rem;">
+                                        <span class="text-success font-weight-bold small text-nowrap" style="font-size: 0.72rem;">
                                             Consultar <i class="fas fa-external-link-alt ml-0.5"></i>
                                         </span>
                                     </div>
@@ -2206,11 +2246,20 @@
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Vista Previa Portada Estilo UNAM -->
+                        <!-- Columna Derecha: Vista Previa Portada Estilo UNAM con Render PDF Real -->
                         <div class="col-lg-5 col-md-12 d-flex flex-column align-items-center justify-content-between">
                             <div class="w-100 p-4 rounded text-center d-flex flex-column align-items-center justify-content-between shadow-xs border" style="background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%); min-height: 440px;">
-                                <!-- Portada Simulación Realista -->
-                                <div class="bg-white rounded shadow p-4 text-center d-flex flex-column justify-content-between w-100 my-auto position-relative" style="max-width: 280px; min-height: 350px; border-left: 6px solid #006633; border-top: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                                <!-- Visor de Portada Real en PDF (PDF.js) -->
+                                <div id="modalDestacadoPdfWrapper" class="bg-white rounded shadow p-2 text-center d-flex align-items-center justify-content-center w-100 my-auto position-relative" style="max-width: 300px; height: 380px; border: 1px solid #cbd5e1;">
+                                    <canvas id="modalDestacadoPdfCanvas" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;"></canvas>
+                                    <div id="modalDestacadoPdfLoading" class="text-center p-3 text-danger">
+                                        <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                        <span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Portada Simulación Realista Alternativa (cuando no hay PDF o falla carga) -->
+                                <div id="modalObraSimulatedCover" class="bg-white rounded shadow p-4 text-center d-flex flex-column justify-content-between w-100 my-auto position-relative" style="max-width: 280px; min-height: 350px; border-left: 6px solid #006633; border-top: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; display: none;">
                                     <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
                                         <img src="{% static 'images/LOGO FCA1.png' %}" alt="FCA" style="height: 26px; object-fit: contain;">
                                         <span class="badge badge-success px-2 py-0.5" id="modalObraCoverBadge" style="font-size: 0.65rem;">UABC</span>
@@ -2416,6 +2465,13 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- PDF.js de Mozilla para renderizado de portadas de documentos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+    </script>
 
     <script>
         function filtrarLista(inputId, listaId, claseItem, clearBtnId) {
@@ -2855,9 +2911,10 @@
 
                 function getVisibleCount() {
                     const width = window.innerWidth;
-                    if (width >= 1200) return 4;
-                    if (width >= 992) return 3;
-                    if (width >= 768) return 2;
+                    if (width >= 1300) return 5;
+                    if (width >= 1100) return 4;
+                    if (width >= 768) return 3;
+                    if (width >= 540) return 2;
                     return 1;
                 }
 
@@ -3023,7 +3080,38 @@
 
     <!-- Script de Apertura y Metadatos del Modal Obra Destacada (Estilo UNAM) -->
     <script>
+        function renderizarMiniaturasDestacados() {
+            if (typeof pdfjsLib === 'undefined') return;
+            document.querySelectorAll('.pdf-preview-destacado[data-pdf-url]').forEach(function(box) {
+                var pdfUrl = box.getAttribute('data-pdf-url');
+                var canvas = box.querySelector('.pdf-canvas-destacado');
+                var loading = box.querySelector('.pdf-loading-destacado');
+
+                if (!pdfUrl || !canvas) return;
+
+                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
+                    return pdfDoc.getPage(1);
+                }).then(function(page) {
+                    var context = canvas.getContext('2d');
+                    var viewport = page.getViewport({ scale: 0.35 });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    return page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
+                        if (loading) loading.style.display = 'none';
+                        canvas.style.display = 'block';
+                    });
+                }).catch(function(err) {
+                    if (loading) {
+                        loading.innerHTML = '<i class="fas fa-file-pdf text-danger fa-2x"></i><span class="d-block text-muted font-weight-bold" style="font-size: 0.55rem; line-height: 1;">PDF</span>';
+                    }
+                });
+            });
+        }
+
         $(document).ready(function() {
+            renderizarMiniaturasDestacados();
+
             $('#modalDetalleObra').on('show.bs.modal', function(event) {
                 var card = $(event.relatedTarget);
                 if (!card.length) return;
@@ -3052,6 +3140,44 @@
                 $('#modalObraCoverBarcode').text('FCA-' + anio + '-' + Math.floor(1000 + Math.random() * 9000));
                 $('#modalObraIdioma').text(idioma);
                 $('#modalObraDescripcion').text(descripcion);
+
+                // Portada en el Modal: Renderizar PDF real o mostrar portada simulada
+                var pdfWrapper = document.getElementById('modalDestacadoPdfWrapper');
+                var pdfCanvas = document.getElementById('modalDestacadoPdfCanvas');
+                var pdfLoading = document.getElementById('modalDestacadoPdfLoading');
+                var simCover = document.getElementById('modalObraSimulatedCover');
+
+                if (pdfUrl && pdfUrl.trim() !== '' && typeof pdfjsLib !== 'undefined') {
+                    if (pdfWrapper) pdfWrapper.style.display = 'flex';
+                    if (simCover) simCover.style.display = 'none';
+                    if (pdfCanvas) pdfCanvas.style.display = 'none';
+                    if (pdfLoading) {
+                        pdfLoading.style.display = 'block';
+                        pdfLoading.innerHTML = '<i class="fas fa-file-pdf fa-3x mb-2 text-danger"></i><span class="d-block small text-muted font-weight-bold">Cargando portada del PDF...</span>';
+                    }
+
+                    pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc) {
+                        return pdfDoc.getPage(1);
+                    }).then(function(page) {
+                        if (!pdfCanvas) return;
+                        var context = pdfCanvas.getContext('2d');
+                        var viewport = page.getViewport({ scale: 0.85 });
+                        pdfCanvas.height = viewport.height;
+                        pdfCanvas.width = viewport.width;
+
+                        return page.render({ canvasContext: context, viewport: viewport }).promise.then(function() {
+                            if (pdfLoading) pdfLoading.style.display = 'none';
+                            pdfCanvas.style.display = 'block';
+                        });
+                    }).catch(function(err) {
+                        console.warn('Error al renderizar portada de PDF en modal:', err);
+                        if (pdfWrapper) pdfWrapper.style.display = 'none';
+                        if (simCover) simCover.style.display = 'flex';
+                    });
+                } else {
+                    if (pdfWrapper) pdfWrapper.style.display = 'none';
+                    if (simCover) simCover.style.display = 'flex';
+                }
 
                 // Construcción de cita sugerida (formato APA)
                 var currentUrl = window.location.origin + window.location.pathname;
