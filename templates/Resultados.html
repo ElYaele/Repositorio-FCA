@@ -53,16 +53,9 @@
             border: 1px solid #e9ecef;
         }
         .filter-scroll-box {
-            max-height: 230px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .filter-scroll-box::-webkit-scrollbar {
-            width: 4px;
-        }
-        .filter-scroll-box::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
+            max-height: none !important;
+            overflow-y: visible !important;
+            padding-right: 0;
         }
         .filter-title {
             color: var(--uabc-green);
@@ -324,12 +317,20 @@
             line-height: 1;
             background: none;
             border: none;
-            padding: 0;
+            padding: 3px 5px;
             cursor: pointer;
+            position: relative;
+            z-index: 15;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-fav-bookmark i {
+            pointer-events: none;
         }
         .btn-fav-bookmark:hover {
             color: var(--uabc-gold) !important;
-            transform: scale(1.15);
+            transform: scale(1.2);
         }
         .btn-fav-bookmark.activo {
             color: var(--uabc-gold) !important;
@@ -398,138 +399,163 @@
 
                     <!-- FILTRO 1: TIPO DE RECURSO / CONTENIDO ACADÉMICO -->
                     <div class="sidebar-filters">
-                        <div class="filter-title">
-                            <i class="fas fa-layer-group me-2"></i>Tipo de Recurso
+                        <div class="filter-title d-flex justify-content-between align-items-center" style="cursor: pointer; user-select: none;" onclick="toggleColapsoCard('cuerpoFiltroTipos', 'iconoColapsoTipos')" title="Plegar / desplegar filtro de Tipos">
+                            <span><i class="fas fa-layer-group me-2"></i>Tipo de Recurso</span>
+                            <i class="fas fa-chevron-up text-muted small" id="iconoColapsoTipos" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
                         </div>
-                        <!-- Buscador en vivo de tipos (Idea 7) -->
-                        <div class="mb-2">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white border-end-0 text-muted py-0 px-2"><i class="fas fa-search" style="font-size: 0.72rem;"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-1 py-1 shadow-none" placeholder="Filtrar tipos..." style="font-size: 0.78rem;" onkeyup="filtrarListaSidebar(this, 'listaFiltroTipos')">
+                        <div id="cuerpoFiltroTipos">
+                            <!-- Buscador en vivo de tipos (Idea 7) -->
+                            <div class="mb-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted py-0 px-2"><i class="fas fa-search" style="font-size: 0.72rem;"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-1 py-1 shadow-none" placeholder="Filtrar tipos..." style="font-size: 0.78rem;" onkeyup="filtrarListaSidebar(this, 'listaFiltroTipos')">
+                                </div>
                             </div>
-                        </div>
-                        <div class="filter-scroll-box">
-                            <ul class="list-unstyled mb-0" id="listaFiltroTipos">
-                                <li class="mb-1">
-                                    <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link fw-bold text-success {% if not tipo_actual %}active-filter{% endif %}">
-                                        <i class="fas fa-th-list me-1"></i>Ver todos los recursos
-                                    </a>
-                                </li>
-                                {% for tipo in tipos_contenido %}
-                                    <li class="mb-1 item-filtro-sidebar">
-                                        {% if tipo_actual == tipo.id|stringformat:'s' %}
-                                            <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
-                                                <span>
-                                                    {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-success"></i>
-                                                    {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-success"></i>
-                                                    {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-success"></i>
-                                                    {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-success"></i>
-                                                    {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-success"></i>
-                                                    {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
-                                                    {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
-                                                    {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-success"></i>
-                                                    {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-secondary"></i>
-                                                    {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-secondary"></i>
-                                                    {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-secondary"></i>
-                                                    {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-secondary"></i>
-                                                    {% else %}<i class="fas fa-file-alt me-1 text-success"></i>{% endif %}
-                                                    <span class="nombre-item-filtro">{{ tipo.nombre }}</span>
-                                                </span>
-                                                <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ tipo.total }} <i class="fas fa-times ms-1 small"></i></span>
-                                            </a>
-                                        {% else %}
-                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo.id }}&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center {% if tipo.total == 0 %}text-muted opacity-75{% endif %}">
-                                                <span>
-                                                    {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-muted"></i>
-                                                    {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-muted"></i>
-                                                    {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-muted"></i>
-                                                    {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-muted"></i>
-                                                    {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-muted"></i>
-                                                    {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
-                                                    {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
-                                                    {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-muted"></i>
-                                                    {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-muted"></i>
-                                                    {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-muted"></i>
-                                                    {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-muted"></i>
-                                                    {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-muted"></i>
-                                                    {% else %}<i class="fas fa-file-alt me-1 text-muted"></i>{% endif %}
-                                                    <span class="nombre-item-filtro">{{ tipo.nombre }}</span>
-                                                </span>
-                                                <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ tipo.total }})</span>
-                                            </a>
-                                        {% endif %}
+                            <div class="filter-scroll-box">
+                                <ul class="list-unstyled mb-0" id="listaFiltroTipos">
+                                    <li class="mb-1">
+                                        <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link fw-bold text-success {% if not tipo_actual %}active-filter{% endif %}">
+                                            <i class="fas fa-th-list me-1"></i>Ver todos los recursos
+                                        </a>
                                     </li>
-                                {% endfor %}
-                            </ul>
+                                    {% for tipo in tipos_contenido %}
+                                        <li class="mb-1 item-filtro-sidebar {% if forloop.counter > 5 and tipo_actual != tipo.id|stringformat:'s' %}filtro-extra-tipo d-none{% endif %}">
+                                            {% if tipo_actual == tipo.id|stringformat:'s' %}
+                                                <a href="?q={{ query_actual|urlencode }}&tipo=&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
+                                                    <span>
+                                                        {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-success"></i>
+                                                        {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-success"></i>
+                                                        {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-success"></i>
+                                                        {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-success"></i>
+                                                        {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-success"></i>
+                                                        {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
+                                                        {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
+                                                        {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-success"></i>
+                                                        {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-secondary"></i>
+                                                        {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-secondary"></i>
+                                                        {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-secondary"></i>
+                                                        {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-secondary"></i>
+                                                        {% else %}<i class="fas fa-file-alt me-1 text-success"></i>{% endif %}
+                                                        <span class="nombre-item-filtro">{{ tipo.nombre }}</span>
+                                                    </span>
+                                                    <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ tipo.total }} <i class="fas fa-times ms-1 small"></i></span>
+                                                </a>
+                                            {% else %}
+                                                <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo.id }}&area={{ area_actual|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center {% if tipo.total == 0 %}text-muted opacity-75{% endif %}">
+                                                    <span>
+                                                        {% if 'tesis' in tipo.nombre|lower %}<i class="fas fa-graduation-cap me-1 text-muted"></i>
+                                                        {% elif 'artículo' in tipo.nombre|lower or 'revista' in tipo.nombre|lower %}<i class="fas fa-newspaper me-1 text-muted"></i>
+                                                        {% elif 'libro' in tipo.nombre|lower %}<i class="fas fa-book me-1 text-muted"></i>
+                                                        {% elif 'ponencia' in tipo.nombre|lower or 'congreso' in tipo.nombre|lower %}<i class="fas fa-microphone-alt me-1 text-muted"></i>
+                                                        {% elif 'reporte' in tipo.nombre|lower or 'proyecto' in tipo.nombre|lower %}<i class="fas fa-microscope me-1 text-muted"></i>
+                                                        {% elif 'propiedad' in tipo.nombre|lower or 'intelectual' in tipo.nombre|lower %}<i class="fas fa-award me-1 text-warning"></i>
+                                                        {% elif 'desarrollo' in tipo.nombre|lower or 'tecnol' in tipo.nombre|lower %}<i class="fas fa-laptop-code me-1 text-info"></i>
+                                                        {% elif 'transferencia' in tipo.nombre|lower %}<i class="fas fa-handshake me-1 text-muted"></i>
+                                                        {% elif 'traducci' in tipo.nombre|lower %}<i class="fas fa-language me-1 text-muted"></i>
+                                                        {% elif 'informe' in tipo.nombre|lower %}<i class="fas fa-clipboard-check me-1 text-muted"></i>
+                                                        {% elif 'dossier' in tipo.nombre|lower or 'antolog' in tipo.nombre|lower %}<i class="fas fa-layer-group me-1 text-muted"></i>
+                                                        {% elif 'prólogo' in tipo.nombre|lower or 'prologo' in tipo.nombre|lower %}<i class="fas fa-feather-alt me-1 text-muted"></i>
+                                                        {% else %}<i class="fas fa-file-alt me-1 text-muted"></i>{% endif %}
+                                                        <span class="nombre-item-filtro">{{ tipo.nombre }}</span>
+                                                    </span>
+                                                    <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ tipo.total }})</span>
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                                {% if tipos_contenido|length > 5 %}
+                                <div class="mt-2 pt-1 border-top text-center" id="wrapVerMasTipos">
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-success fw-bold d-inline-flex align-items-center gap-1" id="btnToggleMasTipos" onclick="toggleVerMasFiltro('tipo', {{ tipos_contenido|length|add:'-5' }})" style="font-size: 0.8rem;">
+                                        <i class="fas fa-chevron-down" id="iconoToggleMasTipos" style="font-size: 0.72rem;"></i>
+                                        <span id="textoToggleMasTipos">Ver más tipos ({{ tipos_contenido|length|add:'-5' }})</span>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
                     <!-- FILTRO 2: ÁREA ACADÉMICA / DISCIPLINA -->
                     <div class="sidebar-filters">
-                        <div class="filter-title">
-                            <i class="fas fa-book-reader me-2"></i>Área Académica
+                        <div class="filter-title d-flex justify-content-between align-items-center" style="cursor: pointer; user-select: none;" onclick="toggleColapsoCard('cuerpoFiltroAreas', 'iconoColapsoAreas')" title="Plegar / desplegar filtro de Áreas">
+                            <span><i class="fas fa-book-reader me-2"></i>Área Académica</span>
+                            <i class="fas fa-chevron-up text-muted small" id="iconoColapsoAreas" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
                         </div>
-                        <!-- Buscador en vivo de áreas (Idea 7) -->
-                        <div class="mb-2">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white border-end-0 text-muted py-0 px-2"><i class="fas fa-search" style="font-size: 0.72rem;"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-1 py-1 shadow-none" placeholder="Filtrar áreas..." style="font-size: 0.78rem;" onkeyup="filtrarListaSidebar(this, 'listaFiltroAreas')">
+                        <div id="cuerpoFiltroAreas">
+                            <!-- Buscador en vivo de áreas (Idea 7) -->
+                            <div class="mb-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted py-0 px-2"><i class="fas fa-search" style="font-size: 0.72rem;"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-1 py-1 shadow-none" placeholder="Filtrar áreas..." style="font-size: 0.78rem;" onkeyup="filtrarListaSidebar(this, 'listaFiltroAreas')">
+                                </div>
                             </div>
-                        </div>
-                        <div class="filter-scroll-box">
-                            <ul class="list-unstyled mb-0" id="listaFiltroAreas">
-                                {% for ar in areas_disponibles %}
-                                    <li class="mb-1 item-filtro-sidebar">
-                                        {% if area_actual == ar.nombre %}
-                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area=&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
-                                                <span class="text-truncate nombre-item-filtro" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
-                                                <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ ar.total }} <i class="fas fa-times ms-1 small"></i></span>
-                                            </a>
-                                        {% else %}
-                                            <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ ar.nombre|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center">
-                                                <span class="text-truncate nombre-item-filtro" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
-                                                <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ ar.total }})</span>
-                                            </a>
-                                        {% endif %}
-                                    </li>
-                                {% empty %}
-                                    <li class="text-muted small">No hay áreas para este filtro</li>
-                                {% endfor %}
-                            </ul>
+                            <div class="filter-scroll-box">
+                                <ul class="list-unstyled mb-0" id="listaFiltroAreas">
+                                    {% for ar in areas_disponibles %}
+                                        <li class="mb-1 item-filtro-sidebar {% if forloop.counter > 5 and area_actual != ar.nombre %}filtro-extra-area d-none{% endif %}">
+                                            {% if area_actual == ar.nombre %}
+                                                <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area=&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center active-filter" title="Haz clic para quitar este filtro">
+                                                    <span class="text-truncate nombre-item-filtro" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
+                                                    <span class="badge bg-success text-white rounded-pill px-2" style="font-size: 0.75rem;">{{ ar.total }} <i class="fas fa-times ms-1 small"></i></span>
+                                                </a>
+                                            {% else %}
+                                                <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ ar.nombre|urlencode }}&anio={{ anio_actual|urlencode }}&anio_desde={{ anio_desde_actual|urlencode }}&anio_hasta={{ anio_hasta_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="filter-link d-flex justify-content-between align-items-center">
+                                                    <span class="text-truncate nombre-item-filtro" style="max-width: 170px;" title="{{ ar.nombre }}">{{ ar.nombre }}</span>
+                                                    <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">({{ ar.total }})</span>
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% empty %}
+                                        <li class="text-muted small">No hay áreas para este filtro</li>
+                                    {% endfor %}
+                                </ul>
+                                {% if areas_disponibles|length > 5 %}
+                                <div class="mt-2 pt-1 border-top text-center" id="wrapVerMasAreas">
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-success fw-bold d-inline-flex align-items-center gap-1" id="btnToggleMasAreas" onclick="toggleVerMasFiltro('area', {{ areas_disponibles|length|add:'-5' }})" style="font-size: 0.8rem;">
+                                        <i class="fas fa-chevron-down" id="iconoToggleMasAreas" style="font-size: 0.72rem;"></i>
+                                        <span id="textoToggleMasAreas">Ver más áreas ({{ areas_disponibles|length|add:'-5' }})</span>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
                     <!-- FILTRO 3: RANGO DE AÑOS DE PRODUCCIÓN (IDEA 6) -->
                     <div class="sidebar-filters">
-                        <div class="filter-title">
-                            <i class="fas fa-calendar-alt me-2"></i>Rango de Años
+                        <div class="filter-title d-flex justify-content-between align-items-center" style="cursor: pointer; user-select: none;" onclick="toggleColapsoCard('cuerpoFiltroRango', 'iconoColapsoRango')" title="Plegar / desplegar rango de años">
+                            <span><i class="fas fa-calendar-alt me-2"></i>Rango de Años</span>
+                            <i class="fas fa-chevron-up text-muted small" id="iconoColapsoRango" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
                         </div>
-                        <form method="get" action="" class="px-1">
-                            {% if query_actual %}<input type="hidden" name="q" value="{{ query_actual }}">{% endif %}
-                            {% if tipo_actual %}<input type="hidden" name="tipo" value="{{ tipo_actual }}">{% endif %}
-                            {% if area_actual %}<input type="hidden" name="area" value="{{ area_actual }}">{% endif %}
-                            {% if filtro_atributo_actual %}<input type="hidden" name="filtro_atributo" value="{{ filtro_atributo_actual }}">{% endif %}
-                            {% if orden_actual %}<input type="hidden" name="orden" value="{{ orden_actual }}">{% endif %}
+                        <div id="cuerpoFiltroRango">
+                            <form method="get" action="" class="px-1">
+                                {% if query_actual %}<input type="hidden" name="q" value="{{ query_actual }}">{% endif %}
+                                {% if tipo_actual %}<input type="hidden" name="tipo" value="{{ tipo_actual }}">{% endif %}
+                                {% if area_actual %}<input type="hidden" name="area" value="{{ area_actual }}">{% endif %}
+                                {% if filtro_atributo_actual %}<input type="hidden" name="filtro_atributo" value="{{ filtro_atributo_actual }}">{% endif %}
+                                {% if orden_actual %}<input type="hidden" name="orden" value="{{ orden_actual }}">{% endif %}
 
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <label class="form-label text-muted small mb-1" style="font-size: 0.72rem;">Desde</label>
-                                    <input type="number" name="anio_desde" min="1980" max="2035" value="{{ anio_desde_actual }}" placeholder="2020" class="form-control form-control-sm text-center">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small mb-1" style="font-size: 0.72rem;">Desde</label>
+                                        <input type="number" name="anio_desde" min="1980" max="2035" value="{{ anio_desde_actual }}" placeholder="2020" class="form-control form-control-sm text-center">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small mb-1" style="font-size: 0.72rem;">Hasta</label>
+                                        <input type="number" name="anio_hasta" min="1980" max="2035" value="{{ anio_hasta_actual }}" placeholder="2026" class="form-control form-control-sm text-center">
+                                    </div>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label text-muted small mb-1" style="font-size: 0.72rem;">Hasta</label>
-                                    <input type="number" name="anio_hasta" min="1980" max="2035" value="{{ anio_hasta_actual }}" placeholder="2026" class="form-control form-control-sm text-center">
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-outline-success btn-sm w-100 rounded-pill fw-bold">
-                                <i class="fas fa-filter me-1"></i>Filtrar Rango
-                            </button>
-                            {% if anio_desde_actual or anio_hasta_actual %}
-                                <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ area_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="btn btn-link btn-sm text-danger text-decoration-none w-100 mt-1 p-0 small text-center d-block">
-                                    <i class="fas fa-times me-1"></i>Quitar rango
-                                </a>
-                            {% endif %}
-                        </form>
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100 rounded-pill fw-bold">
+                                    <i class="fas fa-filter me-1"></i>Filtrar Rango
+                                </button>
+                                {% if anio_desde_actual or anio_hasta_actual %}
+                                    <a href="?q={{ query_actual|urlencode }}&tipo={{ tipo_actual|urlencode }}&area={{ area_actual|urlencode }}&filtro_atributo={{ filtro_atributo_actual|urlencode }}&orden={{ orden_actual|urlencode }}" class="btn btn-link btn-sm text-danger text-decoration-none w-100 mt-1 p-0 small text-center d-block">
+                                        <i class="fas fa-times me-1"></i>Quitar rango
+                                    </a>
+                                {% endif %}
+                            </form>
+                        </div>
                     </div>
 
                     <!-- TARJETA INSTITUCIONAL: ACCESO ABIERTO / OPEN ACCESS UABC -->
@@ -743,7 +769,7 @@
                                                 <div class="d-flex align-items-center gap-1">
                                                     <span class="text-muted small" style="font-size: 0.65rem;"><i class="far fa-calendar-alt me-1"></i>{{ art.año_produccion }}</span>
                                                     <!-- BOTÓN MARCAPÁGINAS / FAVORITO (IDEA 10) -->
-                                                    <button type="button" class="btn-fav-bookmark ms-1" data-fav-id="{{ art.id }}" onclick="event.stopPropagation(); toggleFavorito('{{ art.id }}', this);" title="Guardar en favoritos / Para mi tesis">
+                                                    <button type="button" class="btn-fav-bookmark ms-1" data-fav-id="{{ art.id }}" onclick="event.stopPropagation(); event.stopImmediatePropagation(); event.preventDefault(); toggleFavorito('{{ art.id }}', this); return false;" title="Guardar en favoritos / Para mi tesis">
                                                         <i class="far fa-bookmark"></i>
                                                     </button>
                                                 </div>
@@ -1012,6 +1038,9 @@
                                         <a href="#" id="modalUnamFichaOriginalBtn" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm fw-bold text-dark shadow-sm">
                                             <i class="fas fa-file-pdf me-1"></i> Ficha original
                                         </a>
+                                        <button type="button" class="btn btn-outline-warning text-dark btn-sm fw-bold shadow-sm" id="btnModalUnamGuardarFavorito" onclick="toggleFavoritoModalActual()" title="Guardar en favoritos / Para mi tesis">
+                                            <i class="far fa-bookmark me-1 text-warning" id="iconoModalUnamGuardarFavorito"></i> <span id="textoModalUnamGuardarFavorito">Guardar</span>
+                                        </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm fw-bold shadow-sm" onclick="abrirModalCompartirResultados()">
                                             <i class="fas fa-share-alt me-1"></i> Compartir
                                         </button>
@@ -1094,6 +1123,9 @@
                     </button>
 
                     <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-warning rounded-pill shadow-sm fw-bold px-3 py-1.5 small text-dark" id="btnModalGuardarFavorito" onclick="toggleFavoritoModalActual()" title="Guardar en favoritos / Para mi tesis">
+                            <i class="far fa-bookmark me-1 text-warning" id="iconoModalGuardarFavorito"></i> <span id="textoModalGuardarFavorito">Guardar en Favoritos</span>
+                        </button>
                         <button type="button" class="btn btn-outline-info rounded-pill shadow-sm fw-bold px-3 py-1.5 small" onclick="abrirModalCompartirResultados()">
                             <i class="fas fa-share-alt me-1"></i> Compartir
                         </button>
@@ -1319,6 +1351,10 @@
                 modalDetalle.addEventListener('show.bs.modal', function(event) {
                     const btn = event.relatedTarget;
                     if (!btn) return;
+
+                    const docId = btn.getAttribute('data-id') || btn.getAttribute('data-doc-id') || '';
+                    window.currentModalDocId = docId;
+                    actualizarBotonFavoritoModal(docId);
 
                     const titulo = btn.getAttribute('data-titulo') || '';
                     const autores = btn.getAttribute('data-autores') || 'Sin autores';
@@ -2054,6 +2090,55 @@
         }
 
         // ========================================================
+        // CONTROL DE COLAPSO Y EXPANSIÓN EN PANEL LATERAL (SIDEBAR)
+        // ========================================================
+        function toggleColapsoCard(cuerpoId, iconoId) {
+            const cuerpo = document.getElementById(cuerpoId);
+            const icono = document.getElementById(iconoId);
+            if (!cuerpo) return;
+
+            if (cuerpo.style.display === 'none') {
+                cuerpo.style.display = 'block';
+                if (icono) {
+                    icono.classList.remove('fa-chevron-down');
+                    icono.classList.add('fa-chevron-up');
+                }
+            } else {
+                cuerpo.style.display = 'none';
+                if (icono) {
+                    icono.classList.remove('fa-chevron-up');
+                    icono.classList.add('fa-chevron-down');
+                }
+            }
+        }
+
+        function toggleVerMasFiltro(filtro, extraCount) {
+            const selector = filtro === 'tipo' ? '.filtro-extra-tipo' : '.filtro-extra-area';
+            const items = document.querySelectorAll(selector);
+            const icono = document.getElementById(filtro === 'tipo' ? 'iconoToggleMasTipos' : 'iconoToggleMasAreas');
+            const texto = document.getElementById(filtro === 'tipo' ? 'textoToggleMasTipos' : 'textoToggleMasAreas');
+
+            if (!items.length) return;
+            const estanOcultos = items[0].classList.contains('d-none');
+
+            items.forEach(el => {
+                if (estanOcultos) {
+                    el.classList.remove('d-none');
+                } else {
+                    el.classList.add('d-none');
+                }
+            });
+
+            if (estanOcultos) {
+                if (icono) icono.className = 'fas fa-chevron-up';
+                if (texto) texto.textContent = 'Ver menos';
+            } else {
+                if (icono) icono.className = 'fas fa-chevron-down';
+                if (texto) texto.textContent = `Ver más ${filtro === 'tipo' ? 'tipos' : 'áreas'} (${extraCount})`;
+            }
+        }
+
+        // ========================================================
         // FILTRADO EN VIVO PARA LISTAS LARGAS DEL SIDEBAR (IDEA 7)
         // ========================================================
         function filtrarListaSidebar(input, listaId) {
@@ -2061,16 +2146,38 @@
             const lista = document.getElementById(listaId);
             if (!lista) return;
 
+            const esTipos = listaId === 'listaFiltroTipos';
+            const wrapBtn = document.getElementById(esTipos ? 'wrapVerMasTipos' : 'wrapVerMasAreas');
             const items = lista.querySelectorAll('.item-filtro-sidebar');
-            items.forEach(function(item) {
-                const nombreEl = item.querySelector('.nombre-item-filtro');
-                const texto = nombreEl ? nombreEl.textContent.toLowerCase() : item.textContent.toLowerCase();
-                if (!query || texto.includes(query)) {
+
+            if (query) {
+                if (wrapBtn) wrapBtn.style.display = 'none';
+                items.forEach(function(item) {
+                    const nombreEl = item.querySelector('.nombre-item-filtro');
+                    const texto = nombreEl ? nombreEl.textContent.toLowerCase() : item.textContent.toLowerCase();
+                    if (texto.includes(query)) {
+                        item.classList.remove('d-none');
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            } else {
+                if (wrapBtn) wrapBtn.style.display = '';
+                const icono = document.getElementById(esTipos ? 'iconoToggleMasTipos' : 'iconoToggleMasAreas');
+                const estaExpandido = icono && icono.classList.contains('fa-chevron-up');
+
+                items.forEach(function(item) {
                     item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+                    if (item.classList.contains(esTipos ? 'filtro-extra-tipo' : 'filtro-extra-area')) {
+                        if (estaExpandido) {
+                            item.classList.remove('d-none');
+                        } else {
+                            item.classList.add('d-none');
+                        }
+                    }
+                });
+            }
         }
 
         // ========================================================
@@ -2109,7 +2216,7 @@
         // ========================================================
         // BOLSA DE FAVORITOS / PARA MI TESIS (IDEA 10)
         // ========================================================
-        let filtroFavoritosActivo = false;
+        window.currentModalDocId = null;
 
         function getFavoritosIds() {
             try {
@@ -2159,6 +2266,54 @@
             }
         }
 
+        function actualizarBotonFavoritoModal(docId) {
+            if (!docId) return;
+            const favs = getFavoritosIds();
+            const esFav = favs.includes(String(docId));
+
+            // Botón en Ficha Catálogo
+            const btnCat = document.getElementById('btnModalGuardarFavorito');
+            const iconoCat = document.getElementById('iconoModalGuardarFavorito');
+            const textoCat = document.getElementById('textoModalGuardarFavorito');
+            if (btnCat) {
+                if (esFav) {
+                    btnCat.className = 'btn btn-warning rounded-pill shadow-sm fw-bold px-3 py-1.5 small text-dark active';
+                    if (iconoCat) iconoCat.className = 'fas fa-bookmark me-1 text-dark';
+                    if (textoCat) textoCat.textContent = 'Guardado en Favoritos';
+                    btnCat.title = 'Quitar de favoritos';
+                } else {
+                    btnCat.className = 'btn btn-outline-warning rounded-pill shadow-sm fw-bold px-3 py-1.5 small text-dark';
+                    if (iconoCat) iconoCat.className = 'far fa-bookmark me-1 text-warning';
+                    if (textoCat) textoCat.textContent = 'Guardar en Favoritos';
+                    btnCat.title = 'Guardar en favoritos / Para mi tesis';
+                }
+            }
+
+            // Botón en Ficha Institucional UABC
+            const btnInst = document.getElementById('btnModalUnamGuardarFavorito');
+            const iconoInst = document.getElementById('iconoModalUnamGuardarFavorito');
+            const textoInst = document.getElementById('textoModalUnamGuardarFavorito');
+            if (btnInst) {
+                if (esFav) {
+                    btnInst.className = 'btn btn-warning text-dark btn-sm fw-bold shadow-sm active';
+                    if (iconoInst) iconoInst.className = 'fas fa-bookmark me-1 text-dark';
+                    if (textoInst) textoInst.textContent = 'Guardado';
+                    btnInst.title = 'Quitar de favoritos';
+                } else {
+                    btnInst.className = 'btn btn-outline-warning text-dark btn-sm fw-bold shadow-sm';
+                    if (iconoInst) iconoInst.className = 'far fa-bookmark me-1 text-warning';
+                    if (textoInst) textoInst.textContent = 'Guardar';
+                    btnInst.title = 'Guardar en favoritos / Para mi tesis';
+                }
+            }
+        }
+
+        function toggleFavoritoModalActual() {
+            if (!window.currentModalDocId) return;
+            toggleFavorito(window.currentModalDocId);
+            actualizarBotonFavoritoModal(window.currentModalDocId);
+        }
+
         function sincronizarBotonesFavoritos() {
             const favs = getFavoritosIds();
             document.querySelectorAll('.btn-fav-bookmark').forEach(function(btn) {
@@ -2178,7 +2333,24 @@
                     btn.title = 'Guardar en favoritos / Para mi tesis';
                 }
             });
+
+            if (window.currentModalDocId) {
+                actualizarBotonFavoritoModal(window.currentModalDocId);
+            }
         }
+
+        // INTERCEPTOR EN FASE DE CAPTURA: Impide que Bootstrap abra el modal al pulsar el marcapáginas
+        document.addEventListener('click', function(e) {
+            const favBtn = e.target.closest('.btn-fav-bookmark');
+            if (favBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                const docId = favBtn.getAttribute('data-fav-id');
+                toggleFavorito(docId, favBtn);
+                return false;
+            }
+        }, true);
 
         function toggleFiltroFavoritos() {
             const esFiltroActual = {{ es_filtro_favoritos|yesno:"true,false" }};
