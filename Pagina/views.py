@@ -4314,6 +4314,16 @@ def panel_usuarios_view(request):
         is_active=True
     ).select_related('autor').distinct().order_by('username')
 
+    for mod_u in moderadores_gestion:
+        mod_autor = getattr(mod_u, 'autor', None)
+        mod_nivel = mod_autor.get_nivel_admin_efectivo() if mod_autor else 'NINGUNO'
+        if es_n1:
+            mod_u.puede_editar_permisos = (mod_u.id != request.user.id and mod_u.id != 1 and mod_u.username.lower() != 'yaele')
+        elif es_n2:
+            mod_u.puede_editar_permisos = (mod_nivel == 'NIVEL_3' and mod_u.id != request.user.id)
+        else:
+            mod_u.puede_editar_permisos = False
+
     context = {
         'pendientes': pendientes,
         'suspendidas': suspendidas,
@@ -6300,10 +6310,13 @@ def aprobar_cuenta_soporte_view(request, user_id):
         messages.error(request, 'El usuario seleccionado no pertenece al perfil de Soporte Técnico.')
         return redirect(reverse('panel_usuarios') + '#supers')
 
-    es_admin_inicial = es_superusuario_principal(request.user)
+    caller_autor = getattr(request.user, 'autor', None)
+    es_n1 = (request.user.id == 1 or request.user.username.lower() == 'yaele') or (caller_autor and caller_autor.es_admin_nivel_1)
+    es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
+    es_admin_directo = (es_n1 or es_n2)
 
-    # Caso 1: Administrador Inicial aprueba con 1 solo clic SIN contraseña
-    if es_admin_inicial:
+    # Caso 1: Administrador Nivel 1 o Nivel 2 aprueba con 1 solo clic SIN contraseña (Facultades Completas directas)
+    if es_admin_directo:
         target_user.is_active = True
         target_user.is_staff = True
         target_user.is_superuser = True
@@ -6317,13 +6330,14 @@ def aprobar_cuenta_soporte_view(request, user_id):
         target_autor.aprobado_por_soporte_2 = request.user
         target_autor.fecha_aprobacion_soporte_2 = timezone.now()
         target_autor.save()
+        rol_admin = "Superadmin Maestro (Nivel 1)" if es_n1 else "Administrador Institucional (Nivel 2)"
         registrar_auditoria(
             request.user,
             "Aprobación Directa de Cuenta de Soporte",
-            f"El Administrador Inicial {request.user.username} aprobó y activó directamente la cuenta de soporte de {target_user.username} en Modo Lectura."
+            f"El {rol_admin} @{request.user.username} aprobó y activó directamente la cuenta de soporte de @{target_user.username} con Facultades Completas."
         )
         try:
-            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Modo Lector)')
+            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Facultades Completas)')
         except Exception:
             pass
         messages.success(request, f'¡Cuenta de soporte de "{target_user.username}" activada con facultades completas de administración institucional!')
@@ -6372,20 +6386,20 @@ def aprobar_cuenta_soporte_view(request, user_id):
 
         target_user.is_active = True
         target_user.is_staff = True
-        target_user.is_superuser = True
+        target_user.is_superuser = False  # Activada en Modo Lectura tras doble firma de Nivel 3
         target_user.save()
 
         firmante_1_nom = target_autor.aprobado_por_soporte_1.username
         registrar_auditoria(
             request.user,
             "Segunda Aprobación y Activación de Soporte (2/2)",
-            f"El integrante de soporte {request.user.username} otorgó la 2.ª firma requerida. Cuenta de soporte {target_user.username} activada en Modo Lectura tras doble autorización institucional (firmantes: @{firmante_1_nom} y @{request.user.username})."
+            f"El integrante de soporte @{request.user.username} (Nivel 3) otorgó la 2.ª firma requerida. Cuenta de soporte @{target_user.username} activada en Modo Lectura tras doble autorización institucional de Nivel 3 (firmantes: @{firmante_1_nom} y @{request.user.username})."
         )
         try:
-            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Modo Lector)')
+            notificar_aprobacion_cuenta(target_user, 'Soporte Técnico (Modo Lectura)')
         except Exception:
             pass
-        messages.success(request, f'¡Doble autorización institucional completada (2/2)! La cuenta de soporte de "{target_user.username}" ha sido activada con facultades completas de administración institucional.')
+        messages.success(request, f'¡Doble autorización completada (2/2)! La cuenta de soporte "{target_user.username}" ha sido activada en Modo Lectura. Un administrador de Nivel 1 o Nivel 2 podrá otorgarle Facultades Completas mediante el interruptor de soporte cuando lo considere conveniente.')
         return redirect(reverse('panel_usuarios') + '#supers')
 
 
@@ -6400,7 +6414,11 @@ def rechazar_cuenta_soporte_view(request, user_id):
         messages.error(request, 'No puedes rechazar al Administrador Principal.')
         return redirect(reverse('panel_usuarios') + '#supers')
 
-    if not es_superusuario_principal(request.user):
+    caller_autor = getattr(request.user, 'autor', None)
+    es_n1 = (request.user.id == 1 or request.user.username.lower() == 'yaele') or (caller_autor and caller_autor.es_admin_nivel_1)
+    es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
+
+    if not (es_n1 or es_n2):
         password_confirmacion = request.POST.get('password_confirmacion', '').strip()
         if not request.user.check_password(password_confirmacion):
             messages.error(request, 'Contraseña incorrecta. Se requiere verificar tu identidad institucional.')
@@ -6710,14 +6728,24 @@ def toggle_superuser_view(request, user_id):
         messages.error(request, 'No se pueden modificar los permisos del superusuario principal.')
         return redirect('panel_usuarios')
 
-    # Si quien intenta ascender o degradar es un superusuario secundario, exigir su contraseña
-    if not es_superusuario_principal(request.user):
-        admin_pass = request.POST.get('admin_password', '').strip()
-        if not admin_pass or not request.user.check_password(admin_pass):
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == '1':
-                return JsonResponse({'success': False, 'error': 'Contraseña de administrador incorrecta. Se requiere autenticación para modificar permisos de superusuario.'}, status=403)
-            messages.error(request, 'Contraseña de administrador incorrecta. No se modificaron los privilegios.')
-            return redirect('panel_usuarios')
+    caller_autor = getattr(request.user, 'autor', None)
+    es_n1 = (request.user.id == 1 or request.user.username.lower() == 'yaele') or (caller_autor and caller_autor.es_admin_nivel_1)
+    es_n2 = (not es_n1) and (caller_autor and caller_autor.es_admin_nivel_2)
+    es_soporte_usr = bool(getattr(usuario, 'autor', None) and usuario.autor.es_soporte)
+
+    # Solo Nivel 1 y Nivel 2 pueden modificar facultades de soporte
+    if not (es_n1 or es_n2):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == '1':
+            return JsonResponse({'success': False, 'error': 'No tienes permisos jerárquicos para modificar facultades de soporte. Se requiere Nivel 1 o Nivel 2.'}, status=403)
+        messages.error(request, 'No tienes permisos jerárquicos para modificar privilegios de soporte.')
+        return redirect(reverse('panel_usuarios') + '#supers')
+
+    # Solo Nivel 1 puede otorgar privilegios globales (a cuentas que no son de soporte)
+    if not es_soporte_usr and not es_n1:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == '1':
+            return JsonResponse({'success': False, 'error': 'Solo el Superadministrador Maestro (Nivel 1) puede otorgar o revocar privilegios globales.'}, status=403)
+        messages.error(request, 'Solo el Superadministrador Maestro (Nivel 1) puede otorgar o revocar privilegios globales.')
+        return redirect(reverse('panel_usuarios') + '#supers')
 
     set_super = request.POST.get('set_superuser')
     if set_super is not None:

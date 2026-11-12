@@ -3777,14 +3777,14 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-center pe-3 text-nowrap">
-                                            {% if es_principal %}
-                                                <!-- Admin Inicial: aprueba directo sin contraseña -->
+                                            {% if es_principal or es_admin_nivel_1 or es_admin_nivel_2 %}
+                                                <!-- Admin Nivel 1 o Nivel 2: aprueba directo con 1 solo clic y Facultades Completas -->
                                                 <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-xs me-1"
                                                         onclick="abrirModalAprobarSoporte('{{ u.id }}', '{{ u.username|escapejs }}', true, '{{ u.autor.aprobado_por_soporte_1.username|default:''|escapejs }}')">
-                                                    <i class="fas fa-check-circle me-1"></i>Activar Cuenta
+                                                    <i class="fas fa-check-circle me-1"></i>Activar Cuenta (Directo)
                                                 </button>
                                             {% else %}
-                                                <!-- Soporte Secundario: requiere 2 personas con contraseña -->
+                                                <!-- Soporte Nivel 3: requiere 2 personas con contraseña -->
                                                 {% if u.autor.aprobado_por_soporte_1 == request.user %}
                                                     <button type="button" class="btn btn-sm btn-outline-warning disabled rounded-pill px-3 me-1" title="Ya ingresaste tu firma. Se requiere la confirmación de otro integrante diferente de soporte.">
                                                         <i class="fas fa-check-double me-1"></i>Firma 1 Registrada
@@ -3942,7 +3942,8 @@
                                                         <i class="fas fa-headset text-warning me-1"></i>Soporte FCA (Modo Lectura)
                                                     {% endif %}
                                                 </span>
-                                                <!-- INTERRUPTOR INTERACTIVO: MODO LECTURA VS FACULTADES COMPLETAS -->
+                                                {% if es_admin_nivel_1 or es_admin_nivel_2 %}
+                                                <!-- INTERRUPTOR INTERACTIVO: MODO LECTURA VS FACULTADES COMPLETAS (EXCLUSIVO NIVEL 1 Y 2) -->
                                                 <div class="form-check form-switch d-inline-flex align-items-center mb-0" title="Alternar entre Facultades Completas y Modo Lectura">
                                                     <input class="form-check-input" type="checkbox" role="switch"
                                                            id="switch-modo-soporte-{{ u.id }}"
@@ -3953,6 +3954,7 @@
                                                         {% if u.is_superuser %}Completas{% else %}Modo Lectura{% endif %}
                                                     </label>
                                                 </div>
+                                                {% endif %}
                                             </div>
                                         </td>
                                         <td>{{ u.email|default:"Sin correo" }}</td>
@@ -3970,13 +3972,15 @@
                                                     <i class="fas fa-user-edit me-1"></i>Mis Datos
                                                 </button>
                                             {% else %}
-                                                <!-- Botón Alternar Facultades Completas / Modo Lectura -->
+                                                {% if es_admin_nivel_1 or es_admin_nivel_2 %}
+                                                <!-- Botón Alternar Facultades Completas / Modo Lectura (Exclusivo Nivel 1 y 2) -->
                                                 <button type="button" class="btn btn-outline-info btn-action-circle me-1"
                                                         id="btn-modo-soporte-{{ u.id }}"
                                                         onclick="toggleModoLecturaSoporte({{ u.id }}, {% if u.is_superuser %}false{% else %}true{% endif %})"
                                                         title="{% if u.is_superuser %}Degradar a Modo Lectura{% else %}Otorgar Facultades Completas{% endif %}">
                                                     <i class="fas {% if u.is_superuser %}fa-eye text-warning{% else %}fa-user-shield text-success{% endif %}"></i>
                                                 </button>
+                                                {% endif %}
                                                 <!-- Botón Desactivar Cuenta -->
                                                 <button type="button" class="btn btn-outline-warning btn-action-circle me-1"
                                                         onclick="abrirModalDesactivarSoporte('{{ u.id }}', '{{ u.username|escapejs }}')"
@@ -4093,7 +4097,13 @@
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-sliders-h text-primary me-2"></i>Matriz de Asignación y Revocación de Facultades</h6>
-                            <small class="text-muted">Por defecto, las cuentas inician con todos los permisos activos. Haz clic en cualquier interruptor para revocar o restituir un módulo.</small>
+                            <small class="text-muted">
+                                {% if es_admin_nivel_1 or es_admin_nivel_2 %}
+                                    Por defecto, las cuentas inician con todos los permisos activos. Haz clic en cualquier interruptor para revocar o restituir un módulo.
+                                {% else %}
+                                    <i class="fas fa-eye text-info me-1"></i>Visualización en modo transparente (solo lectura). Solo Administradores Nivel 1 y 2 pueden modificar facultades.
+                                {% endif %}
+                            </small>
                         </div>
                         <span class="badge bg-secondary rounded-pill px-3 py-1 font-monospace">
                             {{ moderadores_gestion.count }} cuenta{{ moderadores_gestion.count|pluralize:"s" }} de moderación
@@ -4158,61 +4168,61 @@
                                         </td>
                                         <!-- SWITCH 1: SOPORTE -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-soporte-{{ mod_user.id }}"
                                                        {% if autor.permiso_soporte %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'soporte', this.checked)">
                                             </div>
                                         </td>
                                         <!-- SWITCH 2: OBRAS -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-moderar_obras-{{ mod_user.id }}"
                                                        {% if autor.permiso_moderar_obras %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'moderar_obras', this.checked)">
                                             </div>
                                         </td>
                                         <!-- SWITCH 3: USUARIOS -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-gestionar_usuarios-{{ mod_user.id }}"
                                                        {% if autor.permiso_gestionar_usuarios %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'gestionar_usuarios', this.checked)">
                                             </div>
                                         </td>
                                         <!-- SWITCH 4: SEMBLANZAS -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-revisar_semblanzas-{{ mod_user.id }}"
                                                        {% if autor.permiso_revisar_semblanzas %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'revisar_semblanzas', this.checked)">
                                             </div>
                                         </td>
                                         <!-- SWITCH 5: AUDITORÍA -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-emitir_auditorias-{{ mod_user.id }}"
                                                        {% if autor.permiso_emitir_auditorias %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'emitir_auditorias', this.checked)">
                                             </div>
                                         </td>
                                         <!-- SWITCH 6: RESPALDOS -->
                                         <td class="text-center">
-                                            <div class="form-check form-switch d-inline-block">
+                                            <div class="form-check form-switch d-inline-block" {% if not mod_user.puede_editar_permisos %}style="opacity: 0.38; pointer-events: none;" title="Solo lectura: Permiso no modificable por tu jerarquía"{% endif %}>
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        id="switch-descargar_respaldos-{{ mod_user.id }}"
                                                        {% if autor.permiso_descargar_respaldos %}checked{% endif %}
-                                                       {% if not es_admin_nivel_1 and autor.get_nivel_admin_efectivo != 'NIVEL_3' %}disabled{% endif %}
+                                                       {% if not mod_user.puede_editar_permisos %}disabled{% endif %}
                                                        onchange="cambiarPermisoModerador({{ mod_user.id }}, 'descargar_respaldos', this.checked)">
                                             </div>
                                         </td>
@@ -7476,17 +7486,17 @@
                         </div>
                         <h6 class="fw-bold text-dark px-3 py-2 bg-light rounded-3 border mb-3" id="soporteModalUsername">Usuario</h6>
 
-                        {% if es_principal %}
-                            <!-- VISTA PARA ADMINISTRADOR INICIAL (DIRECTO SIN CONTRASEÑA) -->
+                        {% if es_principal or es_admin_nivel_1 or es_admin_nivel_2 %}
+                            <!-- VISTA PARA ADMINISTRADORES NIVEL 1 Y 2 (DIRECTO SIN CONTRASEÑA) -->
                             <div class="alert alert-success border-0 bg-success bg-opacity-10 text-dark small text-start mb-3">
-                                <i class="fas fa-crown text-warning me-1"></i><strong>Facultad de Administrador Inicial:</strong>
-                                Tienes privilegios para autorizar y activar esta cuenta de soporte en <strong>Modo Lectura</strong> inmediatamente con un solo clic, sin requerir contraseña ni segundas firmas.
+                                <i class="fas fa-crown text-warning me-1"></i><strong>Facultad de Administrador (Nivel 1 o 2):</strong>
+                                Tienes privilegios para autorizar y activar esta cuenta de soporte directamente con <strong>Facultades Completas</strong> inmediatamente con un solo clic, sin requerir contraseña ni segundas firmas.
                             </div>
                         {% else %}
-                            <!-- VISTA PARA SOPORTE SECUNDARIO (REQUIERE CONTRASEÑA Y 2 FIRMAS) -->
+                            <!-- VISTA PARA SOPORTE NIVEL 3 (REQUIERE CONTRASEÑA Y 2 FIRMAS) -->
                             <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark small text-start mb-3" id="soporteModalFirmasInfo">
-                                <i class="fas fa-shield-alt text-warning me-1"></i><strong>Doble Autorización Institucional Requerida:</strong>
-                                Para validar esta cuenta de soporte en Modo Lectura se requiere la aprobación de <strong>2 personas</strong> con su contraseña institucional.
+                                <i class="fas fa-shield-alt text-warning me-1"></i><strong>Doble Autorización Requerida (Nivel 3):</strong>
+                                Para validar esta cuenta de soporte se requiere la aprobación de <strong>2 personas</strong> de soporte con contraseña institucional. La cuenta se activará en Modo Lectura hasta que un Administrador de Nivel 1 o 2 le asigne Facultades Completas.
                             </div>
 
                             <div class="form-group mb-2 text-start">
