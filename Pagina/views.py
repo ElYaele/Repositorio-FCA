@@ -352,6 +352,121 @@ def obtener_o_sincronizar_universidades():
     ).order_by('nombre')
 
 
+def asegurar_enlaces_y_eventos_base():
+    """
+    Garantiza que siempre existan los 6 Enlaces Rápidos e Indexadores obligatorios
+    y las 3 plantillas ocultas de Próximos Eventos FCA listas para editar por Soporte.
+    """
+    import datetime
+
+    enlaces = [
+        {'orden': 1, 'titulo': 'GACETA', 'url': 'https://gaceta.uabc.mx/', 'icono': 'fas fa-newspaper', 'color': '#006633'},
+        {'orden': 2, 'titulo': 'SORTEOS', 'url': 'https://sorteosuabc.mx/', 'icono': 'fas fa-ticket-alt', 'color': '#006633'},
+        {'orden': 3, 'titulo': 'FUNDACIÓN', 'url': 'https://fundacionuabc.org/', 'icono': 'fas fa-users', 'color': '#006633'},
+        {'orden': 4, 'titulo': 'BIBLIOTECA', 'url': 'https://bibliotecas.uabc.mx/', 'icono': 'fas fa-book-reader', 'color': '#006633'},
+        {'orden': 5, 'titulo': 'PROFESORES', 'url': '/profesores/', 'icono': 'fas fa-chalkboard-teacher', 'color': '#006633'},
+        {'orden': 6, 'titulo': 'RED ALIADA', 'url': '/universidades-colaboradoras/', 'icono': 'fas fa-university', 'color': '#006633'},
+    ]
+
+    for item in enlaces:
+        EnlaceRapidoPortal.objects.get_or_create(
+            titulo=item['titulo'],
+            defaults={
+                'url': item['url'],
+                'icono': item['icono'],
+                'color': item['color'],
+                'orden': item['orden'],
+                'activo': True,
+                'abrir_en_nueva_pestana': True
+            }
+        )
+
+    hoy = timezone.now().date()
+    plantillas = [
+        {
+            'titulo': '[Plantilla] Conferencia Magistral FCA',
+            'fecha': hoy + datetime.timedelta(days=30),
+            'horario': '10:00 AM - 12:00 PM',
+            'lugar': 'Auditorio de Posgrado FCA Campus Tijuana',
+            'imagen_url': '/static/images/conferencia.jpg',
+            'enlace': 'https://fca.tijuana.uabc.mx/',
+            'orden': 10,
+            'activo': False,
+            'mostrar_si_paso': True
+        },
+        {
+            'titulo': '[Plantilla] Foro de Emprendimiento e Innovación',
+            'fecha': hoy + datetime.timedelta(days=45),
+            'horario': '11:00 AM - 2:00 PM',
+            'lugar': 'Explanada Central FCA Tijuana',
+            'imagen_url': '/static/images/campus_fca.jpg',
+            'enlace': 'https://fca.tijuana.uabc.mx/',
+            'orden': 11,
+            'activo': False,
+            'mostrar_si_paso': True
+        },
+        {
+            'titulo': '[Plantilla] Taller de Actualización Fiscal y Administrativa',
+            'fecha': hoy + datetime.timedelta(days=60),
+            'horario': '9:00 AM - 1:00 PM',
+            'lugar': 'Sala Audiovisual y Aulas Magna FCA',
+            'imagen_url': '/static/images/show.jpg',
+            'enlace': 'https://fca.tijuana.uabc.mx/',
+            'orden': 12,
+            'activo': False,
+            'mostrar_si_paso': True
+        },
+    ]
+
+    for p in plantillas:
+        EventoFCA.objects.get_or_create(
+            titulo=p['titulo'],
+            defaults=p
+        )
+
+    if not EventoFCA.objects.filter(activo=True).exists():
+        eventos_vigentes = [
+            {
+                'titulo': 'Conferencias Académicas de Otoño',
+                'fecha': hoy + datetime.timedelta(days=10),
+                'horario': '8:00 AM - 1:00 PM',
+                'lugar': 'Sala Audiovisual FCA Campus Tijuana',
+                'imagen_url': '/static/images/conferencia.jpg',
+                'enlace': 'https://www.facebook.com/fcatijuana',
+                'orden': 1,
+                'activo': True,
+                'mostrar_si_paso': True
+            },
+            {
+                'titulo': 'Show de Talentos Universitarios FCA',
+                'fecha': hoy + datetime.timedelta(days=18),
+                'horario': '2:00 PM - 6:00 PM',
+                'lugar': 'Explanada Central FCA Tijuana',
+                'imagen_url': '/static/images/show.jpg',
+                'enlace': 'https://www.facebook.com/fcatijuana',
+                'orden': 2,
+                'activo': True,
+                'mostrar_si_paso': True
+            },
+            {
+                'titulo': 'Aniversario de la Facultad de Contaduría y Administración',
+                'fecha': hoy + datetime.timedelta(days=25),
+                'horario': '10:00 AM - 2:00 PM',
+                'lugar': 'FCA Campus Tijuana',
+                'imagen_url': '/static/images/campus_fca.jpg',
+                'enlace': 'https://www.facebook.com/fcatijuana',
+                'orden': 3,
+                'activo': True,
+                'mostrar_si_paso': True
+            },
+        ]
+        for ev in eventos_vigentes:
+            EventoFCA.objects.get_or_create(
+                titulo=ev['titulo'],
+                defaults=ev
+            )
+
+
 # ==============================================================================
 # VISTAS PRINCIPALES DEL REPOSITORIO
 # ==============================================================================
@@ -408,6 +523,12 @@ class HomePageView(TemplateView):
         context['tendencias_top'] = tendencias[:5]
 
         # <--- EVENTOS Y ENLACES DINÁMICOS DEL PORTAL (GESTIONADOS POR SOPORTE) --->
+        if EnlaceRapidoPortal.objects.filter(activo=True).count() < 6 or EventoFCA.objects.count() == 0:
+            try:
+                asegurar_enlaces_y_eventos_base()
+            except Exception:
+                pass
+
         eventos_qs = EventoFCA.objects.filter(activo=True).order_by('orden', 'fecha', 'id')
         eventos_activos = [e for e in eventos_qs if not (e.es_pasado and not e.mostrar_si_paso)]
         context['eventos_fca'] = eventos_activos
