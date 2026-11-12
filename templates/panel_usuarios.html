@@ -16,6 +16,13 @@
             --secondary-color: #dd971a;
             --sidebar-width: 72px;
         }
+        /* Utilidades de opacidad para Bootstrap 5 */
+        .bg-opacity-20 {
+            --bs-bg-opacity: 0.2 !important;
+        }
+        .bg-opacity-15 {
+            --bs-bg-opacity: 0.15 !important;
+        }
         html {
             scrollbar-gutter: stable;
         }
@@ -673,7 +680,7 @@
         body.modo-presentacion-activa .kpi-card-pdf .text-success {
             color: #4ade80 !important;
         }
-        body.modo-presentacion-activa .kpi-card-pdf .bg-success.bg-opacity-20 {
+        body.modo-presentacion-activa .kpi-card-pdf .kpi-icon-box {
             background-color: rgba(34, 197, 94, 0.2) !important;
             color: #4ade80 !important;
         }
@@ -687,7 +694,7 @@
         body.modo-presentacion-activa .kpi-card-doi i {
             color: #facc15 !important;
         }
-        body.modo-presentacion-activa .kpi-card-doi .bg-warning.bg-opacity-20 {
+        body.modo-presentacion-activa .kpi-card-doi .kpi-icon-box {
             background-color: rgba(234, 179, 8, 0.2) !important;
             color: #facc15 !important;
         }
@@ -699,7 +706,7 @@
         body.modo-presentacion-activa .kpi-card-isbn .text-primary {
             color: #38bdf8 !important;
         }
-        body.modo-presentacion-activa .kpi-card-isbn .bg-primary.bg-opacity-20 {
+        body.modo-presentacion-activa .kpi-card-isbn .kpi-icon-box {
             background-color: rgba(56, 189, 248, 0.2) !important;
             color: #38bdf8 !important;
         }
@@ -713,7 +720,7 @@
         body.modo-presentacion-activa .kpi-card-propiedad i {
             color: #c084fc !important;
         }
-        body.modo-presentacion-activa .kpi-card-propiedad .badge-purple-metric {
+        body.modo-presentacion-activa .kpi-card-propiedad .kpi-icon-box {
             background-color: rgba(192, 132, 252, 0.2) !important;
             color: #c084fc !important;
         }
@@ -4900,16 +4907,16 @@
                 <!-- ENCABEZADO EJECUTIVO PARA MODO PRESENTACIÓN (CACECA / JUNTAS DE CONSEJO) -->
                 <div class="presentacion-header-banner" id="bannerModoPresentacion">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 bg-success bg-opacity-20 rounded-3 border border-success border-opacity-30 text-center" style="min-width: 54px;">
-                            <i class="fas fa-university text-success fs-2"></i>
+                        <div class="p-2 rounded-3 border border-success border-opacity-40 text-center d-flex align-items-center justify-content-center" style="min-width: 54px; height: 54px; background: rgba(34, 197, 94, 0.18);">
+                            <i class="fas fa-university text-success fs-2" style="color: #4ade80 !important;"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1" style="font-size: 0.75rem;">
+                                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill" style="font-size: 0.75rem;">
                                     <i class="fas fa-certificate me-1"></i>SESIÓN DE ACREDITACIÓN CACECA / CONAHCYT
                                 </span>
-                                <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-25 px-2.5 py-1" style="font-size: 0.75rem;">
-                                    Ciclo Lectivo {{ periodo_actual }}
+                                <span class="badge border border-info border-opacity-30 rounded-pill px-2.5 py-1" style="font-size: 0.75rem; background: rgba(14, 165, 233, 0.18); color: #38bdf8;">
+                                    <i class="fas fa-calendar-alt me-1"></i>Ciclo Lectivo {{ periodo_actual }}
                                 </span>
                             </div>
                             <h4 class="fw-bold mb-0 text-white">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</h4>
@@ -5178,7 +5185,7 @@
                                     <h3 class="fw-bold text-success mb-0">{{ metric_total_con_pdf }} <small class="fs-6 text-muted">({{ metric_porcentaje_pdf }}%)</small></h3>
                                     <small class="text-success fw-semibold"><i class="fas fa-file-pdf me-1"></i>Texto completo preservado</small>
                                 </div>
-                                <div class="bg-success bg-opacity-20 text-success p-3 rounded-4 fs-3">
+                                <div class="kpi-icon-box p-3 rounded-4 fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; min-width: 56px; background: rgba(22, 163, 74, 0.15); color: #16a34a;">
                                     <i class="fas fa-unlock-alt"></i>
                                 </div>
                             </div>
@@ -5192,7 +5199,7 @@
                                     <h3 class="fw-bold text-warning mb-0" style="color: #b45309 !important;">{{ metric_total_con_doi }} <small class="fs-6 text-muted">({{ metric_porcentaje_doi }}%)</small></h3>
                                     <small class="fw-semibold text-warning" style="color: #b45309 !important;"><i class="fas fa-fingerprint me-1"></i>Identificador persistente global</small>
                                 </div>
-                                <div class="bg-warning bg-opacity-20 text-warning p-3 rounded-4 fs-3" style="color: #b45309 !important;">
+                                <div class="kpi-icon-box p-3 rounded-4 fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; min-width: 56px; background: rgba(202, 138, 4, 0.15); color: #b45309;">
                                     <i class="fas fa-globe-americas"></i>
                                 </div>
                             </div>
@@ -5206,7 +5213,7 @@
                                     <h3 class="fw-bold text-primary mb-0">{{ metric_total_con_isbn }} <small class="fs-6 text-muted">({{ metric_porcentaje_isbn }}%)</small></h3>
                                     <small class="text-primary fw-semibold"><i class="fas fa-barcode me-1"></i>Arbitradas con registro oficial</small>
                                 </div>
-                                <div class="bg-primary bg-opacity-20 text-primary p-3 rounded-4 fs-3">
+                                <div class="kpi-icon-box p-3 rounded-4 fs-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; min-width: 56px; background: rgba(2, 132, 199, 0.15); color: #0284c7;">
                                     <i class="fas fa-book"></i>
                                 </div>
                             </div>
@@ -5220,7 +5227,7 @@
                                     <h3 class="fw-bold mb-0 text-purple-metric" style="color: #9333ea;">{{ metric_total_propiedad }}</h3>
                                     <small class="fw-semibold text-purple-metric" style="color: #9333ea;"><i class="fas fa-shield-alt me-1"></i>Software & Patentes INDAUTOR</small>
                                 </div>
-                                <div class="p-3 rounded-4 fs-3 badge-purple-metric" style="background: rgba(147, 51, 234, 0.2); color: #9333ea;">
+                                <div class="kpi-icon-box p-3 rounded-4 fs-3 badge-purple-metric d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; min-width: 56px; background: rgba(147, 51, 234, 0.15); color: #9333ea;">
                                     <i class="fas fa-laptop-code"></i>
                                 </div>
                             </div>
