@@ -2055,6 +2055,14 @@
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
+
+            {% if eventos_fca|length > 1 %}
+            <div class="events-dots-wrapper d-flex justify-content-center align-items-center gap-2 mt-4" id="eventsDotsContainer">
+                {% for evento in eventos_fca %}
+                <button type="button" class="events-dot-btn {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" style="width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0; background-color: {% if forloop.first %}var(--uabc-gold, #dd971a){% else %}rgba(255,255,255,0.45){% endif %}; transition: all 0.25s ease; cursor: pointer;" aria-label="Ir a evento {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -2804,7 +2812,33 @@
                     const gap = parseFloat(trackStyle.gap) || 16;
                     const shift = currentIndex * (slideWidth + gap);
                     track.style.transform = `translateX(-${shift}px)`;
+
+                    // Actualizar burbujas indicadoras del carrusel de eventos
+                    const dots = document.querySelectorAll('.events-dot-btn');
+                    dots.forEach((dot, idx) => {
+                        if (idx === currentIndex) {
+                            dot.style.backgroundColor = 'var(--uabc-gold, #dd971a)';
+                            dot.style.transform = 'scale(1.35)';
+                        } else {
+                            dot.style.backgroundColor = 'rgba(255,255,255,0.45)';
+                            dot.style.transform = 'scale(1)';
+                        }
+                    });
                 }
+
+                // Clic directo en las burbujas indicadoras
+                const eventsDots = document.querySelectorAll('.events-dot-btn');
+                eventsDots.forEach(dot => {
+                    dot.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetIdx = parseInt(this.getAttribute('data-index'), 10);
+                        if (!isNaN(targetIdx)) {
+                            currentIndex = targetIdx;
+                            updateCarousel();
+                            resetAutoPlay();
+                        }
+                    });
+                });
 
                 function nextSlide() {
                     const maxIndex = getMaxIndex();
