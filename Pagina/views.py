@@ -154,10 +154,8 @@ def obtener_autores_activos_catalogo():
     except Exception:
         pass
 
-    return Autor.objects.filter(
-        es_profesor=True
-    ).exclude(
-        usuario__is_superuser=True
+    return Autor.objects.exclude(
+        nombre__in=['Master User', 'Administrador de Pruebas']
     ).distinct().order_by('nombre')
 
 
