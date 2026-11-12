@@ -28,7 +28,7 @@
         .header-title-box {
             background: linear-gradient(135deg, var(--uabc-green) 0%, var(--uabc-green-dark) 100%) !important;
             border-radius: 16px;
-            padding: 34px 28px;
+            padding: 30px 28px;
             color: #ffffff !important;
             box-shadow: 0 6px 20px rgba(0, 102, 51, 0.22) !important;
             position: relative;
@@ -92,11 +92,37 @@
             color: #ffffff !important;
             box-shadow: 0 3px 8px rgba(0, 102, 51, 0.25);
         }
+        .filter-chip {
+            cursor: pointer;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+            background: #ffffff;
+            color: #495057;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-chip:hover {
+            border-color: var(--uabc-green);
+            color: var(--uabc-green);
+            background-color: #f0fdf4;
+        }
+        .filter-chip.active {
+            background-color: var(--uabc-green);
+            color: #ffffff;
+            border-color: var(--uabc-green);
+            box-shadow: 0 2px 6px rgba(0, 102, 51, 0.2);
+        }
         .coautoria-card {
             background: #ffffff;
             border-radius: 14px;
             border: 1px solid #e5e7eb;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, opacity 0.3s;
             overflow: hidden;
         }
         .coautoria-card:hover {
@@ -112,7 +138,7 @@
         }
         .coautoria-card.card-rejected {
             border-left: 5px solid #6b7280;
-            opacity: 0.92;
+            opacity: 0.94;
         }
         .avatar-circle {
             width: 44px;
@@ -133,8 +159,66 @@
             border-radius: 0 8px 8px 0;
             padding: 10px 14px;
             font-style: italic;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: #475569;
+        }
+        /* IDEA 13: Línea de tiempo de auditoría */
+        .timeline-audit-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+        .timeline-audit-step .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .timeline-audit-step .line {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #e2e8f0;
+            max-width: 30px;
+        }
+        /* IDEA 8: Widget de colaboradores frecuentes */
+        .colaborador-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .colaborador-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+        .colaborador-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--uabc-green);
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Toast flotante para feedback dinámico */
+        .coautoria-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1090;
+            min-width: 280px;
         }
     </style>
 </head>
@@ -146,7 +230,7 @@
                 <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" height="38" class="d-inline-block align-text-top me-2">
                 <span class="fw-bold" style="color: var(--uabc-green); letter-spacing: -0.5px;">REPOSITORIO FCA</span>
             </a>
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
                 <a href="{% url 'mi_panel' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     <i class="fas fa-arrow-left me-1"></i>Volver a Mi Panel
                 </a>
@@ -170,7 +254,7 @@
             {% endfor %}
         {% endif %}
 
-        <!-- BANNER INSTITUCIONAL -->
+        <!-- BANNER INSTITUCIONAL AUXILIAR DELEGADO -->
         {% if es_auxiliar_delegado and mi_tutor %}
         <div class="alert alert-primary border-primary shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center">
@@ -188,6 +272,7 @@
         </div>
         {% endif %}
 
+        <!-- CABECERA PRINCIPAL CON ACCIÓN DE EXPORTAR REPORTE (IDEA 10) -->
         <div class="header-title-box mb-4">
             <div class="row align-items-center position-relative" style="z-index: 2;">
                 <div class="col-lg-8">
@@ -200,14 +285,20 @@
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <a href="{% url 'mensajeria' %}" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm">
-                        <i class="fas fa-comment-dots me-2"></i>Ir a Mensajes Académicos
-                    </a>
+                    <div class="d-flex flex-column flex-sm-row justify-content-lg-end gap-2">
+                        <!-- IDEA 10: Exportar Reporte CSV / Excel -->
+                        <a href="{% url 'exportar_coautorias_csv' %}" class="btn btn-outline-light rounded-pill px-3 py-2 fw-bold text-white border-white shadow-sm" title="Descargar reporte completo en formato CSV compatible con Microsoft Excel">
+                            <i class="fas fa-file-excel me-2 text-warning"></i>Exportar Reporte
+                        </a>
+                        <a href="{% url 'mensajeria' %}" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm">
+                            <i class="fas fa-comment-dots me-2"></i>Mensajes Académicos
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <!-- TARJETAS DE ESTADÍSTICAS (DINÁMICAS CON AJAX - IDEA 15) -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
                 <div class="stat-card">
@@ -215,7 +306,7 @@
                         <i class="fas fa-hourglass-half"></i>
                     </div>
                     <div>
-                        <div class="fs-4 fw-bold text-dark">{{ total_pendientes }}</div>
+                        <div class="fs-4 fw-bold text-dark" id="stat-count-pendientes">{{ total_pendientes }}</div>
                         <div class="text-muted small fw-semibold">Por Confirmar</div>
                     </div>
                 </div>
@@ -226,7 +317,7 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div>
-                        <div class="fs-4 fw-bold text-dark">{{ total_aceptadas }}</div>
+                        <div class="fs-4 fw-bold text-dark" id="stat-count-aceptadas">{{ total_aceptadas }}</div>
                         <div class="text-muted small fw-semibold">Confirmadas</div>
                     </div>
                 </div>
@@ -237,7 +328,7 @@
                         <i class="fas fa-archive"></i>
                     </div>
                     <div>
-                        <div class="fs-4 fw-bold text-dark">{{ total_rechazadas }}</div>
+                        <div class="fs-4 fw-bold text-dark" id="stat-count-rechazadas">{{ total_rechazadas }}</div>
                         <div class="text-muted small fw-semibold">Archivadas</div>
                     </div>
                 </div>
@@ -248,53 +339,110 @@
                         <i class="fas fa-paper-plane"></i>
                     </div>
                     <div>
-                        <div class="fs-4 fw-bold text-dark">{{ total_enviadas }}</div>
+                        <div class="fs-4 fw-bold text-dark" id="stat-count-enviadas">{{ total_enviadas }}</div>
                         <div class="text-muted small fw-semibold">Enviadas a Colegas</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- FILTRO DE BÚSQUEDA RÁPIDA -->
+        <!-- IDEA 8: WIDGET RED DE COLABORADORES FRECUENTES FCA -->
+        {% if colaboradores_frecuentes %}
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(to right, #fcfefe, #ffffff);">
+            <div class="card-body p-3 px-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success bg-opacity-10 text-success p-2 rounded-circle">
+                            <i class="fas fa-project-diagram"></i>
+                        </span>
+                        <div>
+                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">Red de Coautores Frecuentes FCA</span>
+                            <span class="text-muted small ms-2 d-none d-md-inline">Docentes e investigadores con quienes compartes producción académica</span>
+                        </div>
+                    </div>
+                    <span class="badge bg-light text-secondary border rounded-pill">{{ colaboradores_frecuentes|length }} colegas activos</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 pt-1">
+                    {% for colab in colaboradores_frecuentes %}
+                    <div class="colaborador-pill">
+                        <div class="colaborador-avatar">
+                            {{ colab.nombre|slice:":1"|upper }}
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.1;">{{ colab.nombre }}</span>
+                            <span class="text-muted" style="font-size: 0.72rem;">{{ colab.obras_juntos }} obra{{ colab.obras_juntos|pluralize:"s" }} en conjunto</span>
+                        </div>
+                        <a href="{% url 'mensajeria' %}?contacto={{ colab.id }}" class="btn btn-sm btn-link text-success p-0 ms-1" title="Enviar mensaje interno">
+                            <i class="fas fa-comment-dots"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- PESTAÑAS Y BUSCADOR RÁPIDO CON FILTROS (IDEA 4) -->
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-body p-3">
-                <div class="row align-items-center g-2">
-                    <div class="col-md-6 col-lg-8">
+                <div class="row align-items-center g-2 mb-2">
+                    <div class="col-md-7 col-lg-8">
                         <ul class="nav nav-pills nav-pills-custom mb-0" id="coautoriasTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="tab-pendientes" data-bs-toggle="pill" data-bs-target="#content-pendientes" type="button" role="tab">
                                     <i class="fas fa-bell me-1 text-warning"></i>Pendientes
-                                    {% if total_pendientes > 0 %}
-                                        <span class="badge bg-warning text-dark rounded-pill ms-2">{{ total_pendientes }}</span>
-                                    {% endif %}
+                                    <span class="badge bg-warning text-dark rounded-pill ms-2" id="pill-count-pendientes" {% if total_pendientes == 0 %}style="display:none;"{% endif %}>{{ total_pendientes }}</span>
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-aceptadas" data-bs-toggle="pill" data-bs-target="#content-aceptadas" type="button" role="tab">
                                     <i class="fas fa-check-circle me-1 text-success"></i>Confirmadas
-                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_aceptadas }}</span>
+                                    <span class="badge bg-light text-dark rounded-pill ms-2" id="pill-count-aceptadas">{{ total_aceptadas }}</span>
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-rechazadas" data-bs-toggle="pill" data-bs-target="#content-rechazadas" type="button" role="tab">
-                                    <i class="fas fa-archive me-1 text-secondary"></i>Archivadas / Rechazadas
-                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_rechazadas }}</span>
+                                    <i class="fas fa-archive me-1 text-secondary"></i>Archivadas
+                                    <span class="badge bg-light text-dark rounded-pill ms-2" id="pill-count-rechazadas">{{ total_rechazadas }}</span>
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-enviadas" data-bs-toggle="pill" data-bs-target="#content-enviadas" type="button" role="tab">
                                     <i class="fas fa-paper-plane me-1 text-primary"></i>Enviadas a Colegas
-                                    <span class="badge bg-light text-dark rounded-pill ms-2">{{ total_enviadas }}</span>
+                                    <span class="badge bg-light text-dark rounded-pill ms-2" id="pill-count-enviadas">{{ total_enviadas }}</span>
                                 </button>
                             </li>
                         </ul>
                     </div>
-                    <div class="col-md-6 col-lg-4">
+                    <div class="col-md-5 col-lg-4">
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" id="filtroCoautorias" class="form-control bg-light border-start-0" placeholder="Filtrar por obra o autor...">
+                            <input type="text" id="filtroCoautorias" class="form-control bg-light border-start-0" placeholder="Buscar por obra o autor...">
                         </div>
                     </div>
+                </div>
+
+                <!-- IDEA 4: BARRA DE FILTROS RÁPIDOS POR TIPO Y AÑO -->
+                <div class="d-flex align-items-center flex-wrap gap-2 pt-2 border-top">
+                    <span class="small text-muted fw-bold me-1"><i class="fas fa-filter me-1"></i>Tipo:</span>
+                    <span class="filter-chip active" data-filter-type="">Todos</span>
+                    {% for tipo in tipos_disponibles %}
+                        <span class="filter-chip" data-filter-type="{{ tipo|lower }}">{{ tipo }}</span>
+                    {% empty %}
+                        <span class="filter-chip" data-filter-type="artículo científico">Artículo Científico</span>
+                        <span class="filter-chip" data-filter-type="ponencia / memoria">Ponencia / Memoria</span>
+                        <span class="filter-chip" data-filter-type="capítulo de libro">Capítulo de Libro</span>
+                    {% endfor %}
+
+                    {% if anios_disponibles %}
+                    <span class="small text-muted fw-bold ms-3 me-1"><i class="far fa-calendar-alt me-1"></i>Año:</span>
+                    <select id="filtroAnioSelect" class="form-select form-select-sm rounded-pill border-secondary py-1" style="width: auto; font-size: 0.82rem; font-weight: 600;">
+                        <option value="">Todos los años</option>
+                        {% for anio in anios_disponibles %}
+                        <option value="{{ anio }}">{{ anio }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -306,10 +454,30 @@
             <!-- 1. SOLICITUDES PENDIENTES -->
             <!-- ============================================================= -->
             <div class="tab-pane fade show active" id="content-pendientes" role="tabpanel">
+                <!-- IDEA 2: BOTÓN DE ACEPTACIÓN MASIVA -->
+                {% if total_pendientes > 1 %}
+                <div class="alert alert-warning border-warning shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2" id="bannerAceptacionMasiva">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-layer-group fa-2x text-warning me-3"></i>
+                        <div>
+                            <strong class="text-dark">Tienes {{ total_pendientes }} solicitudes pendientes de coautoría</strong>
+                            <div class="small text-muted">Puedes confirmar tu participación en todas ellas con un solo clic.</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success rounded-pill fw-bold px-4 shadow-sm" id="btnAceptarTodas" data-bs-toggle="modal" data-bs-target="#modalConfirmarAceptarTodas">
+                        <i class="fas fa-check-double me-2"></i>Aceptar todas las pendientes ({{ total_pendientes }})
+                    </button>
+                </div>
+                {% endif %}
+
                 {% if pendientes %}
                     <div class="row g-3" id="gridPendientes">
                         {% for inv in pendientes %}
-                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                        <div class="col-lg-6 item-coautoria" 
+                             id="card-coautoria-{{ inv.id }}"
+                             data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}"
+                             data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:''|lower }}"
+                             data-anio="{{ inv.articulo.año_produccion|default:'' }}">
                             <div class="coautoria-card card-pending h-100 p-4 d-flex flex-column justify-content-between">
                                 <div>
                                     <!-- Cabecera de la tarjeta -->
@@ -361,13 +529,20 @@
                                         {{ inv.mensaje }}
                                     </div>
                                     {% endif %}
+
+                                    <!-- IDEA 13: Línea de tiempo de auditoría -->
+                                    <div class="d-flex align-items-center gap-2 mb-3 px-2 py-1 bg-light rounded-2" style="font-size: 0.78rem;">
+                                        <span class="text-success"><i class="fas fa-paper-plane me-1"></i>Enviada el {{ inv.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                                        <span class="text-muted">&bull;</span>
+                                        <span class="text-warning fw-bold"><i class="far fa-clock me-1"></i>Esperando tu confirmación</span>
+                                    </div>
                                 </div>
 
                                 <!-- Botones de acción -->
                                 <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                    <div class="d-flex gap-2">
-                                        <!-- Botón Aceptar -->
-                                        <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <!-- Botón Aceptar (AJAX - IDEA 15) -->
+                                        <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline form-accion-coautoria" data-id="{{ inv.id }}">
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="aceptar">
                                             <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
@@ -376,30 +551,44 @@
                                             </button>
                                         </form>
 
-                                        <!-- Botón Rechazar / Archivar -->
-                                        <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="rechazar">
-                                            <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
-                                            <button type="submit" class="btn btn-outline-danger rounded-pill px-3" title="Archivar solicitud">
-                                                <i class="fas fa-times me-1"></i>{% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}Declinar por mi Tutor{% else %}Rechazar{% endif %}
-                                            </button>
-                                        </form>
+                                        <!-- Botón Rechazar / Declinar con Modal de Motivo (IDEA 5) -->
+                                        <button type="button" class="btn btn-outline-danger rounded-pill px-3 btn-trigger-rechazo" 
+                                                data-id="{{ inv.id }}" 
+                                                data-titulo="{{ inv.articulo.titulo }}"
+                                                data-url="{% url 'responder_invitacion_coautoria' inv.id %}"
+                                                data-es-tutor="{% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}1{% else %}0{% endif %}">
+                                            <i class="fas fa-times me-1"></i>{% if es_auxiliar_delegado and mi_tutor and inv.autor_invitado == mi_tutor %}Declinar por Tutor{% else %}Declinar{% endif %}
+                                        </button>
                                     </div>
 
-                                    <!-- Enviar Mensaje Directo al Colega -->
-                                    {% if inv.invitado_por.autor %}
-                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
-                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje al Colega
-                                    </a>
-                                    {% endif %}
+                                    <!-- Acciones de visualización: Ficha y PDF (IDEA 1 e IDEA 3) -->
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-ver-ficha"
+                                                data-titulo="{{ inv.articulo.titulo }}"
+                                                data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:'Publicación' }}"
+                                                data-anio="{{ inv.articulo.año_produccion|default:'2026' }}"
+                                                data-area="{{ inv.articulo.area.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                data-resumen="{{ inv.articulo.descripcion|default:'Sin resumen registrado para esta obra.' }}"
+                                                data-doi="{{ inv.articulo.doi_enlace|default:'' }}"
+                                                data-archivo="{% if inv.articulo.archivo %}{{ inv.articulo.archivo.url }}{% endif %}">
+                                            <i class="fas fa-eye me-1"></i>Ficha
+                                        </button>
+
+                                        {% if inv.articulo.archivo %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 btn-ver-pdf"
+                                                data-url="{{ inv.articulo.archivo.url }}"
+                                                data-titulo="{{ inv.articulo.titulo }}">
+                                            <i class="fas fa-file-pdf me-1"></i>Hojear PDF
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted" id="empty-pendientes">
                         <i class="fas fa-check-circle fa-4x text-success mb-3 opacity-50"></i>
                         <h4 class="fw-bold text-dark">¡Estás al día!</h4>
                         <p class="mb-0">No tienes solicitudes pendientes de confirmación de coautoría.</p>
@@ -414,7 +603,11 @@
                 {% if aceptadas %}
                     <div class="row g-3" id="gridAceptadas">
                         {% for inv in aceptadas %}
-                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                        <div class="col-lg-6 item-coautoria" 
+                             id="card-coautoria-{{ inv.id }}"
+                             data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}"
+                             data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:''|lower }}"
+                             data-anio="{{ inv.articulo.año_produccion|default:'' }}">
                             <div class="coautoria-card card-accepted h-100 p-4 d-flex flex-column justify-content-between">
                                 <div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -442,16 +635,54 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- IDEA 13: Línea de tiempo de auditoría -->
+                                    <div class="d-flex align-items-center gap-2 mb-3 px-2 py-1 bg-light rounded-2" style="font-size: 0.78rem;">
+                                        <span class="text-muted"><i class="fas fa-paper-plane me-1"></i>Enviada {{ inv.fecha_creacion|date:"d/m/Y" }}</span>
+                                        <span class="text-muted">&bull;</span>
+                                        <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Confirmada {{ inv.fecha_respuesta|date:"d/m/Y H:i" }}</span>
+                                    </div>
                                 </div>
+                                
+                                <!-- Botones de acción en Confirmadas -->
                                 <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                    <span class="badge bg-light text-success border border-success px-3 py-2 rounded-pill">
-                                        <i class="fas fa-shield-alt me-1"></i>Acreditado en tu perfil
-                                    </span>
-                                    {% if inv.invitado_por.autor %}
-                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
-                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje al Colega
-                                    </a>
-                                    {% endif %}
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <!-- IDEA 9: Generador de Constancia Oficial -->
+                                        <a href="{% url 'constancia_coautoria' inv.id %}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill fw-bold shadow-xs" title="Generar constancia oficial para fines curriculares o de acreditación">
+                                            <i class="fas fa-certificate me-1"></i>Constancia Oficial
+                                        </a>
+
+                                        <!-- IDEA 14: Compartir publicación -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill btn-compartir-obra"
+                                                data-titulo="{{ inv.articulo.titulo }}"
+                                                data-doi="{{ inv.articulo.doi_enlace|default:'' }}"
+                                                data-uri="{{ inv.articulo.doi_enlace|default:'' }}"
+                                                data-ano="{{ inv.articulo.año_produccion|default:'2026' }}"
+                                                data-autor="{{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                                            <i class="fas fa-share-alt me-1"></i>Compartir
+                                        </button>
+                                    </div>
+
+                                    <!-- Ficha & PDF (IDEA 1 e IDEA 3) -->
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-ver-ficha"
+                                                data-titulo="{{ inv.articulo.titulo }}"
+                                                data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:'Publicación' }}"
+                                                data-anio="{{ inv.articulo.año_produccion|default:'2026' }}"
+                                                data-area="{{ inv.articulo.area.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                                data-resumen="{{ inv.articulo.descripcion|default:'Sin resumen registrado para esta obra.' }}"
+                                                data-doi="{{ inv.articulo.doi_enlace|default:'' }}"
+                                                data-archivo="{% if inv.articulo.archivo %}{{ inv.articulo.archivo.url }}{% endif %}">
+                                            <i class="fas fa-eye me-1"></i>Ficha
+                                        </button>
+                                        {% if inv.articulo.archivo %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 btn-ver-pdf"
+                                                data-url="{{ inv.articulo.archivo.url }}"
+                                                data-titulo="{{ inv.articulo.titulo }}">
+                                            <i class="fas fa-file-pdf me-1"></i>PDF
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -461,13 +692,13 @@
                     <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
                         <i class="fas fa-folder-open fa-4x text-secondary mb-3 opacity-50"></i>
                         <h4 class="fw-bold text-dark">Sin coautorías confirmadas aún</h4>
-                        <p class="mb-0">Cuando aceptes solicitudes de colaboración aparecerán archivadas aquí como obras confirmadas.</p>
+                        <p class="mb-0">Cuando aceptes solicitudes de colaboración aparecerán registradas aquí como obras confirmadas.</p>
                     </div>
                 {% endif %}
             </div>
 
             <!-- ============================================================= -->
-            <!-- 3. ARCHIVADAS / RECHAZADAS (CON OPCIÓN DE RECONSIDERAR) -->
+            <!-- 3. ARCHIVADAS / RECHAZADAS (CON RECONSIDERACIÓN) -->
             <!-- ============================================================= -->
             <div class="tab-pane fade" id="content-rechazadas" role="tabpanel">
                 {% if rechazadas %}
@@ -481,7 +712,11 @@
 
                     <div class="row g-3" id="gridRechazadas">
                         {% for inv in rechazadas %}
-                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}">
+                        <div class="col-lg-6 item-coautoria" 
+                             id="card-coautoria-{{ inv.id }}"
+                             data-search="{{ inv.articulo.titulo }} {{ inv.invitado_por.autor.nombre|default:inv.invitado_por.username }}"
+                             data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:''|lower }}"
+                             data-anio="{{ inv.articulo.año_produccion|default:'' }}">
                             <div class="coautoria-card card-rejected h-100 p-4 d-flex flex-column justify-content-between">
                                 <div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -507,11 +742,26 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- IDEA 5: Muestra de motivo de rechazo si fue capturado -->
+                                    {% if inv.motivo_rechazo %}
+                                    <div class="note-quote mb-3" style="border-left-color: #64748b;">
+                                        <strong class="text-secondary d-block small mb-1"><i class="fas fa-comment-slash me-1"></i>Motivo indicado:</strong>
+                                        {{ inv.motivo_rechazo }}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- IDEA 13: Línea de tiempo de auditoría -->
+                                    <div class="d-flex align-items-center gap-2 mb-3 px-2 py-1 bg-light rounded-2" style="font-size: 0.78rem;">
+                                        <span class="text-muted"><i class="fas fa-paper-plane me-1"></i>Enviada {{ inv.fecha_creacion|date:"d/m/Y" }}</span>
+                                        <span class="text-muted">&bull;</span>
+                                        <span class="text-danger fw-bold"><i class="fas fa-ban me-1"></i>Declinada {{ inv.fecha_respuesta|date:"d/m/Y H:i" }}</span>
+                                    </div>
                                 </div>
 
                                 <!-- Botón para reconsiderar -->
                                 <div class="border-top pt-3 mt-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                    <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline">
+                                    <form method="post" action="{% url 'responder_invitacion_coautoria' inv.id %}" class="d-inline form-accion-coautoria" data-id="{{ inv.id }}">
                                         {% csrf_token %}
                                         <input type="hidden" name="accion" value="aceptar">
                                         <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
@@ -520,11 +770,17 @@
                                         </button>
                                     </form>
 
-                                    {% if inv.invitado_por.autor %}
-                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.invitado_por.autor.id }}" class="btn btn-outline-secondary rounded-pill px-3 btn-sm">
-                                        <i class="fas fa-comments me-1"></i>Mensaje al Colega
-                                    </a>
-                                    {% endif %}
+                                    <!-- Ficha de la obra -->
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-ver-ficha"
+                                            data-titulo="{{ inv.articulo.titulo }}"
+                                            data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:'Publicación' }}"
+                                            data-anio="{{ inv.articulo.año_produccion|default:'2026' }}"
+                                            data-area="{{ inv.articulo.area.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                            data-resumen="{{ inv.articulo.descripcion|default:'Sin resumen registrado para esta obra.' }}"
+                                            data-doi="{{ inv.articulo.doi_enlace|default:'' }}"
+                                            data-archivo="{% if inv.articulo.archivo %}{{ inv.articulo.archivo.url }}{% endif %}">
+                                        <i class="fas fa-eye me-1"></i>Ficha
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -534,19 +790,23 @@
                     <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted">
                         <i class="fas fa-archive fa-4x text-secondary mb-3 opacity-50"></i>
                         <h4 class="fw-bold text-dark">No tienes solicitudes archivadas</h4>
-                        <p class="mb-0">Las invitaciones que decidas rechazar se guardarán aquí para que puedas reconsiderarlas en el futuro.</p>
+                        <p class="mb-0">Las invitaciones que decidas declinar se conservarán aquí para que puedas reconsiderarlas en cualquier momento.</p>
                     </div>
                 {% endif %}
             </div>
 
             <!-- ============================================================= -->
-            <!-- 4. SOLICITUDES ENVIADAS POR EL USUARIO A OTROS COLEGAS -->
+            <!-- 4. SOLICITUDES ENVIADAS A COLEGAS -->
             <!-- ============================================================= -->
             <div class="tab-pane fade" id="content-enviadas" role="tabpanel">
                 {% if enviadas %}
                     <div class="row g-3" id="gridEnviadas">
                         {% for inv in enviadas %}
-                        <div class="col-lg-6 item-coautoria" data-search="{{ inv.articulo.titulo }} {{ inv.autor_invitado.nombre }}">
+                        <div class="col-lg-6 item-coautoria" 
+                             id="card-coautoria-{{ inv.id }}"
+                             data-search="{{ inv.articulo.titulo }} {{ inv.autor_invitado.nombre }}"
+                             data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:''|lower }}"
+                             data-anio="{{ inv.articulo.año_produccion|default:'' }}">
                             <div class="coautoria-card h-100 p-4 d-flex flex-column justify-content-between">
                                 <div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -572,11 +832,68 @@
                                             <div class="small text-muted">{{ inv.autor_invitado.institucion_origen|default:"FCA UABC" }}</div>
                                         </div>
                                     </div>
+
+                                    <!-- Indicador de último recordatorio si se envió -->
+                                    {% if inv.recordatorio_enviado %}
+                                    <div class="small text-muted mb-2 ps-1" id="recordatorio-label-{{ inv.id }}">
+                                        <i class="fas fa-bell text-warning me-1"></i>Último recordatorio enviado: <strong>{{ inv.recordatorio_enviado|date:"d/m/Y H:i" }}</strong>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- IDEA 13: Línea de tiempo de auditoría -->
+                                    <div class="d-flex align-items-center gap-2 mb-3 px-2 py-1 bg-light rounded-2" style="font-size: 0.78rem;">
+                                        <span class="text-muted"><i class="fas fa-paper-plane me-1"></i>Invitación enviada: {{ inv.fecha_creacion|date:"d/m/Y" }}</span>
+                                        {% if inv.estado == 'aceptada' %}
+                                            <span class="text-muted">&bull;</span>
+                                            <span class="text-success fw-bold"><i class="fas fa-check-double me-1"></i>Aceptada: {{ inv.fecha_respuesta|date:"d/m/Y" }}</span>
+                                        {% elif inv.estado == 'rechazada' %}
+                                            <span class="text-muted">&bull;</span>
+                                            <span class="text-danger fw-bold"><i class="fas fa-times me-1"></i>Declinada: {{ inv.fecha_respuesta|date:"d/m/Y" }}</span>
+                                        {% else %}
+                                            <span class="text-muted">&bull;</span>
+                                            <span class="text-warning fw-bold"><i class="far fa-clock me-1"></i>En espera</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="border-top pt-3 mt-2 d-flex justify-content-end">
-                                    <a href="{% url 'mensajeria' %}?contacto={{ inv.autor_invitado.id }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm fw-bold">
-                                        <i class="fas fa-comments me-1"></i>Enviar Mensaje de Seguimiento
-                                    </a>
+
+                                <!-- Acciones para invitaciones enviadas -->
+                                <div class="border-top pt-3 mt-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        {% if inv.estado == 'pendiente' %}
+                                            <!-- IDEA 6: Botón de Recordatorio -->
+                                            <button type="button" class="btn btn-outline-warning btn-sm rounded-pill fw-bold btn-enviar-recordatorio"
+                                                    data-id="{{ inv.id }}"
+                                                    data-url="{% url 'enviar_recordatorio_coautoria' inv.id %}"
+                                                    data-colega="{{ inv.autor_invitado.nombre }}">
+                                                <i class="fas fa-bell me-1"></i>Recordar
+                                            </button>
+
+                                            <!-- IDEA 7: Cancelar invitación -->
+                                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill btn-cancelar-invitacion"
+                                                    data-id="{{ inv.id }}"
+                                                    data-url="{% url 'cancelar_invitacion_coautoria' inv.id %}"
+                                                    data-colega="{{ inv.autor_invitado.nombre }}"
+                                                    data-titulo="{{ inv.articulo.titulo }}">
+                                                <i class="fas fa-ban me-1"></i>Cancelar
+                                            </button>
+                                        {% endif %}
+
+                                        <a href="{% url 'mensajeria' %}?contacto={{ inv.autor_invitado.id }}" class="btn btn-outline-secondary rounded-pill px-3 btn-sm">
+                                            <i class="fas fa-comments me-1"></i>Mensajería
+                                        </a>
+                                    </div>
+
+                                    <!-- Ficha de la obra -->
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-ver-ficha"
+                                            data-titulo="{{ inv.articulo.titulo }}"
+                                            data-tipo="{{ inv.articulo.tipo_contenido.nombre|default:'Publicación' }}"
+                                            data-anio="{{ inv.articulo.año_produccion|default:'2026' }}"
+                                            data-area="{{ inv.articulo.area.nombre|default:'Facultad de Contaduría y Administración' }}"
+                                            data-resumen="{{ inv.articulo.descripcion|default:'Sin resumen registrado para esta obra.' }}"
+                                            data-doi="{{ inv.articulo.doi_enlace|default:'' }}"
+                                            data-archivo="{% if inv.articulo.archivo %}{{ inv.articulo.archivo.url }}{% endif %}">
+                                        <i class="fas fa-eye me-1"></i>Ficha
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -594,24 +911,596 @@
         </div>
     </div>
 
-    <!-- Scripts Bootstrap 5 y filtro reactivo -->
+    <!-- ================================================================= -->
+    <!-- MODALES DE APOYO -->
+    <!-- ================================================================= -->
+
+    <!-- IDEA 1: MODAL FICHA DE LA OBRA -->
+    <div class="modal fade" id="modalFichaCoautoria" tabindex="-1" aria-labelledby="modalFichaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold" id="modalFichaLabel">
+                        <i class="fas fa-book-open me-2"></i>Ficha Técnica de la Obra
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-bold" id="fichaTipoAnio"></span>
+                    <h4 class="fw-bold text-dark mb-3" id="fichaTitulo" style="line-height: 1.35;"></h4>
+                    
+                    <div class="p-3 bg-light rounded-3 mb-3">
+                        <div class="small text-muted fw-bold mb-1">Área Académica:</div>
+                        <div class="fw-bold text-dark" id="fichaArea"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-align-left me-2 text-success"></i>Resumen / Sinopsis:</h6>
+                        <div class="p-3 border rounded-3 bg-white text-muted" id="fichaResumen" style="max-height: 200px; overflow-y: auto; line-height: 1.6;"></div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
+                        <div id="fichaDoiBox"></div>
+                        <div id="fichaPdfBtnBox"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDEA 3: MODAL VISOR DE PDF -->
+    <div class="modal fade" id="modalVisorPdfCoautoria" tabindex="-1" aria-labelledby="modalVisorPdfLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-file-pdf text-danger fa-lg"></i>
+                        <span class="fw-bold text-truncate" id="visorPdfTitulo" style="max-width: 60vw;">Documento</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="#" id="visorPdfDescargarBtn" class="btn btn-outline-light btn-sm rounded-pill px-3" download>
+                            <i class="fas fa-download me-1"></i>Descargar
+                        </a>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0 bg-secondary">
+                    <iframe id="visorPdfIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDEA 5: MODAL RECHAZO / DECLINACIÓN CON MOTIVO OPCIONAL -->
+    <div class="modal fade" id="modalRechazarCoautoria" tabindex="-1" aria-labelledby="modalRechazarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <form id="formRechazoModal" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="rechazar">
+                    <input type="hidden" name="next" value="{% url 'gestion_coautorias' %}">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title fw-bold" id="modalRechazarLabel">
+                            <i class="fas fa-times-circle me-2"></i>Declinar Invitación de Coautoría
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="text-muted mb-2">
+                            ¿Estás seguro de que deseas declinar la invitación para la obra:
+                        </p>
+                        <h6 class="fw-bold text-dark p-3 bg-light rounded-3 mb-3" id="modalRechazarTitulo"></h6>
+
+                        <div class="mb-3">
+                            <label for="motivoRechazoInput" class="form-label small fw-bold text-dark">
+                                Motivo o nota cordial para el colega remitente (Opcional):
+                            </label>
+                            <textarea class="form-control" id="motivoRechazoInput" name="motivo_rechazo" rows="3" placeholder="Ej. No formé parte de la redacción final, homónimo de nombre, etc."></textarea>
+                            <div class="form-text small">Esta nota se enviará cortésmente por mensajería interna institucional al autor que registró la obra.</div>
+                        </div>
+
+                        <div class="alert alert-warning py-2 px-3 small rounded-3 mb-0">
+                            <i class="fas fa-info-circle me-1"></i>Tu nombre se removerá de los metadatos públicos de la obra. Podrás reconsiderar esta decisión en la pestaña <strong>Archivadas</strong>.
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                            <i class="fas fa-times me-1"></i>Confirmar y Declinar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDEA 2: MODAL CONFIRMACIÓN ACEPTAR TODAS -->
+    <div class="modal fade" id="modalConfirmarAceptarTodas" tabindex="-1" aria-labelledby="modalAceptarTodasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <form method="post" action="{% url 'aceptar_todas_coautorias' %}" id="formAceptarTodas">
+                    {% csrf_token %}
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fw-bold" id="modalAceptarTodasLabel">
+                            <i class="fas fa-check-double me-2"></i>Aceptación Masiva de Coautorías
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold text-dark">¿Confirmar todas las invitaciones pendientes?</h5>
+                        <p class="text-muted mb-0">
+                            Se confirmarán las <strong>{{ total_pendientes }} solicitudes pendientes</strong> y quedarás acreditado formalmente como coautor en cada una de ellas de forma simultánea.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" id="btnConfirmarAceptarTodasSubmit">
+                            <i class="fas fa-check-double me-1"></i>Sí, confirmar todas
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDEA 14: MODAL COMPARTIR PUBLICACIÓN -->
+    <div class="modal fade" id="modalCompartirCoautoria" tabindex="-1" aria-labelledby="modalCompartirLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="modalCompartirLabel">
+                        <i class="fas fa-share-alt me-2"></i>Compartir Coautoría Académica
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <h6 class="fw-bold text-dark mb-3" id="compartirTitulo"></h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Enlace permanente de la obra:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light" id="compartirUrlInput" readonly>
+                            <button class="btn btn-outline-primary" type="button" id="btnCopiarEnlace">
+                                <i class="fas fa-copy me-1"></i>Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Cita rápida en formato APA (7ma ed.):</label>
+                        <div class="p-3 bg-light border rounded-3 small font-monospace text-dark" id="compartirCitaApa"></div>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill mt-2" type="button" id="btnCopiarCitaApa">
+                            <i class="fas fa-quote-right me-1"></i>Copiar Cita APA
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST DINÁMICO FLOTANTE -->
+    <div class="toast-container coautoria-toast">
+        <div id="coautoriaToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold" id="coautoriaToastMsg">
+                    ¡Acción realizada con éxito!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Bootstrap 5 y lógica reactiva AJAX (IDEA 15, IDEA 4, IDEA 6, IDEA 7, etc.) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Buscador reactivo en vivo para las tarjetas
-        const filtroInput = document.getElementById('filtroCoautorias');
-        if (filtroInput) {
-            filtroInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastEl = document.getElementById('coautoriaToast');
+            const toastMsg = document.getElementById('coautoriaToastMsg');
+            const bsToast = toastEl ? new bootstrap.Toast(toastEl, { delay: 4000 }) : null;
+
+            function showToast(msg, bgClass = 'bg-success') {
+                if (!toastEl || !toastMsg) return;
+                toastEl.className = `toast align-items-center text-white ${bgClass} border-0 shadow-lg`;
+                toastMsg.textContent = msg;
+                bsToast.show();
+            }
+
+            // =========================================================
+            // IDEA 4: FILTRADO REACTIVO EN VIVO (Buscador + Chip Tipo + Año)
+            // =========================================================
+            const filtroInput = document.getElementById('filtroCoautorias');
+            const chipsTipo = document.querySelectorAll('.filter-chip');
+            const selectAnio = document.getElementById('filtroAnioSelect');
+            let tipoActivo = '';
+
+            function aplicarFiltros() {
+                const query = (filtroInput ? filtroInput.value : '').toLowerCase().trim();
+                const anioSeleccionado = (selectAnio ? selectAnio.value : '').trim();
+
                 document.querySelectorAll('.item-coautoria').forEach(el => {
                     const searchData = (el.getAttribute('data-search') || '').toLowerCase();
-                    if (!query || searchData.includes(query)) {
+                    const itemTipo = (el.getAttribute('data-tipo') || '').toLowerCase();
+                    const itemAnio = (el.getAttribute('data-anio') || '').trim();
+
+                    const matchQuery = !query || searchData.includes(query);
+                    const matchTipo = !tipoActivo || itemTipo.includes(tipoActivo);
+                    const matchAnio = !anioSeleccionado || itemAnio === anioSeleccionado;
+
+                    if (matchQuery && matchTipo && matchAnio) {
                         el.style.display = '';
                     } else {
                         el.style.display = 'none';
                     }
                 });
+            }
+
+            if (filtroInput) {
+                filtroInput.addEventListener('input', aplicarFiltros);
+            }
+
+            chipsTipo.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    chipsTipo.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    tipoActivo = this.getAttribute('data-filter-type') || '';
+                    aplicarFiltros();
+                });
             });
-        }
+
+            if (selectAnio) {
+                selectAnio.addEventListener('change', aplicarFiltros);
+            }
+
+            // =========================================================
+            // IDEA 1: MODAL FICHA DE LA OBRA
+            // =========================================================
+            const modalFicha = new bootstrap.Modal(document.getElementById('modalFichaCoautoria'));
+            document.querySelectorAll('.btn-ver-ficha').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const titulo = this.getAttribute('data-titulo') || '';
+                    const tipo = this.getAttribute('data-tipo') || '';
+                    const anio = this.getAttribute('data-anio') || '';
+                    const area = this.getAttribute('data-area') || '';
+                    const resumen = this.getAttribute('data-resumen') || '';
+                    const doi = this.getAttribute('data-doi') || '';
+                    const archivo = this.getAttribute('data-archivo') || '';
+
+                    document.getElementById('fichaTitulo').textContent = titulo;
+                    document.getElementById('fichaTipoAnio').textContent = `${tipo} • ${anio}`;
+                    document.getElementById('fichaArea').textContent = area;
+                    document.getElementById('fichaResumen').textContent = resumen;
+
+                    const doiBox = document.getElementById('fichaDoiBox');
+                    if (doi) {
+                        doiBox.innerHTML = `<span class="small text-muted fw-bold">DOI:</span> <a href="https://doi.org/${doi}" target="_blank" class="fw-bold text-primary">${doi}</a>`;
+                    } else {
+                        doiBox.innerHTML = `<span class="small text-muted">DOI no registrado</span>`;
+                    }
+
+                    const pdfBox = document.getElementById('fichaPdfBtnBox');
+                    if (archivo) {
+                        pdfBox.innerHTML = `<a href="${archivo}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill fw-bold"><i class="fas fa-file-pdf me-1"></i>Descargar PDF</a>`;
+                    } else {
+                        pdfBox.innerHTML = '';
+                    }
+
+                    modalFicha.show();
+                });
+            });
+
+            // =========================================================
+            // IDEA 3: MODAL VISOR DE PDF
+            // =========================================================
+            const modalVisorPdf = new bootstrap.Modal(document.getElementById('modalVisorPdfCoautoria'));
+            document.querySelectorAll('.btn-ver-pdf').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    const titulo = this.getAttribute('data-titulo') || 'Documento';
+                    if (!url) return;
+                    document.getElementById('visorPdfTitulo').textContent = titulo;
+                    document.getElementById('visorPdfIframe').src = url;
+                    document.getElementById('visorPdfDescargarBtn').href = url;
+                    modalVisorPdf.show();
+                });
+            });
+
+            // Limpiar iframe al cerrar visor PDF
+            document.getElementById('modalVisorPdfCoautoria').addEventListener('hidden.bs.modal', function() {
+                document.getElementById('visorPdfIframe').src = '';
+            });
+
+            // =========================================================
+            // IDEA 5: MODAL RECHAZO CON MOTIVO OPCIONAL
+            // =========================================================
+            const modalRechazo = new bootstrap.Modal(document.getElementById('modalRechazarCoautoria'));
+            const formRechazoModal = document.getElementById('formRechazoModal');
+            document.querySelectorAll('.btn-trigger-rechazo').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const titulo = this.getAttribute('data-titulo') || '';
+                    const url = this.getAttribute('data-url');
+                    formRechazoModal.action = url;
+                    formRechazoModal.setAttribute('data-id', id);
+                    document.getElementById('modalRechazarTitulo').textContent = titulo;
+                    document.getElementById('motivoRechazoInput').value = '';
+                    modalRechazo.show();
+                });
+            });
+
+            // Interceptar submit de declinación vía AJAX (IDEA 15)
+            formRechazoModal.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const actionUrl = this.action;
+                const invId = this.getAttribute('data-id');
+
+                fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    modalRechazo.hide();
+                    if (data.status === 'ok') {
+                        showToast(data.message || 'Invitación declinada y archivada.', 'bg-info');
+                        const card = document.getElementById(`card-coautoria-${invId}`);
+                        if (card) {
+                            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                            card.style.opacity = '0';
+                            card.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                card.remove();
+                                actualizarContadores('rechazar');
+                            }, 400);
+                        }
+                    } else {
+                        showToast(data.message || 'Error al procesar.', 'bg-danger');
+                    }
+                })
+                .catch(() => {
+                    // Fallback normal si fetch falla
+                    formRechazoModal.submit();
+                });
+            });
+
+            // =========================================================
+            // IDEA 15: ENVÍO AJAX PARA ACEPTAR Y RECONSIDERAR
+            // =========================================================
+            document.querySelectorAll('.form-accion-coautoria').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    const actionUrl = this.action;
+                    const invId = this.getAttribute('data-id');
+                    const btn = this.querySelector('button[type="submit"]');
+                    if (btn) btn.disabled = true;
+
+                    fetch(actionUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            showToast(data.message || 'Acción completada con éxito.', 'bg-success');
+                            const card = document.getElementById(`card-coautoria-${invId}`);
+                            if (card) {
+                                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                                card.style.opacity = '0';
+                                card.style.transform = 'scale(0.95)';
+                                setTimeout(() => {
+                                    card.remove();
+                                    actualizarContadores('aceptar');
+                                }, 400);
+                            }
+                        } else {
+                            showToast(data.message || 'Error al procesar.', 'bg-danger');
+                            if (btn) btn.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        this.submit();
+                    });
+                });
+            });
+
+            // =========================================================
+            // IDEA 2: ACEPTACIÓN MASIVA VÍA AJAX
+            // =========================================================
+            const formAceptarTodas = document.getElementById('formAceptarTodas');
+            if (formAceptarTodas) {
+                formAceptarTodas.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    const btnSubmit = document.getElementById('btnConfirmarAceptarTodasSubmit');
+                    if (btnSubmit) btnSubmit.disabled = true;
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarAceptarTodas'));
+                        if (modal) modal.hide();
+                        if (data.status === 'ok') {
+                            showToast(data.message, 'bg-success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            showToast(data.message || 'Error al aceptar masivamente.', 'bg-danger');
+                            if (btnSubmit) btnSubmit.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        this.submit();
+                    });
+                });
+            }
+
+            // =========================================================
+            // IDEA 6: ENVIAR RECORDATORIO VÍA AJAX
+            // =========================================================
+            document.querySelectorAll('.btn-enviar-recordatorio').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    const invId = this.getAttribute('data-id');
+                    const colega = this.getAttribute('data-colega') || 'al colega';
+                    const self = this;
+                    self.disabled = true;
+
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            showToast(data.message, 'bg-warning');
+                            self.innerHTML = '<i class="fas fa-check me-1"></i>Recordado';
+                            self.classList.replace('btn-outline-warning', 'btn-light');
+                        } else {
+                            showToast(data.message || 'No se pudo enviar recordatorio.', 'bg-danger');
+                            self.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        self.disabled = false;
+                    });
+                });
+            });
+
+            // =========================================================
+            // IDEA 7: CANCELAR INVITACIÓN ENVIADA VÍA AJAX
+            // =========================================================
+            document.querySelectorAll('.btn-cancelar-invitacion').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    const invId = this.getAttribute('data-id');
+                    const colega = this.getAttribute('data-colega') || 'al colega';
+                    if (!confirm(`¿Deseas cancelar y revocar la invitación de coautoría enviada a ${colega}?`)) {
+                        return;
+                    }
+                    const self = this;
+                    self.disabled = true;
+
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            showToast(data.message, 'bg-info');
+                            const card = document.getElementById(`card-coautoria-${invId}`);
+                            if (card) {
+                                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                                card.style.opacity = '0';
+                                card.style.transform = 'scale(0.95)';
+                                setTimeout(() => {
+                                    card.remove();
+                                    const statEnviadas = document.getElementById('stat-count-enviadas');
+                                    const pillEnviadas = document.getElementById('pill-count-enviadas');
+                                    if (statEnviadas) statEnviadas.textContent = Math.max(0, parseInt(statEnviadas.textContent || 0) - 1);
+                                    if (pillEnviadas) pillEnviadas.textContent = Math.max(0, parseInt(pillEnviadas.textContent || 0) - 1);
+                                }, 400);
+                            }
+                        } else {
+                            showToast(data.message || 'Error al cancelar invitación.', 'bg-danger');
+                            self.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        self.disabled = false;
+                    });
+                });
+            });
+
+            // =========================================================
+            // IDEA 14: COMPARTIR PUBLICACIÓN CONFIRMADA
+            // =========================================================
+            const modalCompartir = new bootstrap.Modal(document.getElementById('modalCompartirCoautoria'));
+            document.querySelectorAll('.btn-compartir-obra').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const titulo = this.getAttribute('data-titulo') || '';
+                    const doi = this.getAttribute('data-doi') || '';
+                    const ano = this.getAttribute('data-ano') || '2026';
+                    const autor = this.getAttribute('data-autor') || 'Autores FCA UABC';
+                    
+                    const url = doi ? `https://doi.org/${doi}` : window.location.origin + `/busqueda/?q=${encodeURIComponent(titulo)}`;
+                    const cita = `${autor} (${ano}). ${titulo}. Repositorio Institucional FCA UABC. ${doi ? 'https://doi.org/' + doi : ''}`;
+
+                    document.getElementById('compartirTitulo').textContent = titulo;
+                    document.getElementById('compartirUrlInput').value = url;
+                    document.getElementById('compartirCitaApa').textContent = cita;
+                    modalCompartir.show();
+                });
+            });
+
+            document.getElementById('btnCopiarEnlace').addEventListener('click', function() {
+                const input = document.getElementById('compartirUrlInput');
+                input.select();
+                navigator.clipboard.writeText(input.value);
+                showToast('¡Enlace permanente copiado al portapapeles!', 'bg-primary');
+            });
+
+            document.getElementById('btnCopiarCitaApa').addEventListener('click', function() {
+                const cita = document.getElementById('compartirCitaApa').textContent;
+                navigator.clipboard.writeText(cita);
+                showToast('¡Cita en formato APA copiada al portapapeles!', 'bg-success');
+            });
+
+            // Función auxiliar para actualizar contadores tras acción AJAX
+            function actualizarContadores(tipoAccion) {
+                const statPend = document.getElementById('stat-count-pendientes');
+                const pillPend = document.getElementById('pill-count-pendientes');
+                const bannerMasivo = document.getElementById('bannerAceptacionMasiva');
+
+                if (statPend) {
+                    const actual = parseInt(statPend.textContent || 0);
+                    const nuevo = Math.max(0, actual - 1);
+                    statPend.textContent = nuevo;
+                    if (pillPend) {
+                        pillPend.textContent = nuevo;
+                        if (nuevo === 0) pillPend.style.display = 'none';
+                    }
+                    if (nuevo <= 1 && bannerMasivo) {
+                        bannerMasivo.style.display = 'none';
+                    }
+                }
+
+                if (tipoAccion === 'aceptar') {
+                    const statAcep = document.getElementById('stat-count-aceptadas');
+                    const pillAcep = document.getElementById('pill-count-aceptadas');
+                    if (statAcep) statAcep.textContent = parseInt(statAcep.textContent || 0) + 1;
+                    if (pillAcep) pillAcep.textContent = parseInt(pillAcep.textContent || 0) + 1;
+                } else if (tipoAccion === 'rechazar') {
+                    const statRech = document.getElementById('stat-count-rechazadas');
+                    const pillRech = document.getElementById('pill-count-rechazadas');
+                    if (statRech) statRech.textContent = parseInt(statRech.textContent || 0) + 1;
+                    if (pillRech) pillRech.textContent = parseInt(pillRech.textContent || 0) + 1;
+                }
+            }
+        });
     </script>
 </body>
 </html>

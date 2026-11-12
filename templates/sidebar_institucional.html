@@ -133,6 +133,15 @@
         0%, 100% { transform: translateY(0) scale(1); }
         50% { transform: translateY(-3px) scale(1.15); }
     }
+    @keyframes pulseGoldBadge {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.75); }
+        70% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+    .sima-badge-pulse-gold {
+        animation: pulseGoldBadge 2s infinite ease-in-out;
+        background-color: #f59e0b !important;
+    }
     .sima-nav-badge-dot {
         position: absolute;
         top: 8px;
@@ -174,8 +183,8 @@
         <i class="fas fa-user-check nav-icon"></i>
         <span class="nav-label">Coautorías</span>
         {% if invitaciones_pendientes_count > 0 %}
-            <span class="sima-nav-badge-dot" title="{{ invitaciones_pendientes_count }} invitaciones pendientes"></span>
-            <span class="badge bg-warning text-dark rounded-pill ms-auto nav-label" style="font-size: 0.65rem; font-weight: 700;">
+            <span class="sima-nav-badge-dot sima-badge-pulse-gold" title="{{ invitaciones_pendientes_count }} invitaciones pendientes"></span>
+            <span class="badge bg-warning text-dark rounded-pill ms-auto nav-label sima-badge-pulse-gold" style="font-size: 0.65rem; font-weight: 700;">
                 {{ invitaciones_pendientes_count }}
             </span>
         {% endif %}

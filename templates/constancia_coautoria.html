@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constancia Oficial de Coautoría - {{ folio_constancia }} - UABC FCA</title>
+    <link rel="icon" href="/static/images/LOGO FCA2.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --uabc-green: #006633;
+            --uabc-green-dark: #004d26;
+            --uabc-gold: #dd971a;
+            --uabc-dark: #1e293b;
+        }
+        body {
+            background-color: #e2e8f0;
+            font-family: 'Montserrat', sans-serif;
+            color: #334155;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            margin: 0;
+            padding: 24px 0;
+        }
+        .action-bar {
+            max-width: 860px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .constancia-container {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+            border: 2px solid #cbd5e1;
+            position: relative;
+            overflow: hidden;
+            padding: 44px 50px;
+        }
+        .constancia-border-outer {
+            border: 3px double var(--uabc-green);
+            padding: 30px 36px;
+            position: relative;
+            background: #ffffff;
+        }
+        .constancia-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: rgba(0, 102, 51, 0.032);
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            letter-spacing: 8px;
+            font-family: 'Cinzel', serif;
+            z-index: 1;
+        }
+        .header-strip {
+            height: 8px;
+            background: linear-gradient(90deg, var(--uabc-green) 0%, var(--uabc-gold) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+        .uabc-brand-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--uabc-green);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .fca-brand-subtitle {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+        }
+        .sub-campus {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+        .constancia-folio-pill {
+            display: inline-block;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--uabc-green);
+        }
+        .constancia-main-title {
+            font-family: 'Cinzel', serif;
+            color: var(--uabc-green-dark);
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 25px;
+            margin-bottom: 8px;
+        }
+        .constancia-subtitle {
+            font-size: 0.88rem;
+            color: #64748b;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .constancia-body {
+            font-size: 0.98rem;
+            line-height: 1.8;
+            color: #1e293b;
+            margin-top: 24px;
+            text-align: justify;
+            position: relative;
+            z-index: 2;
+        }
+        .constancia-autor-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--uabc-green);
+            text-align: center;
+            margin: 16px 0;
+            letter-spacing: 0.5px;
+        }
+        .constancia-work-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--uabc-gold);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .table-meta th {
+            width: 32%;
+            background-color: #f1f5f9;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-color: #e2e8f0 !important;
+            padding: 8px 12px;
+        }
+        .table-meta td {
+            font-size: 0.85rem;
+            color: #1e293b;
+            border-color: #e2e8f0 !important;
+            padding: 8px 12px;
+        }
+        .sello-digital-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.72rem;
+            color: #475569;
+            word-break: break-all;
+        }
+        .signature-block {
+            margin-top: 40px;
+            position: relative;
+            z-index: 2;
+        }
+        .signature-line {
+            width: 220px;
+            border-top: 1px solid #1e293b;
+            margin: 0 auto 6px auto;
+        }
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .action-bar {
+                display: none !important;
+            }
+            .constancia-container {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .constancia-border-outer {
+                border-width: 2px !important;
+                padding: 24px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de acciones superior (oculta al imprimir) -->
+    <div class="action-bar">
+        <a href="{% url 'gestion_coautorias' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fas fa-arrow-left me-1"></i> Volver a Coautorías
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm">
+                <i class="fas fa-print me-1"></i> Imprimir / Guardar en PDF
+            </button>
+            <button onclick="window.close()" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="fas fa-times me-1"></i> Cerrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenedor Oficial de la Constancia -->
+    <div class="constancia-container">
+        <div class="header-strip"></div>
+        <div class="constancia-watermark">FCA UABC OFICIAL</div>
+
+        <div class="constancia-border-outer">
+            <!-- Encabezado Institucional -->
+            <div class="row align-items-center pb-3 border-bottom">
+                <div class="col-2 text-center">
+                    <img src="/static/images/LOGO FCA2.png" alt="Logo FCA" style="max-height: 72px;">
+                </div>
+                <div class="col-8 text-center">
+                    <div class="uabc-brand-title">UNIVERSIDAD AUTÓNOMA DE BAJA CALIFORNIA</div>
+                    <div class="fca-brand-subtitle">FACULTAD DE CONTADURÍA Y ADMINISTRACIÓN</div>
+                    <div class="sub-campus">CAMPUS TIJUANA &bull; REPOSITORIO INSTITUCIONAL FCA</div>
+                </div>
+                <div class="col-2 text-center">
+                    <img src="/static/images/UABC.jpeg" alt="Escudo UABC" style="max-height: 70px; object-fit: contain;">
+                </div>
+            </div>
+
+            <!-- Título de la Constancia y Folio -->
+            <div class="text-center my-3">
+                <div class="constancia-folio-pill mb-2">
+                    <i class="fas fa-barcode me-1 text-warning"></i> FOLIO OFICIAL: <strong>{{ folio_constancia }}</strong>
+                </div>
+                <h1 class="constancia-main-title">Constancia Oficial de Coautoría</h1>
+                <div class="constancia-subtitle">Acreditación Académica de Producción Intelectual</div>
+            </div>
+
+            <!-- Texto Oficial de Certificación -->
+            <div class="constancia-body">
+                <p>
+                    La <strong>Dirección de la Facultad de Contaduría y Administración</strong> y el <strong>Comité del Repositorio Institucional de Acceso Abierto</strong> de la Universidad Autónoma de Baja California, hacen constar que:
+                </p>
+
+                <div class="constancia-autor-name">
+                    {{ autor.nombre_con_titulo|default:autor.nombre }}
+                </div>
+
+                <p>
+                    Ha sido acreditado(a) formalmente con la calidad de <strong>COAUTOR(A)</strong> en la producción científica e intelectual arbitrada, registrada y validada en este repositorio institucional bajo la obra:
+                </p>
+
+                <div class="constancia-work-card">
+                    <h5 class="fw-bold mb-2 text-dark" style="font-size: 1.15rem; line-height: 1.4;">
+                        «{{ articulo.titulo }}»
+                    </h5>
+                    {% if articulo.doi_enlace %}
+                    <div class="small text-muted mb-1">
+                        <strong>Identificador Digital (DOI):</strong> <span class="text-primary">{{ articulo.doi_enlace }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tabla de Metadatos de la Obra -->
+                <table class="table table-bordered table-meta mb-3">
+                    <tbody>
+                        <tr>
+                            <th>Tipo de Recurso</th>
+                            <td>{{ articulo.tipo_contenido.nombre|default:"Producción Científica / Académica" }}</td>
+                            <th>Año de Producción</th>
+                            <td>{{ articulo.año_produccion|default:"2026" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Área Académica</th>
+                            <td colspan="3">{{ articulo.area.nombre|default:"Facultad de Contaduría y Administración" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Coautores Acreditados</th>
+                            <td colspan="3">
+                                {% for a in autores_todos %}
+                                    <strong>{{ a.nombre }}</strong>{% if not forloop.last %} &bull; {% endif %}
+                                {% empty %}
+                                    {{ autor.nombre }}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Fecha de Confirmación</th>
+                            <td>{{ invitacion.fecha_respuesta|date:"d \d\e F \d\e Y, H:i" }} hrs.</td>
+                            <th>Estado de Acreditación</th>
+                            <td><span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle me-1"></i> Acreditada y Vigente</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Sello Digital y Verificación -->
+                <div class="sello-digital-box mt-3">
+                    <div class="font-weight-bold text-dark mb-1">SELLO DIGITAL DE CERTIFICACIÓN FCA UABC:</div>
+                    <div class="text-muted">{{ sello_digital }}</div>
+                    <div class="mt-1" style="font-size: 0.68rem; color: #64748b;">
+                        Documento generado electrónicamente por el Repositorio FCA UABC. Válido para cotejo curricular institucional, acreditación CONAHCYT, SNII y expediente académico universitario.
+                    </div>
+                </div>
+
+                <!-- Firmas Institucionales -->
+                <div class="row signature-block text-center pt-4">
+                    <div class="col-6">
+                        <div class="signature-line"></div>
+                        <div class="font-weight-bold" style="font-size: 0.85rem; color: #1e293b;">Coordinación de Posgrado e Investigación</div>
+                        <div class="text-muted" style="font-size: 0.78rem;">Facultad de Contaduría y Administración - UABC</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="signature-line"></div>
+                        <div class="font-weight-bold" style="font-size: 0.85rem; color: #1e293b;">Administración del Repositorio Institucional</div>
+                        <div class="text-muted" style="font-size: 0.78rem;">FCA - Universidad Autónoma de Baja California</div>
+                    </div>
+                </div>
+
+                <!-- Pie institucional -->
+                <div class="text-center text-muted mt-4 pt-2 border-top" style="font-size: 0.74rem;">
+                    Tijuana, Baja California, México &bull; Fecha de Emisión: {{ fecha_emision|date:"d/m/Y H:i" }} hrs. &bull; UABC "Por la Realización Plena del Ser"
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

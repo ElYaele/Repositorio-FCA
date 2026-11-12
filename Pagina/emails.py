@@ -773,6 +773,14 @@ def notificar_respuesta_coautoria(invitacion):
     </div>
     """
 
+    if invitacion.estado == 'rechazada' and invitacion.motivo_rechazo:
+        contenido_html += f"""
+        <p><strong>Nota / Motivo compartido por el colega:</strong></p>
+        <blockquote style="background: #f1f5f9; padding: 10px 14px; border-left: 3px solid #94a3b8; font-style: italic; margin: 10px 0; color: #475569;">
+            {invitacion.motivo_rechazo}
+        </blockquote>
+        """
+
     texto_plano = (
         f"{nombre_invitado} ha {estado_txt.lower()} tu invitación de coautoría para '{invitacion.articulo.titulo}'.\n\n"
         f"Consulta tus obras en Mi Panel: http://127.0.0.1:8000/mi-panel/"

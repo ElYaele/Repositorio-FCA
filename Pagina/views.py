@@ -2479,22 +2479,47 @@ def gestion_coautorias_view(request):
         pendientes = list(InvitacionCoautoria.objects.filter(
             autor_invitado__in=autores_para_coautoria,
             estado='pendiente'
-        ).select_related('articulo', 'articulo__tipo_contenido', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
+        ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
 
         aceptadas = list(InvitacionCoautoria.objects.filter(
             autor_invitado__in=autores_para_coautoria,
             estado='aceptada'
-        ).select_related('articulo', 'articulo__tipo_contenido', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
+        ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
 
         rechazadas = list(InvitacionCoautoria.objects.filter(
             autor_invitado__in=autores_para_coautoria,
             estado='rechazada'
-        ).select_related('articulo', 'articulo__tipo_contenido', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
+        ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'invitado_por', 'invitado_por__autor', 'autor_invitado'))
 
     # Solicitudes enviadas por este usuario a otros autores
     enviadas = list(InvitacionCoautoria.objects.filter(
         invitado_por=request.user
-    ).select_related('articulo', 'articulo__tipo_contenido', 'autor_invitado'))
+    ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'autor_invitado'))
+
+    # <--- IDEA 8: Red de Colaboradores Frecuentes FCA --->
+    colaboradores_frecuentes = []
+    if mi_autor:
+        mis_articulos_ids = mi_autor.documentos.values_list('id', flat=True)
+        if mis_articulos_ids:
+            colab_qs = Autor.objects.filter(
+                documentos__id__in=mis_articulos_ids
+            ).exclude(id=mi_autor.id).annotate(
+                obras_juntos=Count('documentos', distinct=True)
+            ).order_by('-obras_juntos')[:6]
+            colaboradores_frecuentes = list(colab_qs)
+
+    # <--- IDEA 4: Extracción de Tipos y Años para Filtros Rápidos --->
+    todas_invs = pendientes + aceptadas + rechazadas + enviadas
+    tipos_set = set()
+    anios_set = set()
+    for inv in todas_invs:
+        if inv.articulo:
+            if inv.articulo.tipo_contenido and inv.articulo.tipo_contenido.nombre:
+                tipos_set.add(inv.articulo.tipo_contenido.nombre)
+            if inv.articulo.año_produccion:
+                anios_set.add(str(inv.articulo.año_produccion))
+    tipos_disponibles = sorted(list(tipos_set))
+    anios_disponibles = sorted(list(anios_set), reverse=True)
 
     context = {
         'mi_autor': mi_autor,
@@ -2508,6 +2533,9 @@ def gestion_coautorias_view(request):
         'total_enviadas': len(enviadas),
         'es_auxiliar_delegado': es_auxiliar_delegado,
         'mi_tutor': mi_tutor,
+        'colaboradores_frecuentes': colaboradores_frecuentes,
+        'tipos_disponibles': tipos_disponibles,
+        'anios_disponibles': anios_disponibles,
     }
     return render(request, 'coautorias.html', context)
 
@@ -2527,7 +2555,15 @@ def responder_invitacion_coautoria_view(request, invitacion_id):
         invitacion.autor_invitado == mi_autor.profesor_tutor
     )
 
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        request.headers.get('Accept') == 'application/json' or
+        request.content_type == 'application/json'
+    )
+
     if not (es_propia or es_delegada_tutor):
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'No tienes permiso para gestionar esta invitación.'}, status=403)
         messages.error(request, 'No tienes permiso para gestionar esta invitación.')
         return redirect('gestion_coautorias')
 
@@ -2535,11 +2571,14 @@ def responder_invitacion_coautoria_view(request, invitacion_id):
 
     if request.method == 'POST':
         accion = request.POST.get('accion')
+        motivo_rechazo = request.POST.get('motivo_rechazo', '').strip()
         next_url = request.POST.get('next') or request.GET.get('next')
+        msg_feedback = ""
 
         if accion == 'aceptar':
             invitacion.estado = 'aceptada'
             invitacion.fecha_respuesta = timezone.now()
+            invitacion.motivo_rechazo = None
             invitacion.save()
             invitacion.articulo.autor.add(autor_objetivo)
             if es_delegada_tutor:
@@ -2554,14 +2593,32 @@ def responder_invitacion_coautoria_view(request, invitacion_id):
                     )
                 except Exception:
                     pass
-                messages.success(request, f'Has confirmado la coautoría en "{invitacion.articulo.titulo}" en representación del Dr. {autor_objetivo.nombre}.')
+                msg_feedback = f'Has confirmado la coautoría en "{invitacion.articulo.titulo}" en representación del Dr. {autor_objetivo.nombre}.'
+                messages.success(request, msg_feedback)
             else:
-                messages.success(request, f'¡Enhorabuena! Has confirmado tu coautoría en la obra "{invitacion.articulo.titulo}".')
+                msg_feedback = f'¡Enhorabuena! Has confirmado tu coautoría en la obra "{invitacion.articulo.titulo}".'
+                messages.success(request, msg_feedback)
         elif accion == 'rechazar':
             invitacion.estado = 'rechazada'
             invitacion.fecha_respuesta = timezone.now()
+            if motivo_rechazo:
+                invitacion.motivo_rechazo = motivo_rechazo
             invitacion.save()
             invitacion.articulo.autor.remove(autor_objetivo)
+            
+            # Enviar mensaje interno con la nota/motivo de rechazo si fue proporcionado
+            if motivo_rechazo and invitacion.invitado_por and hasattr(invitacion.invitado_por, 'autor') and invitacion.invitado_por.autor:
+                try:
+                    MensajeInterno.objects.create(
+                        remitente=request.user,
+                        destinatario=invitacion.invitado_por.autor,
+                        asunto=f"Declinación de Coautoría: '{invitacion.articulo.titulo[:50]}'",
+                        cuerpo=f"Estimado(a) colega, te informo que decliné la invitación de coautoría en la obra '{invitacion.articulo.titulo}'.\n\nMotivo / Nota:\n{motivo_rechazo}",
+                        es_soporte=False
+                    )
+                except Exception as e:
+                    logger.warning(f"Error al enviar mensaje de declinación: {e}")
+
             if es_delegada_tutor:
                 registrar_auditoria(request.user, "Rechazo de Coautoría por Auxiliar", f"Auxiliar {request.user.username} declinó coautoría en '{invitacion.articulo.titulo}' para su tutor {autor_objetivo.nombre}")
                 try:
@@ -2574,9 +2631,11 @@ def responder_invitacion_coautoria_view(request, invitacion_id):
                     )
                 except Exception:
                     pass
-                messages.info(request, f'Has declinado la coautoría en "{invitacion.articulo.titulo}" en representación de tu tutor.')
+                msg_feedback = f'Has declinado la coautoría en "{invitacion.articulo.titulo}" en representación de tu tutor.'
+                messages.info(request, msg_feedback)
             else:
-                messages.info(request, f'Has declinado figurar como coautor en "{invitacion.articulo.titulo}". La invitación se ha archivado por si deseas reconsiderar en el futuro.')
+                msg_feedback = f'Has declinado figurar como coautor en "{invitacion.articulo.titulo}". La invitación se ha archivado por si deseas reconsiderar en el futuro.'
+                messages.info(request, msg_feedback)
 
         # Notificar por correo electrónico al autor que envió la invitación
         try:
@@ -2584,11 +2643,327 @@ def responder_invitacion_coautoria_view(request, invitacion_id):
         except Exception as e:
             logger.warning(f"Error al enviar correo de respuesta de coautoría: {e}")
 
+        if is_ajax:
+            return JsonResponse({
+                'status': 'ok',
+                'accion': accion,
+                'invitacion_id': invitacion.id,
+                'titulo': invitacion.articulo.titulo,
+                'message': msg_feedback
+            })
+
         if next_url:
             return redirect(next_url)
         return redirect('gestion_coautorias')
 
     return redirect('gestion_coautorias')
+
+
+@login_required
+@require_POST
+def aceptar_todas_coautorias_view(request):
+    """
+    IDEA 2: Acepta en bloque todas las invitaciones de coautoría pendientes del usuario o su tutor delegado.
+    """
+    mi_autor = getattr(request.user, 'autor', None)
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        request.headers.get('Accept') == 'application/json' or
+        request.content_type == 'application/json'
+    )
+
+    if not mi_autor:
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'No tienes perfil de autor registrado.'}, status=400)
+        messages.error(request, 'No tienes perfil de autor registrado.')
+        return redirect('gestion_coautorias')
+
+    autores_para_coautoria = [mi_autor]
+    if mi_autor.es_auxiliar and mi_autor.profesor_tutor and mi_autor.aprobado_por_tutor:
+        autores_para_coautoria.append(mi_autor.profesor_tutor)
+
+    pendientes = list(InvitacionCoautoria.objects.filter(
+        autor_invitado__in=autores_para_coautoria,
+        estado='pendiente'
+    ).select_related('articulo', 'autor_invitado', 'invitado_por'))
+
+    count = 0
+    now = timezone.now()
+    for inv in pendientes:
+        inv.estado = 'aceptada'
+        inv.fecha_respuesta = now
+        inv.save()
+        inv.articulo.autor.add(inv.autor_invitado)
+        count += 1
+        try:
+            notificar_respuesta_coautoria(inv)
+        except Exception:
+            pass
+
+    registrar_auditoria(
+        request.user, 
+        "Aceptación Masiva de Coautorías", 
+        f"El usuario {request.user.username} confirmó en bloque {count} invitaciones de coautoría pendientes."
+    )
+
+    msg_ok = f'¡Enhorabuena! Se confirmaron {count} invitaciones de coautoría exitosamente.'
+    if is_ajax:
+        return JsonResponse({
+            'status': 'ok',
+            'count': count,
+            'message': msg_ok
+        })
+
+    messages.success(request, msg_ok)
+    return redirect('gestion_coautorias')
+
+
+@login_required
+@require_POST
+def cancelar_invitacion_coautoria_view(request, invitacion_id):
+    """
+    IDEA 7: Permite al remitente revocar/cancelar una invitación de coautoría enviada por error.
+    """
+    invitacion = get_object_or_404(InvitacionCoautoria, id=invitacion_id)
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        request.headers.get('Accept') == 'application/json' or
+        request.content_type == 'application/json'
+    )
+
+    if invitacion.invitado_por != request.user and not request.user.is_superuser:
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'No tienes permiso para cancelar esta invitación.'}, status=403)
+        messages.error(request, 'No tienes permiso para cancelar esta invitación.')
+        return redirect('gestion_coautorias')
+
+    if invitacion.estado != 'pendiente':
+        msg = 'Solo es posible revocar invitaciones que aún se encuentren pendientes de confirmación.'
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.warning(request, msg)
+        return redirect('gestion_coautorias')
+
+    titulo_obra = invitacion.articulo.titulo
+    colega_nombre = invitacion.autor_invitado.nombre
+    invitacion.delete()
+
+    registrar_auditoria(
+        request.user,
+        "Cancelación de Invitación de Coautoría",
+        f"Invitación de coautoría a {colega_nombre} para '{titulo_obra}' revocada y eliminada por el remitente."
+    )
+
+    msg_ok = f'La invitación enviada a {colega_nombre} para "{titulo_obra}" ha sido cancelada.'
+    if is_ajax:
+        return JsonResponse({
+            'status': 'ok',
+            'invitacion_id': invitacion_id,
+            'message': msg_ok
+        })
+
+    messages.info(request, msg_ok)
+    return redirect('gestion_coautorias')
+
+
+@login_required
+@require_POST
+def enviar_recordatorio_coautoria_view(request, invitacion_id):
+    """
+    IDEA 6: Envía un recordatorio formal por Mensajería Interna FCA al colega invitado.
+    """
+    invitacion = get_object_or_404(InvitacionCoautoria, id=invitacion_id)
+    is_ajax = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        request.headers.get('Accept') == 'application/json' or
+        request.content_type == 'application/json'
+    )
+
+    if invitacion.invitado_por != request.user and not request.user.is_superuser:
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'No tienes permiso para gestionar esta invitación.'}, status=403)
+        messages.error(request, 'No tienes permiso para enviar este recordatorio.')
+        return redirect('gestion_coautorias')
+
+    if invitacion.estado != 'pendiente':
+        msg = 'Esta invitación ya no está pendiente.'
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.info(request, msg)
+        return redirect('gestion_coautorias')
+
+    # Crear recordatorio en MensajeInterno
+    remitente_nombre = request.user.get_full_name() or request.user.username
+    asunto = f"Recordatorio de Coautoría: '{invitacion.articulo.titulo[:50]}'"
+    cuerpo = (
+        f"Estimado(a) {invitacion.autor_invitado.nombre},\n\n"
+        f"Te envío un cordial recordatorio para confirmar tu participación como coautor(a) en la obra "
+        f"'{invitacion.articulo.titulo}', registrada en el Repositorio FCA UABC.\n\n"
+        f"Puedes responder ingresando a: Centro de Gestión de Coautorías (/coautorias/)."
+    )
+
+    try:
+        MensajeInterno.objects.create(
+            remitente=request.user,
+            destinatario=invitacion.autor_invitado,
+            asunto=asunto,
+            cuerpo=cuerpo,
+            es_soporte=False
+        )
+    except Exception as e:
+        logger.warning(f"Error al enviar mensaje interno de recordatorio: {e}")
+
+    invitacion.recordatorio_enviado = timezone.now()
+    invitacion.save(update_fields=['recordatorio_enviado'])
+
+    msg_ok = f'Recordatorio enviado con éxito al Dr./Mtro. {invitacion.autor_invitado.nombre}.'
+    if is_ajax:
+        return JsonResponse({
+            'status': 'ok',
+            'invitacion_id': invitacion_id,
+            'message': msg_ok,
+            'recordatorio_enviado': invitacion.recordatorio_enviado.strftime('%d/%m/%Y %H:%M')
+        })
+
+    messages.success(request, msg_ok)
+    return redirect('gestion_coautorias')
+
+
+@login_required
+def exportar_coautorias_csv_view(request):
+    """
+    IDEA 10: Exporta reporte de coautorías del usuario a CSV con codificación UTF-8 con BOM (para compatibilidad con Microsoft Excel).
+    """
+    import csv
+    mi_autor = getattr(request.user, 'autor', None)
+    autores_para_coautoria = [mi_autor] if mi_autor else []
+    if mi_autor and mi_autor.es_auxiliar and mi_autor.profesor_tutor and mi_autor.aprobado_por_tutor:
+        autores_para_coautoria.append(mi_autor.profesor_tutor)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="reporte_coautorias_fca_uabc.csv"'
+    response.write('\ufeff'.encode('utf-8'))
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'ID Invitación',
+        'Relación',
+        'Estado',
+        'Título de la Obra',
+        'Tipo de Recurso',
+        'Año de Producción',
+        'Área Académica',
+        'Colega / Contraparte',
+        'Institución',
+        'Fecha Invitación',
+        'Fecha Respuesta',
+        'Motivo / Nota Declinación',
+        'Enlace DOI / URI'
+    ])
+
+    if autores_para_coautoria:
+        recibidas = InvitacionCoautoria.objects.filter(
+            autor_invitado__in=autores_para_coautoria
+        ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'invitado_por', 'invitado_por__autor')
+        
+        for inv in recibidas:
+            contraparte = inv.invitado_por.autor.nombre if hasattr(inv.invitado_por, 'autor') and inv.invitado_por.autor else inv.invitado_por.username
+            institucion = inv.invitado_por.autor.institucion_origen if hasattr(inv.invitado_por, 'autor') and inv.invitado_por.autor else 'FCA UABC'
+            doi_uri = inv.articulo.doi_enlace or ''
+            writer.writerow([
+                inv.id,
+                'Recibida',
+                inv.get_estado_display(),
+                inv.articulo.titulo,
+                inv.articulo.tipo_contenido.nombre if inv.articulo.tipo_contenido else 'N/A',
+                inv.articulo.año_produccion or 'N/A',
+                inv.articulo.area.nombre if inv.articulo.area else 'N/A',
+                contraparte,
+                institucion,
+                inv.fecha_creacion.strftime('%d/%m/%Y %H:%M') if inv.fecha_creacion else '',
+                inv.fecha_respuesta.strftime('%d/%m/%Y %H:%M') if inv.fecha_respuesta else '',
+                inv.motivo_rechazo or (inv.mensaje or ''),
+                doi_uri
+            ])
+
+    enviadas = InvitacionCoautoria.objects.filter(
+        invitado_por=request.user
+    ).select_related('articulo', 'articulo__tipo_contenido', 'articulo__area', 'autor_invitado')
+    for inv in enviadas:
+        contraparte = inv.autor_invitado.nombre if inv.autor_invitado else 'N/A'
+        institucion = inv.autor_invitado.institucion_origen if inv.autor_invitado else 'FCA UABC'
+        doi_uri = inv.articulo.doi_enlace or ''
+        writer.writerow([
+            inv.id,
+            'Enviada a Colega',
+            inv.get_estado_display(),
+            inv.articulo.titulo,
+            inv.articulo.tipo_contenido.nombre if inv.articulo.tipo_contenido else 'N/A',
+            inv.articulo.año_produccion or 'N/A',
+            inv.articulo.area.nombre if inv.articulo.area else 'N/A',
+            contraparte,
+            institucion,
+            inv.fecha_creacion.strftime('%d/%m/%Y %H:%M') if inv.fecha_creacion else '',
+            inv.fecha_respuesta.strftime('%d/%m/%Y %H:%M') if inv.fecha_respuesta else '',
+            inv.motivo_rechazo or (inv.mensaje or ''),
+            doi_uri
+        ])
+
+    registrar_auditoria(request.user, "Exportación de Coautorías", "Descargó reporte en formato CSV de coautorías institucionales.")
+    return response
+
+
+@login_required
+def constancia_coautoria_view(request, invitacion_id):
+    """
+    IDEA 9: Constancia Oficial de Coautoría Académica con membrete institucional FCA UABC,
+    folio de certificación y firmas de autoridad académica.
+    """
+    import hashlib
+    invitacion = get_object_or_404(
+        InvitacionCoautoria.objects.select_related(
+            'articulo', 'articulo__tipo_contenido', 'articulo__area', 'autor_invitado', 'invitado_por'
+        ),
+        id=invitacion_id
+    )
+
+    mi_autor = getattr(request.user, 'autor', None)
+    es_autor_invitado = bool(mi_autor and invitacion.autor_invitado == mi_autor)
+    es_remitente = bool(invitacion.invitado_por == request.user)
+    es_delegada_tutor = bool(
+        mi_autor and mi_autor.es_auxiliar and mi_autor.profesor_tutor and invitacion.autor_invitado == mi_autor.profesor_tutor
+    )
+
+    if not (es_autor_invitado or es_remitente or es_delegada_tutor or request.user.is_staff or request.user.is_superuser):
+        messages.error(request, 'No tienes permiso para consultar esta constancia de coautoría.')
+        return redirect('gestion_coautorias')
+
+    if invitacion.estado != 'aceptada':
+        messages.warning(request, 'La constancia oficial únicamente puede emitirse para colaboraciones que hayan sido debidamente confirmadas.')
+        return redirect('gestion_coautorias')
+
+    articulo = invitacion.articulo
+    autores_todos = articulo.autor.all()
+
+    anio = articulo.año_produccion or timezone.now().year
+    folio_constancia = f"FCA-COAUT-{anio}-{invitacion.id:05d}"
+    
+    raw_hash = f"{invitacion.id}-{articulo.id}-{invitacion.autor_invitado.id}-{invitacion.fecha_respuesta}"
+    sello_digital = hashlib.sha256(raw_hash.encode('utf-8')).hexdigest()[:32].upper()
+
+    context = {
+        'invitacion': invitacion,
+        'articulo': articulo,
+        'autor': invitacion.autor_invitado,
+        'autores_todos': autores_todos,
+        'folio_constancia': folio_constancia,
+        'sello_digital': sello_digital,
+        'fecha_emision': timezone.now(),
+        'institucion': 'Universidad Autónoma de Baja California',
+        'facultad': 'Facultad de Contaduría y Administración',
+        'campus': 'Campus Tijuana',
+    }
+    return render(request, 'constancia_coautoria.html', context)
 
 
 @login_required

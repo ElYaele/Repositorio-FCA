@@ -59,6 +59,11 @@ from .views import (
     desactivar_cuenta_propia_view,
     gestion_coautorias_view,
     responder_invitacion_coautoria_view,
+    aceptar_todas_coautorias_view,
+    cancelar_invitacion_coautoria_view,
+    enviar_recordatorio_coautoria_view,
+    exportar_coautorias_csv_view,
+    constancia_coautoria_view,
     mensajeria_view,
     soporte_institucional_view,
     enviar_mensaje_interno_view,
@@ -147,6 +152,11 @@ urlpatterns = [
     # Módulo de Coautorías e Invitaciones Académicas
     path('coautorias/', gestion_coautorias_view, name='gestion_coautorias'),
     path('coautorias/<int:invitacion_id>/responder/', responder_invitacion_coautoria_view, name='responder_invitacion_coautoria'),
+    path('coautorias/aceptar-todas/', aceptar_todas_coautorias_view, name='aceptar_todas_coautorias'),
+    path('coautorias/<int:invitacion_id>/cancelar/', cancelar_invitacion_coautoria_view, name='cancelar_invitacion_coautoria'),
+    path('coautorias/<int:invitacion_id>/recordar/', enviar_recordatorio_coautoria_view, name='enviar_recordatorio_coautoria'),
+    path('coautorias/exportar-csv/', exportar_coautorias_csv_view, name='exportar_coautorias_csv'),
+    path('coautorias/<int:invitacion_id>/constancia/', constancia_coautoria_view, name='constancia_coautoria'),
 
     # Módulo de Mensajería Académica entre Colegas
     path('mensajeria/', mensajeria_view, name='mensajeria'),

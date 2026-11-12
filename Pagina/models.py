@@ -1062,8 +1062,10 @@ class InvitacionCoautoria(models.Model):
     invitado_por = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invitaciones_enviadas')
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     mensaje = models.CharField(max_length=255, blank=True, null=True, verbose_name="Nota / Mensaje de invitación")
+    motivo_rechazo = models.TextField(blank=True, null=True, verbose_name="Motivo de declinación")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_respuesta = models.DateTimeField(null=True, blank=True)
+    recordatorio_enviado = models.DateTimeField(null=True, blank=True, verbose_name="Último recordatorio enviado")
 
     class Meta:
         ordering = ['-fecha_creacion']
