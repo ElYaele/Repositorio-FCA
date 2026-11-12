@@ -1163,7 +1163,16 @@
                                             <i class="fas fa-info-circle me-1 text-muted"></i>
                                             {% if ev.mostrar_si_paso %}Aparece en gris tras la fecha{% else %}Se oculta automáticamente al vencer{% endif %}
                                         </small>
-                                        <div class="d-flex gap-2">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            {% if ev.activo %}
+                                                <a href="{% url 'toggle_evento_fca' ev.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="Ocultar de la portada principal">
+                                                    <i class="fas fa-eye-slash me-1"></i>Ocultar
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'toggle_evento_fca' ev.id %}" class="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="Hacer visible en la portada principal">
+                                                    <i class="fas fa-eye me-1"></i>Hacer Visible
+                                                </a>
+                                            {% endif %}
                                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 btn-editar-evento fw-bold"
                                                     data-id="{{ ev.id }}"
                                                     data-titulo="{{ ev.titulo|escape }}"
@@ -1349,7 +1358,16 @@
                                                 <i class="fas fa-link me-1"></i>{{ lk.url }}
                                             </p>
                                         </div>
-                                        <div class="d-flex justify-content-end gap-1.5 pt-2 border-top">
+                                        <div class="d-flex justify-content-end align-items-center gap-1.5 pt-2 border-top">
+                                            {% if lk.activo %}
+                                                <a href="{% url 'toggle_enlace_rapido' lk.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;" title="Ocultar de la portada principal">
+                                                    <i class="fas fa-eye-slash me-1"></i>Ocultar
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'toggle_enlace_rapido' lk.id %}" class="btn btn-outline-success btn-sm rounded-pill px-2.5 py-0.5 fw-bold" style="font-size: 0.74rem;" title="Hacer visible en la portada principal">
+                                                    <i class="fas fa-eye me-1"></i>Hacer Visible
+                                                </a>
+                                            {% endif %}
                                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-2.5 py-0.5 btn-editar-enlace fw-bold"
                                                     data-id="{{ lk.id }}"
                                                     data-titulo="{{ lk.titulo|escape }}"

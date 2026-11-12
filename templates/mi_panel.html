@@ -4674,6 +4674,12 @@
                                 </div>
                             </div>
                         </div>
+                        {% empty %}
+                        <div class="card border-0 shadow-xs rounded-3 bg-light p-4 text-center">
+                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                            <h6 class="fw-bold mb-1">Criterios Evaluados y Validados</h6>
+                            <p class="text-muted small mb-0">Tu expediente institucional cuenta con todas las credenciales oficiales completadas.</p>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>

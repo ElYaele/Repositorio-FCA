@@ -1806,11 +1806,9 @@ def validar_recuperar_password_view(request, user_id):
 
 def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     items = []
-    if not autor:
-        return 100, [], []
 
     # 1. Nombre completo
-    tiene_nombre = bool(autor.nombres and autor.apellido_paterno)
+    tiene_nombre = bool((autor and autor.nombres and autor.apellido_paterno) or (user and user.first_name and user.last_name) or (autor and len(autor.nombre.strip().split()) >= 2))
     items.append({
         'criterio': 'Nombre y Apellidos Oficiales',
         'completado': tiene_nombre,
@@ -1821,7 +1819,7 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     })
 
     # 2. Correo de contacto
-    tiene_correo = bool(autor.correo or user.email)
+    tiene_correo = bool((autor and autor.correo) or (user and user.email))
     items.append({
         'criterio': 'Correo Electrónico de Contacto',
         'completado': tiene_correo,
@@ -1832,7 +1830,7 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     })
 
     # 3. Foto personal
-    tiene_foto = bool(autor.foto_personal or autor.foto_perfil)
+    tiene_foto = bool(autor and (autor.foto_personal or autor.foto_perfil))
     items.append({
         'criterio': 'Fotografía de Perfil Personal',
         'completado': tiene_foto,
@@ -1843,7 +1841,7 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     })
 
     # 4. Fecha de nacimiento
-    tiene_nacimiento = bool(autor.fecha_nacimiento)
+    tiene_nacimiento = bool(autor and autor.fecha_nacimiento)
     items.append({
         'criterio': 'Fecha de Nacimiento',
         'completado': tiene_nacimiento,
@@ -1854,7 +1852,17 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
     })
 
     # 5. Identificación institucional
-    if autor.es_auxiliar:
+    if user.is_superuser:
+        tiene_id = bool((autor and autor.numero_empleado) or user.is_superuser)
+        items.append({
+            'criterio': 'Identificación Institucional / Empleado',
+            'completado': tiene_id,
+            'descripcion': 'Número institucional de nómina o perfil verificado de Administrador de la plataforma.',
+            'modal_target': '#modalActualizarDatosCuenta',
+            'es_modal': True,
+            'icono': 'fas fa-id-badge'
+        })
+    elif autor and autor.es_auxiliar:
         tiene_id = bool(autor.matricula_estudiante)
         items.append({
             'criterio': 'Matrícula Estudiantil / Folio',
@@ -1865,7 +1873,7 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
             'icono': 'fas fa-fingerprint'
         })
     else:
-        tiene_id = bool(autor.numero_empleado)
+        tiene_id = bool(autor and autor.numero_empleado)
         items.append({
             'criterio': 'Número de Empleado Institucional',
             'completado': tiene_id,
@@ -1875,9 +1883,9 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
             'icono': 'fas fa-id-badge'
         })
 
-    # 6. Semblanza académica (solo si aplica)
-    if autor.puede_tener_semblanza:
-        tiene_semblanza = bool(autor.biografia or autor.biografia_borrador)
+    # 6. Semblanza académica (solo si aplica o profesor)
+    if not autor or autor.puede_tener_semblanza:
+        tiene_semblanza = bool(autor and (autor.biografia or autor.biografia_borrador))
         items.append({
             'criterio': 'Semblanza Académica o Biografía',
             'completado': tiene_semblanza,
@@ -1888,15 +1896,26 @@ def calcular_completitud_perfil(user, autor, mis_subidas_qs, mis_coautorias_qs):
         })
 
     # 7. Al menos una obra o coautoría
-    tiene_obras = bool(mis_subidas_qs.exists() or mis_coautorias_qs.exists())
-    items.append({
-        'criterio': 'Al menos una Obra o Coautoría Registrada',
-        'completado': tiene_obras,
-        'descripcion': 'Registrar tu primer trabajo de investigación, artículo, tesis o propiedad intelectual.',
-        'modal_target': reverse('upload_document'),
-        'es_modal': False,
-        'icono': 'fas fa-cloud-upload-alt'
-    })
+    if user.is_superuser:
+        tiene_obras = bool((mis_subidas_qs and mis_subidas_qs.exists()) or (mis_coautorias_qs and mis_coautorias_qs.exists()) or user.is_superuser)
+        items.append({
+            'criterio': 'Producción Académica / Rol Institucional',
+            'completado': tiene_obras,
+            'descripcion': 'Publicación de investigación registrada o rol de Administrador Institucional.',
+            'modal_target': reverse('upload_document'),
+            'es_modal': False,
+            'icono': 'fas fa-cloud-upload-alt'
+        })
+    else:
+        tiene_obras = bool((mis_subidas_qs and mis_subidas_qs.exists()) or (mis_coautorias_qs and mis_coautorias_qs.exists()))
+        items.append({
+            'criterio': 'Al menos una Obra o Coautoría Registrada',
+            'completado': tiene_obras,
+            'descripcion': 'Registrar tu primer trabajo de investigación, artículo, tesis o propiedad intelectual.',
+            'modal_target': reverse('upload_document'),
+            'es_modal': False,
+            'icono': 'fas fa-cloud-upload-alt'
+        })
 
     total = len(items)
     completados = sum(1 for it in items if it['completado'])
@@ -2023,6 +2042,37 @@ def obtener_actividad_reciente_usuario(user, autor, mis_subidas_qs):
 @login_required
 def mi_panel_view(request):
     mi_autor = getattr(request.user, 'autor', None)
+    if not mi_autor and request.user.is_authenticated:
+        mi_autor = Autor.objects.filter(usuario=request.user).first()
+        if not mi_autor and request.user.email:
+            mi_autor = Autor.objects.filter(correo__iexact=request.user.email, usuario__isnull=True).first()
+            if mi_autor:
+                mi_autor.usuario = request.user
+                mi_autor.save(update_fields=['usuario'])
+        if not mi_autor:
+            nombre_completo = f"{request.user.first_name} {request.user.last_name}".strip()
+            if nombre_completo:
+                mi_autor = Autor.objects.filter(nombre__iexact=nombre_completo, usuario__isnull=True).first()
+                if mi_autor:
+                    mi_autor.usuario = request.user
+                    mi_autor.save(update_fields=['usuario'])
+        if not mi_autor:
+            nombre_display = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+            partes = nombre_display.split()
+            nombres = " ".join(partes[:-2]) if len(partes) >= 3 else (partes[0] if partes else request.user.username)
+            ap_pat = partes[-2] if len(partes) >= 3 else (partes[1] if len(partes) == 2 else '')
+            ap_mat = partes[-1] if len(partes) >= 3 else ''
+            mi_autor = Autor.objects.create(
+                usuario=request.user,
+                nombre=nombre_display,
+                nombres=nombres,
+                apellido_paterno=ap_pat,
+                apellido_materno=ap_mat,
+                correo=request.user.email or '',
+                institucion_origen='Facultad de Contaduría y Administración - UABC',
+                es_profesor=not request.user.is_superuser,
+                rol_facultad='SOPORTE' if request.user.is_superuser else 'OTRO'
+            )
 
     # <--- MEJORA 2: Paginación en Paneles con Búsqueda Global en BD --->
     q_subidas = request.GET.get('q_subidas', '').strip()
@@ -2093,7 +2143,8 @@ def mi_panel_view(request):
         cumpleaneros_hoy = [p for p in todos_profes if getattr(p, 'es_cumpleanos_hoy', False)]
 
     # Roles y nombramientos del usuario
-    mi_autor = getattr(request.user, 'autor', None)
+    if not mi_autor:
+        mi_autor = getattr(request.user, 'autor', None)
     mis_roles_codigos = []
     cargo_custom_actual = ''
     cargos_custom_actuales = []
