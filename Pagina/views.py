@@ -533,6 +533,33 @@ class ArticuloDocenteEditarView(UpdateView):
         if articulo.idioma:
             articulo.idioma = articulo.idioma.strip().title()
 
+        # Detección inteligente de cambios y Diff (Idea 2)
+        obj_previo = Articulo.objects.filter(id=self.kwargs.get('pk')).first()
+        cambios_detectados = []
+        if obj_previo:
+            if obj_previo.titulo != articulo.titulo:
+                cambios_detectados.append({"campo": "Título de la obra", "anterior": obj_previo.titulo, "nuevo": articulo.titulo})
+            if (obj_previo.descripcion or '').strip() != (articulo.descripcion or '').strip():
+                cambios_detectados.append({"campo": "Resumen / Descripción", "anterior": (obj_previo.descripcion or '')[:120], "nuevo": (articulo.descripcion or '')[:120]})
+            if obj_previo.año_produccion != articulo.año_produccion:
+                cambios_detectados.append({"campo": "Año de producción", "anterior": str(obj_previo.año_produccion or ''), "nuevo": str(articulo.año_produccion or '')})
+            if (obj_previo.doi_enlace or '').strip() != (articulo.doi_enlace or '').strip():
+                cambios_detectados.append({"campo": "Enlace DOI", "anterior": obj_previo.doi_enlace or 'Sin DOI', "nuevo": articulo.doi_enlace or 'Sin DOI'})
+            if (obj_previo.isbn_issn or '').strip() != (articulo.isbn_issn or '').strip():
+                cambios_detectados.append({"campo": "ISBN / ISSN", "anterior": obj_previo.isbn_issn or 'Sin registro', "nuevo": articulo.isbn_issn or 'Sin registro'})
+            if (obj_previo.palabras_clave or '').strip() != (articulo.palabras_clave or '').strip():
+                cambios_detectados.append({"campo": "Palabras clave", "anterior": obj_previo.palabras_clave or 'Sin keywords', "nuevo": articulo.palabras_clave or 'Sin keywords'})
+            if 'pdf' in self.request.FILES:
+                cambios_detectados.append({"campo": "Archivo PDF", "anterior": "Documento anterior", "nuevo": self.request.FILES['pdf'].name})
+            if obj_previo.tipo_contenido_id != articulo.tipo_contenido_id:
+                cambios_detectados.append({"campo": "Tipo de contenido", "anterior": str(obj_previo.tipo_contenido), "nuevo": str(articulo.tipo_contenido)})
+            if obj_previo.area_id != articulo.area_id:
+                cambios_detectados.append({"campo": "Área académica", "anterior": str(obj_previo.area), "nuevo": str(articulo.area)})
+
+        if cambios_detectados and (articulo.estado in ['rechazado', 'pendiente'] or articulo.ultimo_motivo_rechazo):
+            articulo.campos_modificados_recientes = json.dumps(cambios_detectados, ensure_ascii=False)
+            articulo.fecha_ultimo_reenvio = timezone.now()
+
         mi_autor = getattr(self.request.user, 'autor', None)
         es_auxiliar = bool(mi_autor and mi_autor.es_auxiliar and mi_autor.profesor_tutor and mi_autor.aprobado_por_tutor)
         tutor = mi_autor.profesor_tutor if es_auxiliar else None
@@ -3781,6 +3808,125 @@ def enriquecer_con_deteccion_duplicados(documentos):
                 }
 
 
+def calcular_sla_documento(doc, ahora=None):
+    """
+    Semáforo SLA de antigüedad en días hábiles (Idea 13).
+    Calcula los días hábiles transcurridos desde que la obra entró a revisión
+    (o desde su último reenvío corregido), excluyendo sábados, domingos y
+    periodos oficiales de descanso de la UABC (vacaciones y festivos institucionales).
+    """
+    if not doc:
+        return None
+
+    if ahora is None:
+        ahora = timezone.now()
+
+    fecha_base = getattr(doc, 'fecha_ultimo_reenvio', None) or getattr(doc, 'created_at', None)
+    if not fecha_base:
+        return None
+
+    # Días festivos oficiales recurrentes de México y calendario institucional UABC (mes, dia)
+    FESTIVOS_FIJOS = {
+        (1, 1),   # Año Nuevo
+        (2, 5),   # Día de la Constitución
+        (3, 21),  # Natalicio de Benito Juárez
+        (5, 1),   # Día del Trabajo
+        (5, 5),   # Batalla de Puebla
+        (5, 15),  # Día del Maestro
+        (9, 16),  # Independencia de México
+        (11, 20), # Revolución Mexicana
+        (12, 25), # Navidad
+    }
+
+    cursor = fecha_base.date()
+    fin = ahora.date()
+
+    dias_habiles = 0
+    while cursor < fin:
+        cursor += timedelta(days=1)
+        # Sábado (5) o Domingo (6)
+        if cursor.weekday() >= 5:
+            continue
+        # Feriados oficiales
+        if (cursor.month, cursor.day) in FESTIVOS_FIJOS:
+            continue
+        # Periodo vacacional de verano UABC (mes de julio completo)
+        if cursor.month == 7:
+            continue
+        # Vacaciones de invierno UABC (20 de dic a 5 de enero)
+        if cursor.month == 12 and cursor.day >= 20:
+            continue
+        if cursor.month == 1 and cursor.day <= 5:
+            continue
+        dias_habiles += 1
+
+    # Clasificación de SLA institucional
+    if dias_habiles <= 2:
+        return {
+            'dias_habiles': dias_habiles,
+            'nivel': 'verde',
+            'color': 'success',
+            'badge_class': 'bg-success',
+            'icon': 'fa-check-circle',
+            'texto': f"{dias_habiles}d hábil{'es' if dias_habiles != 1 else ''} (En tiempo)" if dias_habiles > 0 else "< 24h hábiles (Al día)",
+            'tooltip': f"Ingresó hace {dias_habiles} día(s) hábil(es). Dentro del margen institucional UABC (≤ 48h)."
+        }
+    elif dias_habiles <= 5:
+        return {
+            'dias_habiles': dias_habiles,
+            'nivel': 'amarillo',
+            'color': 'warning',
+            'badge_class': 'bg-warning',
+            'icon': 'fa-hourglass-half',
+            'texto': f"{dias_habiles}d hábiles (Atención)",
+            'tooltip': f"Lleva {dias_habiles} días hábiles en espera de moderación. Requiere atención pronta."
+        }
+    else:
+        return {
+            'dias_habiles': dias_habiles,
+            'nivel': 'rojo',
+            'color': 'danger',
+            'badge_class': 'bg-danger',
+            'icon': 'fa-fire',
+            'texto': f"{dias_habiles}d hábiles (Urgente)",
+            'tooltip': f"Excedió el SLA institucional de 5 días hábiles ({dias_habiles} días acumulados). Prioridad alta."
+        }
+
+
+def enriquecer_documentos_moderacion(documentos):
+    """
+    Enriquece los documentos con:
+    1. Detección de duplicados (Idea 3)
+    2. Semáforo SLA en días hábiles (Idea 13)
+    3. Comparador visual de correcciones y Diff (Idea 2)
+    """
+    if not documentos:
+        return
+
+    enriquecer_con_deteccion_duplicados(documentos)
+
+    ahora = timezone.now()
+    for doc in documentos:
+        # 1. Semáforo SLA (únicamente en espera de revisión)
+        if getattr(doc, 'estado', '') == 'pendiente':
+            doc.sla = calcular_sla_documento(doc, ahora)
+        else:
+            doc.sla = None
+
+        # 2. Diff de correcciones tras observaciones
+        cambios_raw = getattr(doc, 'campos_modificados_recientes', '')
+        if cambios_raw:
+            try:
+                doc.lista_cambios = json.loads(cambios_raw)
+                doc.es_reenvio_corregido = bool(doc.lista_cambios)
+            except Exception:
+                doc.lista_cambios = []
+                doc.es_reenvio_corregido = False
+        else:
+            doc.lista_cambios = []
+            doc.es_reenvio_corregido = False
+
+
 def calcular_metricas_semestre(anio, semestre):
     """
     Calcula con precisión las métricas cuantitativas e indicadores de impacto de un periodo semestral
@@ -3955,18 +4101,18 @@ def panel_usuarios_view(request):
     page_docs = request.GET.get('page_docs') or request.GET.get('page')
     todos_documentos = paginator_docs.get_page(page_docs)
 
-    # Detección inteligente de duplicados (Idea 3)
-    enriquecer_con_deteccion_duplicados(todos_documentos.object_list)
+    # Enriquecimiento de documentos: Duplicados, SLA en días hábiles y Diff de correcciones (Bloque 1)
+    enriquecer_documentos_moderacion(todos_documentos.object_list)
 
     paginator_pendientes = Paginator(documentos_pendientes_qs, 20)
     page_pendientes = request.GET.get('page_pendientes')
     documentos_pendientes = paginator_pendientes.get_page(page_pendientes)
-    enriquecer_con_deteccion_duplicados(documentos_pendientes.object_list)
+    enriquecer_documentos_moderacion(documentos_pendientes.object_list)
 
     paginator_auto = Paginator(subidas_automaticas_qs, 20)
     page_auto = request.GET.get('page_auto')
     subidas_automaticas = paginator_auto.get_page(page_auto)
-    enriquecer_con_deteccion_duplicados(subidas_automaticas.object_list)
+    enriquecer_documentos_moderacion(subidas_automaticas.object_list)
 
     # Métricas de publicaciones de confianza (directas)
     subidas_auto_pendientes_chequeo = Articulo.objects.filter(es_subida_automatica=True, chequeado_por_moderador=False, en_papelera=False).count()
@@ -5164,6 +5310,9 @@ def rechazar_documento_view(request, doc_id):
 
         articulo.estado = 'rechazado'
         articulo.motivo_rechazo = motivo_final
+        articulo.ultimo_motivo_rechazo = motivo_final
+        articulo.campos_modificados_recientes = ''
+        articulo.fecha_ultimo_reenvio = None
         articulo.moderado_por = request.user
         articulo.save()
 

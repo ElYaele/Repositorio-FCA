@@ -913,6 +913,11 @@ class Articulo(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente')
     motivo_rechazo = models.TextField(blank=True, null=True, verbose_name="Motivo del rechazo (si aplica)")
 
+    # Trazabilidad de correcciones y Diff (Idea 2)
+    ultimo_motivo_rechazo = models.TextField(blank=True, null=True, verbose_name="Última observación de rechazo registrada")
+    campos_modificados_recientes = models.TextField(blank=True, null=True, verbose_name="Campos modificados tras observación (JSON)")
+    fecha_ultimo_reenvio = models.DateTimeField(blank=True, null=True, verbose_name="Fecha del último reenvío corregido")
+
     moderado_por = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
