@@ -5,13 +5,17 @@ Plantilla Maestra: templates/Base.html
 Descripción: Maquetación Principal del Portal Público, Carrusel Institucional, Metabuscador y Pie Dinámico.
 Autor: Facultad de Contaduría y Administración - Campus Tijuana
 ====================================================================================================
-Estructura y Componentes:
-- Cabecera Institucional: Logotipos oficiales UABC y FCA, navegación responsive, selector de perfil activo.
-- Carrusel de Eventos FCA: Cartelera académica y convocatorias universitarias con navegación por puntos (dots).
-- Metabuscador Rápido: Barra de búsqueda multifactorial integrada en portada.
-- Métricas Universitarias: Contadores en tiempo real (artículos, tesis, claustro de profesores y descargas).
-- Asistente de Soporte Interactivo: Simulador flotante y canal directo con la mesa de ayuda.
-- Pie de Página Dinámico: Columnas parametrizables (FCA, Estudiantes, Docentes, Institucional) y redes oficiales.
+GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
+----------------------------------------------------------------------------------------------------
+- BLOQUE 0: ESTILOS CSS GLOBALES DEL PORTAL Y COMPONENTES
+- BLOQUE 1: CABECERA INSTITUCIONAL, LOGOTIPOS UABC/FCA Y NAVEGACIÓN RESPONSIVE
+- BLOQUE 2: MODALES INFORMATIVOS DE FILTROS Y EXPLORACIÓN DE METADATOS
+- BLOQUE 3: CARRUSEL INTELIGENTE DE ENLACES RÁPIDOS E INDEXADORES
+- BLOQUE 4: CARRUSEL INTERACTIVO DE PRÓXIMOS EVENTOS FCA (DOTS Y AUTOPLAY)
+- BLOQUE 5: CARRUSEL DE RECURSOS DESTACADOS INSTITUCIONALES UABC
+- BLOQUE 6: MODALES GLOBALES DE DETALLE DE OBRA, VISOR PDF Y COMPARTIR EN REDES
+- BLOQUE 7: PIE DE PÁGINA DINÁMICO INSTITUCIONAL (FOOTER PARAMETRIZABLE)
+- BLOQUE 8: SCRIPTS JAVASCRIPT GLOBALES, CARRUSELES ADAPTATIVOS Y VISOR PDF
 ====================================================================================================
 #}
 <!DOCTYPE html>
@@ -26,6 +30,14 @@ Estructura y Componentes:
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 0: ESTILOS CSS GLOBALES DEL PORTAL Y COMPONENTES                                               #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Establece las variables CSS institucionales (verde UABC #2c5234/#006633, dorado #f0ad4e/#dd971a),  #}
+    {#   las reglas tipográficas (fuente Roboto), estilos de barra superior, carruseles multitarjeta,        #}
+    {#   tarjetas de resultados, modales flotantes y diseño responsivo para móviles y tabletas.             #}
+    {# ==================================================================================================== #}
     <style>
         :root {
             --primary-color: #2c5234;
@@ -1297,6 +1309,19 @@ Estructura y Componentes:
 
     {% include 'sidebar_institucional.html' %}
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 1: CABECERA INSTITUCIONAL, LOGOTIPOS UABC/FCA Y NAVEGACIÓN RESPONSIVE                         #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Barra de navegación principal del portal con isotipo oficial FCA UABC, enlaces a las secciones      #}
+    {#   principales (Inicio, Obras, Tesis, Autores, Contacto, Mesa de Soporte), selector de perfil           #}
+    {#   autenticado con avatar y accesos directos al panel correspondiente según rol institucional.        #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Menú de navegación: `#navbarNav` con enlaces `li.nav-item`.                                      #}
+    {#   - Menú de usuario autenticado: contenedor con validación `{% if user.is_authenticated %}`.          #}
+    {#   - Backend relacionado: procesador de contexto `Pagina.context_processors` para variables globales. #}
+    {# ==================================================================================================== #}
     <header>
         <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
             <div class="container">
@@ -1859,6 +1884,19 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 2: MODALES INFORMATIVOS DE FILTROS Y EXPLORACIÓN DE METADATOS                                 #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Despliega modales de ayuda pedagógica que explican al usuario la estructura de clasificación del      #}
+    {#   acervo: qué es Entidad Académica (`#modalInfoEntidad`), Año de Producción (`#modalInfoAnio`),        #}
+    {#   Tipología de Contenido (`#modalInfoTipo`), Área del Conocimiento (`#modalInfoArea`), Autor           #}
+    {#   Colegiado (`#modalInfoAutor`), Idioma (`#modalInfoIdioma`) y Revista Indexada (`#modalInfoRevista`). #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Textos pedagógicos y definiciones: modificar directamente en cada cuerpo modal `.modal-body`.      #}
+    {#   - Enlaces de activación: se detonan desde los íconos `i.fas.fa-info-circle` en la barra de filtros.  #}
+    {# ==================================================================================================== #}
     <!-- MODALES DE INFORMACIÓN PARA CADA ÍNDICE -->
     <div class="modal fade" id="modalInfoEntidad" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -1980,6 +2018,19 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 3: CARRUSEL INTELIGENTE DE ENLACES RÁPIDOS E INDEXADORES                                      #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Despliega el carrusel horizontal adaptativo de bases de datos, indexadores y enlaces prioritarios   #}
+    {#   (CONRICYT, Google Académico, Dialnet, etc.): si son 8 o menos se centran estéticamente; si son más #}
+    {#   de 8 se activan flechas de navegación táctil y avance por pasos con animación CSS suave.            #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Contenedor del carrusel: `.quick-links-track` y diapositivas `.quick-links-slide`.                #}
+    {#   - Flechas de navegación: `#quickLinksPrevBtn` y `#quickLinksNextBtn`.                              #}
+    {#   - Lógica de desplazamiento: función `initQuickLinksCarousel()` en BLOQUE 8 (JS).                    #}
+    {# ==================================================================================================== #}
     <!-- SECCIÓN: ENLACES RÁPIDOS E INDEXADORES DINÁMICOS (CARRUSEL INTELIGENTE) -->
     <div class="quick-links-section py-5">
         <div class="container">
@@ -2016,6 +2067,20 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 4: CARRUSEL INTERACTIVO DE PRÓXIMOS EVENTOS FCA (DOTS Y AUTOPLAY)                             #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Cartelera académica con fondo fotográfico institucional de la FCA: renderiza las tarjetas de       #}
+    {#   eventos con fecha formateada, título, lugar, descripción resumida y botón de acción.               #}
+    {#   Soporta auto-avance cada 6 segundos, pausa al posar el cursor y burbujas de paginación directa.    #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Contenedor del carrusel: `.events-track` y tarjetas `.event-card`.                                #}
+    {#   - Paginadores por puntos: `#eventsDotsContainer` y botones `.events-dot-btn`.                      #}
+    {#   - Lógica de auto-play y transición: `initEventsCarousel()` en BLOQUE 8 (JS).                       #}
+    {#   - Backend relacionado: modelo `EventoFCA` administrado desde `configuracion_soporte.html`.         #}
+    {# ==================================================================================================== #}
     <!-- SECCIÓN: PRÓXIMOS EVENTOS FCA (CARRUSEL INTERACTIVO) -->
     <div class="events-calendar py-5" style="background: linear-gradient(rgba(44, 82, 52, 0.9), rgba(44, 82, 52, 0.9)), url('{% static 'images/Próximos Eventos FCA.png' %}'); background-size: cover; background-position: center;">
         <div class="container">
@@ -2082,6 +2147,19 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 5: CARRUSEL DE RECURSOS DESTACADOS INSTITUCIONALES UABC                                      #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Muestra el escaparate de obras académicas sobresalientes (artículos arbitrados, libros, tesis de   #}
+    {#   posgrado): tarjetas ricas con insignia de tipología, resumen, autores, fecha, botón de lectura     #}
+    {#   rápida y control de pausa/reanudación del movimiento automático.                                   #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Contenedor del carrusel: `.recursos-carousel-track` y tarjetas `.recurso-card`.                  #}
+    {#   - Botón pausar/reanudar: `#btnPausarDestacados` con función `toggleAutoPlayDestacados()`.          #}
+    {#   - Lógica de desplazamiento: `initRecursosDestacadosCarousel()` en BLOQUE 8 (JS).                   #}
+    {# ==================================================================================================== #}
     <!-- SECCIÓN: RECURSOS DESTACADOS INSTITUCIONALES (CARRUSEL AUTOMÁTICO UABC) -->
     <div class="recursos-destacados-section py-5">
         <div class="container-fluid px-xl-5 px-lg-4 px-3" style="max-width: 1780px;">
@@ -2193,6 +2271,20 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 6: MODALES GLOBALES DE DETALLE DE OBRA, VISOR PDF Y COMPARTIR EN REDES                        #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Suite de modales universales accesibles desde cualquier vista del portal:                           #}
+    {#     - `#modalDetalleObra`: Ficha extendida con pestañas duales (vista catálogo vs. vista institucional), #}
+    {#       renderizado de páginas PDF mediante canvas (`#pdfCanvasModal`), contador de vistas e impacto.   #}
+    {#     - `#modalCompartirOpciones`: Generador de enlaces para compartir en WhatsApp, Facebook, LinkedIn,#}
+    {#       X (Twitter) o copia del enlace al portapapeles con confirmación visual.                        #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Ficha detallada y visor PDF: `#modalDetalleObra` orquestado por `cargarDetalleModal()` en BLOQUE 8. #}
+    {#   - Enlaces de compartir: `#modalCompartirOpciones` con botones `.share-btn`.                         #}
+    {# ==================================================================================================== #}
     <!-- MODAL: DETALLE DE RECURSO DESTACADO (SISTEMA DUAL: VISTA CATÁLOGO Y VISTA INSTITUCIONAL UABC) -->
     <div class="modal fade" id="modalDetalleObra" tabindex="-1" role="dialog" aria-labelledby="modalDetalleObraLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
@@ -2498,6 +2590,22 @@ Estructura y Componentes:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 7: PIE DE PÁGINA DINÁMICO INSTITUCIONAL (FOOTER PARAMETRIZABLE)                               #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Pie de página oficial de UABC dividido en 4 columnas temáticas configurables en tiempo real:       #}
+    {#     1. Facultad de Contaduría y Administración (enlaces a historia, oferta académica, etc.).         #}
+    {#     2. Estudiantes (trámites, calendario escolar, servicio social).                                  #}
+    {#     3. Claustro Docente (convocatorias, formatos de titulación, normativas).                         #}
+    {#     4. Institucional (UABC portal, plan de desarrollo, transparencia).                               #}
+    {#   Además incluye logotipos en alta resolución (Escudo UABC y Escudo FCA), dirección oficial,         #}
+    {#   teléfonos institucionales y enlaces reactivos a redes oficiales (Facebook, Instagram, YouTube...). #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Columnas y enlaces: renderizados dinámicamente desde `config_sistema` y `redes_sociales_footer`. #}
+    {#   - Para editar contenidos: acceder al CMS en `configuracion_soporte.html` (BLOQUE 7).                #}
+    {# ==================================================================================================== #}
     <!-- PIE DE PÁGINA INSTITUCIONAL FCA DINÁMICO -->
     <footer class="footer">
         <div class="container">
@@ -2661,6 +2769,22 @@ Estructura y Componentes:
         </div>
     </footer>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 8: SCRIPTS JAVASCRIPT GLOBALES, CARRUSELES ADAPTATIVOS Y VISOR PDF                            #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene los controladores JavaScript maestros del portal:                                         #}
+    {#     - Inicialización de PDF.js worker y renderizado reactivo de miniaturas en canvas.                #}
+    {#     - `initEventsCarousel()`: carrusel inteligente de eventos con auto-avance y navegación por dots.  #}
+    {#     - `initQuickLinksCarousel()`: carrusel adaptativo de bases de datos e indexadores.               #}
+    {#     - `initRecursosDestacadosCarousel()`: carrusel multicard con pausa táctil.                       #}
+    {#     - `cargarDetalleModal()`: petición asíncrona de metadatos de obra para el modal universal.       #}
+    {#     - Almacenamiento local (localStorage) de publicaciones consultadas recientemente.                #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Tiempos de rotación de carruseles: constante `AUTO_ROTATE_MS = 6000` en cada función init.       #}
+    {#   - Handlers de modal y visualización PDF: funciones `renderPdfPage()` y `abrirVisorCompleto()`.     #}
+    {# ==================================================================================================== #}
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

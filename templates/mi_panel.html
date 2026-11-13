@@ -5,12 +5,19 @@ Plantilla: templates/mi_panel.html
 Descripción: Estación de Trabajo Personal del Docente, Expediente Académico, Semblanza y Producción.
 Autor: Facultad de Contaduría y Administración - Campus Tijuana
 ====================================================================================================
-Módulos y Funcionalidades:
-- Ficha Académica Curricular: Editor de semblanza con Quill.js (estilo Word), nombramientos y redes (ORCID).
-- Salud del Perfil Académico: Semáforo dinámico porcentual (0-100%) y modal con desglose de rubros faltantes.
-- Gestión de Acervo Personal: Listado de obras subidas (aprobadas, pendientes, rechazadas), edición y acuses.
-- Módulo de Auxiliares de Investigación: Asignación, aprobación y delegación de permisos a tesistas.
-- Emisión de Currículum Vitae Oficial: Generación instantánea en PDF con membrete y código de validación.
+GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
+----------------------------------------------------------------------------------------------------
+- BLOQUE 0: ESTILOS CSS, VARIABLES DE COLOR Y ESTILOS VISUALES DEL PANEL DOCENTE
+- BLOQUE 1: BARRA SUPERIOR INSTITUCIONAL (TOPBAR), SALUD DEL PERFIL Y ACCIONES RÁPIDAS
+- BLOQUE 2: FICHA CURRICULAR DOCENTE (FOTO, NOMBRAMIENTOS, CÓDIGOS FCA-ID Y BOTONES DE EDICIÓN / CV)
+- BLOQUE 3: PESTAÑA DE OBRAS DEL PROFESOR TUTOR (PARA AUXILIARES DE INVESTIGACIÓN) (#tutor-obras)
+- BLOQUE 4: PESTAÑA DE MIS TRABAJOS ACADÉMICOS Y PRODUCCIÓN CIENTÍFICA (#cargas)
+- BLOQUE 5: PESTAÑA DE COAUTORÍAS E INVITACIONES ACADÉMICAS (#coautor)
+- BLOQUE 6: PESTAÑA DE AUXILIARES DE INVESTIGACIÓN ASIGNADOS (#auxiliares)
+- BLOQUE 7: MODALES DE PERFIL, SEMBLANZA Y FOTOGRAFÍA (EDITOR QUILL Y CROPPER.JS)
+- BLOQUE 8: MODALES DE GESTIÓN DE OBRAS, DETALLE, HISTORIAL Y ELIMINACIÓN
+- BLOQUE 9: MODALES DE SEGURIDAD, CUENTA, CRITERIOS DE SALUD Y GUÍA DOCENTE
+- BLOQUE 10: SCRIPTS JAVASCRIPT - QUILL.JS, CROPPER.JS, FLATPICKR Y EVENTOS DEL PANEL
 ====================================================================================================
 #}
 <!DOCTYPE html>
@@ -31,6 +38,18 @@ Módulos y Funcionalidades:
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <!-- CALENDARIO FLATPICKR INSTITUCIONAL UABC -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    {# ==================================================================================================== #}
+    {# BLOQUE 0: ESTILOS CSS, VARIABLES DE COLOR Y ESTILOS VISUALES DEL PANEL DOCENTE                       #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Define la paleta cromática dinámica institucional según el rol (verde, celeste, morado, azul),     #}
+    {#   estilos para el semáforo de salud de perfil, badges, tarjetas de obras y editor enriquecido.       #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar colores de roles: Modifica `Pagina/context_processors.py` (`obtener_tema_rol`)  #}
+    {#     que inyecta las variables CSS `--theme-primary` y `--theme-accent`.                              #}
+    {# ==================================================================================================== #}
     <style>
         :root {
             --uabc-green: {{ tema_rol.primary|default:'#006633' }};
@@ -1008,6 +1027,17 @@ Módulos y Funcionalidades:
 
     {% include 'sidebar_institucional.html' %}
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 1: BARRA SUPERIOR INSTITUCIONAL (TOPBAR), MENÚ DE USUARIO Y GUÍA FCA                         #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Muestra el encabezado superior: títulos universitarios oficiales, insignia de rol institucional,   #}
+    {#   botón de acceso a la Guía Rápida FCA, Centro de Notificaciones y menú desplegable de cuenta.       #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar enlaces al menú de usuario (avatar derecho): Edita el `<ul class="dropdown-   #}
+    {#     menu">` de este bloque.                                                                         #}
+    {# ==================================================================================================== #}
     <header class="sima-topbar">
         <div class="d-flex align-items-center gap-3">
             <div>
@@ -1276,6 +1306,19 @@ Módulos y Funcionalidades:
             </div>
         </div>
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 2: FICHA CURRICULAR DOCENTE (FOTO, NOMBRAMIENTOS, CÓDIGOS FCA-ID Y BOTONES DE EDICIÓN / CV)   #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Expediente principal del académico: fotografía personal con trigger de Cropper.js, nombre, grado, #}
+        {#   código FCA-ID institucional, identificador ORCID, adscripción universitaria, insignia de           #}
+        {#   productividad con progreso a medalla y botones para Editar Semblanza o Descargar CV en PDF.       #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Para ajustar los botones de acción rápida del docente (Editar semblanza, CV, nueva obra): Edita  #}
+        {#     el contenedor `.d-flex.gap-2.flex-wrap` de esta tarjeta.                                         #}
+        {#   - Para modificar el diseño del CV impreso: Edita la plantilla `templates/reporte_curriculo.html`.  #}
+        {# ==================================================================================================== #}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <div class="row align-items-center g-4">
@@ -1536,6 +1579,16 @@ Módulos y Funcionalidades:
             </div>
         </div>
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 3: SELECTOR DE PESTAÑAS ACADÉMICAS (Trabajos Propios, Coautorías, Auxiliares, Obras Tutor)    #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Proporciona la barra de navegación por pestañas de la producción académica:                        #}
+        {#     - Pestaña de Obras del Tutor (solo visible para auxiliares de investigación autorizados).        #}
+        {#     - Pestaña de Trabajos Subidos por Mí (obras académicas propias con buscador y filtros).          #}
+        {#     - Pestaña de Coautorías (obras colegiadas donde el docente participa como coautor).              #}
+        {#     - Pestaña de Auxiliares de Investigación (alumnos y tesistas bajo su tutoría).                   #}
+        {# ==================================================================================================== #}
         <ul class="nav nav-tabs mb-4 custom-role-tabs" id="docenteTabs" role="tablist">
             {% if user.autor and user.autor.es_auxiliar and user.autor.aprobado_por_tutor and user.autor.profesor_tutor %}
             <li class="nav-item" role="presentation">
@@ -1702,6 +1755,19 @@ Módulos y Funcionalidades:
             </div>
             {% endif %}
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 4: PESTAÑA DE MIS TRABAJOS ACADÉMICOS Y PRODUCCIÓN CIENTÍFICA (#cargas)                       #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Espacio central de producción del profesor: listado paginado de obras subidas (aprobadas,          #}
+            {#   en revisión, rechazadas con observaciones o borradores). Contiene buscador de títulos/autores,     #}
+            {#   botones de edición autónoma, consulta de acuses oficiales con código QR y eliminación.            #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para modificar la presentación de las filas o tarjetas de obras: Edita la tabla en este bloque.  #}
+            {#   - Para alterar el modal de confirmación de eliminación: Ve al BLOQUE 8 (`#modalEliminarDoc`).      #}
+            {#   - Backend: `Pagina/views.py` (`mi_panel_view`, `ArticuloDocenteEditarView`).                       #}
+            {# ==================================================================================================== #}
             <!-- CARGAS DIRECTAS -->
             <div class="tab-pane fade {% if not user.autor.es_auxiliar and not request.GET.page_coautorias and not request.GET.q_coautorias and request.GET.tab != 'coautor' or request.GET.tab == 'cargas' %}show active{% endif %}" id="cargas" role="tabpanel">
                 <div class="card border-0 shadow-sm">
@@ -2100,6 +2166,17 @@ Módulos y Funcionalidades:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 5: PESTAÑA DE COAUTORÍAS E INVITACIONES ACADÉMICAS (#coautor)                                  #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Muestra las obras académicas subidas por colegas donde el docente actual figura como coautor       #}
+            {#   acreditado. Permite consultar la obra, descargar acuses y constancias oficiales de coautoría.       #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para la gestión integral de firmas o buzón de invitaciones pendientes: La vista dedicada es      #}
+            {#     `templates/coautorias.html`.                                                                     #}
+            {# ==================================================================================================== #}
             <!-- COAUTORÍAS -->
             <div class="tab-pane fade {% if request.GET.page_coautorias or request.GET.q_coautorias or request.GET.tab == 'coautor' %}show active{% endif %}" id="coautor" role="tabpanel">
                 <div class="card border-0 shadow-sm">
@@ -2363,6 +2440,17 @@ Módulos y Funcionalidades:
             </div>
 
             {% if user.autor and user.autor.puede_tener_auxiliares %}
+            {# ==================================================================================================== #}
+            {# BLOQUE 6: PESTAÑA DE AUXILIARES DE INVESTIGACIÓN ASIGNADOS (#auxiliares)                             #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Panel de supervisión del docente tutor: alumnos o tesistas asignados. Permite otorgar el Visto    #}
+            {#   Bueno institucional para activar la cuenta del auxiliar, delegar permisos de subida o desvincular. #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Backend: `Pagina/views.py` (`gestionar_auxiliar_docente_view`,                                    #}
+            {#     `notificar_visto_bueno_auxiliar`).                                                               #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 3: AUXILIARES DE INVESTIGACIÓN FCA -->
             <div class="tab-pane fade {% if request.GET.tab == 'auxiliares' %}show active{% endif %}" id="auxiliares" role="tabpanel">
                 <div class="card border-0 shadow-sm mb-4 rounded-4">
@@ -2522,6 +2610,20 @@ Módulos y Funcionalidades:
         </div>
     </main>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 7: MODALES DE PERFIL, SEMBLANZA Y FOTOGRAFÍA (EDITOR QUILL Y CROPPER.JS)                     #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Suite de edición del perfil del docente:                                                           #}
+    {#     - `#modalPreviewMiSemblanza`: Vista previa tal como aparecerá en el Directorio del Claustro.     #}
+    {#     - `#modalEditarPerfil`: Editor curricular con Quill.js, nombramientos, teléfono y redes (ORCID).  #}
+    {#     - `#modalCambiarFotoPersonal` & `#modalAjustarFoto`: Recorte y encuadre con Cropper.js.          #}
+    {#     - `#modalBuzonCumpleanosPanel` & `#modalVerMiPoemaAnual`: Poema institucional y felicitaciones.  #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar nuevos campos a la semblanza (ej. Google Scholar): Edita `#modalEditarPerfil`  #}
+    {#     y el formulario `actualizar_perfil_docente_view` en `Pagina/views.py`.                           #}
+    {# ==================================================================================================== #}
     <!-- MODAL PREVISUALIZACIÓN DE MI SEMBLANZA (CON SOPORTE PARA QUILL.JS |SAFE) -->
     {% if user.autor and user.autor.puede_tener_semblanza %}
     <div class="modal fade" id="modalPreviewMiSemblanza" tabindex="-1" aria-hidden="true">
@@ -4113,6 +4215,18 @@ Módulos y Funcionalidades:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 8: MODALES DE GESTIÓN DE OBRAS, DETALLE, HISTORIAL Y ELIMINACIÓN                             #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Modales de interacción con el acervo propio del profesor:                                          #}
+    {#     - `#modalEliminarDoc`: Confirmación de borrado o envío a papelera de una obra.                   #}
+    {#     - `#modalDetalleObra`: Ficha extendida, visor PDF en canvas, metadatos y citas académicas.        #}
+    {#     - `#modalHistorialDocumento`: Línea de tiempo con todas las revisiones y dictámenes de la obra.   #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar el diseño de la ficha de detalle de obra: Edita `#modalDetalleObra`.           #}
+    {# ==================================================================================================== #}
     <!-- MODAL ELIMINAR DOCUMENTO ELEGANTE -->
     <div class="modal fade" id="modalEliminarDoc" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -4351,6 +4465,22 @@ Módulos y Funcionalidades:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 9: MODALES DE SEGURIDAD, DATOS DE CUENTA, CRITERIOS DE SALUD Y GUÍA DOCENTE                   #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Modales de soporte, configuración de usuario y ayuda institucional:                                #}
+    {#     - `#modalActualizarDatosCuenta`: Edición de correo, teléfono, número de empleado y nómina.       #}
+    {#     - `#modalCentroNotificaciones`: Centro de alertas, avisos de coautoría y mensajes.               #}
+    {#     - `#modalCriteriosSaludPerfil`: Semáforo con desglose de porcentaje y rubros faltantes.         #}
+    {#     - `#modalCambiarMiClave`: Cambio seguro de contraseña del usuario.                               #}
+    {#     - `#modalDesactivarMiCuenta`: Canal formal para dar de baja la cuenta personal.                  #}
+    {#     - `#modalGuiaRapidaPanel`: Preguntas frecuentes y guía rápida del docente.                       #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Backend: `Pagina/views.py` (`actualizar_datos_cuenta_view`, `cambiar_password_propia_view`,       #}
+    {#     `desactivar_cuenta_propia_view`).                                                                #}
+    {# ==================================================================================================== #}
     <!-- MODAL ACTUALIZAR DATOS DE CUENTA E IDENTIDAD INSTITUCIONAL -->
     <div class="modal fade" id="modalActualizarDatosCuenta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -5103,6 +5233,21 @@ Módulos y Funcionalidades:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 10: SCRIPTS JAVASCRIPT - QUILL.JS, CROPPER.JS, FLATPICKR Y EVENTOS DEL PANEL                  #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Lógica reactiva del cliente:                                                                       #}
+    {#     - Inicialización del editor de semblanza Quill.js con sincronización de input oculto.             #}
+    {#     - Recorte interactivo de foto con Cropper.js (relación 1:1 circular).                            #}
+    {#     - Selección de fechas de cumpleaños mediante Flatpickr en español.                               #}
+    {#     - Disparo festivo de confeti (Canvas Confetti) para celebrar aniversarios.                       #}
+    {#     - Búsqueda en vivo de mis trabajos y paginación asíncrona.                                       #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar la barra de herramientas del editor Quill de semblanza: Modifica la variable   #}
+    {#     `quillToolbarOptions` en este script.                                                            #}
+    {# ==================================================================================================== #}
     <!-- SCRIPTS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

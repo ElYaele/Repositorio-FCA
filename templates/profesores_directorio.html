@@ -5,11 +5,14 @@ Plantilla: templates/profesores_directorio.html
 Descripción: Directorio Público e Institucional del Claustro Docente, Investigadores y Celebraciones.
 Autor: Facultad de Contaduría y Administración - Campus Tijuana
 ====================================================================================================
-Características:
-- Fichas Académicas del Claustro: Nombramientos, afiliaciones universitarias, ORCID y enlaces a obras.
-- Celebración Institucional de Cumpleaños: Visualización festiva de cumpleañeros del día con animación de confeti.
-- Entrega de Poemas Institucionales: Sistema interactivo con 600 poemas clasificados por rol académico.
-- Filtros por Adscripción: Navegación por profesores de tiempo completo, asignatura, externos e investigadores.
+GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
+----------------------------------------------------------------------------------------------------
+- BLOQUE 0: ESTILOS CSS DEL DIRECTORIO, TARJETAS Y CELEBRACIÓN DE CUMPLEAÑOS
+- BLOQUE 1: BANNER SUPERIOR Y FILTROS REACTIVOS POR ADSCRIPCIÓN
+- BLOQUE 2: DIRECTORIO DEL CLAUSTRO DOCENTE UABC Y FICHAS ACADÉMICAS
+- BLOQUE 3: DIRECTORIO DE PROFESORES EXTERNOS Y COLABORADORES
+- BLOQUE 4: RED DE INVESTIGADORES INDEPENDIENTES
+- BLOQUE 5: SCRIPTS JAVASCRIPT - FILTROS DINÁMICOS, CONFETI, CELEBRACIÓN DE CUMPLEAÑOS Y POEMAS
 ====================================================================================================
 #}
 <!DOCTYPE html>
@@ -24,6 +27,14 @@ Características:
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- LIBRERÍA PDF.JS PARA RENDERIZADO SIN TRAP DE SCROLL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    {# ==================================================================================================== #}
+    {# BLOQUE 0: ESTILOS CSS DEL DIRECTORIO, TARJETAS Y CELEBRACIÓN DE CUMPLEAÑOS                            #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Estilos para las tarjetas de profesores (tarjeta estándar vs silueta de cupcake cumpleañero),      #}
+    {#   filtros animados, insignias de tipo de nombramiento, modales de felicitaciones y paletas festivas.  #}
+    {# ==================================================================================================== #}
     <style>
         :root {
             --uabc-green: #006633;
@@ -787,6 +798,18 @@ Características:
     </nav>
 
     <div class="container-fluid px-lg-5 px-3 pb-5">
+        {# ==================================================================================================== #}
+        {# BLOQUE 1: BANNER SUPERIOR Y FILTROS REACTIVOS POR ADSCRIPCIÓN                                        #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Presenta el banner institucional interactivo que adapta su título, subtítulo e insignia según el  #}
+        {#   filtro activo (UABC, Externos o Independientes), junto con la barra de filtrado por adscripción,   #}
+        {#   buscador en tiempo real `#buscadorDocente` y el conmutador de visualización de cumpleaños.        #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Botones de filtro: `.btn-filtro-categoria` con atributos `data-categoria`.                       #}
+        {#   - Buscador: `#buscadorDocente`. Lógica de filtrado en el BLOQUE 5 (JS).                           #}
+        {# ==================================================================================================== #}
         <!-- BANNER DE ENCABEZADO DINÁMICO POR CATEGORÍA -->
         <div class="header-title-box header-banner-uabc mb-4" id="bannerClaustro">
             <div class="d-flex align-items-center mb-2">
@@ -913,6 +936,19 @@ Características:
         </div>
         {% endif %}
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 2: DIRECTORIO DEL CLAUSTRO DOCENTE UABC Y FICHAS ACADÉMICAS                                   #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Renderiza la cuadrícula de docentes pertenecientes a la FCA UABC: tarjetas interactivas con foto   #}
+        {#   de perfil, código institucional (FCA-XXXX), rol, total de obras publicadas, botón de felicitación  #}
+        {#   cumpleañera, modal de ficha extendida con semblanza curricular y buzón de felicitaciones.          #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Tarjetas: `.profesor-card-wrapper` con clase festiva condicional `.es-cumpleanero`.             #}
+        {#   - Modales asociados: `#modalDetalle{{ prof.id }}`, `#modalFelicitar{{ prof.id }}`.                 #}
+        {#   - Backend relacionado: vista `directorio_profesores` (`Pagina/views.py`).                          #}
+        {# ==================================================================================================== #}
         <!-- CONTENEDOR PROFESORES UABC (CON SILUETA LITERAL DE CUPCAKE CUANDO ES CUMPLEAÑOS) -->
         <div id="seccionUabc" class="row g-4 institution-section mb-4">
             <!-- FRANJA DIVISORA: DOCENTES UABC -->
@@ -1460,6 +1496,18 @@ Características:
             {% endfor %}
         </div>
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 3: DIRECTORIO DE PROFESORES EXTERNOS Y COLABORADORES                                          #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Muestra a los académicos y coautores pertenecientes a universidades externas aliadas (UNAM, IPN,   #}
+        {#   UANL, etc.) que colaboran con investigaciones y tesis de la FCA. Incluye insignia con la sigla     #}
+        {#   de su alma máter, ficha curricular y herramientas de felicitación institucional.                   #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Contenedor de externos: `#seccionExternos` con divisor institucional `#dividerExternos`.         #}
+        {#   - Modales asociados: `#modalDetalleExt{{ prof.id }}`.                                               #}
+        {# ==================================================================================================== #}
         <!-- CONTENEDOR PROFESORES OTRAS UNIVERSIDADES -->
         <div id="seccionExternos" class="row g-4 institution-section mb-4" style="display: none;">
             <!-- FRANJA DIVISORA: OTRAS UNIVERSIDADES -->
@@ -1995,6 +2043,17 @@ Características:
             {% endfor %}
         </div>
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 4: RED DE INVESTIGADORES INDEPENDIENTES                                                       #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Presenta a investigadores independientes, consultores y científicos afiliados a proyectos         #}
+        {#   específicos del repositorio institucional sin pertenecer a una nómina docente universitaria fija.   #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Contenedor: `#seccionInvestigadores` con divisor institucional `#dividerInvestigadores`.         #}
+        {#   - Modales asociados: `#modalDetalleInv{{ prof.id }}`.                                              #}
+        {# ==================================================================================================== #}
         <!-- CONTENEDOR INVESTIGADORES INDEPENDIENTES / EXTERNOS -->
         <div id="seccionInvestigadores" class="row g-4 institution-section mb-4" style="display: none;">
             <!-- FRANJA DIVISORA: INVESTIGADORES -->
@@ -2487,6 +2546,20 @@ Características:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 5: SCRIPTS JAVASCRIPT - FILTROS DINÁMICOS, CONFETI, CELEBRACIÓN DE CUMPLEAÑOS Y POEMAS         #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Controla la interacción dinámica del directorio:                                                   #}
+    {#     - Filtrado instantáneo por pestaña/categoría (UABC, Externos, Investigadores o Todos).          #}
+    {#     - Búsqueda en vivo por nombre, código FCA, universidad o rol con feedback visual.                #}
+    {#     - Disparo de animación de confeti festivo con `canvas-confetti` al abrir modal de cumpleaños.   #}
+    {#     - Asistente de selección y envío de poemas institucionales personalizados para colegas.           #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Lógica de filtros: funciones `cambiarCategoria()` y evento `input` en `#buscadorDocente`.        #}
+    {#   - Efectos de confeti: función `lanzarConfeti()` con parámetros de colores institucionales.          #}
+    {# ==================================================================================================== #}
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

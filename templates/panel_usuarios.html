@@ -5,14 +5,36 @@ Plantilla: templates/panel_usuarios.html
 Descripción: Panel Central de Control, Moderación Editorial, Auditoría Forense y Respaldo Institucional.
 Autor: Facultad de Contaduría y Administración - Campus Tijuana
 ====================================================================================================
-Módulos Integrados:
-1. Moderación Editorial: Flujo de dictamen de obras (aprobar, rechazar con observaciones, papelera, restauración).
-2. Moderación de Semblanzas: Revisión curricular y control de calidad de perfiles del claustro docente.
-3. Directorio de Identidades y Deduplicación: Fusión inteligente de autores repetidos con historial reversible.
-4. Centro de Seguridad y Respaldos: Generación y restauración transaccional de backups en formato ZIP y JSON.
-5. Bitácora Forense de Auditoría: Registro inmutable de acciones administrativas con exportación a Microsoft Excel.
-6. Centro de Auditoría Semestral: Dictámenes oficiales semestrales en PDF con métricas y sellos institucionales.
-7. Control de Presencia y Concurrencia: Heartbeat de moderadores conectados y bloqueo pesimista contra colisiones.
+GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
+----------------------------------------------------------------------------------------------------
+- BLOQUE 0: ESTILOS CSS, VARIABLES DE COLOR Y REGLAS DE DISEÑO VISUAL
+- BLOQUE 1: CABECERA DEL PANEL, MÉTRICAS DE RESUMEN Y BOTONES DE ACCIÓN RÁPIDA
+- BLOQUE 2: ALERTA PREVENTIVA DE RESPALDO INSTITUCIONAL (15 DÍAS)
+- BLOQUE 3: NAVEGACIÓN MAESTRA (4 PILARES: Moderación, Usuarios, Autores, Analítica)
+- BLOQUE 4: PESTAÑA 1 - MODERACIÓN DE DOCUMENTOS Y ACERVO ACADÉMICO (#documentos)
+- BLOQUE 5: PESTAÑA 2 - MODERACIÓN DE SEMBLANZAS Y PERFILES DEL CLAUSTRO DOCENTE (#semblanzas)
+- BLOQUE 6: PESTAÑA 3 - CUENTAS PENDIENTES DE APROBACIÓN INSTITUCIONAL (#pendientes)
+- BLOQUE 7: PESTAÑA 4 - CUENTAS SUSPENDIDAS Y CONTROL DE SANCIONES TEMPORALES (#suspendidas)
+- BLOQUE 8: PESTAÑA 5 - PERSONAL ADMINISTRATIVO Y AUXILIARES DE INVESTIGACIÓN FCA (#administrativos)
+- BLOQUE 9: PESTAÑA 6 - AUTORES DE CONFIANZA INSTITUCIONAL / TRUSTED PUBLISHERS (#usuarios-confianza)
+- BLOQUE 10: PESTAÑA 7 - SUPERADMINISTRADORES Y ROLES DE ALTA DIRECCIÓN (#supers)
+- BLOQUE 11: PESTAÑA 8 - MODERADORES CON PERMISOS GRANULARES DE REVISIÓN (#moderadores)
+- BLOQUE 12: PESTAÑA 9 - DIRECTORIO INSTITUCIONAL Y FUSIÓN DE AUTORES DUPLICADOS (#autores-fusion)
+- BLOQUE 13: PESTAÑA 10 - DASHBOARD DE ANALÍTICA, TELEMETRÍA Y ESTADÍSTICAS GLOBALES (#dashboard-analitica)
+- BLOQUE 14: PESTAÑA 11 - AUDITORÍA SEMESTRAL, METAS Y DICTÁMENES OFICIALES EN PDF (#auditoria-semestral)
+- BLOQUE 15: MODALES DE AUDITORÍA SEMESTRAL (Creación y Visualización de Informes)
+- BLOQUE 16: MODALES DE FUSIÓN DE AUTORES, DEDUPLICACIÓN Y COTEJO SPLIT-VIEW
+- BLOQUE 17: MODAL DE BUZÓN DE AUDITORÍA FORENSE INMUTABLE
+- BLOQUE 18: MODALES DE MODERACIÓN DE OBRAS (Rechazo, Diff Corregido, Historial, Detalle, Purgar, Papelera)
+- BLOQUE 19: MODALES DE SEMBLANZAS DOCENTES (Previsualización, Edición con Quill y Rechazo)
+- BLOQUE 20: MODALES DE GESTIÓN DE USUARIOS (Perfiles, Roles, Contraseñas, Suspensiones, Impersonación)
+- BLOQUE 21: MODAL DEL CENTRO DE RESPALDOS Y RESTAURACIÓN DEL SISTEMA (ZIP / JSON)
+- BLOQUE 22: MODAL DE PALETA DE COMANDOS RÁPIDOS DEL SISTEMA (CTRL + K)
+- BLOQUE 23: SCRIPTS JAVASCRIPT - INICIALIZACIÓN, PRESENCIA EN VIVO Y MONITOREO DE CONCURRENCIA
+- BLOQUE 24: SCRIPTS JAVASCRIPT - GESTIÓN Y FILTRADO REACTIVO DE DOCUMENTOS Y ACCIONES MASIVAS
+- BLOQUE 25: SCRIPTS JAVASCRIPT - ALGORITMOS DE FUSIÓN, CÁLCULO LEVENSHTEIN Y HOMÓNIMOS
+- BLOQUE 26: SCRIPTS JAVASCRIPT - MOTOR DE COPIAS DE SEGURIDAD (RESPALDOS ZIP Y RESTAURACIÓN)
+- BLOQUE 27: SCRIPTS JAVASCRIPT - AUDITORÍA SEMESTRAL Y GRÁFICAS DE ANALÍTICA CON CHART.JS
 ====================================================================================================
 #}
 <!DOCTYPE html>
@@ -26,6 +48,19 @@ Módulos Integrados:
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- EDITOR ENRIQUECIDO QUILL.JS (ESTILO WORD) -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    {# ==================================================================================================== #}
+    {# BLOQUE 0: ESTILOS CSS, VARIABLES DE COLOR Y REGLAS DE DISEÑO VISUAL                                  #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Define la arquitectura visual del panel: variables CSS (verde #006633, dorado #dd971a), estilos    #}
+    {#   para tarjetas, badges con pulso, scrollbars estabilizados, transiciones suaves y command palette.  #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar los colores institucionales: Edita las variables CSS en `:root` (--primary-   #}
+    {#     color, --secondary-color).                                                                      #}
+    {#   - Si deseas cambiar las tarjetas de documentos o semblanzas: Modifica las clases `.doc-card`,     #}
+    {#     `.author-card` o `.semblanza-card` en este bloque.                                               #}
+    {# ==================================================================================================== #}
     <style>
         :root {
             --primary-color: #006633;
@@ -1177,6 +1212,18 @@ Módulos Integrados:
         </div>
     </header>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 1: CABECERA DEL PANEL, RESUMEN EJECUTIVO Y ACCIONES RÁPIDAS                                    #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Muestra el título del panel y los botones de acción global: Mesa de Soporte, Buzón de Auditoría    #}
+    {#   Forense, Centro de Copias de Seguridad, Acceso a Django Admin y el badge en vivo de presencia.     #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar un nuevo botón global de acción administrativa: Agrégalo en el contenedor      #}
+    {#     `<div class="d-flex gap-2">` de esta cabecera.                                                 #}
+    {#   - Variables de contexto requeridas: `soporte_pendientes_count`, `es_admin_nivel_1`.                #}
+    {# ==================================================================================================== #}
     <!-- WRAPPER PRINCIPAL FLUIDO -->
     <main class="main-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 panel-top-header">
@@ -1219,6 +1266,17 @@ Módulos Integrados:
             </div>
         {% endif %}
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 2: ALERTA PREVENTIVA DE RESPALDO INSTITUCIONAL (15 DÍAS)                                      #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Se muestra automáticamente cuando han transcurrido 15 o más días sin registrarse un respaldo.      #}
+        {#   Ofrece un botón directo ("Respaldar Ahora") que abre el modal para descargar el archivo ZIP.       #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - El umbral de días se calcula en `Pagina/views.py` (`alerta_respaldo_pendiente = dias >= 15`).    #}
+        {#   - Si deseas cambiar el diseño o los textos de la alerta preventiva, hazlo directamente aquí.       #}
+        {# ==================================================================================================== #}
         <!-- ALERTA PREVENTIVA: RESPALDO INSTITUCIONAL REQUERIDO CADA 15 DÍAS -->
         {% if alerta_respaldo_pendiente %}
         <div class="alert alert-warning border-0 shadow-xs rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2 animate__animated animate__fadeIn">
@@ -1242,6 +1300,19 @@ Módulos Integrados:
         </div>
         {% endif %}
 
+        {# ==================================================================================================== #}
+        {# BLOQUE 3: NAVEGACIÓN MAESTRA (4 PILARES: Moderación, Usuarios, Autores, Analítica)                   #}
+        {# ---------------------------------------------------------------------------------------------------- #}
+        {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+        {#   Proporciona el sistema de pestañas de dos niveles:                                                 #}
+        {#     Nivel 1: Los 4 Módulos Maestros (Moderación, Usuarios, Autores/Claustro, Analítica).             #}
+        {#     Nivel 2: Las sub-pestañas de cada módulo con sus respectivos contadores reactivos.               #}
+        {#                                                                                                      #}
+        {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+        {#   - Si deseas agregar un nuevo módulo o pestaña en el panel: Agrega el botón en este bloque con      #}
+        {#     su respectivo `data-hub` o `data-bs-target="#id-del-tabpane"`.                                   #}
+        {#   - Recuerda crear el correspondiente `<div class="tab-pane" id="...">` en los bloques siguientes.  #}
+        {# ==================================================================================================== #}
         <!-- NAVEGACIÓN PRINCIPAL: 3 PILARES MODULARES -->
         <div class="panel-master-nav mb-4">
             <!-- NIVEL 1: LOS 3 MÓDULOS MAESTROS -->
@@ -1382,6 +1453,22 @@ Módulos Integrados:
 
         <div class="tab-content" id="usuariosTabContent">
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 4: PESTAÑA 1 - MODERACIÓN DE DOCUMENTOS Y ACERVO ACADÉMICO (#documentos)                      #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Permite a los moderadores dictaminar las obras académicas subidas por docentes y alumnos:          #}
+            {#   aprobar, rechazar con observaciones, mover a papelera de reciclaje, restaurar o purgar.            #}
+            {#   Contiene tarjetas KPI interactivas, buscador rápido, filtros por estado, selector de acciones      #}
+            {#   masivas y la tabla paginada con botones de acción (historial, diff, acuse, detalle).              #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para agregar o modificar columnas en la lista de documentos: Edita la tabla `#tablaDocumentos`   #}
+            {#     en este bloque.                                                                                  #}
+            {#   - Para modificar la lógica de aprobación o rechazo: Ve a `Pagina/views.py` (`aprobar_documento_    #}
+            {#     view`, `rechazar_documento_view`, `acciones_masivas_documentos_view`).                           #}
+            {#   - Para cambiar las opciones del modal de rechazo: Ve al BLOQUE 18 (`#modalRechazarDoc`).           #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 1: MODERACIÓN DE DOCUMENTOS -->
             <div class="tab-pane fade show active" id="documentos" role="tabpanel">
                 <div class="row g-3 mb-4">
@@ -2295,6 +2382,21 @@ Módulos Integrados:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 5: PESTAÑA 2 - MODERACIÓN DE SEMBLANZAS Y PERFILES DEL CLAUSTRO DOCENTE (#semblanzas)         #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Control de calidad editorial de las semblanzas curriculares del claustro docente antes de que se    #}
+            {#   hagan visibles en el Directorio de Profesores. Permite previsualizar la tarjeta docente, editarla   #}
+            {#   como administrador mediante el editor enriquecido Quill.js, aprobarla o rechazarla con notas.     #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para modificar la tarjeta visual de semblanza: Edita el marcado `.semblanza-card` en este bloque.#}
+            {#   - Para la lógica de aprobación o rechazo en backend: Ve a `Pagina/views.py` (`aprobar_semblanza_   #}
+            {#     view`, `rechazar_semblanza_view`, `editar_semblanza_admin_view`).                                #}
+            {#   - Para el modal de edición administrativa de semblanzas: Ve al BLOQUE 19                           #}
+            {#     (`#modalEditarSemblanzaAdmin`).                                                                  #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 2: MODERACIÓN Y CONTROL DE SEMBLANZAS -->
             <div class="tab-pane fade" id="semblanzas" role="tabpanel">
                 <div class="row g-3 mb-4">
@@ -2867,6 +2969,21 @@ Módulos Integrados:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 6: PESTAÑA 3 - CUENTAS PENDIENTES DE APROBACIÓN INSTITUCIONAL (#pendientes)                   #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Muestra el listado de docentes, alumnos y colaboradores externos que han completado su registro     #}
+            {#   y verificación OTP, pero requieren aprobación formal de la administración para acceder.             #}
+            {#   Incluye la matriz maestra de políticas de acceso (abierto / restringido para 6 tipos de cuentas).   #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para ajustar los interruptores de políticas de acceso: Edita el bloque inicial de este tab-pane.  #}
+            {#   - Para modificar las tarjetas o botones de aprobación/rechazo de cuentas: Edita el listado `.col-  #}
+            {#     12` de este bloque.                                                                             #}
+            {#   - Backend: `Pagina/views.py` (`aprobar_usuario_view`, `rechazar_usuario_view`,                     #}
+            {#     `toggle_politica_acceso_view`).                                                                  #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 3: SOLICITUDES PENDIENTES (FILTRADO Y CONTADORES COMPLETOS) -->
             <div class="tab-pane fade" id="pendientes" role="tabpanel">
                 <!-- CONTROL MAESTRO DE POLÍTICAS DE ACCESO Y SOLICITUDES (MATRIZ DE 6 TIPOS DE CUENTA) -->
@@ -3278,6 +3395,20 @@ Módulos Integrados:
                 {% endif %}
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 7: PESTAÑA 4 - CUENTAS SUSPENDIDAS Y CONTROL DE SANCIONES TEMPORALES (#suspendidas)           #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Muestra el control disciplinario del repositorio: usuarios suspendidos temporal o indefinidamente, #}
+            {#   el motivo registrado, la fecha programada de levantamiento del castigo y el administrador autor.   #}
+            {#   Permite la reactivación anticipada manual con un clic o el ajuste de las condiciones de la sanción.#}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para modificar la tabla o tarjetas de usuarios suspendidos: Edita este contenedor `#suspendidas`.#}
+            {#   - Para alterar las opciones de sanción y tiempos (ej. 7 días, 30 días, definitivo): Edita el       #}
+            {#     modal `#modalSuspenderUsuarioAvanzado` en el BLOQUE 20.                                          #}
+            {#   - Backend: `Pagina/views.py` (`suspender_usuario_view`, `reactivar_usuario_view`).                 #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA: CUENTAS SUSPENDIDAS Y BAJAS -->
             <div class="tab-pane fade" id="suspendidas" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -3505,6 +3636,23 @@ Módulos Integrados:
                 {% endif %}
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 8: PESTAÑA 5 - PERSONAL ADMINISTRATIVO Y AUXILIARES DE INVESTIGACIÓN FCA (#administrativos)    #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Administra a los usuarios activos de la plataforma: docentes titulares, profesores de asignatura,   #}
+            {#   auxiliares de investigación, personal administrativo y colaboradores externos.                     #}
+            {#   Permite ver obras subidas, asignar autoría propia, editar datos de ficha, restablecer contraseñas,  #}
+            {#   cambiar roles institucionales o impersonar la sesión para soporte directo.                          #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para ajustar los filtros por tipo de perfil (docente, auxiliar, externo): Edita los botones      #}
+            {#     `.filter-btn-group` en este bloque.                                                              #}
+            {#   - Para cambiar las acciones por fila (impersonar, editar, password): Edita el `<td class="text-   #}
+            {#     center">` de la tabla `#tablaUsuariosRegistrados`.                                               #}
+            {#   - Backend: `Pagina/views.py` (`editar_ficha_usuario_admin_view`, `cambiar_rol_usuario_view`,       #}
+            {#     `impersonar_usuario_view`, `restablecer_password_usuario_view`).                                 #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 4: USUARIOS REGISTRADOS -->
             <div class="tab-pane fade" id="administrativos" role="tabpanel">
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
@@ -3790,6 +3938,19 @@ Módulos Integrados:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 9: PESTAÑA 6 - AUTORES DE CONFIANZA INSTITUCIONAL / TRUSTED PUBLISHERS (#usuarios-confianza)   #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Gestiona a los docentes e investigadores distinguidos con "Licencia de Publicación Directa".       #}
+            {#   Las obras cargadas por estos autores son aprobadas automáticamente por el sistema sin pasar por la  #}
+            {#   cola de moderación manual, agilizando el flujo editorial para el claustro consolidado.             #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para revocar o conceder la confianza institucional a un usuario: Usa el botón toggle en la tabla  #}
+            {#     que dispara el modal `#modalConfirmarConfianza`.                                                 #}
+            {#   - Backend: `Pagina/views.py` (`toggle_trusted_publisher_view`).                                    #}
+            {# ==================================================================================================== #}
             <!-- SUB-PESTAÑA 2.3: USUARIOS CON LICENCIA DE CONFIANZA -->
             <div class="tab-pane fade" id="usuarios-confianza" role="tabpanel">
                 <!-- BANNER INFORMATIVO EXPLICATIVO -->
@@ -4103,6 +4264,20 @@ Módulos Integrados:
                 {% endif %}
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 10: PESTAÑA 7 - SUPERADMINISTRADORES Y ROLES DE ALTA DIRECCIÓN (#supers)                     #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Administra las cuentas con privilegios de superusuario (`is_superuser=True`).                      #}
+            {#   Incluye la protección reforzada del Superadministrador Maestro (`yaele` / ID 1), quien no puede ser#}
+            {#   degradado ni eliminado por otros administradores. Permite conceder o revocar permisos totales.      #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para alterar las políticas de superusuarios: Revisa `Pagina/views.py` (`toggle_superuser_view`,  #}
+            {#     `es_superusuario_principal`).                                                                    #}
+            {#   - El modal de confirmación de cambio de superusuario se encuentra en el BLOQUE 20                  #}
+            {#     (`#modalToggleSuperuser`).                                                                       #}
+            {# ==================================================================================================== #}
             <!-- PESTAÑA 5: SOPORTE INSTITUCIONAL Y ADMINISTRACIÓN -->
             <div class="tab-pane fade" id="supers" role="tabpanel">
                 
@@ -4455,6 +4630,19 @@ Módulos Integrados:
 
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 11: PESTAÑA 8 - MODERADORES CON PERMISOS GRANULARES DE REVISIÓN (#moderadores)              #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Matriz de control de acceso basada en roles granulares (RBAC): permite a los directores asignar    #}
+            {#   permisos modulares específicos a cada moderador (ej. solo moderar obras, solo revisar semblanzas,  #}
+            {#   solo gestionar copias de seguridad o administrar usuarios) sin conceder acceso total a la BD.      #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para añadir nuevos permisos granulares por módulo: Agrega la columna de interruptores (switches) #}
+            {#     en la tabla de esta pestaña y enlaza el evento AJAX con `toggle_permiso_moderador_view`.        #}
+            {#   - Backend: `Pagina/views.py` (`toggle_permiso_moderador_view`).                                    #}
+            {# ==================================================================================================== #}
             <!-- ============================================================================== -->
             <!-- PESTAÑA: MATRIZ DE JERARQUÍAS Y PERMISOS GRANULARES DE MODERADOR (IDEAS 5 Y 7) -->
             <!-- ============================================================================== -->
@@ -4677,6 +4865,20 @@ Módulos Integrados:
                     </div>
                 </div>
             </div>
+            {# ==================================================================================================== #}
+            {# BLOQUE 12: PESTAÑA 9 - DIRECTORIO INSTITUCIONAL Y FUSIÓN DE AUTORES DUPLICADOS (#autores-fusion)     #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Directorio maestro de autores e investigadores. Contiene la herramienta inteligente de fusión de  #}
+            {#   identidades duplicadas (con cálculo de similitud Levenshtein y cotejo split-view), depuración de    #}
+            {#   autores huérfanos sin obras, asignación de códigos institucionales FCA-ID y reversión de fusiones.  #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para modificar la tabla de autores o paginación: Edita este contenedor `#autores-fusion`.         #}
+            {#   - Para alterar los modales de fusión, cotejo split-view y purga de huérfanos: Ve al BLOQUE 16.    #}
+            {#   - Backend: `Pagina/views.py` (`fusionar_autores_view`, `revertir_fusion_view`,                     #}
+            {#     `limpiar_autores_huerfanos_admin_view`).                                                         #}
+            {# ==================================================================================================== #}
             <div class="tab-pane fade" id="autores-fusion" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4 rounded-3 overflow-hidden">
                     <div class="card-header bg-white py-3 border-bottom">
@@ -4917,6 +5119,20 @@ Módulos Integrados:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 13: PESTAÑA 10 - DASHBOARD DE ANALÍTICA, TELEMETRÍA Y ESTADÍSTICAS GLOBALES (#dashboard-      #}
+            {#             analitica)                                                                               #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Centro de inteligencia institucional para acreditaciones (CACECA / CONAHCYT). Contiene gráficos    #}
+            {#   interactivos de producción anual, distribución por facultades, tendencias mensuales y el Cuadro de#}
+            {#   Honor con los investigadores y carreras más productivas de la universidad.                         #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para agregar nuevas métricas o tarjetas KPI: Modifica el grid `.row` en este bloque.             #}
+            {#   - Para agregar nuevas gráficas Chart.js: Crea un elemento `<canvas id="miGrafica">` aquí y        #}
+            {#     configura sus datos en el BLOQUE 27 (`renderizarGraficasAnalitica()`).                           #}
+            {# ==================================================================================================== #}
             <!-- ============================================================================== -->
             <!-- PESTAÑA 4: DASHBOARD ANALÍTICO DE PRODUCCIÓN Y RANKING (IDEA 18 & IDEA 8) -->
             <!-- ============================================================================== -->
@@ -5453,6 +5669,21 @@ Módulos Integrados:
                 </div>
             </div>
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 14: PESTAÑA 11 - AUDITORÍA SEMESTRAL, METAS Y DICTÁMENES OFICIALES EN PDF (#auditoria-        #}
+            {#             semestral)                                                                               #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Módulo oficial de rendición de cuentas universitarias: registra auditorías periódicas semestrales, #}
+            {#   evalúa porcentajes de avance de metas del repositorio y genera dictámenes oficiales en PDF para    #}
+            {#   órganos de acreditación (CACECA, CONAHCYT, Rectoría UABC).                                         #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para ajustar la tabla de auditorías históricas o los KPIs: Edita el marcado en este bloque.       #}
+            {#   - Para modificar el formulario de emisión de auditoría: Ve al BLOQUE 15                           #}
+            {#     (`#modalNuevaAuditoriaSemestral`).                                                               #}
+            {#   - Backend: `Pagina/views.py` (`registrar_auditoria_semestral_view`, `dictamen_semestral_pdf_view`).#}
+            {# ==================================================================================================== #}
             <!-- ============================================================================== -->
             <!-- PESTAÑA: AUDITORÍA SEMESTRAL Y DICTAMEN DE AVANCES (OBLIGATORIO) -->
             <!-- ============================================================================== -->
@@ -5676,6 +5907,19 @@ Módulos Integrados:
         </div>
     </main>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 15: MODALES DE AUDITORÍA SEMESTRAL (Creación y Visualización de Informes)                    #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene los modales interactivos para el registro de auditorías semestrales:                       #}
+    {#     - `#modalNuevaAuditoriaSemestral`: Formulario para registrar metas, avances y justificaciones.   #}
+    {#     - `#modalVerAuditoria{{ aud.id }}`: Modal para consultar auditorías emitidas con botón de PDF.   #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar nuevos campos al dictamen semestral: Modifica el formulario de este modal y    #}
+    {#     el modelo `AuditoriaSemestral` en `Pagina/models.py`.                                            #}
+    {#   - Backend: `Pagina/views.py` (`registrar_auditoria_semestral_view`, `dictamen_semestral_pdf_view`).#}
+    {# ==================================================================================================== #}
     <!-- ============================================================================== -->
     <!-- MODAL: NUEVA AUDITORÍA SEMESTRAL Y DICTAMEN DE AVANCES -->
     <!-- ============================================================================== -->
@@ -5979,6 +6223,24 @@ Módulos Integrados:
     </div>
     {% endfor %}
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 16: MODALES DE FUSIÓN DE AUTORES, DEDUPLICACIÓN Y COTEJO SPLIT-VIEW                          #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene el ecosistema de modales de la herramienta de deduplicación de identidades:                #}
+    {#     - `#modalFusionarAutores`: Selector de autor principal y duplicado (automático o manual).        #}
+    {#     - `#modalFusionesDelDia`: Historial de fusiones efectuadas durante el día actual.                #}
+    {#     - `#modalAdvertenciaHomonimos`: Alerta de seguridad preventiva ante posibles homónimos reales.   #}
+    {#     - `#modalSplitViewCotejo`: Visor lado a lado (split-view) de semblanzas y producción científica.  #}
+    {#     - `#modalLimpiarHuerfanos`: Gestor de autores sin obras asociadas para depuración de la BD.       #}
+    {#     - `#modalConfirmarRevertirFusion`: Confirmación para revertir una fusión y restaurar perfiles.   #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar las reglas o campos comparados en el cotejo split-view: Modifica el marcado de  #}
+    {#     `#modalSplitViewCotejo` en este bloque.                                                          #}
+    {#   - Backend: `Pagina/views.py` (`fusionar_autores_view`, `revertir_fusion_view`,                     #}
+    {#     `limpiar_autores_huerfanos_admin_view`).                                                         #}
+    {# ==================================================================================================== #}
     <!-- MODAL FUSIÓN DE AUTORES MEJORADO E INTUITIVO -->
     <div class="modal fade" id="modalFusionarAutores" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -7100,6 +7362,18 @@ Módulos Integrados:
     </div>
 
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 17: MODAL DE BUZÓN DE AUDITORÍA FORENSE INMUTABLE (#modalBuzonAuditoria)                     #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Despliega la bitácora inmutable de auditoría forense (`RegistroAuditoria`). Muestra todas las       #}
+    {#   acciones administrativas efectuadas en el sistema (quién, qué acción, detalles técnicos y fecha/hora).#}
+    {#   Incluye buscador en vivo, filtro por fecha calendario y botón para exportar la bitácora a Excel.     #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar la visualización o columnas de la auditoría: Edita la tabla en este modal.      #}
+    {#   - Backend: `Pagina/views.py` (`registrar_auditoria`, `exportar_auditoria_excel_view`).             #}
+    {# ==================================================================================================== #}
     <!-- MODAL BUZÓN DE AUDITORÍA -->
     <div class="modal fade" id="modalBuzonAuditoria" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -7184,6 +7458,27 @@ Módulos Integrados:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 18: MODALES DE MODERACIÓN DE OBRAS (Rechazo, Diff, Historial, Detalle, Purgar, Papelera)      #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene la suite de modales operativos para el flujo editorial de producción académica:            #}
+    {#     - `#modalRechazarDoc`: Formulario con motivos preestablecidos y observaciones para rechazar obras.#}
+    {#     - `#modalDiffCorregido`: Comparador de cambios (versión original vs corregida por el autor).      #}
+    {#     - `#modalHistorialDocumento`: Trazabilidad y auditoría cronológica de estados de la obra.         #}
+    {#     - `#modalEliminarDoc`: Envío de documentos a la papelera de reciclaje institucional.             #}
+    {#     - `#modalDetalleObra`: Ficha completa y visor embebido del archivo PDF en canvas PDF.js.          #}
+    {#     - `#modalCompararDuplicado`: Comparación lado a lado de posibles obras duplicadas.                #}
+    {#     - `#modalPurgarDefinitivo`: Eliminación física permanente de obras en papelera.                   #}
+    {#     - `#modalConfirmarVaciarPapelera`: Vaciado masivo definitivo de la papelera institucional.        #}
+    {#     - `#modalConfirmarAccionMasiva`: Confirmación para aprobar, rechazar o eliminar obras en lote.    #}
+    {#     - `#modalExportarExcelOpciones`: Modal con filtros para exportar el acervo académico a Excel.     #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar nuevos motivos de rechazo: Agrega checkboxes en `#modalRechazarDoc`.           #}
+    {#   - Backend: `Pagina/views.py` (`rechazar_documento_view`, `historial_documento_api_view`,           #}
+    {#     `exportar_documentos_excel_view`, `vaciar_papelera_documentos_view`).                             #}
+    {# ==================================================================================================== #}
     <!-- MODAL RECHAZAR DOCUMENTO -->
     <div class="modal fade" id="modalRechazarDoc" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -7401,6 +7696,22 @@ Módulos Integrados:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 19: MODALES DE SEMBLANZAS DOCENTES (Previsualización, Edición con Quill y Rechazo)            #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Gestiona la revisión curricular y el perfil público de los académicos:                             #}
+    {#     - `#modalPreviewSemblanza`: Previsualización dual (Credencial institucional vs Ficha detallada).   #}
+    {#     - `#modalEditarSemblanzaAdmin`: Editor enriquecido Quill.js para corregir semblanzas desde admin.  #}
+    {#     - `#modalRechazarSemblanza`: Motivo y justificación para solicitar ajustes al docente.            #}
+    {#     - `#modalEliminarSemblanza`: Restablecimiento de la semblanza al estado borrador/inicial.         #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar las herramientas de formato del editor Quill: Edita `#modalEditarSemblanzaAdmin`#}
+    {#     y su inicialización en los scripts de JavaScript.                                                #}
+    {#   - Backend: `Pagina/views.py` (`aprobar_semblanza_view`, `rechazar_semblanza_view`,                  #}
+    {#     `editar_semblanza_admin_view`, `restablecer_semblanza_admin_view`).                              #}
+    {# ==================================================================================================== #}
     <!-- MODAL VISTA PREVIA SEMBLANZA (ALINEADA A DISEÑO DE MI_PANEL) -->
     <div class="modal fade" id="modalPreviewSemblanza" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -7916,6 +8227,27 @@ Módulos Integrados:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 20: MODALES DE GESTIÓN DE USUARIOS (Perfiles, Roles, Contraseñas, Suspensiones, Impersonación)#}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene la suite de modales para el control de identidades y accesos institucionales:             #}
+    {#     - `#modalVerPerfilUsuario`: Expediente completo con datos de nómina, adscripción y bitácora AJAX.#}
+    {#     - `#modalAprobarCuentaSoporte` / `#modalRechazarCuentaSoporte`: Visto bueno a cuentas de soporte.#}
+    {#     - `#modalConfirmarAprobarUsuario`: Aprobación formal de nuevas cuentas registradas.              #}
+    {#     - `#modalSuspenderUsuarioAvanzado`: Panel de sanciones temporales con cálculo de días.            #}
+    {#     - `#modalConfirmarReactivar`: Levantamiento de suspensiones y reactivación de accesos.           #}
+    {#     - `#modalCambiarRol`: Reclasificación de roles institucionales (Docente, Auxiliar, Externo).     #}
+    {#     - `#modalToggleSuperuser`: Otorgamiento o revocación de privilegios de superusuario.              #}
+    {#     - `#modalConfirmarConfianza`: Asignación de Licencia de Publicación Directa (Trusted Publisher). #}
+    {#     - `#modalEliminarUsuario`: Eliminación definitiva de cuentas de usuario.                         #}
+    {#     - `#modalCambiarPassword`: Restablecimiento forzoso de contraseñas por administradores.          #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas agregar nuevos campos al expediente de usuario: Edita `#modalVerPerfilUsuario`.        #}
+    {#   - Backend: `Pagina/views.py` (`editar_ficha_usuario_admin_view`, `cambiar_rol_usuario_view`,       #}
+    {#     `suspender_usuario_view`, `restablecer_password_usuario_view`, `toggle_superuser_view`).         #}
+    {# ==================================================================================================== #}
     <!-- MODAL VER Y EDITAR FICHA USUARIO Y BITÁCORA INDIVIDUAL (IDEA 11) -->
     <div class="modal fade" id="modalVerPerfilUsuario" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -8835,6 +9167,21 @@ Módulos Integrados:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 21: MODAL DEL CENTRO DE RESPALDOS Y RESTAURACIÓN DEL SISTEMA (ZIP / JSON)                     #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Permite salvaguardar y recuperar el estado completo del repositorio:                               #}
+    {#     1. Generar Copia Completa (.ZIP): Descarga la BD y los archivos multimedia (PDFs de tesis, fotos).#}
+    {#     2. Descargar solo Base de Datos (.JSON): Archivo serializado liviano para aislamiento rápido.    #}
+    {#     3. Restaurar Copia Guardada: Dropzone drag & drop para arrastrar el archivo ZIP/JSON con          #}
+    {#        verificación de integridad y transacción segura (`transaction.atomic()`).                     #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas cambiar las extensiones aceptadas o límites de subida de backups: Edita el dropzone     #}
+    {#     y los scripts en el BLOQUE 26.                                                                   #}
+    {#   - Backend: `Pagina/views.py` (`exportar_respaldo_sistema_view`, `restaurar_respaldo_sistema_view`). #}
+    {# ==================================================================================================== #}
     <!-- ======================================================== -->
     <!-- 4. MODAL CENTRO DE RESPALDOS Y RESTAURACIÓN DEL SISTEMA  -->
     <!-- ======================================================== -->
@@ -9040,6 +9387,18 @@ Módulos Integrados:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 22: MODAL DE PALETA DE COMANDOS RÁPIDOS DEL SISTEMA (CTRL + K)                                #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Proporciona un buscador omnipotente estilo Spotlight / VS Code: se activa presionando `Ctrl + K`.  #}
+    {#   Permite saltar instantáneamente a cualquier pestaña, ejecutar acciones rápidas, buscar obras      #}
+    {#   académicas o localizar perfiles de docentes con navegación mediante flechas del teclado.           #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas registrar nuevos comandos o atajos de teclado: Edita el arreglo de acciones en los      #}
+    {#     scripts de la paleta de comandos más abajo.                                                      #}
+    {# ==================================================================================================== #}
     <!-- 9. MODAL COMMAND PALETTE SPOTLIGHT (IDEA 17) -->
     <div class="modal fade" id="modalCommandPalette" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-command-palette-dialog" style="max-width: 680px;">
@@ -9090,6 +9449,19 @@ Módulos Integrados:
     <!-- SCRIPT DE QUILL JS -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 23: SCRIPTS JAVASCRIPT - INICIALIZACIÓN, CITAS, PRESENCIA EN VIVO Y MONITOREO DE CONCURRENCIA#}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Inicializa los componentes globales del cliente:                                                   #}
+    {#     - Generador dinámico de citas académicas (APA 7, Vancouver, Harvard, IEEE, MLA 9).               #}
+    {#     - Heartbeat de presencia en tiempo real (`api_presencia_heartbeat_view`).                        #}
+    {#     - Detección y bloqueo pesimista contra moderación concurrente (`api_bloqueo_concurrencia_view`). #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Si deseas ajustar la frecuencia del latido de presencia (actualmente 15s): Edita el intervalo   #}
+    {#     en `setInterval(enviarHeartbeatPresencia, 15000)`.                                               #}
+    {# ==================================================================================================== #}
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -9778,6 +10150,19 @@ Módulos Integrados:
                 });
             });
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 24: SCRIPTS JAVASCRIPT - GESTIÓN Y FILTRADO REACTIVO DE DOCUMENTOS Y ACCIONES MASIVAS        #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Controla la interactividad de la tabla de documentos:                                              #}
+            {#     - Filtrado instantáneo por estado (aprobado, pendiente, rechazado, papelera).                #}
+            {#     - Selección múltiple de filas mediante checkboxes con barra flotante de acciones masivas.     #}
+            {#     - Apertura de modales de rechazo, diff de corrección, historial de cambios y acuse de recibo.#}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Si deseas agregar una nueva acción masiva (ej. "Reasignar entidad en masa"): Agrega el botón en  #}
+            {#     la barra flotante y la función correspondiente en este bloque.                                   #}
+            {# ==================================================================================================== #}
             // Filtros rápidos desde tarjetas KPI interactivas y botones de estado
             window.filtrarDocsPorEstado = function(estado) {
                 const url = new URL(window.location.href);
@@ -12205,6 +12590,19 @@ Módulos Integrados:
                 });
             }
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 25: SCRIPTS JAVASCRIPT - ALGORITMOS DE FUSIÓN, CÁLCULO LEVENSHTEIN Y HOMÓNIMOS               #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Controla la deduplicación de identidades académicas:                                               #}
+            {#     - Selección de autor principal y duplicado en interfaz manual y automática.                  #}
+            {#     - Detección preventiva de homónimos reales para evitar fusiones accidentales de docentes.    #}
+            {#     - Algoritmo de cotejo split-view y control del historial de fusiones reversibles.            #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Si deseas ajustar el umbral de similitud o validaciones de correo/nómina: Modifica el evento     #}
+            {#     `$('#formFusionManual').on('submit')` en este bloque.                                            #}
+            {# ==================================================================================================== #}
             // GESTIÓN DE FUSIÓN DE AUTORES: INTERFAZ INTUITIVA Y ÁGIL
             // 1. Cambio dinámico de radio en grupos parecidos (Pestaña 1)
             $(document).on('change', '.radio-principal-grupo', function() {
@@ -12557,6 +12955,19 @@ Módulos Integrados:
                 }
             });
 
+            {# ==================================================================================================== #}
+            {# BLOQUE 26: SCRIPTS JAVASCRIPT - MOTOR DE COPIAS DE SEGURIDAD (RESPALDOS ZIP Y RESTAURACIÓN)          #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Maneja la zona interactiva drag & drop (Dropzone) para restaurar respaldos:                        #}
+            {#     - Validación del formato de archivo (archivos .ZIP completos o .JSON de base de datos).        #}
+            {#     - Despliegue del resumen de tamaño y tipo de respaldo seleccionado antes de confirmar.          #}
+            {#     - Animaciones de arrastre (`dragover`, `dragleave`, `drop`) y retroalimentación visual al usuario.#}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para ajustar los tipos MIME o validaciones de peso del backup: Edita la función                  #}
+            {#     `actualizarArchivoBackupSeleccionado(file)` en este bloque.                                      #}
+            {# ==================================================================================================== #}
             // ========================================================
             // DROPZONE Y RESTAURACIÓN DE BACKUP ("Poner backup aquí")
             // ========================================================
@@ -13852,6 +14263,15 @@ Módulos Integrados:
     </button>
 
     <!-- CONTROL DE MODO PRESENTACIÓN INSTITUCIONAL / CACECA (BLOQUE 3 - IDEA 15) -->
+    {# ==================================================================================================== #}
+    {# BLOQUE 27: SCRIPTS JAVASCRIPT - MODO PRESENTACIÓN EJECUTIVA INSTITUCIONAL (CACECA / CONAHCYT)         #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Controla el modo presentación a pantalla completa para juntas de acreditación universitaria:        #}
+    {#     - Reloj institucional en vivo y banners conmemorativos.                                          #}
+    {#     - Transición visual al hub de analítica y ocultamiento de controles secundarios.                  #}
+    {#     - Atajo de teclado (tecla ESC o botón flotante) para salir del modo presentación.                #}
+    {# ==================================================================================================== #}
     <script>
         (function() {
             let relojInterval = null;

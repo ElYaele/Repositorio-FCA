@@ -5,12 +5,16 @@ Plantilla: templates/Formulario.html
 Descripción: Asistente Interactivo de Carga y Edición de Obras Científicas y Tesis Académicas.
 Autor: Facultad de Contaduría y Administración - Campus Tijuana
 ====================================================================================================
-Capacidades:
-- Carga Polimórfica Dinámica: Despliega campos contextuales según el tipo de recurso seleccionado
-  (Artículos, Tesis de Grado/Posgrado, Libros, Capítulos, Patentes IMPI, INDAUTOR, Desarrollos y Traducciones).
-- Verificación Dinámica AJAX: Detección preventiva de títulos duplicados en tiempo real.
-- Asignación Inteligente de Autores: Autocompletado, búsqueda reactiva y registro rápido de coautores.
-- Validación de Archivos Digitales: Restricción y verificación del tamaño de PDFs (máximo 20 MB).
+GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
+----------------------------------------------------------------------------------------------------
+- BLOQUE 0: ESTILOS CSS DEL ASISTENTE Y REGLAS DE DISEÑO VISUAL
+- BLOQUE 1: ENCABEZADO Y SELECTOR DE TIPOLOGÍA DOCUMENTAL (Artículos, Tesis, Libros, Patentes...)
+- BLOQUE 2: CARGA Y VALIDACIÓN DE ARCHIVO DIGITAL EN PDF (MÁXIMO 20 MB)
+- BLOQUE 3: CATÁLOGO DE AUTORES, COAUTORÍAS Y BÚSQUEDA REACTIVA DE COLEGAS
+- BLOQUE 4: METADATOS PRINCIPALES (Título, Resumen/Abstract, Entidad, Área, Año y Semestre)
+- BLOQUE 5: CAMPOS ESPECIALIZADOS POLIMÓRFICOS (Revistas, Tesis, Patentes IMPI/INDAUTOR, Desarrollos)
+- BLOQUE 6: MODALES DE CONFIRMACIÓN, PREVISUALIZACIÓN, CITA DIRECTA Y CREACIÓN DE COAUTORES
+- BLOQUE 7: SCRIPTS JAVASCRIPT - AUTOGUARDADO LOCALSTORAGE, DETECCIÓN AJAX DE DUPLICADOS Y VISOR PDF
 ====================================================================================================
 #}
 <!DOCTYPE html>
@@ -23,6 +27,14 @@ Capacidades:
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    {# ==================================================================================================== #}
+    {# BLOQUE 0: ESTILOS CSS DEL ASISTENTE Y REGLAS DE DISEÑO VISUAL                                         #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Define la presentación del asistente de carga: fondo institucional, tarjetas con sombra suave,     #}
+    {#   estilos para inputs flotantes, indicadores de validación en tiempo real y vista previa de archivos.#}
+    {# ==================================================================================================== #}
     <style>
         :root {
             --primary-color: #006633;
@@ -741,7 +753,20 @@ Capacidades:
                 </div>
             </div>
 
-
+            {# ==================================================================================================== #}
+            {# BLOQUE 1: ENCABEZADO Y SELECTOR DE TIPOLOGÍA DOCUMENTAL                                              #}
+            {# ---------------------------------------------------------------------------------------------------- #}
+            {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+            {#   Presenta la matriz de selección de tipo de recurso académico mediante tarjetas interactivas:       #}
+            {#   Artículo de Revista, Tesis, Libro/Capítulo, Patente IMPI, Obra INDAUTOR, Proyecto/Desarrollo, etc. #}
+            {#   Al hacer clic en una tarjeta, se actualiza el input oculto `#real-tipo-contenido`, se desbloquean  #}
+            {#   las secciones posteriores y se muestran los campos específicos correspondientes a la tipología.     #}
+            {#                                                                                                      #}
+            {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+            {#   - Para agregar una nueva tipología: duplica una tarjeta `.card-selector` con su `data-tipo` único.  #}
+            {#   - Para modificar la sincronización reactiva: consulta la función `activarTipo()` en el BLOQUE 7.   #}
+            {#   - Backend relacionado: modelo `Documento.tipo_contenido` en `Pagina/models.py`.                    #}
+            {# ==================================================================================================== #}
             <div class="mb-4">
                 <div class="section-title">
                     <i class="fas fa-th-large"></i> 1. Selecciona el Tipo de Recurso Académico (Obligatorio)
@@ -963,6 +988,19 @@ Capacidades:
 
             <div id="secciones-formulario" class="secciones-inactivas">
 
+                {# ==================================================================================================== #}
+                {# BLOQUE 2: CARGA Y VALIDACIÓN DE ARCHIVO DIGITAL EN PDF (MÁXIMO 20 MB)                                #}
+                {# ---------------------------------------------------------------------------------------------------- #}
+                {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+                {#   Gestiona la zona de carga (Drag & Drop) del documento digital en PDF, la previsualización del      #}
+                {#   archivo en edición existente (`#contenedor-pdf-existente`), la extracción inteligente de título    #}
+                {#   sugerido mediante PDF.js y la verificación estricta del límite institucional de 20 MB.             #}
+                {#                                                                                                      #}
+                {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+                {#   - Zona Drag & Drop: `#zona-drag-drop-pdf` e input `#id_pdf`.                                       #}
+                {#   - Para ajustar el límite de peso: modificar `MAX_FILE_SIZE` en el BLOQUE 7 (JS) y en `forms.py`.   #}
+                {#   - Backend relacionado: campo `pdf` en `DocumentoForm` (`Pagina/forms.py`).                         #}
+                {# ==================================================================================================== #}
                 <div class="mb-4" id="seccion-pdf">
                     <div class="section-title">
                         <i class="fas fa-file-pdf text-danger"></i> 2. Documento en Formato PDF
@@ -1079,6 +1117,21 @@ Capacidades:
                     </div>
                 </div>
 
+                {# ==================================================================================================== #}
+                {# BLOQUE 3: CATÁLOGO DE AUTORES, COAUTORÍAS Y BÚSQUEDA REACTIVA DE COLEGAS                             #}
+                {# ---------------------------------------------------------------------------------------------------- #}
+                {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+                {#   Interfaz de doble panel interactivo: a la izquierda el catálogo completo de autores registrados    #}
+                {#   (con filtros UABC, Externos e Investigadores y buscador en tiempo real `#filter-author`), y a la   #}
+                {#   derecha los autores seleccionados para la obra con su rol (Autor principal, Coautor o Asesor).     #}
+                {#   Permite además abrir el modal `#modalNuevoAutor` para crear autores no listados al instante.       #}
+                {#                                                                                                      #}
+                {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+                {#   - Panel de disponibles: `#available-list` y elementos `.author-card-row`.                           #}
+                {#   - Panel de seleccionados: `#selected-list` y select oculto múltiple `#id_autores`.                 #}
+                {#   - Botones de filtrado rápido: `.btn-filter-author` (UABC, externo, independiente).                 #}
+                {#   - Backend relacionado: vista `subir_documento` y `editar_documento` en `Pagina/views.py`.          #}
+                {# ==================================================================================================== #}
                 <div class="dual-panel-wrapper" id="seccion-autores">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label class="mb-0 font-weight-bold" style="color: var(--primary-color); font-size: 1rem;">
@@ -1189,6 +1242,21 @@ Capacidades:
                     </select>
                 </div>
 
+                {# ==================================================================================================== #}
+                {# BLOQUE 4: METADATOS PRINCIPALES (TÍTULO, ABSTRACT, ENTIDAD, ÁREA, AÑO Y SEMESTRE)                   #}
+                {# ---------------------------------------------------------------------------------------------------- #}
+                {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+                {#   Captura la ficha bibliográfica medular del recurso:                                                #}
+                {#     - Título oficial (`#id_titulo`) con detección reactiva AJAX de títulos duplicados.               #}
+                {#     - Año de producción (`#id_año_produccion`) y Semestre lectivo (`#id_semestre`).                  #}
+                {#     - Área del conocimiento (`#id_area`) vinculada a datalist institucional.                         #}
+                {#     - Entidad académica de adscripción (`#id_entidad`) y Resumen / Abstract (`#id_descripcion`).     #}
+                {#                                                                                                      #}
+                {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+                {#   - Caja de alerta de duplicados: `#alerta-titulo-duplicado` controlada en BLOQUE 7 por AJAX.         #}
+                {#   - Datalists de autocompletado: `#area-list` e `#idiomas-list`.                                      #}
+                {#   - Backend relacionado: modelo `Documento` (`Pagina/models.py`) y vista `check_titulo_duplicado`.    #}
+                {# ==================================================================================================== #}
                 <!-- 4. INFORMACIÓN GENERAL DE LA OBRA -->
                 <div class="mb-4" id="seccion-datos-gral">
                     <div class="section-title">
@@ -1348,6 +1416,23 @@ Capacidades:
                     </div>
                 </div>
 
+                {# ==================================================================================================== #}
+                {# BLOQUE 5: CAMPOS ESPECIALIZADOS POLIMÓRFICOS (REVISTAS, TESIS, IMPI, INDAUTOR, DESARROLLOS)         #}
+                {# ---------------------------------------------------------------------------------------------------- #}
+                {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+                {#   Renderiza condicionalmente formularios adaptativos según la tipología elegida en el BLOQUE 1:      #}
+                {#     - `#bloque-articulo`: Revista, ISSN, volumen, número, páginas, DOI.                              #}
+                {#     - `#bloque-tesis`: Grado (Licenciatura/Maestría/Doctorado), Director y Codirector de Tesis.     #}
+                {#     - `#bloque-libro`: Editorial, ISBN, número de edición, páginas.                                  #}
+                {#     - `#bloque-patente`: Número de registro IMPI, fecha de concesión, clasificación IPC.             #}
+                {#     - `#bloque-indautor`: Registro público de derechos de autor, rama de la obra.                    #}
+                {#     - `#bloque-desarrollo`: Tipo de software o innovación tecnológica, repositorio o URL.            #}
+                {#                                                                                                      #}
+                {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+                {#   - Para incorporar una nueva tipología: agrega un contenedor `<div id="bloque-..." class="bloque-dinamico">` #}
+                {#   - En el BLOQUE 7 (JS), añade el mapeo dentro de `activarTipo(tipo)`.                               #}
+                {#   - Backend relacionado: campos polimórficos de `Documento` (`Pagina/models.py`).                    #}
+                {# ==================================================================================================== #}
                 <!-- 1. BLOQUE ESPECÍFICO: ARTÍCULO CIENTÍFICO / REVISTA -->
                 <div id="bloque-articulo" class="bloque-dinamico">
                     <h6 class="font-weight-bold text-success mb-3">
@@ -2173,11 +2258,28 @@ Capacidades:
         </form>
     </div>
 
-    
+    {# ==================================================================================================== #}
+    {# BLOQUE 6: MODALES DE CONFIRMACIÓN, PREVISUALIZACIÓN, CITA DIRECTA Y CREACIÓN DE COAUTORES            #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Aloja la suite de modales del asistente:                                                           #}
+    {#     - `#modalConfirmarPublicacion`: Previsualización multicapa (Ficha detallada, credencial pública,   #}
+    {#       ficha pública y generador de citación académica).                                              #}
+    {#     - `#modalCitarObraDirecto`: Generador de referencias en formatos APA 7ma, Harvard e IEEE.          #}
+    {#     - `#modalInfoCategoria`: Ficha informativa explicativa de la tipología documental seleccionada.  #}
+    {#     - `#modalNuevoAutor`: Formulario reactivo para alta exprés de autores externos sin salir del flujo.#}
+    {#     - `#modalVisorPdf`: Visor integrado de documento PDF renderizado con PDF.js.                    #}
+    {#     - `#modalProgresoSubida`: Barra de progreso animada durante la subida multipart/form-data.       #}
+    {#     - `#modalConfirmarSalida`: Detección de cambios no guardados al intentar abandonar la página.    #}
+    {#     - `#modalConfirmarDescartarBorrador`: Vaciado seguro del borrador en localStorage.               #}
+    {#     - `#modalAlertaFormulario`: Reemplazo accesible y estilizado del alert() nativo del navegador.   #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Para ajustar formatos de cita: buscar el contenedor `#contenedor-citas-estilos` en este bloque.    #}
+    {#   - Para modificar la creación rápida de autores: revisar `#modalNuevoAutor` y vista `crear_autor_ajax` #}
+    {#   - Apertura y cierre de modales: orquestados en el BLOQUE 7 (JS).                                    #}
+    {# ==================================================================================================== #}
     <!-- ============================================================== -->
-    <!-- MODAL DE CONFIRMACIÓN Y RESUMEN PREVIO AL PUBLICAR (FASE A - IDEA 1) -->
-    <!-- ============================================================== -->
-        <!-- ============================================================== -->
     <!-- MODAL DE PREVISUALIZACIÓN DE PUBLICACIÓN (IDÉNTICO AL CATÁLOGO - IMAGEN 4) -->
     <!-- ============================================================== -->
     <div class="modal fade" id="modalConfirmarPublicacion" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
@@ -2678,6 +2780,24 @@ Capacidades:
         </div>
     </div>
 
+    {# ==================================================================================================== #}
+    {# BLOQUE 7: SCRIPTS JAVASCRIPT - AUTOGUARDADO LOCALSTORAGE, DETECCIÓN AJAX DE DUPLICADOS Y VISOR PDF   #}
+    {# ---------------------------------------------------------------------------------------------------- #}
+    {# ¿QUÉ HACE ESTE BLOQUE?:                                                                              #}
+    {#   Contiene toda la lógica cliente y reactividad del asistente:                                       #}
+    {#     - Inicialización de PDF.js y visor en canvas (`#visor-pdf-canvas`).                              #}
+    {#     - Sincronización reactiva de tipologías (`activarTipo()`) y visibilidad de campos polimórficos. #}
+    {#     - Sistema de auto-guardado en localStorage cada 20s y restauración de borradores no enviados.     #}
+    {#     - Validación asíncrona (AJAX) en tiempo real contra duplicados de títulos (`/check-titulo/`).     #}
+    {#     - Drag and Drop de archivos PDF con validación de peso (<= 20 MB) y tipo MIME.                   #}
+    {#     - Cálculo del porcentaje de completado del formulario (`actualizarProgresoFormulario()`).        #}
+    {#     - Creación asíncrona de nuevos autores vía AJAX (`/crear-autor-ajax/`).                          #}
+    {#                                                                                                      #}
+    {# GUÍA PARA DESARROLLADORES (¿DÓNDE Y CÓMO MODIFICAR?):                                                #}
+    {#   - Rutas AJAX: buscar llamadas a `$.ajax` o `fetch` para endpoints de backend (`urls.py`).          #}
+    {#   - Clave de persistencia: `CLAVE_STORAGE_BORRADOR = 'fca_borrador_formulario_'`.                    #}
+    {#   - Atajos de teclado: evento `keydown` (Ctrl + Enter para guardar rápidamente).                      #}
+    {# ==================================================================================================== #}
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>

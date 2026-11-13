@@ -9,3 +9,4 @@ procesadores de contexto, señales y configuración institucional de Django.
 """
 
 default_app_config = 'Pagina.apps.PaginaConfig'
+
