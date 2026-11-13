@@ -1816,7 +1816,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_rama_propiedad">
-                                    Rama de la Obra / Clasificación Técnica
+                                    Rama de la Obra / Clasificación Técnica <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rama legal de la obra según el certificado INDAUTOR (ej. Programas de Computación (Software), Base de Datos, Literaria) o clasificación CIP en patentes."></i>
                                 </label>
                                 <input type="text" name="rama_propiedad" id="id_rama_propiedad" class="form-control" value="{% if form.rama_propiedad.value %}{{ form.rama_propiedad.value }}{% elif form.instance.rama_propiedad %}{{ form.instance.rama_propiedad }}{% endif %}" placeholder="Ej. Programas de Computación (Software), Base de Datos, Literaria">
@@ -1825,7 +1825,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_titular_propiedad">
-                                    Titular de los Derechos Patrimoniales
+                                    Titular de los Derechos Patrimoniales <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Entidad titular de los derechos patrimoniales (usualmente la Universidad Autónoma de Baja California - UABC)."></i>
                                 </label>
                                 <input type="text" name="titular_propiedad" id="id_titular_propiedad" class="form-control" value="{% if form.titular_propiedad.value %}{{ form.titular_propiedad.value }}{% elif form.instance.titular_propiedad %}{{ form.instance.titular_propiedad }}{% else %}Universidad Autónoma de Baja California (UABC){% endif %}" placeholder="Ej. Universidad Autónoma de Baja California (UABC)">
@@ -1837,7 +1837,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_rol_participacion">
-                                    Rol de Participación
+                                    Rol de Participación <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Tu función o papel en la autoría o desarrollo del recurso."></i>
                                 </label>
                                 <select name="rol_participacion" id="id_rol_participacion" class="form-control">
@@ -1853,7 +1853,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_estado_propiedad">
-                                    Estado del Registro / Trámite
+                                    Estado del Registro / Trámite <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Situación actual de la protección ante la autoridad oficial."></i>
                                 </label>
                                 <select name="estado_propiedad" id="id_estado_propiedad" class="form-control">
@@ -1867,7 +1867,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_fecha_expedicion_solicitud">
-                                    Fecha de Expedición u Otorgamiento
+                                    Fecha de Expedición u Otorgamiento <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Fecha en que la autoridad emitió el certificado o se radicó la solicitud."></i>
                                 </label>
                                 <input type="date" name="fecha_expedicion_solicitud" id="id_fecha_expedicion_solicitud" class="form-control" value="{% if form.fecha_expedicion_solicitud.value %}{{ form.fecha_expedicion_solicitud.value }}{% elif form.instance.fecha_expedicion_solicitud %}{{ form.instance.fecha_expedicion_solicitud|date:'Y-m-d' }}{% endif %}">
@@ -1879,7 +1879,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_ambito_solicitud">
-                                    Ámbito de Protección
+                                    Ámbito de Protección <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nivel geográfico de cobertura: Nacional (México) o Internacional (vía PCT / OMPI)."></i>
                                 </label>
                                 <select name="ambito_solicitud" id="id_ambito_solicitud" class="form-control">
@@ -1907,13 +1907,13 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-0">
-                                    <label for="id_solicitud_internacional_numero" class="small">Número de Solicitud Internacional (PCT)</label>
+                                    <label for="id_solicitud_internacional_numero" class="small">Número de Solicitud Internacional (PCT) <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Si aplica</span></label>
                                     <input type="text" name="solicitud_internacional_numero" id="id_solicitud_internacional_numero" class="form-control" value="{% if form.solicitud_internacional_numero.value %}{{ form.solicitud_internacional_numero.value }}{% elif form.instance.solicitud_internacional_numero %}{{ form.instance.solicitud_internacional_numero }}{% endif %}" placeholder="Ej. PCT/IB2026/050123">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-0">
-                                    <label for="id_publicacion_internacional_numero" class="small">Número de Publicación Internacional (WO)</label>
+                                    <label for="id_publicacion_internacional_numero" class="small">Número de Publicación Internacional (WO) <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Si aplica</span></label>
                                     <input type="text" name="publicacion_internacional_numero" id="id_publicacion_internacional_numero" class="form-control" value="{% if form.publicacion_internacional_numero.value %}{{ form.publicacion_internacional_numero.value }}{% elif form.instance.publicacion_internacional_numero %}{{ form.instance.publicacion_internacional_numero }}{% endif %}" placeholder="Ej. WO 2026/123456 A1">
                                 </div>
                             </div>
@@ -2558,7 +2558,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                     </label>
                     <div class="row g-2 mb-2">
                         <div class="col-md-3 mb-2 mb-md-0">
-                            <label class="small text-muted font-weight-bold mb-1">Título / Grado:</label>
+                            <label class="small text-muted font-weight-bold mb-1">Título / Grado <span class="badge badge-light text-muted font-weight-normal" style="font-size: 0.65rem; border: 1px solid #e2e8f0;">Opcional</span>:</label>
                             <input type="text" id="nuevo_autor_titulo" class="form-control form-control-sm" list="lista-titulos-rapidos" placeholder="Ej. Dr., Mtro." autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                             <datalist id="lista-titulos-rapidos">
                                 <option value="Dr.">
@@ -2580,7 +2580,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                             <input type="text" id="nuevo_autor_paterno" class="form-control form-control-sm" placeholder="Ej. Soto" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="small text-muted font-weight-bold mb-1">Segundo Apell&zwnj;ido:</label>
+                            <label class="small text-muted font-weight-bold mb-1">Segundo Apell&zwnj;ido <span class="badge badge-light text-muted font-weight-normal" style="font-size: 0.65rem; border: 1px solid #e2e8f0;">Opcional</span>:</label>
                             <input type="text" id="nuevo_autor_materno" class="form-control form-control-sm" placeholder="Ej. Medina" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                         </div>
                     </div>
