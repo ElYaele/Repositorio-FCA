@@ -549,17 +549,18 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
         /* TIMELINE VISUAL DE HISTORIAL (IDEA 6) */
         .timeline-visual {
             position: relative;
-            padding-left: 2.2rem;
+            padding: 10px 10px 10px 52px !important;
         }
         .timeline-visual::before {
             content: '';
             position: absolute;
-            top: 14px;
-            bottom: 14px;
-            left: 17px;
+            top: 24px;
+            bottom: 24px;
+            left: 26px;
             width: 3px;
-            background: #e2e8f0;
+            background: #cbd5e1;
             border-radius: 3px;
+            z-index: 1;
         }
         .timeline-item {
             position: relative;
@@ -570,15 +571,15 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
         }
         .timeline-marker {
             position: absolute;
-            left: -2.2rem;
-            top: 2px;
+            left: -44px;
+            top: 4px;
             width: 36px;
             height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 0 4px #ffffff, 0 3px 8px rgba(0,0,0,0.12);
+            box-shadow: 0 0 0 4px #f8fafc, 0 3px 8px rgba(0,0,0,0.12);
             z-index: 2;
             color: #ffffff;
             font-size: 0.9rem;
@@ -7659,7 +7660,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                     </div>
 
                     <div id="historialTimelineContainer" style="display: none;">
-                        <div class="timeline-visual position-relative px-2 py-1" id="historialTimelineList">
+                        <div class="timeline-visual" id="historialTimelineList">
                             <!-- Nodos inyectados dinámicamente -->
                         </div>
                     </div>
