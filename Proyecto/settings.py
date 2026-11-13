@@ -88,6 +88,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware', # Prevención de clickjacking en iframes
 ]
 
+# Permite embeber documentos PDF y vistas propias en iframes del mismo origen institucional
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # Enrutador maestro de URLs
 ROOT_URLCONF = 'Proyecto.urls'
 
