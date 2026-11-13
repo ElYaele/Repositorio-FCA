@@ -162,7 +162,7 @@ class ArticuloForm(forms.ModelForm):
     class Meta:
         model = Articulo
         # Se excluyen campos gobernados exclusivamente por el flujo de moderación o la sesión activa
-        exclude = ['estado', 'motivo_rechazo', 'subido_por']
+        exclude = ['estado', 'motivo_rechazo', 'subido_por', 'vistas', 'descargas', 'es_subida_automatica']
 
     def __init__(self, *args, **kwargs):
         """
