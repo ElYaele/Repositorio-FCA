@@ -579,6 +579,14 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
             opacity: 0.35;
             cursor: not-allowed;
         }
+        .asterisco-rojo {
+            color: #dc3545 !important;
+            font-weight: 700 !important;
+            margin-left: 2px;
+            font-size: 0.95em;
+            line-height: 1;
+            display: inline-block;
+        }
         .bloque-dinamico {
             background-color: #fafafa;
             border: 1px solid #e0e0e0;
@@ -1265,7 +1273,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
 
                     <div class="form-group">
                         <label for="id_titulo">
-                            Título del Documento *
+                            Título del Documento <span class="asterisco-rojo">*</span>
                             <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Escribe el título completo y oficial de la obra o investigación tal como fue publicada."></i>
                         </label>
                         <input type="text" name="titulo" id="id_titulo" class="form-control" value="{% if form.titulo.value %}{{ form.titulo.value }}{% elif form.instance.titulo %}{{ form.instance.titulo }}{% endif %}" required placeholder="Título completo de la obra o investigación">
@@ -1295,7 +1303,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_año_produccion">
-                                    Año de Producción *
+                                    Año de Producción <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Año en el que se publicó, concluyó o defendió formalmente la obra."></i>
                                 </label>
                                 <input type="number" name="año_produccion" id="id_año_produccion" class="form-control" value="{% if form.año_produccion.value %}{{ form.año_produccion.value }}{% elif form.instance.año_produccion %}{{ form.instance.año_produccion }}{% else %}2026{% endif %}" min="1900" max="2026" required>
@@ -1304,7 +1312,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_area">
-                                    Área Académica *
+                                    Área Académica <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Disciplina o campo del conocimiento general al que pertenece la investigación."></i>
                                 </label>
                                 <input type="text" name="area" id="id_area" class="form-control" list="area-list" value="{% if form.area.value %}{{ form.area.value }}{% elif form.instance.area %}{{ form.instance.area.nombre }}{% endif %}" required placeholder="Ej. Administración, Contaduría">
@@ -1318,7 +1326,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_entidad">
-                                    Entidad / Facultad *
+                                    Entidad / Facultad <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Institución, facultad o dependencia académica que respalda o patrocina la obra."></i>
                                 </label>
                                 <input type="text" name="entidad" id="id_entidad" class="form-control" list="entidad-list" value="{% if form.entidad.value %}{{ form.entidad.value }}{% elif form.instance.entidad %}{{ form.instance.entidad.nombre }}{% endif %}" required placeholder="Ej. Facultad de Contaduría y Administración Tijuana">
@@ -1355,7 +1363,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                     <div class="form-group mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label for="id_descripcion" class="mb-0 font-weight-bold">
-                                Resumen / Descripción de la Obra *
+                                Resumen / Descripción de la Obra <span class="asterisco-rojo">*</span>
                                 <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Breve síntesis que detalla el objetivo, la metodología aplicada y las conclusiones principales."></i>
                             </label>
                             <span class="badge badge-light border text-muted px-2 py-1 shadow-xs" id="badge-contador-descripcion" style="font-size: 0.74rem;">
@@ -1369,7 +1377,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_palabras_clave">
-                                    Palabras Clave *
+                                    Palabras Clave <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Términos clave que facilitan la catalogación (Obligatorio al menos una palabra clave. Escribe y pulsa Enter o coma)."></i>
                                 </label>
                                 <!-- Input real oculto sincronizado con Django -->
@@ -1398,7 +1406,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_idioma">
-                                    Idioma *
+                                    Idioma <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-primary ml-1" data-toggle="tooltip" data-placement="top" title="Idioma principal en el que está redactado el texto completo del documento."></i>
                                 </label>
                                 <input type="text" name="idioma" id="id_idioma" class="form-control" list="idiomas-list" required
@@ -1442,7 +1450,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-8">
                             <div class="form-group">
                                 <label for="id_revista_art">
-                                    Nombre de la Revista Académica *
+                                    Nombre de la Revista Académica <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial y completo de la revista científica o arbitrada donde se publicó (Obligatorio)."></i>
                                 </label>
                                 <input type="text" name="revista" id="id_revista_art" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. Revista Iberoamericana de Contaduría y Administración">
@@ -1451,7 +1459,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_issn_art">
-                                    Código ISSN *
+                                    Código ISSN <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número internacional normalizado de publicaciones seriadas en formato XXXX-XXXX (Obligatorio)."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_issn_art" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 2448-8984">
@@ -1498,7 +1506,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_grado_academico">
-                                    Grado Académico
+                                    Grado Académico <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nivel de estudios al que aspira o acredita el trabajo recepcional."></i>
                                 </label>
                                 <select name="grado_academico" id="id_grado_academico" class="form-control">
@@ -1513,7 +1521,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_programa_academico">
-                                    Programa Educativo / Carrera
+                                    Programa Educativo / Carrera <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre de la licenciatura, maestría o doctorado institucional correspondiente."></i>
                                 </label>
                                 <input type="text" name="carrera_o_posgrado" id="id_programa_academico" class="form-control sincro-programa"
@@ -1526,7 +1534,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_director_tesis">
-                                    Director / Asesor Principal
+                                    Director / Asesor Principal <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre completo del profesor o investigador que dirigió o asesoró la tesis."></i>
                                 </label>
                                 <input type="text" name="asesor" id="id_director_tesis" class="form-control sincro-director"
@@ -1559,7 +1567,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-5">
                             <div class="form-group">
                                 <label for="id_editorial_libro">
-                                    Casa Editorial
+                                    Casa Editorial <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Empresa o institución editora encargada de la publicación del libro."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_editorial_libro" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC, Pearson, McGraw-Hill">
@@ -1568,7 +1576,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_isbn_libro">
-                                    Número ISBN
+                                    Número ISBN <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número internacional normalizado del libro (ISBN) de 10 o 13 dígitos."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_isbn_libro" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-000-0">
@@ -1577,7 +1585,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="id_paginas_libro">
-                                    Total de Páginas
+                                    Total de Páginas <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número total de páginas que contiene la obra monográfica completa."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_paginas_libro" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 240">
@@ -1595,7 +1603,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_revista_cap">
-                                    Nombre del Libro / Obra Colectiva
+                                    Nombre del Libro / Obra Colectiva <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Título del libro compilado o coordinado donde se incluyó este capítulo."></i>
                                 </label>
                                 <input type="text" name="revista" id="id_revista_cap" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. Estudios Contemporáneos en Negocios y Finanzas">
@@ -1604,7 +1612,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_editorial_cap">
-                                    Casa Editorial
+                                    Casa Editorial <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial responsable de publicar el libro colectivo."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_editorial_cap" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC">
@@ -1615,7 +1623,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_isbn_cap">
-                                    Número ISBN
+                                    Número ISBN <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Código ISBN registrado para la obra completa."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_isbn_cap" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-607-123-4">
@@ -1624,7 +1632,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_paginas_cap">
-                                    Páginas del Capítulo
+                                    Páginas del Capítulo <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas que abarca tu capítulo (ej. 45-78)."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_paginas_cap" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 45-78">
@@ -1651,7 +1659,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_ponencia_nombre">
-                                    Nombre del Congreso, Coloquio o Evento Académico
+                                    Nombre del Congreso, Coloquio o Evento Académico <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre oficial del evento o simposio donde se presentó la ponencia o cartel."></i>
                                 </label>
                                 <input type="text" name="revista" id="id_ponencia_nombre" class="form-control" value="{% if form.revista.value %}{{ form.revista.value }}{% elif form.instance.revista %}{{ form.instance.revista }}{% endif %}" placeholder="Ej. XXXII Congreso Internacional de Contaduría y Administración FCA">
@@ -1660,7 +1668,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_ponencia_sede">
-                                    Institución Organizadora o Sede del Evento
+                                    Institución Organizadora o Sede del Evento <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Universidad, facultad, asociación o entidad que organizó el congreso."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_ponencia_sede" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Universidad Autónoma de Baja California (UABC)">
@@ -1671,7 +1679,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_ponencia_modalidad">
-                                    Modalidad de Participación
+                                    Modalidad de Participación <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Formato en el que se expuso o evaluó la contribución."></i>
                                 </label>
                                 <select name="rol_participacion" id="id_ponencia_modalidad" class="form-control">
@@ -1696,7 +1704,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_ponencia_paginas">
-                                    Páginas en la Memoria (ej. 45-58)
+                                    Páginas en la Memoria (ej. 45-58) <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas dentro de la publicación o memorias del evento."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_ponencia_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 45-58">
@@ -1725,7 +1733,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_rep_proyecto_origen">
-                                    Clave o Código del Proyecto de Investigación
+                                    Clave o Código del Proyecto de Investigación <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave oficial de registro del proyecto ante Conahcyt, UABC u organismo financiador."></i>
                                 </label>
                                 <input type="text" name="proyecto_origen" id="id_rep_proyecto_origen" class="form-control" value="{% if form.proyecto_origen.value %}{{ form.proyecto_origen.value }}{% elif form.instance.proyecto_origen %}{{ form.instance.proyecto_origen }}{% endif %}" placeholder="Ej. UABC-FCA-2026-018 o CONAHCYT-CF-2023-1452">
@@ -1734,7 +1742,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_rep_financiador">
-                                    Entidad u Organismo Financiador / Convocante
+                                    Entidad u Organismo Financiador / Convocante <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Institución que otorgó el financiamiento o emitió la convocatoria de investigación."></i>
                                 </label>
                                 <input type="text" name="institucion_receptora" id="id_rep_financiador" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Coordinación General de Investigación UABC / Conahcyt / PRODEP">
@@ -1745,7 +1753,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_rep_etapa">
-                                    Tipo o Etapa del Reporte Técnico
+                                    Tipo o Etapa del Reporte Técnico <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Indica si corresponde a avance periódico, resultados intermedios o informe final."></i>
                                 </label>
                                 <select name="tipo_desarrollo" id="id_rep_etapa" class="form-control">
@@ -1779,7 +1787,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_tipo_proteccion">
-                                    Tipo de Protección / Modalidad
+                                    Tipo de Protección / Modalidad <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Selecciona si es Registro de Derechos de Autor (INDAUTOR), Patente, Modelo de Utilidad o Diseño Industrial (IMPI)."></i>
                                 </label>
                                 <select name="tipo_proteccion" id="id_tipo_proteccion" class="form-control">
@@ -1796,7 +1804,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_numero_registro">
-                                    Número de Registro / Certificado Oficial
+                                    Número de Registro / Certificado Oficial <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Número oficial expedido en el certificado de registro INDAUTOR o título IMPI."></i>
                                 </label>
                                 <input type="text" name="numero_registro" id="id_numero_registro" class="form-control" value="{% if form.numero_registro.value %}{{ form.numero_registro.value }}{% elif form.instance.numero_registro %}{{ form.instance.numero_registro }}{% endif %}" placeholder="Ej. 03-2026-062510384900-01 o MX/a/2026/001234">
@@ -1922,7 +1930,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_tipo_desarrollo">
-                                    Tipo de Desarrollo Tecnológico
+                                    Tipo de Desarrollo Tecnológico <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Naturaleza del desarrollo según catálogo CONAHCYT."></i>
                                 </label>
                                 <select name="tipo_desarrollo" id="id_tipo_desarrollo" class="form-control">
@@ -1950,7 +1958,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_problema_atiende">
-                                    Problema o Necesidad Práctica que Atiende
+                                    Problema o Necesidad Práctica que Atiende <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Describe brevemente el problema de la industria, sociedad o academia que resuelve este desarrollo."></i>
                                 </label>
                                 <textarea name="problema_atiende" id="id_problema_atiende" class="form-control" rows="2" placeholder="Ej. Automatización del control administrativo y optimización de tiempos en procesos contables...">{% if form.problema_atiende.value %}{{ form.problema_atiende.value }}{% elif form.instance.problema_atiende %}{{ form.instance.problema_atiende }}{% endif %}</textarea>
@@ -1959,7 +1967,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_beneficiarios_impacto">
-                                    Población Beneficiaria, Sector o Impacto Alcanzado
+                                    Población Beneficiaria, Sector o Impacto Alcanzado <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Usuarios directos, empresas, organismos públicos o comunidad universitaria beneficiada."></i>
                                 </label>
                                 <textarea name="beneficiarios_impacto" id="id_beneficiarios_impacto" class="form-control" rows="2" placeholder="Ej. Dirigido a estudiantes y docentes de la FCA, así como a pequeñas y medianas empresas de Baja California...">{% if form.beneficiarios_impacto.value %}{{ form.beneficiarios_impacto.value }}{% elif form.instance.beneficiarios_impacto %}{{ form.instance.beneficiarios_impacto }}{% endif %}</textarea>
@@ -1977,7 +1985,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_institucion_receptora">
-                                    Institución, Entidad u Organización Receptora
+                                    Institución, Entidad u Organización Receptora <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre de la empresa, institución gubernamental u organismo que recibió o explota la tecnología."></i>
                                 </label>
                                 <input type="text" name="institucion_receptora" id="id_institucion_receptora" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Cámara Nacional de Comercio, Gobierno del Estado de B.C., Pyme Regional">
@@ -1986,7 +1994,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_tipo_transferencia">
-                                    Mecanismo o Tipo de Transferencia
+                                    Mecanismo o Tipo de Transferencia <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Instrumento legal mediante el cual se formalizó la transferencia."></i>
                                 </label>
                                 <select name="tipo_transferencia" id="id_tipo_transferencia" class="form-control">
@@ -2022,7 +2030,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_idioma_original">
-                                    Idioma Original de la Obra
+                                    Idioma Original de la Obra <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Idioma en el que fue escrita originalmente la publicación."></i>
                                 </label>
                                 <input type="text" name="idioma_original" id="id_idioma_original" class="form-control" value="{% if form.idioma_original.value %}{{ form.idioma_original.value }}{% elif form.instance.idioma_original %}{{ form.instance.idioma_original }}{% endif %}" placeholder="Ej. Inglés, Francés, Alemán">
@@ -2031,7 +2039,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-8">
                             <div class="form-group">
                                 <label for="id_titulo_original">
-                                    Título de la Obra Original
+                                    Título de la Obra Original <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Título de la obra tal como fue publicada en su idioma de origen."></i>
                                 </label>
                                 <input type="text" name="titulo_original" id="id_titulo_original" class="form-control" value="{% if form.titulo_original.value %}{{ form.titulo_original.value }}{% elif form.instance.titulo_original %}{{ form.instance.titulo_original }}{% endif %}" placeholder="Ej. Corporate Governance and Financial Economics">
@@ -2042,7 +2050,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_autor_original">
-                                    Autor(es) Original(es)
+                                    Autor(es) Original(es) <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombres de los autores que crearon la obra en su versión original."></i>
                                 </label>
                                 <input type="text" name="autor_original" id="id_autor_original" class="form-control" value="{% if form.autor_original.value %}{{ form.autor_original.value }}{% elif form.instance.autor_original %}{{ form.instance.autor_original }}{% endif %}" placeholder="Ej. Robert C. Higgins">
@@ -2051,7 +2059,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_editorial_traduccion">
-                                    Casa Editorial / Revista Publicadora
+                                    Casa Editorial / Revista Publicadora <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial o medio que publicó la traducción autorizada."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_editorial_traduccion" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC, McGraw-Hill">
@@ -2069,7 +2077,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_it_institucion_receptora">
-                                    Entidad u Organismo Solicitante / Contratante
+                                    Entidad u Organismo Solicitante / Contratante <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Dependencia gubernamental, tribunal, empresa privada o institución solicitante."></i>
                                 </label>
                                 <input type="text" name="institucion_receptora" id="id_it_institucion_receptora" class="form-control" value="{% if form.institucion_receptora.value %}{{ form.institucion_receptora.value }}{% elif form.instance.institucion_receptora %}{{ form.instance.institucion_receptora }}{% endif %}" placeholder="Ej. Secretaría de Economía, SAT, Tribunal Superior o Empresa X">
@@ -2078,7 +2086,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_it_numero_registro">
-                                    Número de Oficio, Dictamen o Folio de Entrega
+                                    Número de Oficio, Dictamen o Folio de Entrega <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Clave de expediente, contrato u oficio institucional con acuse de recibo."></i>
                                 </label>
                                 <input type="text" name="numero_registro" id="id_it_numero_registro" class="form-control" value="{% if form.numero_registro.value %}{{ form.numero_registro.value }}{% elif form.instance.numero_registro %}{{ form.instance.numero_registro }}{% endif %}" placeholder="Ej. OF-FCA-2026/894 o EXP-PER-1142">
@@ -2089,7 +2097,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_it_tipo_desarrollo">
-                                    Modalidad o Alcance del Dictamen / Informe
+                                    Modalidad o Alcance del Dictamen / Informe <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Naturaleza técnica del dictamen pericial o consultoría."></i>
                                 </label>
                                 <select name="tipo_desarrollo" id="id_it_tipo_desarrollo" class="form-control">
@@ -2124,7 +2132,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_dossier_obra_receptora">
-                                    Título de la Antología o Dossier Temático
+                                    Título de la Antología o Dossier Temático <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre completo de la colección, compendio o publicación temática compilada."></i>
                                 </label>
                                 <input type="text" name="obra_receptora" id="id_dossier_obra_receptora" class="form-control" value="{% if form.obra_receptora.value %}{{ form.obra_receptora.value }}{% elif form.instance.obra_receptora %}{{ form.instance.obra_receptora }}{% endif %}" placeholder="Ej. Compendio Normativo y Crítico de Finanzas Públicas Contemporáneas">
@@ -2133,7 +2141,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_dossier_rol">
-                                    Rol del Académico en la Compilación
+                                    Rol del Académico en la Compilación <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Función editorial desempeñada por el docente/investigador en la obra."></i>
                                 </label>
                                 <select name="rol_participacion" id="id_dossier_rol" class="form-control">
@@ -2150,7 +2158,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_dossier_editorial">
-                                    Casa Editorial o Institución Convocante
+                                    Casa Editorial o Institución Convocante <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial o entidad auspiciante de la antología."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_dossier_editorial" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial UABC / Tirant lo Blanch">
@@ -2168,7 +2176,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_dossier_paginas">
-                                    Páginas Totales / Rango
+                                    Páginas Totales / Rango <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Extensión de la compilación o páginas de la sección introductoria."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_dossier_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. 1-320 págs.">
@@ -2186,7 +2194,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_prologo_obra_receptora">
-                                    Título del Libro o Publicación Prologada
+                                    Título del Libro o Publicación Prologada <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre del libro o monografía donde figura el prólogo o estudio preliminar."></i>
                                 </label>
                                 <input type="text" name="obra_receptora" id="id_prologo_obra_receptora" class="form-control" value="{% if form.obra_receptora.value %}{{ form.obra_receptora.value }}{% elif form.instance.obra_receptora %}{{ form.instance.obra_receptora }}{% endif %}" placeholder="Ej. Tratado Moderno de Administración y Liderazgo Global">
@@ -2195,7 +2203,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="id_prologo_autor_original">
-                                    Autor(es) del Libro Prologado
+                                    Autor(es) del Libro Prologado <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Nombre del autor o autores de la obra principal a la cual se le escribió el prólogo."></i>
                                 </label>
                                 <input type="text" name="autor_original" id="id_prologo_autor_original" class="form-control" value="{% if form.autor_original.value %}{{ form.autor_original.value }}{% elif form.instance.autor_original %}{{ form.instance.autor_original }}{% endif %}" placeholder="Ej. Dr. Jean-Jacques Rousseau o Mtro. Roberto Hernández">
@@ -2206,7 +2214,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_prologo_editorial">
-                                    Casa Editorial o Imprenta
+                                    Casa Editorial o Imprenta <span class="asterisco-rojo">*</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Editorial responsable de la edición de la obra."></i>
                                 </label>
                                 <input type="text" name="editorial" id="id_prologo_editorial" class="form-control" value="{% if form.editorial.value %}{{ form.editorial.value }}{% elif form.instance.editorial %}{{ form.instance.editorial }}{% endif %}" placeholder="Ej. Editorial Porrúa / McGraw-Hill">
@@ -2215,7 +2223,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_prologo_isbn">
-                                    ISBN del Libro Prologado
+                                    ISBN del Libro Prologado <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Código ISBN formal del libro publicado."></i>
                                 </label>
                                 <input type="text" name="isbn_issn" id="id_prologo_isbn" class="form-control" value="{% if form.isbn_issn.value %}{{ form.isbn_issn.value }}{% elif form.instance.isbn_issn %}{{ form.instance.isbn_issn }}{% endif %}" placeholder="Ej. 978-607-09-1234-5">
@@ -2224,7 +2232,14 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="id_prologo_paginas">
-                                    Páginas del Prólogo
+                                    Páginas del Prólogo <span class="badge badge-light text-muted font-weight-normal ml-1" style="font-size: 0.72rem; border: 1px solid #e2e8f0;">Opcional</span>
+                                    <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas exacto que abarca el prólogo o estudio preliminar."></i>
+                                </label>
+                                <input type="text" name="paginas" id="id_prologo_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. Págs. ix-xxiv o 11-28">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                                     <i class="fas fa-info-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Rango de páginas exacto que abarca el prólogo o estudio preliminar."></i>
                                 </label>
                                 <input type="text" name="paginas" id="id_prologo_paginas" class="form-control" value="{% if form.paginas.value %}{{ form.paginas.value }}{% elif form.instance.paginas %}{{ form.instance.paginas }}{% endif %}" placeholder="Ej. Págs. ix-xxiv o 11-28">
@@ -2546,7 +2561,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                 <div class="modal-body p-4">
                     <!-- 1. Desglose de Nombres -->
                     <label class="font-weight-bold text-dark mb-1">
-                        <i class="fas fa-id-card text-success mr-1"></i>Nom&zwnj;bre y Grado Académico del Autor *
+                        <i class="fas fa-id-card text-success mr-1"></i>Nom&zwnj;bre y Grado Académico del Autor <span class="asterisco-rojo">*</span>
                     </label>
                     <div class="row g-2 mb-2">
                         <div class="col-md-3 mb-2 mb-md-0">
@@ -2564,11 +2579,11 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                             </datalist>
                         </div>
                         <div class="col-md-3 mb-2 mb-md-0">
-                            <label class="small text-muted font-weight-bold mb-1">Nom&zwnj;bre(s) *:</label>
+                            <label class="small text-muted font-weight-bold mb-1">Nom&zwnj;bre(s) <span class="asterisco-rojo">*</span>:</label>
                             <input type="text" id="nuevo_autor_nombres" class="form-control form-control-sm" placeholder="Ej. Carlos Alberto" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" required>
                         </div>
                         <div class="col-md-3 mb-2 mb-md-0">
-                            <label class="small text-muted font-weight-bold mb-1">Primer Apell&zwnj;ido *:</label>
+                            <label class="small text-muted font-weight-bold mb-1">Primer Apell&zwnj;ido <span class="asterisco-rojo">*</span>:</label>
                             <input type="text" id="nuevo_autor_paterno" class="form-control form-control-sm" placeholder="Ej. Soto" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" required>
                         </div>
                         <div class="col-md-3">
@@ -2599,7 +2614,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                     <!-- 2. Procedencia / Tipo de Autor con los 3 colores -->
                     <div class="form-group mb-3">
                         <label class="font-weight-bold text-dark mb-2">
-                            <i class="fas fa-university text-success mr-1"></i>Procedencia / Clasificación Institucional *
+                            <i class="fas fa-university text-success mr-1"></i>Procedencia / Clasificación Institucional <span class="asterisco-rojo">*</span>
                         </label>
                         <div class="row g-2">
                             <!-- Opción 1: UABC (Verde) -->
@@ -2642,7 +2657,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                     <div id="bloque-datos-externo" class="p-3 bg-light rounded border border-primary mb-3" style="display: none;">
                         <h6 class="font-weight-bold text-primary small mb-2"><i class="fas fa-building mr-1"></i>Institución de Procedencia</h6>
                         <div class="form-group mb-2">
-                            <label class="font-weight-bold small text-dark">Nombre Oficial de la Universidad o Institución *</label>
+                            <label class="font-weight-bold small text-dark">Nombre Oficial de la Universidad o Institución <span class="asterisco-rojo">*</span></label>
                             <input type="text" id="nuevo_autor_universidad" class="form-control form-control-sm" list="lista-universidades-catalogo" placeholder="Ej. Universidad Autónoma de Nuevo León" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                             <datalist id="lista-universidades-catalogo">
                                 {% for uni in universidades %}
@@ -2651,7 +2666,7 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                             </datalist>
                         </div>
                         <div class="form-group mb-0">
-                            <label class="font-weight-bold small text-dark">Siglas Oficiales *</label>
+                            <label class="font-weight-bold small text-dark">Siglas Oficiales <span class="asterisco-rojo">*</span></label>
                             <input type="text" id="nuevo_autor_siglas" class="form-control form-control-sm text-uppercase" placeholder="Ej. UANL" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true">
                             <small class="form-text text-muted" style="font-size: 0.72rem;">Generará el identificador institucional del autor (ej. <strong>UANL-XXXX</strong>).</small>
                         </div>
