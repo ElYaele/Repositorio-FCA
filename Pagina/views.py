@@ -206,6 +206,20 @@ def limpiar_autores_huerfanos(minutos_gracia=15, excluir_ids=None):
     return total
 
 
+def filtro_excluir_cuentas_administrativas():
+    """
+    Filtro institucional para excluir cuentas puramente administrativas, de soporte
+    o de superusuario no docentes del catálogo y selector de autores académicos.
+    """
+    return (
+        Q(usuario__is_superuser=True, es_profesor=False) |
+        Q(rol_facultad__in=['SOPORTE', 'DEP_TEC'], es_profesor=False) |
+        Q(usuario__username__iexact='yaele', es_profesor=False) |
+        Q(nombre__iexact='yaele', es_profesor=False) |
+        Q(nombre__in=['Master User', 'Administrador de Pruebas', 'Administrador', 'Soporte', 'Soporte FCA'])
+    )
+
+
 def obtener_autores_activos_catalogo():
     # Purgar huérfanos que lleven más de 15 minutos abandonados
     try:
@@ -214,7 +228,7 @@ def obtener_autores_activos_catalogo():
         pass
 
     return Autor.objects.exclude(
-        nombre__in=['Master User', 'Administrador de Pruebas']
+        filtro_excluir_cuentas_administrativas()
     ).distinct().order_by('nombre')
 
 
@@ -5060,8 +5074,10 @@ def panel_usuarios_view(request):
     page_semb = request.GET.get('page_semb')
     todas_semblanzas = paginator_semb.get_page(page_semb)
 
-    # Catálogo y herramienta de fusión de autores
-    autores_catalogo_qs = Autor.objects.annotate(
+    # Catálogo y herramienta de fusión de autores (excluye cuentas administrativas de soporte)
+    autores_catalogo_qs = Autor.objects.exclude(
+        filtro_excluir_cuentas_administrativas()
+    ).annotate(
         num_documentos=Count('documentos', distinct=True),
         num_asesorias=Count('tesis_asesoradas', distinct=True) + Count('tesis_coasesoradas', distinct=True)
     ).order_by('nombre')
@@ -5075,9 +5091,10 @@ def panel_usuarios_view(request):
         ).distinct()
 
     # Totales globales de autores para los badges y filtros
-    total_autores_catalogo = Autor.objects.count()
-    total_autores_con_cuenta = Autor.objects.filter(usuario__isnull=False).count()
-    total_autores_sin_cuenta = Autor.objects.filter(usuario__isnull=True).count()
+    autores_base_qs = Autor.objects.exclude(filtro_excluir_cuentas_administrativas())
+    total_autores_catalogo = autores_base_qs.count()
+    total_autores_con_cuenta = autores_base_qs.filter(usuario__isnull=False).count()
+    total_autores_sin_cuenta = autores_base_qs.filter(usuario__isnull=True).count()
 
     if filtro_cuenta_autor == 'con_cuenta':
         autores_catalogo_qs = autores_catalogo_qs.filter(usuario__isnull=False)
@@ -5359,7 +5376,7 @@ def panel_usuarios_view(request):
         'total_autores_con_cuenta': total_autores_con_cuenta,
         'total_autores_sin_cuenta': total_autores_sin_cuenta,
         'filtro_cuenta_autor': filtro_cuenta_autor,
-        'todos_los_autores_simple': Autor.objects.order_by('nombre'),
+        'todos_los_autores_simple': Autor.objects.exclude(filtro_excluir_cuentas_administrativas()).order_by('nombre'),
         'total_huerfanos': total_huerfanos,
         'total_huerfanos_inactivos': total_huerfanos_inactivos,
         'total_huerfanos_recientes': total_huerfanos_recientes,
@@ -6923,13 +6940,16 @@ def restaurar_respaldo_sistema_view(request):
             messages.error(request, f"Error al procesar el archivo JSON: {str(e)}")
             return redirect(f"{reverse('panel_usuarios')}#documentos")
 
-    fixtures = data.get('fixtures')
+    if isinstance(data, dict):
+        fixtures = data.get('fixtures')
+    elif isinstance(data, list):
+        fixtures = data
+    else:
+        fixtures = None
+
     if not isinstance(fixtures, list):
-        if isinstance(data, list):
-            fixtures = data
-        else:
-            messages.error(request, "El archivo no contiene un formato de respaldo compatible de Django / FCA.")
-            return redirect(f"{reverse('panel_usuarios')}#documentos")
+        messages.error(request, "El archivo no contiene un formato de respaldo compatible de Django / FCA.")
+        return redirect(f"{reverse('panel_usuarios')}#documentos")
 
     if not fixtures:
         messages.warning(request, "El archivo de respaldo está vacío (0 registros). No se realizaron cambios.")
@@ -7481,8 +7501,11 @@ def restaurar_respaldo_sistema_view(request):
                 old_pk = item['pk']
                 fields = item.get('fields', {})
                 tit = fields.get('titulo', '').strip()
-                f_ev = fields.get('fecha_evento')
-                if tit and not EventoFCA.objects.filter(titulo__iexact=tit, fecha_evento=f_ev).exists():
+                f_ev = fields.get('fecha') or fields.get('fecha_evento')
+                q_ev = EventoFCA.objects.filter(titulo__iexact=tit)
+                if f_ev:
+                    q_ev = q_ev.filter(fecha=f_ev)
+                if tit and not q_ev.exists():
                     ev_obj = EventoFCA()
                     _copiar_campos(ev_obj, fields, excluidos={'id'})
                     ev_obj.id = old_pk if not EventoFCA.objects.filter(id=old_pk).exists() else None
@@ -7507,8 +7530,8 @@ def restaurar_respaldo_sistema_view(request):
             for item in fixtures_por_modelo.get('pagina.redsocialfooter', []):
                 old_pk = item['pk']
                 fields = item.get('fields', {})
-                red = fields.get('nombre_red', '').strip()
-                if red and not RedSocialFooter.objects.filter(nombre_red__iexact=red).exists():
+                red = (fields.get('nombre') or fields.get('nombre_red') or '').strip()
+                if red and not RedSocialFooter.objects.filter(nombre__iexact=red).exists():
                     rs_obj = RedSocialFooter()
                     _copiar_campos(rs_obj, fields, excluidos={'id'})
                     rs_obj.id = old_pk if not RedSocialFooter.objects.filter(id=old_pk).exists() else None
@@ -7521,8 +7544,11 @@ def restaurar_respaldo_sistema_view(request):
                 old_pk = item['pk']
                 fields = item.get('fields', {})
                 tit = fields.get('titulo', '').strip()
-                sec = fields.get('seccion_columna', '')
-                if tit and not EnlacePiePagina.objects.filter(titulo__iexact=tit, seccion_columna=sec).exists():
+                sec = fields.get('columna') or fields.get('seccion_columna') or ''
+                q_ep = EnlacePiePagina.objects.filter(titulo__iexact=tit)
+                if sec:
+                    q_ep = q_ep.filter(columna=sec)
+                if tit and not q_ep.exists():
                     ep_obj = EnlacePiePagina()
                     _copiar_campos(ep_obj, fields, excluidos={'id'})
                     ep_obj.id = old_pk if not EnlacePiePagina.objects.filter(id=old_pk).exists() else None
@@ -8617,7 +8643,9 @@ def buscar_autores_live_ajax_view(request):
     if not q or len(q) < 2:
         return JsonResponse({'autores': []})
 
-    autores = Autor.objects.filter(
+    autores = Autor.objects.exclude(
+        filtro_excluir_cuentas_administrativas()
+    ).filter(
         Q(nombre__icontains=q) |
         Q(nombres__icontains=q) |
         Q(apellido_paterno__icontains=q) |
