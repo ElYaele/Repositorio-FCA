@@ -4714,15 +4714,34 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
     <div class="modal fade" id="modalVisorPdfRapido" tabindex="-1" aria-labelledby="modalVisorPdfRapidoLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 92vw;">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header text-white py-3 flex-shrink-0" style="background-color: var(--theme-primary);">
+                <div class="modal-header text-white py-2 flex-shrink-0" style="background-color: var(--theme-primary);">
                     <div class="d-flex align-items-center text-truncate me-2">
                         <i class="fas fa-file-pdf me-2 fs-4 text-warning"></i>
                         <div class="text-truncate">
-                            <h6 class="modal-title fw-bold mb-0 text-truncate text-white" id="modalVisorPdfRapidoLabel">Visor Rápido de Documento</h6>
-                            <small class="text-white-50" id="modalVisorPdfSubtitulo">Vista previa del archivo cargado en el repositorio</small>
+                            <h6 class="modal-title fw-bold mb-0 text-truncate text-white" id="modalVisorPdfRapidoLabel">Visor de Documento</h6>
+                            <small class="text-white-50" id="modalVisorPdfSubtitulo">Vista previa oficial del acervo institucional</small>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <!-- CONTROLES DEL VISOR PDF -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                        <div class="btn-group btn-group-sm me-2 bg-white bg-opacity-10 rounded-pill p-1 shadow-2xs" id="visorPdfControlesNav" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 border-0" id="btnVisorPdfPrev" title="Página Anterior">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="text-white small px-2 align-self-center font-monospace" id="visorPdfPaginaInfo">1 / 1</span>
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 border-0" id="btnVisorPdfNext" title="Página Siguiente">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group btn-group-sm me-2 bg-white bg-opacity-10 rounded-pill p-1 shadow-2xs" id="visorPdfControlesZoom" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 border-0" id="btnVisorPdfZoomOut" title="Reducir Zoom">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <span class="text-white small px-1 align-self-center" id="visorPdfZoomInfo" style="font-size: 0.72rem;">135%</span>
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 border-0" id="btnVisorPdfZoomIn" title="Aumentar Zoom">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                        </div>
                         <a href="#" id="btnDescargarPdfModal" download class="btn btn-sm btn-light rounded-pill px-3 fw-bold shadow-xs">
                             <i class="fas fa-download me-1 text-success"></i>Descargar
                         </a>
@@ -4732,12 +4751,22 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
                         <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="modal-body p-0 bg-dark" style="height: 78vh; position: relative; overflow: hidden;">
-                    <div id="pdfLoadingSpinner" class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-white" style="position: absolute; top: 0; left: 0; z-index: 10; background: #1e293b; transition: opacity 0.25s ease;">
-                        <div class="spinner-border text-light mb-3" role="status"></div>
-                        <span class="small text-white-50">Cargando documento PDF...</span>
+                <div class="modal-body p-0" id="visorPdfModalBody" style="height: 78vh; position: relative; overflow: auto; background-color: #334155;">
+                    <div id="pdfLoadingSpinner" class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-white" style="position: absolute; top: 0; left: 0; z-index: 10; background: rgba(30, 41, 59, 0.95); transition: opacity 0.25s ease;">
+                        <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <span class="small text-white-50 font-weight-bold" id="visorPdfSpinnerText">Renderizando documento PDF en alta definición...</span>
                     </div>
-                    <iframe id="iframeVisorPdf" src="" style="width: 100%; height: 100%; border: none; display: block; background: #ffffff;"></iframe>
+                    <div id="visorPdfErrorContainer" class="d-none text-center p-5 text-white my-auto">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5>No se pudo renderizar la vista previa interactiva</h5>
+                        <p class="text-white-50 small mb-4">Puedes abrir o descargar el documento directamente con los botones de la barra superior.</p>
+                        <a href="#" id="btnVisorPdfErrorAbrir" target="_blank" class="btn btn-success rounded-pill px-4 font-weight-bold">
+                            <i class="fas fa-external-link-alt me-1"></i>Abrir Documento en Pestaña Nueva
+                        </a>
+                    </div>
+                    <div id="visorPdfCanvasWrapper" class="d-flex justify-content-center py-3">
+                        <canvas id="canvasVisorPdf" class="shadow-lg rounded" style="display: none; max-width: 96%; background: white;"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -6090,50 +6119,182 @@ GUÍA Y MAPA DE NAVEGACIÓN RÁPIDA POR BLOQUES (SITEMAP):
             });
 
             // ========================================================
-            // VISOR RÁPIDO DE PDF (FASE 1: IDEA 5)
+            // VISOR RÁPIDO DE PDF CON PDF.JS Y CANVAS INTERACTIVO
             // ========================================================
             const modalVisorPdf = document.getElementById('modalVisorPdfRapido');
+            let visorDocPdf = null;
+            let visorPdfPaginaActual = 1;
+            let visorPdfEscala = 1.35;
+            let visorPdfRenderizando = false;
+            let visorPdfCargando = false;
+            let visorPdfTask = null;
+
+            async function renderizarPaginaVisorPdf(num) {
+                if (!visorDocPdf) return;
+                visorPdfRenderizando = true;
+                const canvas = document.getElementById('canvasVisorPdf');
+                const spinner = document.getElementById('pdfLoadingSpinner');
+                const pagInfo = document.getElementById('visorPdfPaginaInfo');
+                const zoomInfo = document.getElementById('visorPdfZoomInfo');
+                const errorBox = document.getElementById('visorPdfErrorContainer');
+                const navControles = document.getElementById('visorPdfControlesNav');
+                const zoomControles = document.getElementById('visorPdfControlesZoom');
+
+                if (pagInfo) pagInfo.textContent = `${num} / ${visorDocPdf.numPages}`;
+                if (zoomInfo) zoomInfo.textContent = `${Math.round(visorPdfEscala * 100)}%`;
+                if (navControles) navControles.style.display = visorDocPdf.numPages > 1 ? 'inline-flex' : 'none';
+                if (zoomControles) zoomControles.style.display = 'inline-flex';
+
+                try {
+                    const page = await visorDocPdf.getPage(num);
+                    const viewport = page.getViewport({ scale: visorPdfEscala });
+                    if (canvas) {
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        const ctx = canvas.getContext('2d');
+                        if (visorPdfTask) {
+                            try { visorPdfTask.cancel(); } catch(e){}
+                        }
+                        visorPdfTask = page.render({ canvasContext: ctx, viewport: viewport });
+                        await visorPdfTask.promise;
+                        canvas.style.display = 'block';
+                    }
+                    if (errorBox) errorBox.classList.add('d-none');
+                    if (spinner) {
+                        spinner.style.opacity = '0';
+                        setTimeout(() => { spinner.style.display = 'none'; }, 200);
+                    }
+                } catch (err) {
+                    if (err && err.name === 'RenderingCancelledException') {
+                        return;
+                    }
+                    console.error("Error al renderizar página PDF:", err);
+                    if (errorBox) errorBox.classList.remove('d-none');
+                    if (canvas) canvas.style.display = 'none';
+                    if (spinner) spinner.style.display = 'none';
+                } finally {
+                    visorPdfRenderizando = false;
+                }
+            }
+
             if (modalVisorPdf) {
                 modalVisorPdf.addEventListener('show.bs.modal', function(event) {
                     const trigger = event.relatedTarget;
                     if (!trigger) return;
                     const url = trigger.getAttribute('data-pdf-url') || '';
                     const titulo = trigger.getAttribute('data-pdf-titulo') || 'Documento PDF';
+
                     const lbl = document.getElementById('modalVisorPdfRapidoLabel');
                     if (lbl) lbl.textContent = titulo;
+
                     const btnDescargar = document.getElementById('btnDescargarPdfModal');
                     if (btnDescargar) btnDescargar.href = url;
+
                     const btnPestana = document.getElementById('btnNuevaPestanaPdfModal');
                     if (btnPestana) btnPestana.href = url;
 
-                    const iframe = document.getElementById('iframeVisorPdf');
+                    const btnErrorAbrir = document.getElementById('btnVisorPdfErrorAbrir');
+                    if (btnErrorAbrir) btnErrorAbrir.href = url;
+
+                    const canvas = document.getElementById('canvasVisorPdf');
                     const spinner = document.getElementById('pdfLoadingSpinner');
+                    const errorBox = document.getElementById('visorPdfErrorContainer');
+                    const navControles = document.getElementById('visorPdfControlesNav');
+                    const zoomControles = document.getElementById('visorPdfControlesZoom');
+
+                    if (canvas) canvas.style.display = 'none';
+                    if (errorBox) errorBox.classList.add('d-none');
                     if (spinner) {
                         spinner.style.display = 'flex';
                         spinner.style.opacity = '1';
                     }
-                    if (iframe) {
-                        iframe.src = url;
+                    if (navControles) navControles.style.display = 'none';
+                    if (zoomControles) zoomControles.style.display = 'none';
 
-                        let finished = false;
-                        const dismissSpinner = function() {
-                            if (finished) return;
-                            finished = true;
-                            if (spinner) {
-                                spinner.style.opacity = '0';
-                                setTimeout(() => { spinner.style.display = 'none'; }, 250);
-                            }
-                        };
+                    visorDocPdf = null;
+                    visorPdfPaginaActual = 1;
+                    visorPdfEscala = 1.35;
 
-                        iframe.onload = dismissSpinner;
-                        // Fallback para Chromium/Firefox donde los plugins de PDF no disparan el evento 'load'
-                        setTimeout(dismissSpinner, 600);
+                    if (!url) {
+                        if (spinner) spinner.style.display = 'none';
+                        if (errorBox) errorBox.classList.remove('d-none');
+                        return;
+                    }
+
+                    if (typeof pdfjsLib !== 'undefined') {
+                        visorPdfCargando = true;
+                        pdfjsLib.getDocument(url).promise.then(doc => {
+                            visorDocPdf = doc;
+                            visorPdfPaginaActual = 1;
+                            renderizarPaginaVisorPdf(1);
+                        }).catch(err => {
+                            console.error("Error al cargar PDF con PDF.js:", err);
+                            if (spinner) spinner.style.display = 'none';
+                            if (errorBox) errorBox.classList.remove('d-none');
+                        }).finally(() => {
+                            visorPdfCargando = false;
+                        });
+                    } else {
+                        window.open(url, '_blank');
                     }
                 });
+
                 modalVisorPdf.addEventListener('hidden.bs.modal', function() {
-                    const iframe = document.getElementById('iframeVisorPdf');
-                    if (iframe) iframe.src = '';
+                    if (visorPdfTask) {
+                        try { visorPdfTask.cancel(); } catch(e){}
+                    }
+                    visorDocPdf = null;
+                    const canvas = document.getElementById('canvasVisorPdf');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        canvas.style.display = 'none';
+                    }
+                    const navControles = document.getElementById('visorPdfControlesNav');
+                    const zoomControles = document.getElementById('visorPdfControlesZoom');
+                    if (navControles) navControles.style.display = 'none';
+                    if (zoomControles) zoomControles.style.display = 'none';
                 });
+
+                // Botones de Navegación de Página
+                const btnPrev = document.getElementById('btnVisorPdfPrev');
+                const btnNext = document.getElementById('btnVisorPdfNext');
+                if (btnPrev) {
+                    btnPrev.addEventListener('click', function() {
+                        if (!visorDocPdf || visorPdfPaginaActual <= 1 || visorPdfRenderizando) return;
+                        visorPdfPaginaActual--;
+                        renderizarPaginaVisorPdf(visorPdfPaginaActual);
+                    });
+                }
+                if (btnNext) {
+                    btnNext.addEventListener('click', function() {
+                        if (!visorDocPdf || visorPdfPaginaActual >= visorDocPdf.numPages || visorPdfRenderizando) return;
+                        visorPdfPaginaActual++;
+                        renderizarPaginaVisorPdf(visorPdfPaginaActual);
+                    });
+                }
+
+                // Botones de Zoom
+                const btnZoomIn = document.getElementById('btnVisorPdfZoomIn');
+                const btnZoomOut = document.getElementById('btnVisorPdfZoomOut');
+                if (btnZoomIn) {
+                    btnZoomIn.addEventListener('click', function() {
+                        if (!visorDocPdf || visorPdfRenderizando) return;
+                        if (visorPdfEscala < 2.5) {
+                            visorPdfEscala += 0.25;
+                            renderizarPaginaVisorPdf(visorPdfPaginaActual);
+                        }
+                    });
+                }
+                if (btnZoomOut) {
+                    btnZoomOut.addEventListener('click', function() {
+                        if (!visorDocPdf || visorPdfRenderizando) return;
+                        if (visorPdfEscala > 0.6) {
+                            visorPdfEscala -= 0.25;
+                            renderizarPaginaVisorPdf(visorPdfPaginaActual);
+                        }
+                    });
+                }
             }
 
             const btnViewTableDoc = document.getElementById('btn-view-table-doc');
